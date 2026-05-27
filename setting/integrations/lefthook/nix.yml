@@ -1,0 +1,22 @@
+---
+remotes:
+  - git_url: https://github.com/pr0d1r2/nix-lefthook-nixfmt
+    ref: main
+    configs:
+      - lefthook-remote.yml
+  - git_url: https://github.com/pr0d1r2/nix-lefthook-statix
+    ref: main
+    configs:
+      - lefthook-remote.yml
+  - git_url: https://github.com/pr0d1r2/nix-lefthook-deadnix
+    ref: main
+    configs:
+      - lefthook-remote.yml
+  - git_url: https://github.com/pr0d1r2/nix-lefthook-nix-no-embedded-shell
+    ref: main
+    configs:
+      - lefthook-remote.yml
+  - git_url: https://github.com/pr0d1r2/nix-lefthook-nix-flake-check
+    ref: main
+    configs:
+      - lefthook-remote.yml

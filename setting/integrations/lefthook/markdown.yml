@@ -1,0 +1,34 @@
+---
+remotes:
+  - git_url: https://github.com/pr0d1r2/nix-lefthook-markdownlint
+    ref: main
+    configs:
+      - lefthook-remote.yml
+  - git_url: https://github.com/pr0d1r2/nix-lefthook-markdownlint-agentic
+    ref: main
+    configs:
+      - lefthook-remote.yml
+
+pre-commit:
+  parallel: true
+  commands:
+    markdownlint:
+      glob: "*.md"
+      exclude: "^(\\.claude/skills/)"
+      run: timeout ${LEFTHOOK_MARKDOWNLINT_TIMEOUT:-30} lefthook-markdownlint {staged_files}
+    markdownlint-agentic:
+      glob: "*.md"
+      exclude: "^(README|CHANGELOG|SPEC|CONTRIBUTING)\\.md$"
+      run: timeout ${LEFTHOOK_MARKDOWNLINT_AGENTIC_TIMEOUT:-30} lefthook-markdownlint-agentic {staged_files}
+
+pre-push:
+  parallel: true
+  commands:
+    markdownlint:
+      glob: "*.md"
+      exclude: "^(\\.claude/skills/)"
+      run: timeout ${LEFTHOOK_MARKDOWNLINT_TIMEOUT:-30} lefthook-markdownlint {push_files}
+    markdownlint-agentic:
+      glob: "*.md"
+      exclude: "^(README|CHANGELOG|SPEC|CONTRIBUTING)\\.md$"
+      run: timeout ${LEFTHOOK_MARKDOWNLINT_AGENTIC_TIMEOUT:-30} lefthook-markdownlint-agentic {push_files}

@@ -1,0 +1,6 @@
+# Lefthook
+
+Add lefthook to project.
+Add 'lefthook install' at the beginning of dev shell invocations.
+All checks added to lefthook should be for both pre-commit and pre-push.
+Remote hooks from nix-lefthook-* repos are preferred over inline commands.

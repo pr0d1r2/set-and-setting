@@ -1,0 +1,20 @@
+---
+remotes:
+  - git_url: https://github.com/pr0d1r2/nix-lefthook-ascii-only
+    ref: main
+    configs:
+      - lefthook-remote.yml
+
+pre-commit:
+  parallel: true
+  commands:
+    ascii-only:
+      glob: "*.{nix,yml,json}"
+      run: timeout ${LEFTHOOK_ASCII_ONLY_TIMEOUT:-30} lefthook-ascii-only {staged_files}
+
+pre-push:
+  parallel: true
+  commands:
+    ascii-only:
+      glob: "*.{nix,yml,json}"
+      run: timeout ${LEFTHOOK_ASCII_ONLY_TIMEOUT:-30} lefthook-ascii-only {push_files}
