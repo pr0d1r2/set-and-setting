@@ -724,6 +724,24 @@
         "type": "github"
       }
     },
+    "nixpkgs-lock": {
+      "inputs": {
+        "nixpkgs": "nixpkgs"
+      },
+      "locked": {
+        "lastModified": 1780819359,
+        "narHash": "sha256-yW2lHrCzE10YRjZCjAwbC5aiXfMoT9nyGaP0QP8lvPI=",
+        "owner": "pr0d1r2",
+        "repo": "nixpkgs-lock",
+        "rev": "e5e8e199b6108c05a4af6ecca164d6c0c0824ccf",
+        "type": "github"
+      },
+      "original": {
+        "owner": "pr0d1r2",
+        "repo": "nixpkgs-lock",
+        "type": "github"
+      }
+    },
     "root": {
       "inputs": {
         "nix-lefthook": "nix-lefthook",
@@ -753,7 +771,11 @@
         "nix-lefthook-typos-src": "nix-lefthook-typos-src_2",
         "nix-lefthook-unicode-lint-src": "nix-lefthook-unicode-lint-src",
         "nix-lefthook-yamllint-src": "nix-lefthook-yamllint-src_2",
-        "nixpkgs": "nixpkgs"
+        "nixpkgs": [
+          "nixpkgs-lock",
+          "nixpkgs"
+        ],
+        "nixpkgs-lock": "nixpkgs-lock"
       }
     }
   },
