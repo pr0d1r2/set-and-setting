@@ -167,11 +167,11 @@
     "nix-lefthook-file-size-check-src": {
       "flake": false,
       "locked": {
-        "lastModified": 1779722442,
-        "narHash": "sha256-nv3TVFeFiiUpRh3+nkueArMLEUcPvOjZQrzbi0lSbPc=",
+        "lastModified": 1780828050,
+        "narHash": "sha256-2yK4ueOpXyXYT4hqhVYbRAAdRnlsDpQuO+XT6cR9ack=",
         "owner": "pr0d1r2",
         "repo": "nix-lefthook-file-size-check",
-        "rev": "a171a190403d99c5a1459b89cf5ff8b467154a03",
+        "rev": "f30fa4c19aaf68f1e9ad831d2b8e62863a3b6eb0",
         "type": "github"
       },
       "original": {
@@ -695,11 +695,11 @@
     "nix-lefthook-yamllint-src_2": {
       "flake": false,
       "locked": {
-        "lastModified": 1780739339,
-        "narHash": "sha256-PG6oBNtcf0BJSyYo9POfYhifpy3GCCMqJMm9dWfq5Ls=",
+        "lastModified": 1780947951,
+        "narHash": "sha256-we2ysuSLNWGJCxd6CxysoiyQ+4ngmw6YvOzxURygNc4=",
         "owner": "pr0d1r2",
         "repo": "nix-lefthook-yamllint",
-        "rev": "f3c37492e154ba4324eb664dcb44d061eadd6c0c",
+        "rev": "fd01d073f7fa85a61b7185c27d5b2037ca19790a",
         "type": "github"
       },
       "original": {
