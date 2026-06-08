@@ -4,6 +4,10 @@
 
 ### Set (skills)
 
+- Add `gnu/kill`: how to signal a whole process group portably, and
+  the SIGTTOU/SIGTTIN background-group tty stop that freezes pre-push
+  hooks (`[ -t 0 ]` does not catch it; `trap '' TTOU TTIN` before
+  `/dev/tty` access)
 - Update `opensource/ci`: reflect hosted CI via nix-lefthook-ci-action
   three-platform pattern
 - Update `lefthook/wrapper-flake-inputs`: add single nix-lefthook

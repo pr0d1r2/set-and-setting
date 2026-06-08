@@ -3,6 +3,7 @@ abstract
 acceleration
 accept
 acceptable
+access
 accurate
 across
 act
@@ -34,8 +35,10 @@ agree
 aider
 air
 alerts
+alive
 all
 allowlist
+already
 alternative
 always
 ambiguity
@@ -80,6 +83,7 @@ available
 avoid
 avoids
 back
+background
 backoff
 badge
 banner
@@ -124,6 +128,7 @@ bundled
 bundles
 burn
 burns
+but
 byte
 cache
 cached
@@ -134,6 +139,7 @@ can
 cannot
 canvas
 capabilities
+catch
 catches
 categories
 category
@@ -145,6 +151,7 @@ changelogs
 changes
 check
 checks
+children
 chore
 cites
 classify
@@ -214,6 +221,7 @@ context
 contributing
 control
 controlled
+controlling
 convention
 conventional
 conventions
@@ -244,6 +252,7 @@ declaratively
 declared
 declaring
 dedicated
+deeper
 default
 define
 defined
@@ -300,6 +309,7 @@ dotfiles
 downstream
 draft
 drafts
+drain
 drift
 drives
 drop
@@ -314,6 +324,7 @@ edited
 editor
 editorconfig
 efi
+eio
 embedded
 emulation
 enable
@@ -343,6 +354,7 @@ examples
 except
 exclude
 excluded
+exec
 executable
 execute
 executes
@@ -405,6 +417,7 @@ follows
 foo
 for
 force
+forkpty
 format
 formatting
 forwarding
@@ -413,8 +426,10 @@ fragment
 fragments
 frame
 framing
+freezes
 fresh
 from
+frozen
 full
 functions
 future
@@ -437,6 +452,8 @@ goal
 graduate
 graph
 graphic
+group
+groups
 grub
 guarantees
 guard
@@ -502,6 +519,7 @@ inform
 informed
 infrastructure
 inherit
+inherits
 init
 initial
 initialize
@@ -544,7 +562,9 @@ kernel
 key
 kill
 killall
+killed
 killing
+kills
 kingston
 knowledge
 known
@@ -554,6 +574,7 @@ label
 lacks
 language
 layout
+leader
 least
 left
 lefthook
@@ -602,6 +623,7 @@ mac
 machine
 machines
 macos
+made
 main
 maintainers
 maintaining
@@ -619,6 +641,7 @@ matches
 matching
 mature
 may
+mean
 meaning
 means
 mechanism
@@ -661,6 +684,7 @@ ndotfiles
 necessary
 need
 needs
+negative
 nested
 network
 neutral
@@ -680,6 +704,7 @@ note
 nothing
 noting
 nskills
+null
 nvme
 obvious
 off
@@ -689,6 +714,7 @@ once
 one
 ones
 only
+open
 opencode
 opensource
 opensourcing
@@ -740,14 +766,18 @@ pattern
 patterns
 pcie
 pendrive
+people
 per
 perform
 performance
 peripheral
 permissions
 personal
+pgid
+pgrep
 philosophy
 pick
+pid
 piece
 pii
 pin
@@ -766,6 +796,7 @@ policy
 port
 portability
 portable
+portably
 positive
 powered
 pre
@@ -783,9 +814,12 @@ preview
 previous
 primary
 principles
+prints
 pro
 proceed
+process
 processes
+procps
 produce
 product
 production
@@ -816,6 +850,7 @@ ram
 rather
 raw
 reach
+reaches
 read
 reader
 readme
@@ -840,6 +875,7 @@ registered
 regular
 release
 reliably
+rely
 relying
 remote
 remotes
@@ -851,6 +887,7 @@ replace
 replacing
 repo
 report
+reports
 repos
 representative
 reproducible
@@ -868,6 +905,7 @@ retry
 reuse
 reversed
 rewrite
+risk
 role
 roles
 root
@@ -882,6 +920,7 @@ ryzen
 safe
 safety
 same
+sane
 sas
 save
 scaffold
@@ -906,6 +945,7 @@ service
 session
 set
 sets
+setsid
 setting
 settings
 setup
@@ -922,13 +962,17 @@ should
 show
 shown
 shutdown
+signal
 signals
 signed
 signs
+sigttin
+sigttou
 silence
 silently
 simply
 single
+sits
 size
 skill
 skills
@@ -943,6 +987,7 @@ snap
 somewhat
 sorted
 source
+spawn
 spec
 specific
 specifics
@@ -960,7 +1005,12 @@ starting
 state
 statement
 stay
+stays
+stdin
 still
+stop
+stopped
+stopping
 storage
 store
 streamline
@@ -977,9 +1027,11 @@ summary
 support
 supported
 survive
+survives
 sustained
 switch
 symlink
+symptom
 synced
 synonyms
 syntax
@@ -997,6 +1049,7 @@ template
 templates
 tense
 term
+terminal
 test
 testing
 tests
@@ -1036,11 +1089,13 @@ topic
 topics
 total
 touched
+touching
 traces
 tracked
 trailing
 training
 transaction
+trap
 traveler
 tree
 triggered
@@ -1049,6 +1104,8 @@ trip
 trips
 true
 truncate
+ttin
+ttou
 twice
 two
 typed
@@ -1063,6 +1120,7 @@ unix
 unknown
 unreachable
 unreleased
+until
 unwelcome
 update
 updated
@@ -1100,6 +1158,7 @@ when
 which
 while
 who
+whole
 will
 wins
 wire
@@ -1121,6 +1180,7 @@ wrap
 wrapper
 wrappers
 write
+writes
 writing
 written
 wrong
