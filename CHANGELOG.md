@@ -38,6 +38,16 @@
 - Add `test/integration/remote`: fast-fail SSH connectivity with
   exponential backoff
 
+### Setting (standards)
+
+- `mkSetting`: bundle lint configs (`.markdownlint.yml`, `.yamllint.yml`,
+  `config/lefthook/file_size_limits.yml`) into the `agent-setting`
+  derivation behind `markdownlint`/`yamllint`/`fileSizeLimits` toggles.
+  `sync-setting` still copies only the files git must read as regular
+  files; the lint configs stay in the derivation so consumers can
+  out-link and point tools at them via `LEFTHOOK_*_CONFIG` -- no
+  committed root file, no drift
+
 ### Spec
 
 - T24: rename propagation mechanism for consumers to detect upstream

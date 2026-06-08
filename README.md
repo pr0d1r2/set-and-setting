@@ -126,11 +126,23 @@ lib.mkSetting {
   editorconfig = true;     # include .editorconfig (default: true)
   gitattributes = true;    # include .gitattributes (default: true)
   gitignore = [ "nix" "claude" ];  # gitignore fragments to compose
+  markdownlint = true;     # include .markdownlint.yml (default: true)
+  yamllint = true;         # include .yamllint.yml (default: true)
+  fileSizeLimits = true;   # include config/lefthook/file_size_limits.yml (default: true)
 }
 ```
 
 Outputs: `$out/.editorconfig`, `$out/.gitattributes`, `$out/.gitignore`,
-`$out/bin/sync-setting`.
+`$out/.markdownlint.yml`, `$out/.yamllint.yml`,
+`$out/config/lefthook/file_size_limits.yml`, `$out/bin/sync-setting`.
+
+`sync-setting` copies only the files git must read as regular files
+(`.editorconfig`, `.gitattributes`, `.gitignore`) into the repo root.
+The lint configs are left in the derivation: out-link `agent-setting`
+and point each tool at it (e.g.
+`LEFTHOOK_MARKDOWNLINT_CONFIG=.setting/.markdownlint.yml`) so they need
+no committed root file and never drift. See the `nix-lefthook-*`
+remotes for the matching `LEFTHOOK_*_CONFIG` env vars.
 
 ### `lib.mkDriftCheck`
 
@@ -157,7 +169,7 @@ on all supported systems.
 - `x86_64-linux`
 - `aarch64-linux`
 
-## Consumer workflow
+## Consumer upgrade
 
 ```bash
 # Add input
