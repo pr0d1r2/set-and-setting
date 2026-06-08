@@ -40,6 +40,10 @@
 
 ### Setting (standards)
 
+- Add `setting` gitignore fragment (`.setting/`) so a consumer can
+  out-link `agent-setting` to `.setting` and have it ignored by the
+  managed `.gitignore` -- keeps the out-link drift-clean without a
+  hand-edited ignore. Opt in via `gitignore = [ ... "setting" ]`
 - `mkSetting`: bundle lint configs (`.markdownlint.yml`, `.yamllint.yml`,
   `config/lefthook/file_size_limits.yml`) into the `agent-setting`
   derivation behind `markdownlint`/`yamllint`/`fileSizeLimits` toggles.
