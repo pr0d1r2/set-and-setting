@@ -308,6 +308,7 @@ duplication
 during
 each
 earns
+edited
 editor
 editorconfig
 efi
@@ -406,6 +407,7 @@ format
 formatting
 forwarding
 found
+fragment
 fragments
 frame
 framing
@@ -441,6 +443,7 @@ guest
 guests
 guidelines
 hallucinogen
+hand
 handles
 happened
 hard
@@ -448,6 +451,7 @@ hardening
 hardware
 harmful
 hash
+have
 heading
 health
 heavy
@@ -470,6 +474,8 @@ hygiene
 idea
 identical
 iff
+ignore
+ignored
 image
 images
 img
@@ -530,6 +536,7 @@ join
 json
 just
 keep
+keeps
 kernel
 key
 kill
@@ -598,6 +605,7 @@ maintaining
 makefile
 makes
 making
+managed
 manifest
 markdown
 markdownlint
