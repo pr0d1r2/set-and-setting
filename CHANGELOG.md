@@ -47,6 +47,10 @@
   files; the lint configs stay in the derivation so consumers can
   out-link and point tools at them via `LEFTHOOK_*_CONFIG` -- no
   committed root file, no drift
+- `mkSetting`: build the bundle declaratively (`writeTextDir` per file +
+  `symlinkJoin`, toggles via `lib.optional`) instead of splicing shell
+  command strings into a `runCommand`; extract `sync-setting` into its
+  own script
 
 ### Spec
 
