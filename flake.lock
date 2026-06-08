@@ -311,11 +311,11 @@
     "nix-lefthook-markdownlint-src": {
       "flake": false,
       "locked": {
-        "lastModified": 1779722754,
-        "narHash": "sha256-VEIFWCLD7e6cg4JhZuoLc4p9kFp4IR+caBOGCFZNy5o=",
+        "lastModified": 1780942786,
+        "narHash": "sha256-dLuPJZ9g9rK2TXgKJyTGiICiOKxofxHTH82AmK9OTa8=",
         "owner": "pr0d1r2",
         "repo": "nix-lefthook-markdownlint",
-        "rev": "26714c2f58c75b36003beca3cdfccf64fe438102",
+        "rev": "c5bc0b679259bbdb56d32a80d744e25d21a6b627",
         "type": "github"
       },
       "original": {

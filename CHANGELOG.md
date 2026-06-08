@@ -65,6 +65,9 @@
 
 ### Infrastructure
 
+- Bump `nix-lefthook-markdownlint-src` to pick up
+  `LEFTHOOK_MARKDOWNLINT_CONFIG`, so the bundled wrapper can read a
+  markdownlint config from an out-link instead of a committed root file
 - Drop `nix-dev-shell-agentic` input -- replace with 18 `flake=false`
   source inputs + `nix-lefthook` flake. Lock reduced 85% (4083 to 626
   lines, 130 to 37 nodes)
