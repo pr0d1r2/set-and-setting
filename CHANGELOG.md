@@ -65,6 +65,9 @@
 
 ### Infrastructure
 
+- Bump `nix-lefthook-yamllint-src` and `nix-lefthook-file-size-check-src`
+  so the bundled wrappers honor `LEFTHOOK_YAMLLINT_CONFIG` and
+  `LEFTHOOK_FILE_SIZE_CONFIG` -- consumers can out-link those configs too
 - Bump `nix-lefthook-markdownlint-src` to pick up
   `LEFTHOOK_MARKDOWNLINT_CONFIG`, so the bundled wrapper can read a
   markdownlint config from an out-link instead of a committed root file
