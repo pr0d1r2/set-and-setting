@@ -1,0 +1,6 @@
+---
+default: 8192
+extensions:
+  dic: 16384
+  lock: 262144
+  nix: 16384
