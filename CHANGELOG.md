@@ -69,6 +69,9 @@
 
 ### Infrastructure
 
+- Add `.envrc` -- direnv loads the dev shell from the flake via
+  `use flake`, with `watch_file` entries for `flake.lock` and the
+  imported nix modules so the shell reloads when they change
 - Bump `nix-lefthook-yamllint-src` and `nix-lefthook-file-size-check-src`
   so the bundled wrappers honor `LEFTHOOK_YAMLLINT_CONFIG` and
   `LEFTHOOK_FILE_SIZE_CONFIG` -- consumers can out-link those configs too

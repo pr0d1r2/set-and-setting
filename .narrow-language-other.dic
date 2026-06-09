@@ -21,6 +21,7 @@ default
 determinate
 dic
 direnv
+drift
 editorconfig
 embedded
 env
@@ -80,6 +81,7 @@ result
 rules
 run
 runs
+set
 setting
 shell
 shellcheck
@@ -101,7 +103,9 @@ typos
 ubuntu
 unicode
 url
+use
 uses
+watch
 whitespace
 yaml
 yamllint
