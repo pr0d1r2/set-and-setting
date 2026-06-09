@@ -758,6 +758,7 @@ parallel
 parameter
 params
 participant
+pass
 passes
 passive
 past
@@ -783,6 +784,7 @@ piece
 pii
 pin
 ping
+pins
 pipeline
 pkill
 place

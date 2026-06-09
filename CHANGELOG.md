@@ -69,6 +69,8 @@
 
 ### Infrastructure
 
+- Add narrow-language dictionary words for the `update-pins` workflow
+  (`.github/workflows/update-pins.yml`) so the nix and other hooks pass
 - Add `.envrc` -- direnv loads the dev shell from the flake via
   `use flake`, with `watch_file` entries for `flake.lock` and the
   imported nix modules so the shell reloads when they change
