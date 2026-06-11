@@ -66,6 +66,12 @@
 
 - T24: rename propagation mechanism for consumers to detect upstream
   skill renames and update synced copies
+- Multi-agent adapter layer (C8, I.concepts, I.agentProfile,
+  I.mkAgentDir, V20-23, T25-31): repo defines the concept superset
+  (skills, commands, agents, memory, hooks, settings, mcp); one builder
+  `mkAgentDir` renders the concepts an `agent` profile supports into its
+  dir. Profiles are consumer-supplied, so one agnostic source builds for
+  any agent (`.claude`, `.opencode`, ...).
 
 ### Infrastructure
 

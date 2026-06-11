@@ -19,6 +19,7 @@ update deterministically when upstream improves.
 - C5: MIT license.
 - C6: Consumers use `git+file:` or `github:` flake inputs.
 - C7: Deterministic updates -- consumer `nix flake update set-and-setting` + `sync-set`/`sync-setting` + commit = reproducible upgrade path for both skills and standards.
+- C8: Packaging profile-driven -- repo defines the concept superset (I.concepts); one builder `mkAgentDir` renders the concepts an `agent` profile supports. Profile is consumer-supplied; no agent format baked here. Agents share not all concepts, but repo supports every concept. Reinforces C2.
 
 ## §I Interfaces
 
@@ -33,7 +34,9 @@ update deterministically when upstream improves.
 - I.drafts: Attrset of raw paths to draft category dirs. Opt-in via `categories = [ "drafts/skill" "drafts/agent" ... ]` in mkSet.
 - I.settings: Attrset of raw paths to each standard dir (editorconfig, gitattributes, gitignore).
 - I.self-wire: `CLAUDE.md` -- this repo consumes own `set/` via direct `@` references. No build/sync indirection. Dogfood pattern for source repo.
-- I.mkSkills: `set/lib/mk-skills.nix` -- packages selected skills into invocable per-agent skill bundles (Claude Code `SKILL.md` format first). Args: `pkgs`, `skills` (explicit list of source skill files/categories to make invocable), `format` (`claude`, default). Outputs: `$out/skills/<name>/SKILL.md` (YAML frontmatter `name` + `description`, then the agnostic body), `$out/bin/sync-skills` (sync into consumer `.claude/skills/`). The per-agent packaging lives only in this builder; `set/` sources stay agnostic (C2).
+- I.concepts: the concept superset -- this repo defines every agent concept first-class: `skills`, `commands`, `agents`, `memory`, `hooks`, `settings`, `mcp`. Agents support a subset; a concept the source carries is never lost, only un-rendered for agents that lack it.
+- I.agentProfile: per-agent adapter profile, supplied by the consumer (e.g. `nix-home-manager-claude-code`), never baked here. Fields: `dir`, `supports` (subset of I.concepts), `version`, and per-concept render `{ path, filename, template | render }`. Only place an agent format appears.
+- I.mkAgentDir: one builder -- `mkAgentDir { pkgs, agent, units }`. For each concept in `agent.supports` it renders the matching `units` (by `kind`) per the profile into `$out/<agent.dir>/`, plus `$out/bin/sync` and drift, both targeting `agent.dir`. Supersedes the `mkSkills`/`mkX` family.
 
 ## §V Invariants
 
@@ -56,6 +59,10 @@ update deterministically when upstream improves.
 - V17: Invocable skill bundles are an output transform -- the per-agent `SKILL.md` format lives only in `lib`/`mkSkills`. No agent-specific frontmatter or naming in `set/skills/` sources (preserves C2 agent-agnostic).
 - V18: Each emitted `SKILL.md` carries valid frontmatter -- `name` (slug) and `description` (one line, derived from the source skill's heading + purpose) -- followed by the unchanged agnostic markdown body.
 - V19: `mkSkills` makes an explicit, curated subset invocable (workflow/command skills); the rest stay `@`-context via `mkSet`. The same source file may feed both -- single source of truth, two packagings.
+- V20: Builders are profile-driven -- no concrete agent format in this repo. The consumer's per-agent module supplies the `agent` profile (I.agentProfile); the same agnostic source builds for any agent given its profile (C8).
+- V21: This repo defines the concept superset (I.concepts); a profile renders only the concepts it `supports`, and an unsupported concept is a no-op -- the source still carries it, nothing lost or garbage.
+- V22: Skill/command/agent KIND is agnostic content metadata (`kind: context | command | subagent`); the profile maps kind → artifact placement. A unit is not emitted as both always-on `@`-context and an invocable command -- mutually exclusive by kind, so nothing is double-loaded.
+- V23: Agnosticism is proven by ≥2 profiles building the same source (e.g. claude + a second). A single profile may hide baked assumptions, so the test matrix keeps two.
 
 ## §T Tasks
 
@@ -85,10 +92,13 @@ update deterministically when upstream improves.
 | T22 | . | update hallucinogen: git+file: to github: set-and-setting | C6,T7 |
 | T23 | . | update CHANGELOG.md for opensourcing | C5 |
 | T24 | . | rename propagation: mechanism for consumers to detect upstream skill renames and update synced copies | C7,I.sync-set |
-| T25 | . | add `lib.mkSkills` -- package selected skills into invocable per-agent bundles (`<name>/SKILL.md` + frontmatter), Claude Code format first | C2,C4,I.mkSkills |
-| T26 | . | derive `SKILL.md` `name`/`description` frontmatter from each source skill's heading + purpose line | V18 |
-| T27 | . | expose `mkSkills` + `sync-skills` from flake.nix; sync into consumer `.claude/skills/` | I.flake,I.mkSkills |
-| T28 | . | tests: emitted `SKILL.md` validates (frontmatter present, body == source); no agent-specifics leak into `set/` | V17,V18 |
+| T25 | . | `I.concepts` -- define the concept superset (skills, commands, agents, memory, hooks, settings, mcp) first-class in this repo | C8,I.concepts |
+| T26 | . | unit metadata convention (`kind`, `name`, `description`) in source -- agnostic; `kind` maps a unit to one concept, drives placement and frontmatter | V18,V22 |
+| T27 | . | `I.agentProfile` schema -- `dir`, `supports` subset of concepts, `version`, per-concept `template` or `render` | C8,I.agentProfile |
+| T28 | . | `lib.mkAgentDir { agent, units }` -- render supported concepts into `agent.dir` plus `bin/sync` and drift; supersedes baked mkSkills | I.mkAgentDir |
+| T29 | . | Claude profile plus a second (OpenCode stub) as the agnosticism test matrix; audit schema for baked Claude assumptions | V23 |
+| T30 | . | partition source units by `kind` -- invocable concepts versus `@`-context (`mkSet`), mutually exclusive, no double-load | V22 |
+| T31 | . | per-agent `sync` and drift target dir from `agent.dir`; namespacing policy for flat concept dirs | I.mkDriftCheck,V20 |
 
 ## §B Bugs
 
