@@ -33,6 +33,7 @@ update deterministically when upstream improves.
 - I.drafts: Attrset of raw paths to draft category dirs. Opt-in via `categories = [ "drafts/skill" "drafts/agent" ... ]` in mkSet.
 - I.settings: Attrset of raw paths to each standard dir (editorconfig, gitattributes, gitignore).
 - I.self-wire: `CLAUDE.md` -- this repo consumes own `set/` via direct `@` references. No build/sync indirection. Dogfood pattern for source repo.
+- I.mkSkills: `set/lib/mk-skills.nix` -- packages selected skills into invocable per-agent skill bundles (Claude Code `SKILL.md` format first). Args: `pkgs`, `skills` (explicit list of source skill files/categories to make invocable), `format` (`claude`, default). Outputs: `$out/skills/<name>/SKILL.md` (YAML frontmatter `name` + `description`, then the agnostic body), `$out/bin/sync-skills` (sync into consumer `.claude/skills/`). The per-agent packaging lives only in this builder; `set/` sources stay agnostic (C2).
 
 ## §V Invariants
 
@@ -52,6 +53,9 @@ update deterministically when upstream improves.
 - V14: Hardware concepts are composable templates under `concepts/hardware/<vendor>/<model>.md`. Templates describe capabilities, not roles.
 - V15: Concept files may compose sub-concepts via `@` references, same pattern as skill bundles (V12).
 - V16: No secrets, credentials, or PII (beyond public GitHub usernames) in any tracked file or git history.
+- V17: Invocable skill bundles are an output transform -- the per-agent `SKILL.md` format lives only in `lib`/`mkSkills`. No agent-specific frontmatter or naming in `set/skills/` sources (preserves C2 agent-agnostic).
+- V18: Each emitted `SKILL.md` carries valid frontmatter -- `name` (slug) and `description` (one line, derived from the source skill's heading + purpose) -- followed by the unchanged agnostic markdown body.
+- V19: `mkSkills` makes an explicit, curated subset invocable (workflow/command skills); the rest stay `@`-context via `mkSet`. The same source file may feed both -- single source of truth, two packagings.
 
 ## §T Tasks
 
@@ -81,6 +85,10 @@ update deterministically when upstream improves.
 | T22 | . | update hallucinogen: git+file: to github: set-and-setting | C6,T7 |
 | T23 | . | update CHANGELOG.md for opensourcing | C5 |
 | T24 | . | rename propagation: mechanism for consumers to detect upstream skill renames and update synced copies | C7,I.sync-set |
+| T25 | . | add `lib.mkSkills` -- package selected skills into invocable per-agent bundles (`<name>/SKILL.md` + frontmatter), Claude Code format first | C2,C4,I.mkSkills |
+| T26 | . | derive `SKILL.md` `name`/`description` frontmatter from each source skill's heading + purpose line | V18 |
+| T27 | . | expose `mkSkills` + `sync-skills` from flake.nix; sync into consumer `.claude/skills/` | I.flake,I.mkSkills |
+| T28 | . | tests: emitted `SKILL.md` validates (frontmatter present, body == source); no agent-specifics leak into `set/` | V17,V18 |
 
 ## §B Bugs
 
