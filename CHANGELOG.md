@@ -4,6 +4,7 @@
 
 ### Set (skills)
 
+- Drop some micro skills concepts to the tree while offline.
 - Add `gnu/kill`: how to signal a whole process group portably, and
   the SIGTTOU/SIGTTIN background-group tty stop that freezes pre-push
   hooks (`[ -t 0 ]` does not catch it; `trap '' TTOU TTIN` before
