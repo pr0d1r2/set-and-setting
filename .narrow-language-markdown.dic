@@ -4,6 +4,7 @@ acceleration
 accept
 acceptable
 access
+according
 accurate
 across
 act
@@ -69,6 +70,7 @@ assumes
 assumptions
 atomic
 atomics
+attach
 attachable
 attempt
 attr
@@ -101,9 +103,11 @@ before
 behavior
 behavioral
 behind
+being
 belong
 belongs
 bench
+benefit
 between
 beyond
 bin
@@ -118,6 +122,7 @@ both
 bounce
 boundaries
 branch
+break
 breaking
 bridges
 briefly
@@ -157,6 +162,7 @@ change
 changelog
 changelogs
 changes
+character
 check
 checks
 children
@@ -216,6 +222,7 @@ conflicts
 connect
 connection
 connectivity
+consider
 considering
 console
 constraints
@@ -245,6 +252,7 @@ cpu
 create
 created
 creates
+creating
 credentials
 cross
 curated
@@ -274,6 +282,7 @@ delete
 deliberately
 demand
 demonstrate
+dependencies
 dependency
 deps
 derivation
@@ -333,11 +342,13 @@ duplication
 during
 each
 earns
+ecosystem
 edited
 editor
 editorconfig
 efi
 eio
+either
 embedded
 emitted
 emulation
@@ -414,7 +425,9 @@ file
 filename
 filenames
 files
+filled
 filler
+filling
 fills
 filter
 filtering
@@ -453,9 +466,12 @@ from
 frontmatter
 frozen
 full
+function
+functionalities
 functions
 future
 gap
+gaps
 garbage
 gemini
 gen
@@ -542,6 +558,7 @@ inclusion
 indirection
 individual
 infinite
+infinity
 inform
 informed
 infrastructure
@@ -584,6 +601,7 @@ jargon
 join
 json
 just
+justfile
 keep
 keeps
 kernel
@@ -650,6 +668,7 @@ logic
 logo
 logs
 long
+look
 lost
 mac
 machine
@@ -665,6 +684,7 @@ making
 managed
 manager
 manifest
+many
 maps
 markdown
 markdownlint
@@ -688,6 +708,7 @@ meta
 metadata
 metal
 metaphor
+micro
 microcode
 mildest
 mindset
@@ -700,6 +721,7 @@ mit
 model
 models
 modularity
+modularized
 module
 modules
 mood
@@ -714,6 +736,8 @@ mutations
 mutually
 name
 names
+namespace
+namespaces
 namespacing
 naming
 narrow
@@ -745,10 +769,12 @@ nothing
 noting
 nskills
 null
+number
 nvme
 obvious
 off
 offenses
+offline
 omitting
 once
 one
@@ -758,6 +784,7 @@ open
 opencode
 opensource
 opensourcing
+operating
 operation
 operational
 operations
@@ -773,6 +800,7 @@ ordered
 org
 organized
 other
+our
 out
 outcomes
 output
@@ -799,6 +827,7 @@ parameter
 params
 participant
 partition
+parts
 pass
 passes
 passive
@@ -943,6 +972,8 @@ repo
 report
 reports
 repos
+repositories
+repository
 representative
 reproducible
 request
@@ -952,6 +983,7 @@ requiring
 reset
 resolution
 resolve
+resource
 rest
 restart
 restrict
@@ -977,6 +1009,7 @@ safety
 same
 sane
 sas
+satisfy
 save
 scaffold
 scanner
@@ -1042,6 +1075,7 @@ slug
 slurs
 smoke
 snap
+some
 somewhat
 sorted
 source
@@ -1052,6 +1086,8 @@ specific
 specifics
 splicing
 split
+splitting
+spread
 stable
 stack
 staged
