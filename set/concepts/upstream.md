@@ -1,1 +1,3 @@
-External resource from which we get dependences.
+# Upstream
+
+External resource from which we get dependencies.
