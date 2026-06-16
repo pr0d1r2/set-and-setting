@@ -78,12 +78,14 @@
   skill renames and update synced copies
 - Replace the multi-agent adapter abstraction (drop `I.concepts`,
   `I.agentProfile`, `I.mkAgentDir`, old V20-23, T25-31) with a narrower
-  model: a composable `packages.set` (Agent-Skills open standard) emitted
-  by `lib/mkSkills`; `mkSetting` as the single source of truth for
-  unified config (consumer tracks a seed, materializes the rest
-  gitignored); per-agent surface reduced to a `{ dir, condField,
-  alwaysOnFile }` seam. This repo dogfoods `packages.set` into a
-  gitignored `.claude/skills/set/` (supersedes T1).
+  model: two single-source-of-truth builders. `mkSet` emits the
+  composable `packages.set` (Agent-Skills open standard) into
+  `.claude/skills/set/`; `mkSetting` owns unified config -- materialized
+  & gitignored (markdownlint/yamllint/`.claude/`) versus seed/init
+  scaffolds for repo-specific files (gitattributes/editorconfig/
+  file_size_limits/dics/allowlist). Per-agent surface reduced to a
+  `{ dir, condField, alwaysOnFile }` seam. This repo dogfoods
+  `packages.set` into a gitignored `.claude/skills/set/` (supersedes T1).
 
 ### Infrastructure
 

@@ -88,7 +88,7 @@ audit
 auth
 authoritative
 auto
-autoload
+autoloads
 automatically
 avahi
 available
@@ -321,9 +321,9 @@ development
 device
 diagram
 dic
+dics
 dictionaries
 dictionary
-dicts
 different
 differs
 dir
@@ -361,7 +361,6 @@ during
 each
 earns
 ecosystem
-editable
 edited
 editor
 editorconfig
@@ -399,6 +398,7 @@ evaluation
 even
 events
 every
+evolve
 example
 examples
 except
@@ -410,7 +410,9 @@ execute
 executes
 executing
 execution
+exist
 existing
+exists
 exit
 exits
 exp
@@ -637,6 +639,7 @@ killall
 killed
 killing
 kills
+kinds
 kingston
 knowledge
 known
@@ -719,8 +722,8 @@ marks
 match
 matches
 matching
+materialize
 materialized
-materializes
 mature
 may
 mean
@@ -835,7 +838,6 @@ outcomes
 output
 outputs
 outside
-outsourced
 over
 overhead
 overlap
@@ -846,6 +848,8 @@ overrides
 overriding
 overwrite
 own
+owned
+owns
 package
 packages
 packaging
@@ -877,6 +881,7 @@ permissions
 personal
 pgid
 pgrep
+phase
 philosophy
 pick
 pid
@@ -1045,6 +1050,8 @@ sas
 satisfy
 save
 scaffold
+scaffolded
+scaffolds
 scanner
 scenarios
 scope
@@ -1111,7 +1118,6 @@ slash
 slirp
 slug
 slurs
-small
 smoke
 snap
 some
@@ -1136,6 +1142,7 @@ standard
 standards
 star
 start
+starters
 starting
 state
 statement
@@ -1156,7 +1163,6 @@ strings
 structure
 stub
 sub
-subdir
 subdirectories
 subgraph
 subset
@@ -1258,6 +1264,7 @@ triggers
 trip
 trips
 true
+truly
 truncate
 truth
 ttin
@@ -1305,6 +1312,7 @@ verification
 verify
 version
 versions
+versus
 very
 via
 vocabulary
