@@ -12,6 +12,8 @@
   (matches `language/narrow` skill intent).
 - Add a heading to each prototype micro-skill file and fix word
   typos so they pass markdownlint and typos checks.
+- Record repo-wide lint debt from stricter upstream nix-lefthook as
+  SPEC bug B1 and task T32.
 - Add `gnu/kill`: how to signal a whole process group portably, and
   the SIGTTOU/SIGTTIN background-group tty stop that freezes pre-push
   hooks (`[ -t 0 ]` does not catch it; `trap '' TTOU TTIN` before

@@ -127,6 +127,7 @@ breaking
 bridges
 briefly
 budget
+bug
 bugs
 build
 builder
@@ -260,10 +261,12 @@ current
 cut
 cutting
 darwin
+dash
 dashes
 data
 database
 date
+debt
 decides
 decisions
 declaratively
@@ -494,6 +497,7 @@ goal
 graduate
 graph
 graphic
+green
 group
 groups
 grub
@@ -759,6 +763,7 @@ never
 new
 next
 nix
+nixfmt
 nixos
 nixpkgs
 nmodel
@@ -824,6 +829,7 @@ packages
 packaging
 packagings
 pad
+padding
 paragraph
 paragraphs
 parallel
@@ -911,6 +917,7 @@ project
 projects
 propagate
 propagation
+prose
 protection
 prototype
 proven
@@ -943,6 +950,7 @@ really
 reason
 rebuild
 reconnecting
+record
 reduced
 reducing
 ref
@@ -962,6 +970,7 @@ reliably
 reloads
 rely
 relying
+remainder
 remote
 remotes
 remove
@@ -995,6 +1004,7 @@ restrict
 result
 retry
 reuse
+revalidated
 reversed
 rewrite
 risk
@@ -1021,6 +1031,7 @@ scanner
 scenarios
 schema
 scope
+scoped
 script
 scripts
 second
@@ -1115,6 +1126,7 @@ stopping
 storage
 store
 streamline
+stricter
 string
 strings
 structure
@@ -1135,6 +1147,7 @@ supplies
 support
 supported
 supports
+surfaced
 survive
 survives
 sustained
@@ -1184,6 +1197,7 @@ three
 throat
 tiers
 tight
+tightened
 time
 timeout
 timeouts
@@ -1279,6 +1293,7 @@ which
 while
 who
 whole
+wide
 will
 wins
 wire
