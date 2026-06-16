@@ -76,12 +76,21 @@
 
 - T24: rename propagation mechanism for consumers to detect upstream
   skill renames and update synced copies
-- Multi-agent adapter layer (C8, I.concepts, I.agentProfile,
-  I.mkAgentDir, V20-23, T25-31): repo defines the concept superset
-  (skills, commands, agents, memory, hooks, settings, mcp); one builder
-  `mkAgentDir` renders the concepts an `agent` profile supports into its
-  dir. Profiles are consumer-supplied, so one agnostic source builds for
-  any agent (`.claude`, `.opencode`, ...).
+- Replace the multi-agent adapter abstraction (drop `I.concepts`,
+  `I.agentProfile`, `I.mkAgentDir`, old V20-23, T25-31) with a narrower
+  model: two single-source-of-truth builders. `mkSet` emits the
+  composable `packages.set` (Agent-Skills open standard) into
+  `.claude/skills/set/`; `mkSetting` owns unified config -- materialized
+  & gitignored (markdownlint/yamllint/`.claude/`) versus seed/init
+  scaffolds for repo-specific files (gitattributes/editorconfig/
+  file_size_limits/dics/allowlist). Per-agent surface reduced to a
+  `{ dir, condField, alwaysOnFile }` seam. This repo dogfoods
+  `packages.set` into a gitignored `.claude/skills/set/` (supersedes T1).
+- Agnosticism proof targets the opencode seam (T31); other agents
+  (Cursor, Codex, Gemini CLI, Copilot, Amp) move to a future extension
+  list (T34).
+- Expose `packages.setting` (mkSetting materialize output) for symmetry
+  with `packages.set`; seed/init scaffold stays separate.
 
 ### Infrastructure
 

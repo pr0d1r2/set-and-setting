@@ -10,6 +10,18 @@ standards into immutable, content-addressed derivations. Consumers
 import as flake input, build via nix closure, sync to repo -- skills
 update deterministically when upstream improves.
 
+North star: two builders are the single sources of truth across every
+consumer repo. `mkSet` owns the skill set -- it emits the Agent-Skills
+open-standard layout (`.claude/skills/set/`) that autoloads in any
+compatible agent, materialized and gitignored in consumers. `mkSetting`
+owns unified config -- shareable configs (e.g. `.markdownlint.yml`,
+`.yamllint.yml`, agent commands/allowances) are exposed as
+`packages.setting`, materialized and gitignored. Repo-specific files (`.gitattributes`, `.editorconfig`,
+`config/lefthook/file_size_limits.yml`, `.narrow-language-*.dic`,
+`.nix-embedded-shell-allowlist`) are scaffolded once in a seed/init
+phase, then tracked and owned by the consumer. This repo is consumer #0
+and dogfoods both.
+
 ## §C Constraints
 
 - C1: Pure nix -- no runtime deps beyond nixpkgs.
@@ -19,24 +31,45 @@ update deterministically when upstream improves.
 - C5: MIT license.
 - C6: Consumers use `git+file:` or `github:` flake inputs.
 - C7: Deterministic updates -- consumer `nix flake update set-and-setting` + `sync-set`/`sync-setting` + commit = reproducible upgrade path for both skills and standards.
-- C8: Packaging profile-driven -- repo defines the concept superset (I.concepts); one builder `mkAgentDir` renders the concepts an `agent` profile supports. Profile is consumer-supplied; no agent format baked here. Agents share not all concepts, but repo supports every concept. Reinforces C2.
+- C8: Composable outputs -- `packages.set` is the Agent-Skills tree emitted from agnostic `set/` by `mkSet` (agent format only there). Consumed per-repo (sync) or home-level. Per-agent surface is one seam `{ dir, condField, alwaysOnFile }`. Reinforces C2.
 
 ## §I Interfaces
 
-- I.flake: `flake.nix` -- main entry. Exposes `sets`, `drafts`, `settings`, `lib.mkSet`, `lib.mkSetting`, `lib.mkDriftCheck`, `checks`.
-- I.mkSet: `set/lib/mk-set.nix` -- builds `agent-set` derivation from selected categories. Args: `pkgs`, `categories`, `concepts`, `exclude`, `extra`, `extraPaths`. Outputs: `$out/skills/`, `$out/concepts/`, `$out/set.md`, `$out/bin/sync-set`.
-- I.mkSetting: `setting/lib/mk-setting.nix` -- builds `agent-setting` derivation from selected standards. Args: `pkgs`, `editorconfig`, `gitattributes`, `gitignore`. Outputs: `$out/.editorconfig`, `$out/.gitattributes`, `$out/.gitignore`, `$out/bin/sync-setting`.
+- I.flake: `flake.nix` -- main entry. Exposes `sets`, `drafts`, `settings`, `lib.mkSet`, `lib.mkSetting`, `lib.mkDriftCheck`, `packages.set`, `packages.setting`, `checks`.
+- I.mkSet: `set/lib/mk-set.nix` -- the skill-set emitter and single
+  source of truth for skills. Transforms agnostic `set/skills/` markdown
+  into the Agent-Skills open-standard layout: one skill folder per
+  category (`<dir>/set/<category>/SKILL.md` + topic/aspect files as body
+  or supporting files) with derived `name` + `description`; cross-cutting
+  categories emit to the always-on file. Args: `pkgs`, `categories`,
+  `concepts`, `exclude`, `extra`, `extraPaths`, `agent ? claude` where
+  `agent = { dir, condField, alwaysOnFile }`. Outputs: the emitted tree +
+  `bin/sync-set` (target-arg). Agent format lives only here (C2/V17).
+- I.mkSetting: `setting/lib/mk-setting.nix` -- single source of truth for
+  unified config. Two outputs: (1) seed/init -- repo-specific starters
+  scaffolded once then tracked & repo-owned: `.gitignore`,
+  `.gitattributes`, `.editorconfig`, `config/lefthook/file_size_limits.yml`,
+  `.narrow-language-*.dic`, `.nix-embedded-shell-allowlist`; (2)
+  materialized -- unified configs always synced & gitignored:
+  `.markdownlint.yml`, `.yamllint.yml`, `.claude/` commands/allowances.
+  Args: `pkgs` + per-output toggles. `bin/sync-setting` (materialize),
+  `bin/sync-setting-init` (scaffold, skips files that already exist).
 - I.mkDriftCheck: `lib/mk-drift-check.nix` -- compares synced set files against built derivation. Args: `pkgs`, `skillSet`, `projectRoot`, `setPath`. Fails with exit 1 on drift.
 - I.mkSettingDriftCheck: `lib/mk-setting-drift-check.nix` -- compares synced dotfiles against mkSetting output. Args: `pkgs`, `settingSet`, `projectRoot`. Fails with exit 1 on drift.
 - I.sync-set: CLI script in mkSet output. Copies skills+concepts+set.md to consumer repo target dir.
 - I.sync-setting: CLI script in mkSetting output. Copies dotfiles to consumer repo root.
-- I.sets: Attrset of raw paths to each of 15 skill category dirs.
+- I.sets: Attrset of raw paths to each skill category dir.
 - I.drafts: Attrset of raw paths to draft category dirs. Opt-in via `categories = [ "drafts/skill" "drafts/agent" ... ]` in mkSet.
 - I.settings: Attrset of raw paths to each standard dir (editorconfig, gitattributes, gitignore).
-- I.self-wire: `CLAUDE.md` -- this repo consumes own `set/` via direct `@` references. No build/sync indirection. Dogfood pattern for source repo.
-- I.concepts: the concept superset -- this repo defines every agent concept first-class: `skills`, `commands`, `agents`, `memory`, `hooks`, `settings`, `mcp`. Agents support a subset; a concept the source carries is never lost, only un-rendered for agents that lack it.
-- I.agentProfile: per-agent adapter profile, supplied by the consumer (e.g. `nix-home-manager-claude-code`), never baked here. Fields: `dir`, `supports` (subset of I.concepts), `version`, and per-concept render `{ path, filename, template | render }`. Only place an agent format appears.
-- I.mkAgentDir: one builder -- `mkAgentDir { pkgs, agent, units }`. For each concept in `agent.supports` it renders the matching `units` (by `kind`) per the profile into `$out/<agent.dir>/`, plus `$out/bin/sync` and drift, both targeting `agent.dir`. Supersedes the `mkSkills`/`mkX` family.
+- I.self-wire: `CLAUDE.md` -- this repo dogfoods `packages.set`: it emits own `set/` into a gitignored `.claude/skills/set/` + always-on rules, auto-synced on devShell/direnv entry. No `@`-ref duplication of skills.
+- I.set-package: `packages.<sys>.set` -- a default `mkSet` build over all stable categories + concepts. Consumed home-level (`home.file.".claude/skills/set".source`) or per-repo (sync, gitignored).
+- I.setting-package: `packages.<sys>.setting` -- a default `mkSetting`
+  materialize build (unified configs only: `.markdownlint.yml`,
+  `.yamllint.yml`, `.claude/` commands/allowances). Consumed per-repo
+  (sync, gitignored) or home-level for the `.claude/` parts. Symmetric
+  with `packages.set`. Seed/init scaffold is separate
+  (`bin/sync-setting-init`), not in this package.
+- I.sync-target: `sync-set`/`sync-setting` take a target dir arg; default preserves prior behavior.
 
 ## §V Invariants
 
@@ -49,26 +82,36 @@ update deterministically when upstream improves.
 - V7: Skill file structure follows `<topic>.md` + `<topic>/<aspect>.md` convention. Cross-cutting aspects (modularity, security) reuse same naming across topics.
 - V8: `exclude` parameter in mkSet filters paths from output -- excluded files must not appear in derivation.
 - V9: `extra` and `extraPaths` in mkSet inject content into `$out/skills/` without requiring source files in this repo.
-- V10: Source repo wires own skills via direct `@` file refs -- no mkSet build, no sync, no duplication.
+- V10: Source repo dogfoods `packages.set` -- emits own `set/` into a gitignored `.claude/skills/set/` + always-on rules, auto-synced on devShell/direnv entry. No `@`-ref duplication of skills.
 - V11: Draft skills live in `set/drafts/` mirroring `set/skills/` structure. Not loaded by default -- consumer opts in via `drafts/*` categories.
 - V12: Bundle files compose atomics via `@` references. Own content limited to heading and purpose statement.
 - V13: Every draft file is `*.md`. Same format rules as stable skills (V6, V7).
 - V14: Hardware concepts are composable templates under `concepts/hardware/<vendor>/<model>.md`. Templates describe capabilities, not roles.
 - V15: Concept files may compose sub-concepts via `@` references, same pattern as skill bundles (V12).
 - V16: No secrets, credentials, or PII (beyond public GitHub usernames) in any tracked file or git history.
-- V17: Invocable skill bundles are an output transform -- the per-agent `SKILL.md` format lives only in `lib`/`mkSkills`. No agent-specific frontmatter or naming in `set/skills/` sources (preserves C2 agent-agnostic).
+- V17: The agent output format (`SKILL.md` + frontmatter) lives only in `mkSet`. No agent-specific frontmatter or naming in `set/skills/` sources (preserves C2 agent-agnostic).
 - V18: Each emitted `SKILL.md` carries valid frontmatter -- `name` (slug) and `description` (one line, derived from the source skill's heading + purpose) -- followed by the unchanged agnostic markdown body.
-- V19: `mkSkills` makes an explicit, curated subset invocable (workflow/command skills); the rest stay `@`-context via `mkSet`. The same source file may feed both -- single source of truth, two packagings.
-- V20: Builders are profile-driven -- no concrete agent format in this repo. The consumer's per-agent module supplies the `agent` profile (I.agentProfile); the same agnostic source builds for any agent given its profile (C8).
-- V21: This repo defines the concept superset (I.concepts); a profile renders only the concepts it `supports`, and an unsupported concept is a no-op -- the source still carries it, nothing lost or garbage.
-- V22: Skill/command/agent KIND is agnostic content metadata (`kind: context | command | subagent`); the profile maps kind → artifact placement. A unit is not emitted as both always-on `@`-context and an invocable command -- mutually exclusive by kind, so nothing is double-loaded.
-- V23: Agnosticism is proven by ≥2 profiles building the same source (e.g. claude + a second). A single profile may hide baked assumptions, so the test matrix keeps two.
+- V19: `mkSet` emits the Agent-Skills open-standard layout (`<skill>/SKILL.md` + supporting files), portable across agentskills.io tools. Source is single-source-of-truth; emission adds only frontmatter + placement.
+- V20: `mkSet` groups one skill folder per category; domain categories
+  carry the conditional-load field (Claude `paths`, Cursor `globs`) from a
+  category-globs map; cross-cutting categories (e.g. `generic`) emit to
+  the always-on file (`AGENTS.md` / `CLAUDE.md` / `.claude/rules`), no
+  globs.
+- V21: The only agent-specific surface is the seam `{ dir, condField, alwaysOnFile }` (default Claude). The same agnostic sources build for any agent given its seam values.
+- V22: `mkSetting` is the single source of truth for unified config, with
+  two output kinds: seed/init (repo-specific starters -- `.gitattributes`,
+  `.editorconfig`, `file_size_limits.yml`, `.narrow-language-*.dic`,
+  allowlist -- scaffolded once, then tracked & repo-owned) and
+  materialized (unified configs -- `.markdownlint.yml`, `.yamllint.yml`,
+  `.claude/` commands/allowances -- always synced & gitignored). Only
+  truly unified, non-repo-specific config is materialized.
+- V23: Agnosticism is proven by 2 agent seams building the same sources -- Claude (default) + opencode. A single seam may hide baked assumptions. Other agents (Cursor, Codex, Gemini CLI, Copilot, Amp, ...) are a future extension list, not required now.
 
 ## §T Tasks
 
 | id  | s | description                                          | cites     |
 |-----|---|------------------------------------------------------|-----------|
-| T1  | x | CLAUDE.md wires own set/ skills via direct @ refs    | V10,I.self-wire |
+| T1  | ~ | CLAUDE.md wires own set/ skills via direct @ refs -- superseded by T30 dogfood (emit to .claude/skills/set) | V10,I.self-wire,T30 |
 | T2  | x | add README.md with usage examples for consumers      | I.mkSet,I.mkSetting |
 | T3  | x | add lefthook integration in setting/integrations/    | I.flake   |
 | T4  | x | add `nix flake check` CI (GitHub Actions)            | V1,C3     |
@@ -92,13 +135,15 @@ update deterministically when upstream improves.
 | T22 | . | update hallucinogen: git+file: to github: set-and-setting | C6,T7 |
 | T23 | . | update CHANGELOG.md for opensourcing | C5 |
 | T24 | . | rename propagation: mechanism for consumers to detect upstream skill renames and update synced copies | C7,I.sync-set |
-| T25 | . | `I.concepts` -- define the concept superset (skills, commands, agents, memory, hooks, settings, mcp) first-class in this repo | C8,I.concepts |
-| T26 | . | unit metadata convention (`kind`, `name`, `description`) in source -- agnostic; `kind` maps a unit to one concept, drives placement and frontmatter | V18,V22 |
-| T27 | . | `I.agentProfile` schema -- `dir`, `supports` subset of concepts, `version`, per-concept `template` or `render` | C8,I.agentProfile |
-| T28 | . | `lib.mkAgentDir { agent, units }` -- render supported concepts into `agent.dir` plus `bin/sync` and drift; supersedes baked mkSkills | I.mkAgentDir |
-| T29 | . | Claude profile plus a second (OpenCode stub) as the agnosticism test matrix; audit schema for baked Claude assumptions | V23 |
-| T30 | . | partition source units by `kind` -- invocable concepts versus `@`-context (`mkSet`), mutually exclusive, no double-load | V22 |
-| T31 | . | per-agent `sync` and drift target dir from `agent.dir`; namespacing policy for flat concept dirs | I.mkDriftCheck,V20 |
+| T25 | . | evolve `mkSet` into the emitter -- group `set/skills/<category>` into one Agent-Skills folder per category; derive name/description; `bin/sync-set` target-arg; fold loose top-level `<topic>.md` (cli.md) into its category | I.mkSet,V19 |
+| T26 | . | `packages.<sys>.set` = mkSet build over all stable categories + concepts | I.set-package |
+| T27 | . | category-globs map -- domain categories get the conditional-load field, cross-cutting emit to always-on file | V20 |
+| T28 | . | mkSetting split: materialize unified configs (markdownlint/yamllint/.claude, gitignored) + seed/init scaffold for repo-specific starters (gitattributes/editorconfig/file_size_limits/dics/allowlist), skip-if-exists | V22 |
+| T29 | . | `compose-set` check -- agnostic md (no frontmatter injected), sync layout, gitignore ignores synced set while seed tracked | V1 |
+| T30 | . | dogfood -- emit set into gitignored `.claude/skills/set/` + always-on, auto-sync on devShell entry; drop CLAUDE.md `@`-ref block | V10,I.self-wire |
+| T31 | . | agnosticism proof -- the opencode seam (`AGENTS.md` always-on; opencode skill dir + conditional field) builds the same sources as Claude | V23 |
+| T33 | . | downstream wiring -- consumer repos + `nix-home-manager-claude-code` example + CI sync pre-step (materialized configs synced before hooks run) | C6,C7,V22 |
+| T34 | . | future: additional agent seams (Cursor `globs`/`.cursor/rules`, Codex, Gemini CLI, Copilot, Amp, ...) -- extension list, not built now | V23,C2 |
 | T32 | . | repo-wide `lefthook --all-files` green: clear pre-existing markdownlint (MD040/031/032/038), editorconfig left-padding, ascii em-dash in `*.nix`, nixfmt, and nix-no-embedded-shell debt surfaced by stricter upstream nix-lefthook | C3,V6,B1 |
 
 ## §B Bugs
