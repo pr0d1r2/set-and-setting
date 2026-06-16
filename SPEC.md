@@ -99,7 +99,7 @@ and dogfoods both.
   materialized (unified configs -- `.markdownlint.yml`, `.yamllint.yml`,
   `.claude/` commands/allowances -- always synced & gitignored). Only
   truly unified, non-repo-specific config is materialized.
-- V23: Agnosticism is proven by ≥2 agent seams building the same sources (e.g. Claude + Cursor/opencode). A single seam may hide baked assumptions.
+- V23: Agnosticism is proven by 2 agent seams building the same sources -- Claude (default) + opencode. A single seam may hide baked assumptions. Other agents (Cursor, Codex, Gemini CLI, Copilot, Amp, ...) are a future extension list, not required now.
 
 ## §T Tasks
 
@@ -135,8 +135,9 @@ and dogfoods both.
 | T28 | . | mkSetting split: materialize unified configs (markdownlint/yamllint/.claude, gitignored) + seed/init scaffold for repo-specific starters (gitattributes/editorconfig/file_size_limits/dics/allowlist), skip-if-exists | V22 |
 | T29 | . | `compose-set` check -- agnostic md (no frontmatter injected), sync layout, gitignore ignores synced set while seed tracked | V1 |
 | T30 | . | dogfood -- emit set into gitignored `.claude/skills/set/` + always-on, auto-sync on devShell entry; drop CLAUDE.md `@`-ref block | V10,I.self-wire |
-| T31 | . | agnosticism proof -- a second agent seam (Cursor `globs`/`.cursor/rules` or opencode) builds the same sources | V23 |
+| T31 | . | agnosticism proof -- the opencode seam (`AGENTS.md` always-on; opencode skill dir + conditional field) builds the same sources as Claude | V23 |
 | T33 | . | downstream wiring -- consumer repos + `nix-home-manager-claude-code` example + CI sync pre-step (materialized configs synced before hooks run) | C6,C7,V22 |
+| T34 | . | future: additional agent seams (Cursor `globs`/`.cursor/rules`, Codex, Gemini CLI, Copilot, Amp, ...) -- extension list, not built now | V23,C2 |
 | T32 | . | repo-wide `lefthook --all-files` green: clear pre-existing markdownlint (MD040/031/032/038), editorconfig left-padding, ascii em-dash in `*.nix`, nixfmt, and nix-no-embedded-shell debt surfaced by stricter upstream nix-lefthook | C3,V6,B1 |
 
 ## §B Bugs

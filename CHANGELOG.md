@@ -86,6 +86,9 @@
   file_size_limits/dics/allowlist). Per-agent surface reduced to a
   `{ dir, condField, alwaysOnFile }` seam. This repo dogfoods
   `packages.set` into a gitignored `.claude/skills/set/` (supersedes T1).
+- Agnosticism proof targets the opencode seam (T31); other agents
+  (Cursor, Codex, Gemini CLI, Copilot, Amp) move to a future extension
+  list (T34).
 
 ### Infrastructure
 
