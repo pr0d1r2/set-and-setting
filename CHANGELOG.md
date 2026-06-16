@@ -89,6 +89,8 @@
 - Agnosticism proof targets the opencode seam (T31); other agents
   (Cursor, Codex, Gemini CLI, Copilot, Amp) move to a future extension
   list (T34).
+- Expose `packages.setting` (mkSetting materialize output) for symmetry
+  with `packages.set`; seed/init scaffold stays separate.
 
 ### Infrastructure
 

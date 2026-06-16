@@ -15,8 +15,8 @@ consumer repo. `mkSet` owns the skill set -- it emits the Agent-Skills
 open-standard layout (`.claude/skills/set/`) that autoloads in any
 compatible agent, materialized and gitignored in consumers. `mkSetting`
 owns unified config -- shareable configs (e.g. `.markdownlint.yml`,
-`.yamllint.yml`, agent commands/allowances) are materialized and
-gitignored. Repo-specific files (`.gitattributes`, `.editorconfig`,
+`.yamllint.yml`, agent commands/allowances) are exposed as
+`packages.setting`, materialized and gitignored. Repo-specific files (`.gitattributes`, `.editorconfig`,
 `config/lefthook/file_size_limits.yml`, `.narrow-language-*.dic`,
 `.nix-embedded-shell-allowlist`) are scaffolded once in a seed/init
 phase, then tracked and owned by the consumer. This repo is consumer #0
@@ -35,7 +35,7 @@ and dogfoods both.
 
 ## §I Interfaces
 
-- I.flake: `flake.nix` -- main entry. Exposes `sets`, `drafts`, `settings`, `lib.mkSet`, `lib.mkSetting`, `lib.mkDriftCheck`, `checks`.
+- I.flake: `flake.nix` -- main entry. Exposes `sets`, `drafts`, `settings`, `lib.mkSet`, `lib.mkSetting`, `lib.mkDriftCheck`, `packages.set`, `packages.setting`, `checks`.
 - I.mkSet: `set/lib/mk-set.nix` -- the skill-set emitter and single
   source of truth for skills. Transforms agnostic `set/skills/` markdown
   into the Agent-Skills open-standard layout: one skill folder per
@@ -63,6 +63,12 @@ and dogfoods both.
 - I.settings: Attrset of raw paths to each standard dir (editorconfig, gitattributes, gitignore).
 - I.self-wire: `CLAUDE.md` -- this repo dogfoods `packages.set`: it emits own `set/` into a gitignored `.claude/skills/set/` + always-on rules, auto-synced on devShell/direnv entry. No `@`-ref duplication of skills.
 - I.set-package: `packages.<sys>.set` -- a default `mkSet` build over all stable categories + concepts. Consumed home-level (`home.file.".claude/skills/set".source`) or per-repo (sync, gitignored).
+- I.setting-package: `packages.<sys>.setting` -- a default `mkSetting`
+  materialize build (unified configs only: `.markdownlint.yml`,
+  `.yamllint.yml`, `.claude/` commands/allowances). Consumed per-repo
+  (sync, gitignored) or home-level for the `.claude/` parts. Symmetric
+  with `packages.set`. Seed/init scaffold is separate
+  (`bin/sync-setting-init`), not in this package.
 - I.sync-target: `sync-set`/`sync-setting` take a target dir arg; default preserves prior behavior.
 
 ## §V Invariants
