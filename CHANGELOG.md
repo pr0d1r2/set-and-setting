@@ -76,12 +76,14 @@
 
 - T24: rename propagation mechanism for consumers to detect upstream
   skill renames and update synced copies
-- Multi-agent adapter layer (C8, I.concepts, I.agentProfile,
-  I.mkAgentDir, V20-23, T25-31): repo defines the concept superset
-  (skills, commands, agents, memory, hooks, settings, mcp); one builder
-  `mkAgentDir` renders the concepts an `agent` profile supports into its
-  dir. Profiles are consumer-supplied, so one agnostic source builds for
-  any agent (`.claude`, `.opencode`, ...).
+- Replace the multi-agent adapter abstraction (drop `I.concepts`,
+  `I.agentProfile`, `I.mkAgentDir`, old V20-23, T25-31) with a narrower
+  model: a composable `packages.set` (Agent-Skills open standard) emitted
+  by `lib/mkSkills`; `mkSetting` as the single source of truth for
+  unified config (consumer tracks a seed, materializes the rest
+  gitignored); per-agent surface reduced to a `{ dir, condField,
+  alwaysOnFile }` seam. This repo dogfoods `packages.set` into a
+  gitignored `.claude/skills/set/` (supersedes T1).
 
 ### Infrastructure
 

@@ -1,5 +1,6 @@
 aarch
 abstract
+abstraction
 acceleration
 accept
 acceptable
@@ -31,6 +32,7 @@ against
 agent
 agentic
 agents
+agentskills
 agnostic
 agnosticism
 agree
@@ -39,7 +41,9 @@ air
 alerts
 alive
 all
+allowances
 allowlist
+allowlists
 already
 alternative
 always
@@ -60,6 +64,7 @@ applies
 apply
 architecture
 are
+arg
 args
 artifact
 ascii
@@ -83,6 +88,7 @@ audit
 auth
 authoritative
 auto
+autoload
 automatically
 avahi
 available
@@ -95,6 +101,7 @@ badge
 baked
 banner
 bare
+base
 based
 bash
 basic
@@ -153,6 +160,7 @@ cannot
 canvas
 capabilities
 carries
+carry
 catch
 catches
 categories
@@ -169,7 +177,6 @@ checks
 children
 chore
 cites
-class
 classify
 claude
 clean
@@ -197,6 +204,7 @@ community
 companion
 compares
 comparing
+compatible
 compliance
 components
 composability
@@ -212,6 +220,8 @@ concepts
 concerns
 concise
 concrete
+cond
+conditional
 conduct
 config
 configs
@@ -228,9 +238,9 @@ considering
 console
 constraints
 consume
+consumed
 consumer
 consumers
-consumes
 contain
 containing
 content
@@ -258,6 +268,7 @@ credentials
 cross
 curated
 current
+cursor
 cut
 cutting
 darwin
@@ -290,6 +301,7 @@ dependency
 deps
 derivation
 derivations
+derive
 derived
 describe
 description
@@ -308,7 +320,10 @@ developers
 development
 device
 diagram
+dic
+dictionaries
 dictionary
+dicts
 different
 differs
 dir
@@ -326,10 +341,10 @@ documentation
 documents
 does
 dogfood
+dogfoods
 domain
 dotfile
 dotfiles
-double
 downstream
 draft
 drafts
@@ -346,6 +361,7 @@ during
 each
 earns
 ecosystem
+editable
 edited
 editor
 editorconfig
@@ -353,7 +369,11 @@ efi
 eio
 either
 embedded
+emission
+emit
+emits
 emitted
+emitter
 emulation
 enable
 enabled
@@ -379,11 +399,11 @@ evaluation
 even
 events
 every
+example
 examples
 except
 exclude
 excluded
-exclusive
 exec
 executable
 execute
@@ -415,15 +435,12 @@ fails
 failure
 fall
 false
-family
 fast
 faster
 feat
 feature
-feed
 feeds
 field
-fields
 file
 filename
 filenames
@@ -449,6 +466,8 @@ flat
 flush
 flushcache
 focus
+fold
+folder
 follow
 followed
 follows
@@ -476,7 +495,6 @@ functions
 future
 gap
 gaps
-garbage
 gemfile
 gemini
 gen
@@ -490,8 +508,10 @@ git
 gitattributes
 github
 gitignore
+gitignored
 given
 glob
+globs
 gnu
 goal
 graduate
@@ -545,6 +565,7 @@ identical
 iff
 ignore
 ignored
+ignores
 image
 images
 img
@@ -561,7 +582,6 @@ improves
 include
 including
 inclusion
-indirection
 individual
 infinite
 infinity
@@ -575,6 +595,7 @@ initial
 initialize
 initrd
 inject
+injected
 inline
 input
 inputs
@@ -597,7 +618,6 @@ interrupted
 into
 introductions
 invariants
-invocable
 invoked
 irrelevant
 iso
@@ -617,14 +637,12 @@ killall
 killed
 killing
 kills
-kind
 kingston
 knowledge
 known
 kyson
 lab
 label
-lack
 lacks
 language
 layer
@@ -676,6 +694,7 @@ logs
 long
 longer
 look
+loose
 lost
 mac
 machine
@@ -692,7 +711,7 @@ managed
 manager
 manifest
 many
-maps
+map
 markdown
 markdownlint
 marking
@@ -700,7 +719,8 @@ marks
 match
 matches
 matching
-matrix
+materialized
+materializes
 mature
 may
 mean
@@ -740,14 +760,13 @@ multi
 multiple
 must
 mutations
-mutually
 name
 names
 namespace
 namespaces
-namespacing
 naming
 narrow
+narrower
 native
 natively
 nbin
@@ -771,6 +790,7 @@ nodes
 noexec
 noise
 non
+north
 not
 note
 nothing
@@ -783,6 +803,7 @@ obvious
 off
 offenses
 offline
+old
 omitting
 once
 one
@@ -814,6 +835,7 @@ outcomes
 output
 outputs
 outside
+outsourced
 over
 overhead
 overlap
@@ -827,7 +849,6 @@ own
 package
 packages
 packaging
-packagings
 pad
 padding
 paragraph
@@ -836,7 +857,6 @@ parallel
 parameter
 params
 participant
-partition
 parts
 pass
 passes
@@ -900,6 +920,7 @@ previous
 primary
 principles
 prints
+prior
 pro
 proceed
 process
@@ -909,12 +930,12 @@ produce
 product
 production
 profile
-profiles
 prohibit
 prohibited
 prohibitions
 project
 projects
+proof
 propagate
 propagation
 prose
@@ -977,9 +998,6 @@ remove
 removing
 rename
 renames
-render
-rendered
-renders
 replace
 replacing
 repo
@@ -1029,16 +1047,18 @@ save
 scaffold
 scanner
 scenarios
-schema
 scope
 scoped
 script
 scripts
+seam
+seams
 second
 secrets
 sections
 security
 see
+seed
 selected
 selection
 self
@@ -1059,6 +1079,7 @@ setup
 shadows
 shape
 share
+shareable
 shared
 shell
 shellcheck
@@ -1090,6 +1111,7 @@ slash
 slirp
 slug
 slurs
+small
 smoke
 snap
 some
@@ -1112,6 +1134,7 @@ stale
 standalone
 standard
 standards
+star
 start
 starting
 state
@@ -1119,6 +1142,7 @@ statement
 stay
 stays
 stdin
+step
 still
 stop
 stopped
@@ -1132,7 +1156,7 @@ strings
 structure
 stub
 sub
-subagent
+subdir
 subdirectories
 subgraph
 subset
@@ -1140,13 +1164,15 @@ success
 suitable
 suites
 summary
+superseded
 supersedes
 superset
-supplied
 supplies
 support
 supported
+supporting
 supports
+surface
 surfaced
 survive
 survives
@@ -1161,6 +1187,7 @@ system
 systems
 tables
 tags
+take
 target
 targeting
 targets
@@ -1183,6 +1210,7 @@ their
 them
 theme
 then
+there
 thermal
 these
 they
@@ -1209,6 +1237,7 @@ too
 tool
 tooling
 tools
+top
 topic
 topics
 total
@@ -1216,10 +1245,11 @@ touched
 touching
 traces
 tracked
+tracks
 trailing
 training
 transaction
-transform
+transforms
 trap
 traveler
 tree
@@ -1245,12 +1275,10 @@ unicode
 unified
 unique
 unit
-units
 unix
 unknown
 unreachable
 unreleased
-unsupported
 until
 unwelcome
 update
@@ -1269,6 +1297,7 @@ using
 utilize
 valid
 validation
+values
 vars
 vendor
 ver
@@ -1276,7 +1305,6 @@ verification
 verify
 version
 versions
-versus
 very
 via
 vocabulary
@@ -1289,6 +1317,7 @@ went
 what
 wheel
 when
+where
 which
 while
 who
