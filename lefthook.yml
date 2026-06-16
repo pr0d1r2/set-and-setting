@@ -130,6 +130,16 @@ pre-commit:
       env:
         LEFTHOOK_NIX_FLAKE_EVAL_ATTR: ".#lib"
       run: timeout ${LEFTHOOK_NIX_FLAKE_EVAL_TIMEOUT:-60} lefthook-nix-flake-eval
+    # Scope narrow-language-other to its intended targets (see
+    # set/skills/language/narrow.md). The remote default scans every
+    # file minus a few extensions, wrongly flagging LICENSE and
+    # dotfiles. A positive glob narrows it without dropping the remote
+    # exclude list.
+    narrow-language-other:
+      glob:
+        - "*.{yml,yaml,toml,tcl}"
+        - "justfile"
+        - "Gemfile"
 
 pre-push:
   parallel: true
@@ -151,3 +161,8 @@ pre-push:
     git-no-local-paths:
       exclude: "^flake\\.(nix|lock)$"
       run: timeout ${LEFTHOOK_GIT_NO_LOCAL_PATHS_TIMEOUT:-30} lefthook-git-no-local-paths {push_files}
+    narrow-language-other:
+      glob:
+        - "*.{yml,yaml,toml,tcl}"
+        - "justfile"
+        - "Gemfile"

@@ -439,6 +439,7 @@ first
 fits
 fix
 fixes
+flags
 flake
 flakes
 flat
@@ -473,6 +474,7 @@ future
 gap
 gaps
 garbage
+gemfile
 gemini
 gen
 general
@@ -668,6 +670,7 @@ logic
 logo
 logs
 long
+longer
 look
 lost
 mac
@@ -811,6 +814,7 @@ overhead
 overlap
 overlay
 overlays
+override
 overrides
 overriding
 overwrite
@@ -1015,6 +1019,7 @@ scaffold
 scanner
 scenarios
 schema
+scope
 script
 scripts
 second
@@ -1184,6 +1189,7 @@ timeouts
 timestamp
 together
 toggles
+toml
 too
 tool
 tooling
