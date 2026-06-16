@@ -99,8 +99,10 @@ update deterministically when upstream improves.
 | T29 | . | Claude profile plus a second (OpenCode stub) as the agnosticism test matrix; audit schema for baked Claude assumptions | V23 |
 | T30 | . | partition source units by `kind` -- invocable concepts versus `@`-context (`mkSet`), mutually exclusive, no double-load | V22 |
 | T31 | . | per-agent `sync` and drift target dir from `agent.dir`; namespacing policy for flat concept dirs | I.mkDriftCheck,V20 |
+| T32 | . | repo-wide `lefthook --all-files` green: clear pre-existing markdownlint (MD040/031/032/038), editorconfig left-padding, ascii em-dash in `*.nix`, nixfmt, and nix-no-embedded-shell debt surfaced by stricter upstream nix-lefthook | C3,V6,B1 |
 
 ## §B Bugs
 
 | id | date | cause | fix |
 |----|------|-------|-----|
+| B1 | 2026-06-16 | upstream nix-lefthook tightened checks; repo never revalidated, so `main` fails `lefthook run pre-commit --all-files` on pre-existing files (prose markdownlint, `*.nix` em-dashes, editorconfig padding, drift-check embedded shell) | narrow-other scoped via local glob this branch; remainder tracked as T32 |

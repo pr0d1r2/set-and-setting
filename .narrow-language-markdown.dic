@@ -4,6 +4,7 @@ acceleration
 accept
 acceptable
 access
+according
 accurate
 across
 act
@@ -69,6 +70,7 @@ assumes
 assumptions
 atomic
 atomics
+attach
 attachable
 attempt
 attr
@@ -101,9 +103,11 @@ before
 behavior
 behavioral
 behind
+being
 belong
 belongs
 bench
+benefit
 between
 beyond
 bin
@@ -118,10 +122,12 @@ both
 bounce
 boundaries
 branch
+break
 breaking
 bridges
 briefly
 budget
+bug
 bugs
 build
 builder
@@ -157,6 +163,7 @@ change
 changelog
 changelogs
 changes
+character
 check
 checks
 children
@@ -216,6 +223,7 @@ conflicts
 connect
 connection
 connectivity
+consider
 considering
 console
 constraints
@@ -245,6 +253,7 @@ cpu
 create
 created
 creates
+creating
 credentials
 cross
 curated
@@ -252,10 +261,12 @@ current
 cut
 cutting
 darwin
+dash
 dashes
 data
 database
 date
+debt
 decides
 decisions
 declaratively
@@ -274,6 +285,7 @@ delete
 deliberately
 demand
 demonstrate
+dependencies
 dependency
 deps
 derivation
@@ -333,11 +345,13 @@ duplication
 during
 each
 earns
+ecosystem
 edited
 editor
 editorconfig
 efi
 eio
+either
 embedded
 emitted
 emulation
@@ -414,7 +428,9 @@ file
 filename
 filenames
 files
+filled
 filler
+filling
 fills
 filter
 filtering
@@ -426,6 +442,7 @@ first
 fits
 fix
 fixes
+flags
 flake
 flakes
 flat
@@ -453,10 +470,14 @@ from
 frontmatter
 frozen
 full
+function
+functionalities
 functions
 future
 gap
+gaps
 garbage
+gemfile
 gemini
 gen
 general
@@ -476,6 +497,7 @@ goal
 graduate
 graph
 graphic
+green
 group
 groups
 grub
@@ -542,6 +564,7 @@ inclusion
 indirection
 individual
 infinite
+infinity
 inform
 informed
 infrastructure
@@ -584,6 +607,7 @@ jargon
 join
 json
 just
+justfile
 keep
 keeps
 kernel
@@ -650,6 +674,8 @@ logic
 logo
 logs
 long
+longer
+look
 lost
 mac
 machine
@@ -665,6 +691,7 @@ making
 managed
 manager
 manifest
+many
 maps
 markdown
 markdownlint
@@ -688,6 +715,7 @@ meta
 metadata
 metal
 metaphor
+micro
 microcode
 mildest
 mindset
@@ -700,6 +728,7 @@ mit
 model
 models
 modularity
+modularized
 module
 modules
 mood
@@ -714,6 +743,8 @@ mutations
 mutually
 name
 names
+namespace
+namespaces
 namespacing
 naming
 narrow
@@ -732,6 +763,7 @@ never
 new
 next
 nix
+nixfmt
 nixos
 nixpkgs
 nmodel
@@ -745,10 +777,12 @@ nothing
 noting
 nskills
 null
+number
 nvme
 obvious
 off
 offenses
+offline
 omitting
 once
 one
@@ -758,6 +792,7 @@ open
 opencode
 opensource
 opensourcing
+operating
 operation
 operational
 operations
@@ -773,6 +808,7 @@ ordered
 org
 organized
 other
+our
 out
 outcomes
 output
@@ -783,6 +819,7 @@ overhead
 overlap
 overlay
 overlays
+override
 overrides
 overriding
 overwrite
@@ -792,6 +829,7 @@ packages
 packaging
 packagings
 pad
+padding
 paragraph
 paragraphs
 parallel
@@ -799,6 +837,7 @@ parameter
 params
 participant
 partition
+parts
 pass
 passes
 passive
@@ -878,7 +917,9 @@ project
 projects
 propagate
 propagation
+prose
 protection
+prototype
 proven
 provides
 psychedelic
@@ -909,6 +950,7 @@ really
 reason
 rebuild
 reconnecting
+record
 reduced
 reducing
 ref
@@ -928,6 +970,7 @@ reliably
 reloads
 rely
 relying
+remainder
 remote
 remotes
 remove
@@ -943,6 +986,8 @@ repo
 report
 reports
 repos
+repositories
+repository
 representative
 reproducible
 request
@@ -952,12 +997,14 @@ requiring
 reset
 resolution
 resolve
+resource
 rest
 restart
 restrict
 result
 retry
 reuse
+revalidated
 reversed
 rewrite
 risk
@@ -977,11 +1024,14 @@ safety
 same
 sane
 sas
+satisfy
 save
 scaffold
 scanner
 scenarios
 schema
+scope
+scoped
 script
 scripts
 second
@@ -1042,6 +1092,7 @@ slug
 slurs
 smoke
 snap
+some
 somewhat
 sorted
 source
@@ -1052,6 +1103,8 @@ specific
 specifics
 splicing
 split
+splitting
+spread
 stable
 stack
 staged
@@ -1073,6 +1126,7 @@ stopping
 storage
 store
 streamline
+stricter
 string
 strings
 structure
@@ -1093,6 +1147,7 @@ supplies
 support
 supported
 supports
+surfaced
 survive
 survives
 sustained
@@ -1142,12 +1197,14 @@ three
 throat
 tiers
 tight
+tightened
 time
 timeout
 timeouts
 timestamp
 together
 toggles
+toml
 too
 tool
 tooling
@@ -1178,6 +1235,7 @@ ttou
 twice
 two
 typed
+typos
 unchanged
 under
 underlay
@@ -1235,6 +1293,7 @@ which
 while
 who
 whole
+wide
 will
 wins
 wire
