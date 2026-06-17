@@ -141,3 +141,86 @@ teardown() {
     [ ! -e "$TARGET/.claude/skills/set/stale" ]
     [ -f "$TARGET/.claude/skills/set/nix/SKILL.md" ]
 }
+
+@test "writes manifest after install" {
+    run bash -c "cd '$TARGET' && bash '$SCRIPT' nix"
+    [ "$status" -eq 0 ]
+    [ -f "$TARGET/.claude/skills/set/.mkset.json" ]
+    grep -q '"categories"' "$TARGET/.claude/skills/set/.mkset.json"
+    grep -q '"generic"' "$TARGET/.claude/skills/set/.mkset.json"
+    grep -q '"nix"' "$TARGET/.claude/skills/set/.mkset.json"
+    grep -q '"rev"' "$TARGET/.claude/skills/set/.mkset.json"
+    grep -q '"agent":"claude"' "$TARGET/.claude/skills/set/.mkset.json"
+}
+
+@test "bare re-run with manifest refreshes installed categories" {
+    run bash -c "cd '$TARGET' && bash '$SCRIPT' nix"
+    [ "$status" -eq 0 ]
+    [ -f "$TARGET/.claude/skills/set/.mkset.json" ]
+    run bash -c "cd '$TARGET' && bash '$SCRIPT'"
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"Refreshing from manifest"* ]]
+    [[ "$output" == *"nix"* ]]
+    [ -f "$TARGET/.claude/skills/set/nix/SKILL.md" ]
+}
+
+@test "bare re-run detects upstream update" {
+    run bash -c "cd '$TARGET' && bash '$SCRIPT' nix"
+    [ "$status" -eq 0 ]
+    sed -i 's/"rev":"[^"]*"/"rev":"oldrev"/' "$TARGET/.claude/skills/set/.mkset.json"
+    export MKSET_REV="newrev"
+    run bash -c "cd '$TARGET' && MKSET_REV=newrev bash '$SCRIPT'"
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"Update detected: oldrev -> newrev"* ]]
+}
+
+@test "--remove removes categories and updates manifest" {
+    run bash -c "cd '$TARGET' && bash '$SCRIPT' nix security"
+    [ "$status" -eq 0 ]
+    grep -q '"nix"' "$TARGET/.claude/skills/set/.mkset.json"
+    grep -q '"security"' "$TARGET/.claude/skills/set/.mkset.json"
+    run bash -c "cd '$TARGET' && bash '$SCRIPT' --remove nix"
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"Removed: nix"* ]]
+    run ! grep -q '"nix"' "$TARGET/.claude/skills/set/.mkset.json"
+    grep -q '"security"' "$TARGET/.claude/skills/set/.mkset.json"
+    [ ! -e "$TARGET/.claude/skills/set/nix" ]
+}
+
+@test "--remove fails on core category" {
+    run bash -c "cd '$TARGET' && bash '$SCRIPT' nix"
+    [ "$status" -eq 0 ]
+    run bash -c "cd '$TARGET' && bash '$SCRIPT' --remove generic"
+    [ "$status" -eq 1 ]
+    [[ "$output" == *"cannot remove core category"* ]]
+}
+
+@test "--remove fails without manifest" {
+    run bash -c "cd '$TARGET' && bash '$SCRIPT' --remove nix"
+    [ "$status" -eq 1 ]
+    [[ "$output" == *"no manifest found"* ]]
+}
+
+@test "--remove fails on unknown category" {
+    run bash -c "cd '$TARGET' && bash '$SCRIPT' nix"
+    [ "$status" -eq 0 ]
+    run bash -c "cd '$TARGET' && bash '$SCRIPT' --remove bogus"
+    [ "$status" -eq 1 ]
+    [[ "$output" == *"error: unknown category 'bogus'"* ]]
+}
+
+@test "--remove with --dry-run shows what would happen" {
+    run bash -c "cd '$TARGET' && bash '$SCRIPT' nix security"
+    [ "$status" -eq 0 ]
+    run bash -c "cd '$TARGET' && bash '$SCRIPT' --dry-run --remove nix"
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"Would remove: nix"* ]]
+    [[ "$output" == *"Would keep"* ]]
+    grep -q '"nix"' "$TARGET/.claude/skills/set/.mkset.json"
+}
+
+@test "--remove requires at least one category" {
+    run bash -c "cd '$TARGET' && bash '$SCRIPT' --remove"
+    [ "$status" -eq 1 ]
+    [[ "$output" == *"--remove requires at least one category"* ]]
+}

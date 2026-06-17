@@ -131,6 +131,7 @@
 
   outputs =
     {
+      self,
       nixpkgs,
       nix-lefthook,
       nix-lefthook-changelog-touched-src,
@@ -541,6 +542,7 @@
               export ALL_CATEGORIES="${lib.concatStringsSep " " cats.all}"
               export CORE_CATEGORIES="${lib.concatStringsSep " " cats.core}"
               export GLOBS_MAP="${globsMap}"
+              export MKSET_REV="${self.rev or self.dirtyRev or "unknown"}"
             ''
             + builtins.readFile ./set/lib/app-mk-set.sh;
           };
