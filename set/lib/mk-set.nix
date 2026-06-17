@@ -8,26 +8,13 @@
 # surface. Shell logic lives in the sibling *.sh scripts (nix/modularity).
 { lib }:
 
+let
+  cats = import ./categories.nix;
+in
+
 {
   pkgs,
-  categories ? [
-    "generic"
-    "architecture"
-    "ci"
-    "cli"
-    "git"
-    "gnu"
-    "just"
-    "language"
-    "lefthook"
-    "nix"
-    "nixos"
-    "opensource"
-    "product"
-    "security"
-    "test"
-    "update"
-  ],
+  categories ? cats.all,
   concepts ? true,
   # Skill filenames to omit from the emitted output (e.g. "rtk.md").
   exclude ? [ ],
@@ -43,30 +30,7 @@ let
   }
   // agent;
 
-  # category -> conditional-load globs. Absent => cross-cutting, emitted
-  # as an always-on rule (no globs). Tunable.
-  categoryGlobs = {
-    nix = [
-      "**/*.nix"
-      "flake.lock"
-    ];
-    nixos = [ "**/*.nix" ];
-    gnu = [
-      "**/*.sh"
-      "**/*.bats"
-    ];
-    test = [ "**/*.bats" ];
-    lefthook = [ "lefthook.yml" ];
-    just = [
-      "**/justfile"
-      "**/*.just"
-    ];
-    cli = [ "**/justfile" ];
-    ci = [
-      ".github/**/*.yml"
-      ".github/**/*.yaml"
-    ];
-  };
+  categoryGlobs = cats.globs;
 
   globsMap = lib.concatStringsSep ";" (
     lib.mapAttrsToList (c: globs: "${c}=${lib.concatStringsSep "," globs}") categoryGlobs

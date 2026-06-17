@@ -2,6 +2,22 @@
 
 ## Unreleased
 
+### Apps
+
+- Add `apps.<sys>.{mkSet,mkSetting,mkSetting-init,bootstrap}` runnable
+  installers (T36/C9): `nix run github:pr0d1r2/set-and-setting#mkSet`
+  materializes skills into `./.claude/skills/set/` from one command with
+  zero deps beyond nix. Run-time emit (V28) -- the same `mk-set.sh` /
+  `emit-skill.sh` emitter scripts serve all three delivery paths (flake
+  input, home-manager, `nix run`). Selection (V27): core (`generic` +
+  `git`) always pulled, domains opt-in via positional args, `--all`,
+  or `--all-except`; no args shows a notice listing selectable
+  categories. `--list`, `--help`, `--dry-run` on all four apps.
+  Unknown category fails with guidance. `bootstrap` = mkSet core +
+  mkSetting + mkSetting-init in one command. Extract category metadata
+  (`all`, `core`, `globs`) into shared `set/lib/categories.nix`; expose
+  `configFiles` and `seed` passthru on `mkSetting` for the apps.
+
 ### Tests
 
 - Update emit-skill, mk-set, and sync-set tests for facets-as-linked-files
