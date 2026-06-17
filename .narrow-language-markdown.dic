@@ -28,7 +28,6 @@ actual
 actually
 adaptation
 adapter
-adapters
 add
 added
 adding
@@ -104,6 +103,7 @@ apps
 apt
 arch
 architecture
+arguments
 architectures
 are
 arg
@@ -522,6 +522,7 @@ defines
 definition
 definitions
 delegate
+detects
 delegates
 delete
 deleting
@@ -915,6 +916,7 @@ gitleaks
 given
 glance
 glob
+globally
 globs
 gnu
 gnugrep
@@ -978,6 +980,7 @@ healthcheck
 heavy
 help
 here
+hero
 hidden
 hide
 hides
@@ -1167,6 +1170,7 @@ late
 latest
 layer
 layout
+lead
 leader
 leaf
 leakage
@@ -1378,8 +1382,6 @@ natively
 natural
 naturally
 navigable
-nbin
-ndotfiles
 near
 necessary
 need
@@ -1420,7 +1422,6 @@ notice
 noting
 noun
 now
-nskills
 null
 number
 numbered
@@ -1701,7 +1702,6 @@ pythonhosted
 qemu
 quality
 query
-quick
 quite
 quota
 raise
@@ -2046,6 +2046,7 @@ standard
 standards
 star
 start
+started
 starters
 starting
 starts
@@ -2271,6 +2272,7 @@ unblock
 unblocks
 uncertainty
 unchanged
+uncommitted
 uncomment
 unconditional
 uncovered
@@ -2364,6 +2366,7 @@ waiting
 want
 warm
 warms
+was
 wasteful
 wastes
 watch
@@ -2375,6 +2378,7 @@ welcoming
 went
 were
 what
+whatever
 wheel
 wheels
 when
