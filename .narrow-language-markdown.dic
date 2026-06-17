@@ -100,6 +100,7 @@ application
 applies
 apply
 appropriate
+apps
 apt
 arch
 architecture
@@ -212,6 +213,7 @@ body
 book
 boot
 boots
+bootstrap
 both
 bounce
 boundaries
@@ -268,11 +270,13 @@ carries
 carry
 case
 cases
+cat
 catalog
 catch
 catches
 categories
 category
+cats
 cause
 causes
 cavekit
@@ -312,12 +316,14 @@ cli
 clients
 clock
 clone
+cloned
 close
 closed
 closing
 closure
 closures
 cluster
+coarse
 code
 codes
 codex
@@ -378,6 +384,7 @@ composite
 composition
 compound
 compute
+concatenated
 concatenation
 concept
 concepts
@@ -455,6 +462,7 @@ corresponding
 count
 counterpart
 counts
+cover
 coverage
 covered
 covers
@@ -517,9 +525,11 @@ deletions
 deliberately
 delimiter
 delivers
+delivery
 demand
 demonstrate
 deny
+dep
 depend
 dependencies
 dependency
@@ -566,6 +576,7 @@ differ
 different
 differs
 diffs
+dilute
 dir
 direct
 direction
@@ -587,6 +598,7 @@ disrespectful
 distilling
 distinct
 distinguish
+distinguishes
 distributed
 divergence
 dnsresponder
@@ -712,6 +724,7 @@ example
 examples
 exceeds
 except
+exception
 exclude
 excluded
 exec
@@ -758,6 +771,7 @@ extracting
 extraction
 extracts
 facet
+facets
 facilitate
 facing
 fact
@@ -815,6 +829,7 @@ flags
 flake
 flakes
 flat
+flips
 flow
 flows
 flush
@@ -906,6 +921,7 @@ grade
 graduate
 grammars
 grant
+granularity
 graph
 graphic
 green
@@ -950,6 +966,7 @@ head
 heading
 headings
 headless
+headline
 heads
 health
 healthcheck
@@ -963,6 +980,7 @@ higher
 history
 hit
 hits
+hoc
 hold
 holding
 holds
@@ -1026,6 +1044,7 @@ indent
 indentation
 independent
 independently
+indexed
 individual
 inet
 infinite
@@ -1054,7 +1073,10 @@ inputs
 inside
 inspect
 install
+installed
 installer
+installers
+installing
 installs
 instance
 instant
@@ -1180,6 +1202,7 @@ linear
 lines
 linguist
 link
+linked
 linking
 links
 lint
@@ -1256,8 +1279,10 @@ mask
 match
 matches
 matching
+materialization
 materialize
 materialized
+materializes
 matter
 matters
 mature
@@ -1306,6 +1331,7 @@ mistake
 mistakes
 mit
 mkdir
+mkset
 mode
 model
 models
@@ -1385,6 +1411,7 @@ notation
 note
 notes
 nothing
+notice
 noting
 noun
 now
@@ -1497,6 +1524,7 @@ pass
 passed
 passes
 passive
+passthrough
 password
 past
 paste
@@ -1577,6 +1605,7 @@ prepend
 prepended
 prerequisite
 prerequisites
+presence
 present
 presenting
 preservation
@@ -1648,6 +1677,7 @@ publicly
 publish
 published
 pull
+pulled
 pulls
 punishable
 pure
@@ -1698,6 +1728,7 @@ recipe
 recipes
 reconnecting
 record
+records
 recovery
 recur
 recurring
@@ -1718,6 +1749,8 @@ reflect
 reflection
 reflective
 reflects
+refresh
+refreshes
 refs
 refusals
 refuse
@@ -1750,6 +1783,7 @@ remotely
 remotes
 remove
 removed
+removes
 removing
 rename
 renamed
@@ -1871,8 +1905,10 @@ security
 sed
 see
 seed
+seeds
 seems
 sees
+selectable
 selected
 selection
 selective
@@ -1918,6 +1954,7 @@ shellcheck
 shells
 shields
 ship
+ships
 short
 shortcut
 shortened
@@ -1965,6 +2002,7 @@ slowness
 slug
 slurs
 smaller
+smart
 smoke
 snap
 software
@@ -1984,6 +2022,7 @@ spec
 specific
 specification
 specifics
+specify
 specs
 splicing
 split
@@ -2144,6 +2183,7 @@ through
 tied
 tier
 tiers
+ties
 tight
 tightened
 time
@@ -2246,9 +2286,11 @@ unnecessary
 unreachable
 unrelated
 unreleased
+unrequested
 unsafe
 unsure
 until
+untouched
 untrusted
 unwelcome
 update
@@ -2278,6 +2320,7 @@ utilize
 valid
 validation
 values
+vanish
 var
 variables
 variant
@@ -2293,6 +2336,7 @@ verbatim
 verbs
 verifiable
 verification
+verified
 verify
 verifying
 version
@@ -2356,6 +2400,7 @@ works
 workstations
 worth
 would
+wow
 wrap
 wrapped
 wrapper

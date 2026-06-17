@@ -32,6 +32,11 @@ and dogfoods both.
 - C6: Consumers use `git+file:` or `github:` flake inputs.
 - C7: Deterministic updates -- consumer `nix flake update set-and-setting` + `sync-set`/`sync-setting` + commit = reproducible upgrade path for both skills and standards.
 - C8: Composable outputs -- `packages.set` is the Agent-Skills tree emitted from agnostic `set/` by `mkSet` (agent format only there). Consumed per-repo (sync) or home-level. Per-agent surface is one seam `{ dir, condField, alwaysOnFile }`. Reinforces C2.
+- C9: Three delivery paths, one emitter. (1) flake input -- pinned/
+  vendored, drift-checked. (2) home-manager -- `home.file` into
+  `~/.claude/skills/set`. (3) `nix run github:pr0d1r2/set-and-setting#mkSet
+  [cats]` -- zero-dependency, ad-hoc, per-CWD; nix is the only dep (repo
+  is public). All three share the one emitter; (3) emits at run time.
 
 ## §I Interfaces
 
@@ -70,6 +75,17 @@ and dogfoods both.
   with `packages.set`. Seed/init scaffold is separate
   (`bin/sync-setting-init`), not in this package.
 - I.sync-target: `sync-set`/`sync-setting` take a target dir arg; default preserves prior behavior.
+- I.apps: `apps.<sys>.{mkSet,mkSetting,mkSetting-init,bootstrap}` --
+  runnable installers for the zero-dependency delivery path (C9).
+  `nix run github:pr0d1r2/set-and-setting#mkSet [cats|--all|--all-except
+  a b]` materializes skills into `./.claude/skills/set/` at the CWD.
+  Emit happens at RUN TIME (the app carries agnostic source + emitter
+  scripts; no pre-baked per-agent tree), so categories and the `--agent`
+  seam are pure runtime flags. `mkSetting` materializes unified config;
+  `mkSetting-init` seeds repo-specific starters (skip-if-exists);
+  `bootstrap` = mkSet core + mkSetting + mkSetting-init in one. Each
+  supports `--list`/`--help`/`--dry-run`.
+- I.manifest: `./.claude/skills/set/.mkset.json` -- records installed categories + upstream rev + agent. Drives smart re-run (bare `mkSet` with a manifest refreshes what's installed), update detection, and `--remove`. Distinguishes mkSet-managed files from hand-added ones.
 
 ## §V Invariants
 
@@ -106,6 +122,21 @@ and dogfoods both.
   `.claude/` commands/allowances -- always synced & gitignored). Only
   truly unified, non-repo-specific config is materialized.
 - V23: Agnosticism is proven by 2 agent seams building the same sources -- Claude (default) + opencode. A single seam may hide baked assumptions. Other agents (Cursor, Codex, Gemini CLI, Copilot, Amp, ...) are a future extension list, not required now.
+- V24: Coarse granularity -- one catalog entry (`SKILL.md`) per category, NOT per topic. `paths` gates body activation, not catalog presence (all skill names are always indexed, descriptions share a budget); per-topic skills would dilute the listing. Verified against Claude Code skills docs.
+- V25: Facets are cloned raw (no frontmatter, not skills, not catalog
+  entries) as supporting files under `<cat>/`. The category `SKILL.md`
+  body LINKS them with markdown links (`[facet](facet.md)`) + a one-line
+  note; the agent reads them on-demand (progressive disclosure). NOT
+  `@`-import (that is the always-on CLAUDE.md mechanism) and NOT
+  concatenated into the body.
+- V26: Clean-replace per category -- installing a `<cat>` does
+  `rm -rf .claude/skills/set/<cat>` then writes fresh (removed facets
+  vanish; deterministic, exact upstream state). Scoped to the `set`
+  namespace; never blanket-removes a shared dir. Unrequested categories
+  untouched. Exception: `mkSetting-init` seeds skip-if-exists (repo-owned),
+  never replaced.
+- V27: Selection -- core (`generic`+`git`) is always pulled; domains and other cross-cutting are opt-in. No args => core only + a notice listing selectable categories. `--all` and `--all-except a b ...` available. Unknown category => error + list (fail with guidance).
+- V28: Run-time emit for the `nix run` path -- the installer ships agnostic source + emitter scripts and emits into CWD at run time; one emitter serves all three delivery paths (C9). The same `mk-set.sh`/`emit-skill.sh` produce the flake-input, home-manager, and `nix run` outputs.
 
 ## §T Tasks
 
@@ -135,16 +166,21 @@ and dogfoods both.
 | T22 | . | update hallucinogen: git+file: to github: set-and-setting | C6,T7 |
 | T23 | . | update CHANGELOG.md for opensourcing | C5 |
 | T24 | . | rename propagation: mechanism for consumers to detect upstream skill renames and update synced copies | C7,I.sync-set |
-| T25 | . | evolve `mkSet` into the emitter -- group `set/skills/<category>` into one Agent-Skills folder per category; derive name/description; `bin/sync-set` target-arg; fold loose top-level `<topic>.md` (cli.md) into its category | I.mkSet,V19 |
-| T26 | . | `packages.<sys>.set` = mkSet build over all stable categories + concepts | I.set-package |
-| T27 | . | category-globs map -- domain categories get the conditional-load field, cross-cutting emit to always-on file | V20 |
+| T25 | x | evolve `mkSet` into the emitter -- group `set/skills/<category>` into one Agent-Skills folder per category; derive name/description; `bin/sync-set` target-arg; fold loose top-level `<topic>.md` (cli.md) into its category | I.mkSet,V19 |
+| T26 | x | `packages.<sys>.set` = mkSet build over all stable categories + concepts | I.set-package |
+| T27 | x | category-globs map -- domain categories get the conditional-load field, cross-cutting emit to always-on file | V20 |
 | T28 | x | mkSetting split: materialize unified configs (markdownlint/yamllint/.claude, gitignored) + seed/init scaffold for repo-specific starters (gitattributes/editorconfig/file_size_limits/dics/allowlist), skip-if-exists | V22 |
-| T29 | . | `compose-set` check -- agnostic md (no frontmatter injected), sync layout, gitignore ignores synced set while seed tracked | V1 |
+| T29 | x | `compose-set` check -- agnostic md (no frontmatter injected), sync layout, gitignore ignores synced set while seed tracked | V1 |
 | T30 | . | dogfood -- emit set into gitignored `.claude/skills/set/` + always-on, auto-sync on devShell entry; drop CLAUDE.md `@`-ref block | V10,I.self-wire |
 | T31 | . | agnosticism proof -- the opencode seam (`AGENTS.md` always-on; opencode skill dir + conditional field) builds the same sources as Claude | V23 |
 | T33 | . | downstream wiring -- consumer repos + `nix-home-manager-claude-code` example + CI sync pre-step (materialized configs synced before hooks run) | C6,C7,V22 |
 | T34 | . | future: additional agent seams (Cursor `globs`/`.cursor/rules`, Codex, Gemini CLI, Copilot, Amp, ...) -- extension list, not built now | V23,C2 |
 | T32 | x | repo-wide `lefthook --all-files` green: cleared markdownlint, editorconfig, ascii, nixfmt, nix-no-embedded-shell debt + narrow-language baseline-freeze; CI now runs the full lefthook suite via nix-lefthook-ci-action (only commit-gate `changelog-touched` excluded) | C3,V6,B1 |
+| T35 | . | refactor mkSet emission to facets-as-linked-files -- `<cat>/SKILL.md` (frontmatter + body that markdown-links raw cloned facets) instead of concatenation; clean-replace per category | I.mkSet,V24,V25,V26 |
+| T36 | . | `apps.<sys>.{mkSet,mkSetting,mkSetting-init,bootstrap}` runnable installers -- run-time emit into CWD; selection (core always, domains opt-in, `--all`/`--all-except`, default=core+notice); `--list`/`--help`/`--dry-run`; fail-with-guidance | I.apps,V27,V28,C9 |
+| T37 | . | install manifest `.claude/skills/set/.mkset.json` -- smart bare re-run (refresh installed), update detection, `--remove` | I.manifest |
+| T38 | . | README headline -- document `nix run github:pr0d1r2/set-and-setting#mkSet` one-command skill materialization as the first-impression WOW (single command, zero deps); cover all three delivery paths (C9) | I.apps,C9 |
+| T39 | . | `--agent` seam passthrough in installers (opencode target); ties the agnosticism proof | V21,V28,T31 |
 
 ## §B Bugs
 
