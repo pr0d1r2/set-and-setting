@@ -95,5 +95,7 @@ pkgs.symlinkJoin {
         sync-setting
       ];
     };
+    configFiles = materializedBundle;
+    seed = seedBundle;
   };
 }

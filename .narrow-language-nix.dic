@@ -1,5 +1,4 @@
 aarch
-absent
 actual
 after
 against
@@ -11,7 +10,9 @@ allowlist
 alongside
 always
 and
+app
 application
+apps
 architecture
 are
 ascii
@@ -20,6 +21,7 @@ bash
 bats
 bin
 body
+bootstrap
 build
 built
 builtins
@@ -29,6 +31,7 @@ cachix
 carries
 categories
 category
+cats
 changelog
 check
 checked
@@ -144,6 +147,7 @@ hooks
 host
 hxegsi
 import
+imported
 includes
 incubating
 infinity
@@ -191,8 +195,11 @@ markdownlint
 markers
 matching
 materialized
+metadata
 mindset
 missing
+mkset
+mksetting
 modularity
 name
 narrow
@@ -235,6 +242,7 @@ present
 preserve
 preserved
 product
+program
 project
 public
 qim
@@ -250,16 +258,20 @@ rust
 scaffolding
 scan
 scanner
+script
 scripts
 seam
+section
 security
 seed
 seeds
+selection
 sep
 set
 sets
 setting
 settings
+shared
 shell
 shellcheck
 shells
@@ -299,7 +311,7 @@ transforms
 true
 trusted
 truth
-tunable
+type
 typos
 unicode
 unit

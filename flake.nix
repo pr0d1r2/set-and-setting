@@ -515,5 +515,88 @@
           touch $out
         '';
       });
+
+      apps = forAllSystems (
+        pkgs:
+        let
+          inherit (nixpkgs) lib;
+          cats = import ./set/lib/categories.nix;
+          globsMap = lib.concatStringsSep ";" (
+            lib.mapAttrsToList (c: globs: "${c}=${lib.concatStringsSep "," globs}") cats.globs
+          );
+          mkSettingFull = import ./setting/lib/mk-setting.nix { inherit lib; } { inherit pkgs; };
+
+          mkSetApp = pkgs.writeShellApplication {
+            name = "mkSet";
+            runtimeInputs = [
+              pkgs.coreutils
+              pkgs.findutils
+            ];
+            text = ''
+              export SKILLS_DIR="${./set/skills}"
+              export CONCEPTS_DIR="${./set/concepts}"
+              export MK_SET_SCRIPT="${./set/lib/mk-set.sh}"
+              export EMIT_SCRIPT="${./set/lib/emit-skill.sh}"
+              export SYNC_SCRIPT="${./set/lib/sync-set.sh}"
+              export ALL_CATEGORIES="${lib.concatStringsSep " " cats.all}"
+              export CORE_CATEGORIES="${lib.concatStringsSep " " cats.core}"
+              export GLOBS_MAP="${globsMap}"
+            ''
+            + builtins.readFile ./set/lib/app-mk-set.sh;
+          };
+
+          mkSettingApp = pkgs.writeShellApplication {
+            name = "mkSetting";
+            runtimeInputs = [
+              pkgs.coreutils
+              pkgs.findutils
+            ];
+            text = ''
+              export SETTING_SRC="${mkSettingFull.configFiles}"
+            ''
+            + builtins.readFile ./setting/lib/app-mk-setting.sh;
+          };
+
+          mkSettingInitApp = pkgs.writeShellApplication {
+            name = "mkSetting-init";
+            runtimeInputs = [
+              pkgs.coreutils
+              pkgs.findutils
+            ];
+            text = ''
+              export SEED_SRC="${mkSettingFull.seed}"
+            ''
+            + builtins.readFile ./setting/lib/app-mk-setting-init.sh;
+          };
+
+          bootstrapApp = pkgs.writeShellApplication {
+            name = "bootstrap";
+            text = ''
+              export MKSET_APP="${mkSetApp}/bin/mkSet"
+              export MKSETTING_APP="${mkSettingApp}/bin/mkSetting"
+              export MKSETTING_INIT_APP="${mkSettingInitApp}/bin/mkSetting-init"
+            ''
+            + builtins.readFile ./set/lib/app-bootstrap.sh;
+          };
+        in
+        {
+          mkSet = {
+            type = "app";
+            program = "${mkSetApp}/bin/mkSet";
+          };
+          mkSetting = {
+            type = "app";
+            program = "${mkSettingApp}/bin/mkSetting";
+          };
+          "mkSetting-init" = {
+            type = "app";
+            program = "${mkSettingInitApp}/bin/mkSetting-init";
+          };
+          bootstrap = {
+            type = "app";
+            program = "${bootstrapApp}/bin/bootstrap";
+          };
+        }
+      );
     };
 }
