@@ -4,4 +4,4 @@ extensions:
   dic: 32768
   lock: 262144
   md: 32768
-  nix: 16384
+  nix: 32768

@@ -49,6 +49,7 @@ drift
 dropping
 editorconfig
 embedded
+emit
 env
 eval
 evans
@@ -81,6 +82,7 @@ gmail
 has
 hook
 hub
+init
 install
 installer
 installs
@@ -164,6 +166,7 @@ shell
 shellcheck
 siblings
 size
+skill
 skills
 skip
 spec

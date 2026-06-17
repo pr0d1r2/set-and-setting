@@ -7,55 +7,93 @@
   gitignore ? [
     "nix"
     "claude"
+    "setting"
   ],
   markdownlint ? true,
   yamllint ? true,
   fileSizeLimits ? true,
+  narrowLanguageDics ? [
+    "nix"
+    "shell"
+    "markdown"
+    "other"
+  ],
+  nixEmbeddedShellAllowlist ? true,
 }:
 
 let
   std = ../standards;
   inherit (builtins) readFile;
 
-  # Composed .gitignore content -- pure string concat, no shell.
   gitignoreText = lib.concatMapStrings (f: readFile "${std}/gitignore/${f}.gitignore") gitignore;
 
-  # Each output file is a single-file derivation, gated by its toggle. No
-  # imperative copy steps, no shell-string splicing.
-  files =
+  materializedFiles =
+    lib.optional markdownlint (
+      pkgs.writeTextDir ".markdownlint.yml" (readFile "${std}/markdownlint.yml")
+    )
+    ++ lib.optional yamllint (pkgs.writeTextDir ".yamllint.yml" (readFile "${std}/yamllint.yml"));
+
+  materializedBundle = pkgs.symlinkJoin {
+    name = "agent-setting-materialized";
+    paths = materializedFiles;
+  };
+
+  seedFiles =
     lib.optional editorconfig (pkgs.writeTextDir ".editorconfig" (readFile "${std}/editorconfig"))
     ++ lib.optional gitattributes (pkgs.writeTextDir ".gitattributes" (readFile "${std}/gitattributes"))
     ++ lib.optional (gitignore != [ ]) (pkgs.writeTextDir ".gitignore" gitignoreText)
-    ++ lib.optional markdownlint (
-      pkgs.writeTextDir ".markdownlint.yml" (readFile "${std}/markdownlint.yml")
-    )
-    ++ lib.optional yamllint (pkgs.writeTextDir ".yamllint.yml" (readFile "${std}/yamllint.yml"))
     ++ lib.optional fileSizeLimits (
       pkgs.writeTextDir "config/lefthook/file_size_limits.yml" (
         readFile "${std}/lefthook/file_size_limits.yml"
       )
-    );
+    )
+    ++ map (lang: pkgs.writeTextDir ".narrow-language-${lang}.dic" "") narrowLanguageDics
+    ++ lib.optional nixEmbeddedShellAllowlist (pkgs.writeTextDir ".nix-embedded-shell-allowlist" "");
 
-  fileBundle = pkgs.symlinkJoin {
-    name = "agent-setting-files";
-    paths = files;
+  seedBundle = pkgs.symlinkJoin {
+    name = "agent-setting-seed";
+    paths = seedFiles;
   };
 
-  # The only shell -- a runtime copy script, extracted and shellcheck-clean.
-  # $src is baked to the file bundle so it copies the canonical store content.
   sync-setting = pkgs.writeShellApplication {
     name = "sync-setting";
-    runtimeInputs = [ pkgs.coreutils ];
+    runtimeInputs = [
+      pkgs.coreutils
+      pkgs.findutils
+    ];
     text = ''
-      src=${fileBundle}
+      src=${materializedBundle}
     ''
     + readFile ./sync-setting.sh;
+  };
+
+  sync-setting-init = pkgs.writeShellApplication {
+    name = "sync-setting-init";
+    runtimeInputs = [
+      pkgs.coreutils
+      pkgs.findutils
+    ];
+    text = ''
+      src=${seedBundle}
+    ''
+    + readFile ./sync-setting-init.sh;
   };
 in
 pkgs.symlinkJoin {
   name = "agent-setting";
   paths = [
-    fileBundle
+    materializedBundle
+    seedBundle
     sync-setting
+    sync-setting-init
   ];
+  passthru = {
+    materialized = pkgs.symlinkJoin {
+      name = "agent-setting-pkg";
+      paths = [
+        materializedBundle
+        sync-setting
+      ];
+    };
+  };
 }

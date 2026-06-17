@@ -1,9 +1,9 @@
 # shellcheck shell=bash
-# shellcheck disable=SC2154  # $src is injected by mkSetting (the file-bundle path)
-# Copy the standard files git must read as regular files (.editorconfig,
-# .gitattributes, .gitignore) into the repo root. The lint configs are left in
-# the bundle for out-link consumption.
-for f in .editorconfig .gitattributes .gitignore; do
-    [ -f "$src/$f" ] && cp "$src/$f" "./$f"
+# shellcheck disable=SC2154  # $src injected by mkSetting (materialized bundle)
+target="${1:-.}"
+find -L "$src" -type f | while read -r f; do
+    rel="${f#"$src/"}"
+    mkdir -p "$target/$(dirname "$rel")"
+    cp -f "$f" "$target/$rel"
 done
-echo "synced setting -> ."
+echo "synced setting -> $target"

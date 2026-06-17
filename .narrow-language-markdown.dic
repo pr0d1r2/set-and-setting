@@ -217,6 +217,7 @@ bounce
 boundaries
 boundary
 bounding
+box
 bracing
 branch
 branches
@@ -1462,6 +1463,7 @@ override
 overrides
 overriding
 overwrite
+overwrites
 own
 owned
 owner
@@ -1842,6 +1844,7 @@ saves
 says
 scaffold
 scaffolded
+scaffolding
 scaffolds
 scale
 scan
