@@ -442,6 +442,23 @@
               echo "FAIL: exclude did not drop rtk.md"; exit 1
             fi
 
+            # domain SKILL.md links facets instead of concatenating (V25)
+            grep -q '\[Nix: flake\](flake.md)' "$nixskill" \
+              || { echo "FAIL: nix SKILL.md missing facet link"; exit 1; }
+
+            # facet files exist alongside SKILL.md (V25)
+            [ -f "${full}/.claude/skills/set/nix/flake.md" ] \
+              || { echo "FAIL: nix facet file missing"; exit 1; }
+
+            # facets are raw -- no frontmatter (V25)
+            if head -1 "${full}/.claude/skills/set/nix/flake.md" | grep -q '^---'; then
+              echo "FAIL: facet has frontmatter"; exit 1
+            fi
+
+            # nested facets preserve path structure
+            [ -f "${full}/.claude/skills/set/nix/infinity/gap.md" ] \
+              || { echo "FAIL: nested facet missing"; exit 1; }
+
             echo PASS
             touch $out
           '';

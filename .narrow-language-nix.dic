@@ -8,6 +8,7 @@ agentic
 agnostic
 all
 allowlist
+alongside
 always
 and
 application
@@ -42,6 +43,7 @@ compact
 compares
 compose
 concat
+concatenating
 concepts
 cond
 conditional
@@ -87,11 +89,14 @@ exclude
 excluded
 executable
 execute
+exist
 exit
 expected
 experimental
 export
 extra
+facet
+facets
 fail
 false
 features
@@ -111,8 +116,10 @@ format
 fragment
 freeze
 from
+frontmatter
 full
 functions
+gap
 gawk
 gen
 generic
@@ -129,6 +136,7 @@ gnugrep
 gnused
 grep
 has
+head
 here
 hint
 hook
@@ -138,11 +146,13 @@ hxegsi
 import
 includes
 incubating
+infinity
 infrastructure
 inherit
 init
 inputs
 install
+instead
 into
 join
 just
@@ -162,6 +172,8 @@ libiconv
 limit
 limits
 line
+link
+links
 lint
 linux
 list
@@ -185,6 +197,7 @@ modularity
 name
 narrow
 native
+nested
 newline
 nix
 nixfmt
@@ -219,6 +232,7 @@ permissions
 platform
 pre
 present
+preserve
 preserved
 product
 project
@@ -262,6 +276,7 @@ standards
 statix
 stdenv
 strings
+structure
 substituters
 supported
 surface

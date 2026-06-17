@@ -29,7 +29,7 @@ teardown() {
     rm -rf "$out" "$SKILLS_DIR" "$CONCEPTS_DIR"
 }
 
-@test "emits conditional category into skill path" {
+@test "emits conditional category into skill path with facets" {
     export CATEGORIES="demo"
     export GLOBS_MAP="demo=**/*.nix,flake.lock"
     run bash "$SCRIPT"
@@ -37,9 +37,11 @@ teardown() {
     [ -f "$out/$SKILL_PATH/demo/SKILL.md" ]
     grep -q 'name: demo' "$out/$SKILL_PATH/demo/SKILL.md"
     grep -q 'paths:' "$out/$SKILL_PATH/demo/SKILL.md"
+    [ -f "$out/$SKILL_PATH/demo/sub.md" ]
+    grep -q 'Sub rule.' "$out/$SKILL_PATH/demo/sub.md"
 }
 
-@test "emits always-on category into rule path" {
+@test "emits always-on category into rule path (concatenated)" {
     export CATEGORIES="demo"
     export GLOBS_MAP=""
     run bash "$SCRIPT"
@@ -47,6 +49,7 @@ teardown() {
     [ -f "$out/$RULE_PATH/demo.md" ]
     grep -q 'name: demo' "$out/$RULE_PATH/demo.md"
     run ! grep -q 'paths:' "$out/$RULE_PATH/demo.md"
+    grep -q 'Sub rule.' "$out/$RULE_PATH/demo.md"
 }
 
 @test "copies concepts when CONCEPTS=1" {
@@ -85,5 +88,6 @@ teardown() {
     run bash "$SCRIPT"
     [ "$status" -eq 0 ]
     [ -f "$out/$SKILL_PATH/demo/SKILL.md" ]
+    [ -f "$out/$SKILL_PATH/demo/sub.md" ]
     [ -f "$out/$RULE_PATH/extra.md" ]
 }

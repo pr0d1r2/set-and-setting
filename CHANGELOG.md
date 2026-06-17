@@ -4,10 +4,18 @@
 
 ### Tests
 
+- Update emit-skill, mk-set, and sync-set tests for facets-as-linked-files
+  format (9 emit-skill tests, 6 mk-set tests, 5 sync-set tests)
 - Add unit tests for `mk-set.sh` (6 cases) and `sync-set.sh` (4 cases)
   to complete coverage for all three extracted mkSet shell scripts
 
 ### Set (skills)
+
+- Refactor mkSet emission to facets-as-linked-files (T35): domain
+  categories now emit `<cat>/SKILL.md` with frontmatter + core body +
+  markdown links to raw-cloned facet files instead of concatenating all
+  content into a single file. Always-on categories retain concatenation.
+  `sync-set` clean-replaces `.claude/skills/set/` before copying (V26).
 
 - Evolve `mkSet` into the skill-set emitter: groups each category into an
   Agent-Skills folder (`.claude/skills/set/<category>/SKILL.md`) with
