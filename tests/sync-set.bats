@@ -1,7 +1,7 @@
 #!/usr/bin/env bats
 
 # Unit tests for set/lib/sync-set.sh -- copies the emitted set tree
-# into a target directory.
+# into a target directory with clean-replace semantics (V26).
 
 setup() {
     SRC="$(mktemp -d)"
@@ -45,4 +45,14 @@ teardown() {
     run bash "$SRC/bin/sync-set" "$TARGET"
     [ "$status" -eq 0 ]
     [ "$(cat "$TARGET/.claude/skills/set/demo/SKILL.md")" = "skill content" ]
+}
+
+@test "clean-replace removes stale files from prior sync (V26)" {
+    mkdir -p "$TARGET/.claude/skills/set/stale"
+    echo "stale" >"$TARGET/.claude/skills/set/stale/SKILL.md"
+    echo "stale facet" >"$TARGET/.claude/skills/set/stale/old.md"
+    run bash "$SRC/bin/sync-set" "$TARGET"
+    [ "$status" -eq 0 ]
+    [ ! -e "$TARGET/.claude/skills/set/stale" ]
+    [ -f "$TARGET/.claude/skills/set/demo/SKILL.md" ]
 }
