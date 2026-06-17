@@ -1,2 +1,3 @@
 flake.nix
+set/lib/mk-set.nix
 setting/lib/mk-setting.nix
