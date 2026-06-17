@@ -335,6 +335,7 @@
         generic = ./set/skills/generic;
         architecture = ./set/skills/architecture;
         ci = ./set/skills/ci;
+        cli = ./set/skills/cli;
         git = ./set/skills/git;
         gnu = ./set/skills/gnu;
         just = ./set/skills/just;
