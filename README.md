@@ -9,23 +9,114 @@ infrastructure) for AI coding agent trips.
 
 Psychedelic metaphor: **set + setting = trip**.
 
-Nix flake composes markdown skills and dotfile standards into immutable,
-content-addressed derivations. Consumers import as a flake input, build
-via nix closure, sync to repo -- skills update deterministically when
-upstream improves.
+## Get started -- one command, zero deps
+
+```bash
+nix run github:pr0d1r2/set-and-setting#mkSet
+```
+
+That is it. One command materializes curated AI coding skills into
+`.claude/skills/set/` in your current directory. The only prerequisite
+is nix with flakes enabled.
+
+Core categories (`generic` + `git`) install by default. Add more:
+
+```bash
+nix run github:pr0d1r2/set-and-setting#mkSet -- nix security opensource
+```
+
+Install everything:
+
+```bash
+nix run github:pr0d1r2/set-and-setting#mkSet -- --all
+```
+
+Want unified configs (`.markdownlint.yml`, `.yamllint.yml`) and repo
+scaffolds (`.editorconfig`, `.gitattributes`, `.gitignore`) too?
+Bootstrap sets up skills and standards in one shot:
+
+```bash
+nix run github:pr0d1r2/set-and-setting#bootstrap
+```
+
+Run with `--help`, `--list`, or `--dry-run` on any installer to see
+what it does before writing files.
+
+Re-running `mkSet` with no arguments refreshes whatever was previously
+installed (tracked in `.claude/skills/set/.mkset.json`). When upstream
+changes, the installer detects the update and shows a notice.
+
+## Three delivery paths
+
+All three paths share one emitter -- the same skill sources produce
+identical output regardless of how you consume them.
+
+### Path 1 -- nix run (zero-dependency, per-CWD)
+
+Run from any directory. Nix is the only dependency.
+
+```bash
+nix run github:pr0d1r2/set-and-setting#mkSet -- --all
+nix run github:pr0d1r2/set-and-setting#mkSetting
+nix run github:pr0d1r2/set-and-setting#mkSetting-init
+```
+
+| App | What it does |
+| --- | ------------ |
+| `mkSet` | Materialize skills into `.claude/skills/set/` |
+| `mkSetting` | Materialize unified configs (always overwrites) |
+| `mkSetting-init` | Scaffold repo starters (skips files that exist) |
+| `bootstrap` | All three in one command |
+
+Skills are emitted at run time -- the installer carries agnostic
+source and emitter scripts, not a pre-built per-agent tree.
+
+### Path 2 -- flake input (pinned, drift-checked)
+
+Pin the version in your flake and sync after each update.
+
+```nix
+{
+  inputs.set-and-setting.url = "github:pr0d1r2/set-and-setting";
+}
+```
+
+```bash
+nix flake lock --update-input set-and-setting
+nix build .#agent-set && result/bin/sync-set .claude/skills/set
+nix build .#agent-setting && result/bin/sync-setting
+git add .claude/skills/set && git commit -m "chore: sync skills"
+```
+
+Use `lib.mkDriftCheck` in CI to catch uncommitted drift.
+
+### Path 3 -- home-manager (user-level)
+
+Install skills globally so every repo inherits them.
+
+```nix
+{
+  home.file.".claude/skills/set".source =
+    inputs.set-and-setting.packages.${system}.set;
+}
+```
+
+This writes the full skill tree into `~/.claude/skills/set/`. No
+per-repo sync needed -- Claude Code reads skills from both the repo
+and the home directory.
 
 ## Architecture
 
 ```mermaid
 graph LR
     subgraph "set-and-setting"
-        S[set/skills/\n15 categories\n81 markdown files] --> mkSet[lib.mkSet]
+        S["set/skills/ (16 categories)"] --> mkSet[lib.mkSet]
         C[set/concepts/] --> mkSet
-        E[setting/standards/\n.editorconfig\n.gitattributes\n.gitignore] --> mkSetting[lib.mkSetting]
+        E[setting/standards/] --> mkSetting[lib.mkSetting]
     end
 
-    mkSet --> D1["agent-set derivation\nskills/ + concepts/ + set.md\nbin/sync-set"]
-    mkSetting --> D2["agent-setting derivation\ndotfiles\nbin/sync-setting"]
+    mkSet --> D1["packages.set (skills + rules)"]
+    mkSetting --> D2["packages.setting (configs + scaffolds)"]
 ```
 
 ## Consumer dependency graph
@@ -51,43 +142,27 @@ sequenceDiagram
 
     U->>U: improve skills / standards
     C->>U: nix flake update set-and-setting
-    C->>C: nix build → sync-set + sync-setting
+    C->>C: nix build -> sync-set + sync-setting
     C->>C: git commit synced files
     Note over C: deterministic, reproducible upgrade
-```
-
-## Quick start
-
-Add as a flake input:
-
-```nix
-{
-  inputs.set-and-setting.url = "github:pr0d1r2/set-and-setting";
-}
-```
-
-Build a skill set and sync to your repo:
-
-```bash
-nix build .#set-and-setting.lib.mkSet
-result/bin/sync-set agent/set
-```
-
-Build infrastructure standards and sync:
-
-```bash
-nix build .#set-and-setting.lib.mkSetting
-result/bin/sync-setting
 ```
 
 ## API
 
 ### `sets`
 
-Attrset of raw paths to each of 15 skill category directories:
+Attrset of raw paths to each of 16 skill category directories:
 
-`generic` `architecture` `ci` `git` `gnu` `just` `language` `lefthook`
-`nix` `nixos` `opensource` `product` `security` `test` `update`
+`generic` `architecture` `ci` `cli` `git` `gnu` `just` `language`
+`lefthook` `nix` `nixos` `opensource` `product` `security` `test`
+`update`
+
+### `drafts`
+
+Attrset of raw paths to draft category directories (opt-in via
+`categories = [ "drafts/skill" ... ]`):
+
+`skill` `agent` `nix` `ops` `context`
 
 ### `settings`
 
@@ -97,52 +172,55 @@ Attrset of raw paths to each standard directory:
 
 ### `lib.mkSet`
 
-Builds an `agent-set` derivation from selected categories.
+Builds a skill-set derivation from selected categories. Emits the
+Agent-Skills open-standard layout: one `SKILL.md` per category with
+derived `name`/`description` frontmatter, plus raw facet files linked
+from the body.
 
 ```nix
 lib.mkSet {
   inherit pkgs;
   categories = [ "generic" "git" "nix" "security" ];
-  concepts = true;        # include set/concepts/ (default: true)
-  exclude = [ ];           # paths to exclude from output
-  extra = { };             # inline skill content (name -> markdown string)
-  extraPaths = { };        # external skill files (name -> path)
+  concepts = true;   # include set/concepts/ (default: true)
+  exclude = [ ];      # paths to exclude from output
 }
 ```
 
-Outputs: `$out/skills/<category>/<file>.md`, `$out/concepts/`,
-`$out/set.md`, `$out/bin/sync-set`.
+Output layout:
 
-Category prefix is preserved in output paths to avoid collisions
-between files with the same name in different categories.
+- `.claude/skills/set/<category>/SKILL.md` -- domain skills
+  (conditional-load `paths` field matching category globs)
+- `.claude/skills/set/<category>/<facet>.md` -- raw facet files
+- `.claude/rules/<category>.md` -- cross-cutting skills (always-on)
+- `.claude/rules/concepts-<name>.md` -- concept files
+- `bin/sync-set` -- copies emitted tree to a target directory
 
 ### `lib.mkSetting`
 
-Builds an `agent-setting` derivation from selected standards.
+Builds infrastructure standards with two output kinds.
 
 ```nix
 lib.mkSetting {
   inherit pkgs;
-  editorconfig = true;     # include .editorconfig (default: true)
-  gitattributes = true;    # include .gitattributes (default: true)
-  gitignore = [ "nix" "claude" ];  # gitignore fragments to compose
-  markdownlint = true;     # include .markdownlint.yml (default: true)
-  yamllint = true;         # include .yamllint.yml (default: true)
-  fileSizeLimits = true;   # include config/lefthook/file_size_limits.yml (default: true)
+  editorconfig = true;
+  gitattributes = true;
+  gitignore = [ "nix" "claude" "setting" ];
+  markdownlint = true;
+  yamllint = true;
+  fileSizeLimits = true;
 }
 ```
 
-Outputs: `$out/.editorconfig`, `$out/.gitattributes`, `$out/.gitignore`,
-`$out/.markdownlint.yml`, `$out/.yamllint.yml`,
-`$out/config/lefthook/file_size_limits.yml`, `$out/bin/sync-setting`.
+**Materialized** (always synced, gitignored): `.markdownlint.yml`,
+`.yamllint.yml`, `.claude/` commands and allowances.
 
-`sync-setting` copies only the files git must read as regular files
-(`.editorconfig`, `.gitattributes`, `.gitignore`) into the repo root.
-The lint configs are left in the derivation: out-link `agent-setting`
-and point each tool at it (e.g.
-`LEFTHOOK_MARKDOWNLINT_CONFIG=.setting/.markdownlint.yml`) so they need
-no committed root file and never drift. See the `nix-lefthook-*`
-remotes for the matching `LEFTHOOK_*_CONFIG` env vars.
+**Seed/init** (scaffolded once, then repo-owned): `.editorconfig`,
+`.gitattributes`, `.gitignore`,
+`config/lefthook/file_size_limits.yml`, `.narrow-language-*.dic`,
+`.nix-embedded-shell-allowlist`.
+
+Two scripts: `bin/sync-setting` (materialize, always overwrites) and
+`bin/sync-setting-init` (scaffold, skips files that exist).
 
 ### `lib.mkDriftCheck`
 
@@ -153,14 +231,14 @@ exit 1 on drift.
 lib.mkDriftCheck {
   inherit pkgs skillSet;
   projectRoot = ./.;
-  setPath = "agent/set";   # default
+  setPath = "agent/set";
 }
 ```
 
 ### `checks`
 
-`nix flake check` builds `mkSet-generic` and `mkSetting-default`
-on all supported systems.
+`nix flake check` runs `mkSet-generic`, `compose-set`,
+`mkSetting-default`, and `compose-setting` on all supported systems.
 
 ## Supported systems
 
@@ -169,27 +247,15 @@ on all supported systems.
 - `x86_64-linux`
 - `aarch64-linux`
 
-## Consumer upgrade
-
-```bash
-# Add input
-nix flake lock --update-input set-and-setting
-
-# Rebuild and sync
-nix build .#agent-set && result/bin/sync-set
-nix build .#agent-setting && result/bin/sync-setting
-
-# Commit updated skills
-git add agent/set .editorconfig .gitattributes .gitignore
-git commit -m "chore: sync set-and-setting"
-```
-
 ## Agent-agnostic design
 
 Skills in `set/` and standards in `setting/` contain no vendor-specific
-content. Any AI coding agent (Claude, GPT, Gemini, Copilot, etc.) can
-consume the output. Agent-specific adapters (model selection, tool
-configuration, presets) belong in downstream packages.
+content. The only agent-specific surface is a `{ dir, condField,
+alwaysOnFile }` seam defaulting to Claude. The same agnostic sources
+build for any agent given its seam values.
+
+Any AI coding agent (Claude, Codex, Gemini CLI, Copilot, Amp, etc.)
+can consume the output. See SPEC.md for the agnosticism proof targets.
 
 ## License
 

@@ -2,6 +2,18 @@
 
 ## Unreleased
 
+### Documentation
+
+- Rewrite README.md with `nix run` one-command hero (T38): lead with
+  the zero-dependency `nix run github:pr0d1r2/set-and-setting#mkSet`
+  command as first-impression WOW. Document all three delivery paths
+  (C9): `nix run` (zero-dep, per-CWD), flake input (pinned,
+  drift-checked), and home-manager (user-level). Update API section
+  to reflect the mkSet emitter rewrite (Agent-Skills layout, facets,
+  two mkSetting output kinds) and drop retired `extra`/`extraPaths`.
+  Fix architecture diagram to show 16 categories and current output
+  names.
+
 ### Fixed
 
 - `--remove` of always-on (cross-cutting) categories now cleans stale
