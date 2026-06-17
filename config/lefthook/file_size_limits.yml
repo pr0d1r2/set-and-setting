@@ -1,7 +1,7 @@
 ---
 default: 8192
 extensions:
-  dic: 16384
+  dic: 32768
   lock: 262144
   md: 32768
   nix: 16384

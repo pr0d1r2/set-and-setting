@@ -9,8 +9,8 @@ Manual `BATS_LIB_PATH` env var breaks in two ways:
 
 1. `nix develop --ignore-environment` (CI) may not preserve it
 2. Multiple bats wrappers create colon-joined `BATS_LIB_PATH` —
-   `load "${BATS_LIB_PATH}/bats-support/load.bash"` embeds colons
-   in path and fails
+  `load "${BATS_LIB_PATH}/bats-support/load.bash"` embeds colons
+  in path and fails
 
 ## Fix
 

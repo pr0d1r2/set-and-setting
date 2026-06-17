@@ -31,6 +31,6 @@ others rot.
 2. Diff common skills: content should be identical for generic ones.
 3. For each divergence: merge into superset, copy to all repos.
 4. For skills only in one repo: decide if generic (copy to others) or
-   project-specific (leave).
+  project-specific (leave).
 5. For missing sub-skills: split if a facet would be useful
-   independently.
+  independently.

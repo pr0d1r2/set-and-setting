@@ -10,6 +10,7 @@ CONTRIBUTING.md is a public summary. The full rules live in skills.
 ## When to update CONTRIBUTING.md
 
 Update when:
+
 - A new prerequisite is added to the dev environment
 - Testing commands change
 - A new file type gets a linter

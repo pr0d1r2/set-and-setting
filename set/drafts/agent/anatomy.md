@@ -17,7 +17,7 @@ agent.
 
 ## Interaction model
 
-```
+```text
 User request
   → Agent loads skills (set/) into context
   → Agent plans action informed by skills

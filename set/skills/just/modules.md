@@ -1,44 +1,31 @@
 # Just: modules
 
-When the top-level justfile grows past ~20 recipes, group cohesive
-sub-commands into a module file rather than adding more flat recipes.
+Group related recipes into module files under a `just/` directory,
+imported by the root `justfile`.
 
-## Layout
-
-Module files live in `just/<module>.just`. The root justfile stays
-tiny and declares each module with a single line:
-
-```just
-# Description of the module.
-mod module_name 'just/module_name.just'
-```
-
-The comment directly above each `mod` line becomes the module's
-description in `just --list`, so root output stays self-describing.
-
-Invocation becomes `just <module> <recipe> [args]`.
-
-## Module file template
+## Module structure
 
 Every module file must:
 
 1. Pin its working directory back to the repo root so relative
-   script paths keep working:
-   ```just
-   set working-directory := '..'
-   ```
+    script paths keep working:
+
+    ```just
+    set working-directory := '..'
+    ```
 
 2. Define a private `default` recipe that lists the module's own
-   recipes with a `just <module>` prefix (plus a trailing space),
-   for copy-paste from `just <module>`:
-   ```just
-   [private]
-   default:
-       @just --list <module> --list-prefix "    just <module> "
-   ```
+    recipes with a `just <module>` prefix (plus a trailing space),
+    for copy-paste from `just <module>`:
+
+    ```just
+    [private]
+    default:
+        @just --list <module> --list-prefix "    just <module> "
+    ```
 
 3. Name recipes as short sub-verbs (`run`, `upload`, `list`, `test`)
-   -- the module name already supplies the noun.
+    -- the module name already supplies the noun.
 
 ## When to keep a recipe flat
 

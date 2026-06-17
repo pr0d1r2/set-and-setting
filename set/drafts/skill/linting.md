@@ -6,7 +6,7 @@ enforce format consistency across the tree.
 ## Checks
 
 - markdownlint: CommonMark compliance.
-- First line must be `# ` heading.
+- First line must be `#` heading.
 - No duplicate headings within a file.
 - No empty sections (heading with no content before next heading).
 - Token budget check: file word count within limit.

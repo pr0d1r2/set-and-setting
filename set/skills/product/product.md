@@ -5,10 +5,10 @@ Product management lives in-repo, not in external tools.
 ## Release workflow
 
 1. Daily coding sessions append to `## Unreleased` in `CHANGELOG.md`
-   as features land.
+  as features land.
 2. When a release is ready: rename `## Unreleased` to
-   `## YYYY-MM-DD (short-sha)`, add a fresh `## Unreleased` section,
-   commit, tag, build.
+  `## YYYY-MM-DD (short-sha)`, add a fresh `## Unreleased` section,
+  commit, tag, build.
 3. Each release produces a deployable artifact.
 
 ## CHANGELOG.md

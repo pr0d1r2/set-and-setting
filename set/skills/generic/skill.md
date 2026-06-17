@@ -20,6 +20,7 @@ existing `<topic>/<aspect>.md` convention so it stays discoverable the
 same way.
 
 When adding a new skill:
+
 - Put a single-topic rule at `agent/set/skills/<topic>.md`.
 - Put a narrower facet of an existing topic at
   `agent/set/skills/<topic>/<aspect>.md`.

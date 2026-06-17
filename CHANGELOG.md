@@ -80,6 +80,8 @@
 
 ### Spec
 
+- Mark T32 done and B1 fixed: repo-wide `lefthook --all-files` is green
+  and CI runs the full suite.
 - T24: rename propagation mechanism for consumers to detect upstream
   skill renames and update synced copies
 - Replace the multi-agent adapter abstraction (drop `I.concepts`,
@@ -100,6 +102,20 @@
 
 ### Infrastructure
 
+- Switch CI to `nix-lefthook-ci-action` (SHA-pinned), replacing the
+  hand-rolled `nix flake check` workflow. Three jobs -- Linux gates
+  macOS + aarch64-linux (QEMU). Runs the full lefthook suite (incl
+  `bats-unit` + `nix-flake-check`) over all files via the `ci` devShell;
+  `skip-build` (no `packages.default`); `changelog-touched` excluded
+  (commit-gate hook). Caches via cachix `pr0d1r2`. The macOS cold-runner
+  flake-check timeout is handled upstream (nix-lefthook-nix-flake-check
+  platform-aware default: Darwin 120s).
+- Clear the repo-wide lint debt (B1/T32) so `lefthook --all-files` is
+  green: fix markdownlint (MD031/032/038/040, fence languages + blank
+  lines) across 16 skill files, fix editorconfig left-padding across 11
+  files, baseline-freeze the markdown narrow-language dictionary (add the
+  repo's existing prose vocabulary), and raise the `.dic` file-size limit
+  to fit it. Unblocks running lefthook in CI.
 - Extract the drift comparator from `mk-drift-check.nix` and
   `mk-setting-drift-check.nix` into one generic, layout-parametrized
   `lib/drift-check.sh` (no embedded shell in nix; both builders now just

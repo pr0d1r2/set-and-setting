@@ -10,10 +10,10 @@ pointer to the colliding users.
 When adding or editing a user:
 
 1. Grep the tree for every existing `uid = <n>;` and `gid = <n>;`
-   before picking a number.
+  before picking a number.
 2. Allocate the next free integer above the current maximum -- do not
-   reuse gaps left by renamed/removed users; gaps are cheap, collisions
-   are not.
+  reuse gaps left by renamed/removed users; gaps are cheap, collisions
+  are not.
 3. Keep `users.users.<name>.uid` and `users.groups.<name>.gid`
-   numerically equal for that user (convention -- makes the pair
-   grep-able and keeps ownership reasoning obvious).
+  numerically equal for that user (convention -- makes the pair
+  grep-able and keeps ownership reasoning obvious).

@@ -17,7 +17,7 @@ lefthook pre-commit + pre-push.
 
 Three-platform structure:
 
-```
+```text
 build-linux (lint + build x86_64) ──> build-darwin (macos runner)
                                   └──> build-linux-arm (QEMU aarch64)
 ```

@@ -6,7 +6,7 @@ with discoverable, testable scripts.
 
 ## Structure
 
-```
+```text
 ops/
   git/
     clone.sh

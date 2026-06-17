@@ -7,7 +7,7 @@ or tags.
 
 GitHub Actions rejects short SHAs:
 
-```
+```text
 Error: Unable to resolve action `owner/action@fbeb9d9`,
 the provided ref `fbeb9d9` is the shortened version of a
 commit SHA, which is not supported.

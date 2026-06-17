@@ -18,6 +18,7 @@ audience and purpose.
 ## README badges
 
 Badges appear on a single line after the heading, in this order:
+
 1. CI status (when hosted CI exists)
 2. License
 3. NixOS version

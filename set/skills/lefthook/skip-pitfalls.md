@@ -6,9 +6,9 @@ A remote defines `narrow-language-nix-compact` in `pre-commit` only.
 If your local `lefthook.yml` adds `skip: true` for it in `pre-push`,
 lefthook creates a job with no `run` field:
 
-```
+```text
 🥊 narrow-language-nix-compact: either `run`,`script`, or `group`
-   must be provided for a job
+  must be provided for a job
 ```
 
 Fix: only add `skip: true` overrides for hooks that exist in that

@@ -20,6 +20,7 @@ For GitLab:
 ## Badge ordering convention
 
 Badges in README.md follow this order:
+
 1. CI status (most important -- is it building?)
 2. License (legal terms)
 3. NixOS version (platform compatibility)
