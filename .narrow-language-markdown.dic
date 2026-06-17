@@ -302,6 +302,7 @@ clause
 clean
 cleanup
 clear
+cleared
 clearer
 clearing
 cli
@@ -476,7 +477,6 @@ daemon
 daemons
 daily
 darwin
-dash
 dashes
 data
 database
@@ -1738,7 +1738,6 @@ reloads
 rely
 relying
 remain
-remainder
 remember
 remote
 remotely
@@ -2064,7 +2063,6 @@ supported
 supporting
 supports
 surface
-surfaced
 surfaces
 survive
 survives

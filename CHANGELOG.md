@@ -80,6 +80,8 @@
 
 ### Spec
 
+- Mark T32 done and B1 fixed: repo-wide `lefthook --all-files` is green
+  and CI runs the full suite.
 - T24: rename propagation mechanism for consumers to detect upstream
   skill renames and update synced copies
 - Replace the multi-agent adapter abstraction (drop `I.concepts`,

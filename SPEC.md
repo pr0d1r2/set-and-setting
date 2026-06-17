@@ -144,10 +144,10 @@ and dogfoods both.
 | T31 | . | agnosticism proof -- the opencode seam (`AGENTS.md` always-on; opencode skill dir + conditional field) builds the same sources as Claude | V23 |
 | T33 | . | downstream wiring -- consumer repos + `nix-home-manager-claude-code` example + CI sync pre-step (materialized configs synced before hooks run) | C6,C7,V22 |
 | T34 | . | future: additional agent seams (Cursor `globs`/`.cursor/rules`, Codex, Gemini CLI, Copilot, Amp, ...) -- extension list, not built now | V23,C2 |
-| T32 | . | repo-wide `lefthook --all-files` green: clear pre-existing markdownlint (MD040/031/032/038), editorconfig left-padding, ascii em-dash in `*.nix`, nixfmt, and nix-no-embedded-shell debt surfaced by stricter upstream nix-lefthook | C3,V6,B1 |
+| T32 | x | repo-wide `lefthook --all-files` green: cleared markdownlint, editorconfig, ascii, nixfmt, nix-no-embedded-shell debt + narrow-language baseline-freeze; CI now runs the full lefthook suite via nix-lefthook-ci-action (only commit-gate `changelog-touched` excluded) | C3,V6,B1 |
 
 ## §B Bugs
 
 | id | date | cause | fix |
 |----|------|-------|-----|
-| B1 | 2026-06-16 | upstream nix-lefthook tightened checks; repo never revalidated, so `main` fails `lefthook run pre-commit --all-files` on pre-existing files (prose markdownlint, `*.nix` em-dashes, editorconfig padding, drift-check embedded shell) | narrow-other scoped via local glob this branch; remainder tracked as T32 |
+| B1 | 2026-06-16 | upstream nix-lefthook tightened checks; repo never revalidated, so `main` fails `lefthook run pre-commit --all-files` on pre-existing files (prose markdownlint, `*.nix` em-dashes, editorconfig padding, drift-check embedded shell) | fixed: narrow-other glob (#10), drift+embedded-shell extracted (#13), markdownlint/editorconfig/narrow cleared + CI runs lefthook (T32) |
