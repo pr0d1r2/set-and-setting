@@ -5,7 +5,7 @@
 # loads when matching files are edited; cross-cutting categories emit to
 # the always-on rules dir (no globs, always loaded). The agent format
 # lives only here (C2/V17). The `agent` seam is the only agent-specific
-# surface.
+# surface. Shell logic lives in the sibling *.sh scripts (nix/modularity).
 { lib }:
 
 {
@@ -43,11 +43,8 @@ let
   }
   // agent;
 
-  skillsDir = ../skills;
-  conceptsDir = ../concepts;
-
-  # category -> conditional-load globs. Absent/empty => cross-cutting,
-  # emitted as an always-on rule (no globs). Tunable.
+  # category -> conditional-load globs. Absent => cross-cutting, emitted
+  # as an always-on rule (no globs). Tunable.
   categoryGlobs = {
     nix = [
       "**/*.nix"
@@ -71,88 +68,24 @@ let
     ];
   };
 
-  globsFor = c: categoryGlobs.${c} or [ ];
-
-  excludeFind = lib.concatMapStringsSep " " (e: "! -name ${lib.escapeShellArg e}") exclude;
-  excludeList = lib.concatStringsSep " " exclude;
-
-  yamlGlobs =
-    c:
-    let
-      globs = globsFor c;
-    in
-    lib.optionalString (globs != [ ]) (
-      "${ag.condField}:\n" + lib.concatMapStrings (g: "  - \"${g}\"\n") globs
-    );
-
-  emitCategory =
-    c:
-    let
-      globs = globsFor c;
-      isCond = globs != [ ];
-      dest = if isCond then "${ag.skillPath}/${c}/SKILL.md" else "${ag.rulePath}/${c}.md";
-    in
-    ''
-      emit_skill "${c}" "$out/${dest}" ${if isCond then "1" else "0"} <<'GLOBS_EOF'
-      ${yamlGlobs c}GLOBS_EOF
-    '';
-
-  emitAll = lib.concatMapStrings emitCategory categories;
+  globsMap = lib.concatStringsSep ";" (
+    lib.mapAttrsToList (c: globs: "${c}=${lib.concatStringsSep "," globs}") categoryGlobs
+  );
 in
-pkgs.runCommand "agent-set" { } ''
-  set -euo pipefail
-  skills="${skillsDir}"
-
-  emit_skill() {
-    cat="$1"; dest="$2"; iscond="$3"
-    globs="$(cat)"
-    catdir="$skills/$cat"
-    core="$skills/$cat.md"
-    case " ${excludeList} " in *" $cat.md "*) core="" ;; esac
-    descsrc="$core"
-    [ -n "$descsrc" ] && [ -f "$descsrc" ] || descsrc="$(find "$catdir" -name '*.md' ${excludeFind} | sort | head -1)"
-    title="$(grep -m1 '^# ' "$descsrc" 2>/dev/null | sed 's/^# *//' || true)"
-    [ -n "$title" ] || title="$cat"
-    purpose="$(grep -m1 -E '^[^#[:space:]]' "$descsrc" 2>/dev/null | tr -d '"' || true)"
-    desc="$title"
-    [ -n "$purpose" ] && desc="$title -- $purpose"
-    mkdir -p "$(dirname "$dest")"
-    {
-      echo "---"
-      echo "name: $cat"
-      echo "description: \"$desc\""
-      [ -n "$globs" ] && printf '%s\n' "$globs"
-      echo "---"
-      echo
-      [ -n "$core" ] && [ -f "$core" ] && { cat "$core"; echo; }
-      find "$catdir" -name '*.md' ${excludeFind} | sort | while read -r f; do
-        cat "$f"; echo
-      done
-    } > "$dest"
+pkgs.runCommand "agent-set"
+  {
+    SKILLS_DIR = ../skills;
+    CONCEPTS_DIR = ../concepts;
+    CONCEPTS = if concepts then "1" else "0";
+    SKILL_PATH = ag.skillPath;
+    RULE_PATH = ag.rulePath;
+    COND_FIELD = ag.condField;
+    CATEGORIES = lib.concatStringsSep " " categories;
+    GLOBS_MAP = globsMap;
+    EXCLUDE = lib.concatStringsSep " " exclude;
+    EMIT = ./emit-skill.sh;
+    SYNC_SRC = ./sync-set.sh;
   }
-
-  mkdir -p $out
-  ${emitAll}
-
-  ${lib.optionalString concepts ''
-    mkdir -p "$out/${ag.rulePath}"
-    find "${conceptsDir}" -name '*.md' | sort | while read -r f; do
-      rel="''${f#${conceptsDir}/}"
-      out_f="$out/${ag.rulePath}/concepts-''${rel//\//-}"
-      mkdir -p "$(dirname "$out_f")"
-      cp "$f" "$out_f"
-    done
-  ''}
-
-  mkdir -p "$out/bin"
-  cat > "$out/bin/sync-set" <<'SYNC_EOF'
-  #!/usr/bin/env bash
-  set -euo pipefail
-  target="''${1:-.}"
-  src="$(dirname "$(dirname "$(readlink -f "$0")")")"
-  mkdir -p "$target"
-  cp -r "$src/.claude" "$target/" 2>/dev/null || true
-  echo "synced set -> $target"
-  SYNC_EOF
-  chmod +x "$out/bin/sync-set"
-''
+  ''
+    bash ${./mk-set.sh}
+  ''
