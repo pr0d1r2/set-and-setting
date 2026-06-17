@@ -72,6 +72,7 @@ did
 diffutils
 dir
 direnv
+dirty
 domain
 drafts
 drift
@@ -249,6 +250,7 @@ qim
 raw
 read
 rel
+rev
 root
 rule
 rules
@@ -266,6 +268,7 @@ security
 seed
 seeds
 selection
+self
 sep
 set
 sets
@@ -315,6 +318,7 @@ type
 typos
 unicode
 unit
+unknown
 update
 url
 verbatim

@@ -2,8 +2,21 @@
 
 ## Unreleased
 
+### Fixed
+
+- `--remove` of always-on (cross-cutting) categories now cleans stale
+  `.claude/rules/<cat>.md` files. Previously only domain categories
+  under `.claude/skills/set/` were cleaned by the `rm -rf` step.
+
 ### Apps
 
+- Add install manifest `.claude/skills/set/.mkset.json` (T37/I.manifest):
+  records installed categories, upstream rev, and agent. Enables smart
+  bare re-run (bare `mkSet` with a manifest refreshes previously installed
+  categories instead of defaulting to core-only), update detection (prints
+  notice when upstream rev differs from manifest), and `--remove` (remove
+  categories from the install and update the manifest). Distinguishes
+  mkSet-managed files from hand-added ones.
 - Add `apps.<sys>.{mkSet,mkSetting,mkSetting-init,bootstrap}` runnable
   installers (T36/C9): `nix run github:pr0d1r2/set-and-setting#mkSet`
   materializes skills into `./.claude/skills/set/` from one command with
