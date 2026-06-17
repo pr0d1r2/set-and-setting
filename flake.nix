@@ -322,6 +322,7 @@
           (w "lefthook-bats-unit" nix-lefthook-bats-unit-src {
             runtimeInputs = [
               pkgs.bats
+              pkgs.parallel
               pkgs.coreutils
             ];
           })
@@ -380,6 +381,7 @@
             pkgs.coreutils
             pkgs.git
             pkgs.nix
+            pkgs.bats
             nix-lefthook.packages.${pkgs.stdenv.hostPlatform.system}.default
           ];
         };
@@ -389,6 +391,7 @@
             pkgs.git
             pkgs.nix
             pkgs.gh
+            pkgs.bats
             nix-lefthook.packages.${pkgs.stdenv.hostPlatform.system}.default
           ];
           shellHook = ''

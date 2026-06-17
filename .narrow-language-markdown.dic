@@ -206,6 +206,7 @@ common
 commonly
 community
 companion
+comparator
 compares
 comparing
 compatible
@@ -264,6 +265,7 @@ copying
 cores
 correctly
 coverage
+covered
 cpu
 create
 created
@@ -631,6 +633,7 @@ interrupted
 into
 introductions
 invariants
+invoke
 invoked
 irrelevant
 iso
@@ -871,6 +874,7 @@ paragraphs
 parallel
 param
 parameter
+parametrized
 parse
 participant
 parts
