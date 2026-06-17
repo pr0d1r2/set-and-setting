@@ -65,6 +65,19 @@
 
 ### Setting (standards)
 
+- Split `mkSetting` into two output kinds (V22/T28): materialized
+  (`.markdownlint.yml`, `.yamllint.yml` -- always synced, gitignored)
+  and seed/init (`.editorconfig`, `.gitattributes`, `.gitignore`,
+  `config/lefthook/file_size_limits.yml`, `.narrow-language-*.dic`,
+  `.nix-embedded-shell-allowlist` -- scaffolded once, skip-if-exists,
+  tracked by consumer). Two scripts: `bin/sync-setting` (materialize,
+  always overwrites) and `bin/sync-setting-init` (scaffold, skips
+  files that exist). Expose `packages.setting` (materialized-only,
+  symmetric with `packages.set`). Add `compose-setting` nix check
+  verifying the split. Default gitignore fragments now include
+  `"setting"` so materialized configs are gitignored out of the box.
+  Setting drift check (`mkSettingDriftCheck`) scoped to materialized
+  files only -- seed files are consumer-owned after scaffolding
 - Add `setting` gitignore fragment (`.setting`) so a consumer can
   out-link `agent-setting` to `.setting` and have it ignored by the
   managed `.gitignore` -- keeps the out-link drift-clean without a

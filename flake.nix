@@ -373,6 +373,8 @@
 
       packages = forAllSystems (pkgs: {
         set = import ./set/lib/mk-set.nix { inherit (nixpkgs) lib; } { inherit pkgs; };
+        setting =
+          (import ./setting/lib/mk-setting.nix { inherit (nixpkgs) lib; } { inherit pkgs; }).materialized;
       });
 
       devShells = forAllSystems (pkgs: {
@@ -449,6 +451,48 @@
             mkSetting = import ./setting/lib/mk-setting.nix { inherit (nixpkgs) lib; };
           in
           mkSetting { inherit pkgs; };
+
+        compose-setting =
+          let
+            mkSetting = import ./setting/lib/mk-setting.nix { inherit (nixpkgs) lib; };
+            full = mkSetting { inherit pkgs; };
+          in
+          pkgs.runCommand "compose-setting-check" { } ''
+            # materialized files present in full output
+            [ -e "${full}/.markdownlint.yml" ] || { echo "FAIL: no .markdownlint.yml"; exit 1; }
+            [ -e "${full}/.yamllint.yml" ] || { echo "FAIL: no .yamllint.yml"; exit 1; }
+
+            # seed files present in full output
+            [ -e "${full}/.editorconfig" ] || { echo "FAIL: no .editorconfig"; exit 1; }
+            [ -e "${full}/.gitattributes" ] || { echo "FAIL: no .gitattributes"; exit 1; }
+            [ -e "${full}/.gitignore" ] || { echo "FAIL: no .gitignore"; exit 1; }
+            [ -e "${full}/config/lefthook/file_size_limits.yml" ] || { echo "FAIL: no file_size_limits.yml"; exit 1; }
+            [ -e "${full}/.narrow-language-nix.dic" ] || { echo "FAIL: no nix.dic"; exit 1; }
+            [ -e "${full}/.nix-embedded-shell-allowlist" ] || { echo "FAIL: no allowlist"; exit 1; }
+
+            # sync scripts present and executable
+            [ -x "${full}/bin/sync-setting" ] || { echo "FAIL: no sync-setting"; exit 1; }
+            [ -x "${full}/bin/sync-setting-init" ] || { echo "FAIL: no sync-setting-init"; exit 1; }
+
+            # packages.setting (materialized) has configs but not seeds
+            [ -e "${full.materialized}/.markdownlint.yml" ] || { echo "FAIL: pkg no markdownlint"; exit 1; }
+            [ -e "${full.materialized}/.yamllint.yml" ] || { echo "FAIL: pkg no yamllint"; exit 1; }
+            if [ -e "${full.materialized}/.editorconfig" ]; then
+              echo "FAIL: pkg has seed .editorconfig"; exit 1
+            fi
+            if [ -e "${full.materialized}/.gitignore" ]; then
+              echo "FAIL: pkg has seed .gitignore"; exit 1
+            fi
+
+            # gitignore includes materialized file entries (setting fragment)
+            grep -q '.markdownlint.yml' "${full}/.gitignore" \
+              || { echo "FAIL: gitignore missing .markdownlint.yml"; exit 1; }
+            grep -q '.yamllint.yml' "${full}/.gitignore" \
+              || { echo "FAIL: gitignore missing .yamllint.yml"; exit 1; }
+
+            echo PASS
+            touch $out
+          '';
 
         default = pkgs.runCommand "set-and-setting-checks" { } ''
           touch $out

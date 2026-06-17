@@ -1,5 +1,6 @@
-# Compares synced dotfiles against the built setting. Drift logic lives
-# in ./drift-check.sh (nix/modularity: no embedded shell here).
+# Compares synced materialized configs against the built setting. Seed
+# files are consumer-owned after scaffolding so they are not checked
+# here. Drift logic lives in ./drift-check.sh (nix/modularity).
 {
   pkgs,
   settingSet,
@@ -11,8 +12,8 @@ pkgs.runCommand "setting-drift-check"
     nativeBuildInputs = [ pkgs.diffutils ];
     EXPECTED = settingSet;
     ACTUAL = "${projectRoot}";
-    REL_PATHS = ".editorconfig .gitattributes .gitignore";
-    SYNC_HINT = "run: nix run .#sync-setting";
+    REL_PATHS = ".markdownlint.yml .yamllint.yml";
+    SYNC_HINT = "run: sync-setting";
   }
   ''
     bash ${./drift-check.sh}
