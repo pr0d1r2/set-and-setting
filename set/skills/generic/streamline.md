@@ -31,7 +31,7 @@ or multi-step sequences. Minimal knowledge to interact:
 
 1. Wrap it in a `just` recipe before considering it done
 2. Put the logic in a separate script -- recipe body is only
-   `bash scripts/just/<module>/<script>.sh`
+  `bash scripts/just/<module>/<script>.sh`
 3. Add a one-line comment above the recipe (shows in `--list`)
 4. Group related recipes in module files
 5. Test that `just --list` stays clean and alphabetical

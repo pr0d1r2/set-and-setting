@@ -6,6 +6,7 @@ security-relevant feature must have a corresponding assertion.
 ## When to add a security assertion
 
 Any change that affects the attack surface:
+
 - New network listener -- assert it binds only where expected
 - New user or privilege change -- assert locked password, correct
   shell, correct groups

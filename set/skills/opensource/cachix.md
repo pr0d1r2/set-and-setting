@@ -9,7 +9,7 @@ CI run rebuilds from source -- slow and wasteful.
 1. Create cache at cachix.org (free for open-source)
 2. Add `cachix use <name>` to CONTRIBUTING.md setup steps
 3. Configure substituters in `flake.nix` `nixConfig` or
-   `extra-substituters`
+  `extra-substituters`
 4. Push builds with `cachix push <name>` after successful `nix build`
 
 ## Cross-repo flake dependencies
@@ -38,9 +38,11 @@ generic build tools -- no project data.
 allowlists, SSH keys, or tunnel config at eval time.
 
 **Selective push:** only push safe outputs explicitly:
+
 ```sh
 cachix push <name> $(nix build .#devShells.x86_64-linux.default --print-out-paths)
 ```
+
 Never use blanket `cachix push` after a full system build.
 
 Rule: only push derivations whose inputs are already public

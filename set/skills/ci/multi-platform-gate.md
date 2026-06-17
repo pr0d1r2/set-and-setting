@@ -7,7 +7,7 @@ nix installer + cachix.
 
 ## Pattern
 
-```
+```text
 check-linux (lint + build x86_64) ──> check-darwin (macos runner)
                                   └──> check-linux-arm (QEMU aarch64)
 ```

@@ -49,7 +49,7 @@ Missing the flake input → `exit 127: No such file or directory`.
 2. Add flake input: `nix-lefthook-FOO.url = "github:pr0d1r2/nix-lefthook-FOO"`
 3. Add to outputs parameter list
 4. Add `nix-lefthook-FOO.packages.${sys}.default` to BOTH `default`
-   and `ci` devShell packages
+  and `ci` devShell packages
 5. Run `nix flake lock --update-input nix-lefthook-FOO`
 6. Reload direnv
 

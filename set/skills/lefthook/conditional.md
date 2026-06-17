@@ -17,6 +17,7 @@ exec bash "$REPO_ROOT/scripts/actual-test.sh"
 ```
 
 Key rules:
+
 - Exit 0 on missing prerequisites (not exit 1 -- that would fail the
   hook)
 - Use short timeouts for SSH reachability checks (3s, not default 30s)
@@ -29,7 +30,7 @@ Key rules:
 3. Place after unconditional checks -- conditional hooks should be last
 4. Add unit test with stub prerequisites
 5. Unit tests must use a fake `REPO_ROOT` with only the files the
-   script needs -- never invoke real builds
+  script needs -- never invoke real builds
 
 ## Ordering in lefthook.yml
 

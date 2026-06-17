@@ -8,12 +8,12 @@ This skill covers the patterns used and how to extend them.
 When adding a systemd service:
 
 1. Start with `ProtectSystem=strict`, `NoNewPrivileges=true`,
-   `PrivateTmp=true`
+  `PrivateTmp=true`
 2. Add `BindPaths` only for directories the service actually writes
 3. Use `IPAddressDeny=any` + `IPAddressAllow` if the service needs
-   network
+  network
 4. Set `CapabilityBoundingSet=""` unless specific capabilities are
-   required
+  required
 5. Document any relaxations with a comment explaining why
 
 ## Deferred hardening

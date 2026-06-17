@@ -4,7 +4,7 @@ Standard file set for open-source nix package repos.
 
 ## Required files
 
-```
+```text
 repo/
 ├── .editorconfig          # formatting rules (2-space indent, LF, UTF-8)
 ├── .envrc                 # `use flake` for direnv

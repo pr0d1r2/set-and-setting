@@ -100,6 +100,12 @@
 
 ### Infrastructure
 
+- Clear the repo-wide lint debt (B1/T32) so `lefthook --all-files` is
+  green: fix markdownlint (MD031/032/038/040, fence languages + blank
+  lines) across 16 skill files, fix editorconfig left-padding across 11
+  files, baseline-freeze the markdown narrow-language dictionary (add the
+  repo's existing prose vocabulary), and raise the `.dic` file-size limit
+  to fit it. Unblocks running lefthook in CI.
 - Extract the drift comparator from `mk-drift-check.nix` and
   `mk-setting-drift-check.nix` into one generic, layout-parametrized
   `lib/drift-check.sh` (no embedded shell in nix; both builders now just
