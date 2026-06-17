@@ -98,6 +98,14 @@
 
 ### Spec
 
+- Specify the zero-dependency `nix run` delivery path (C9): runnable
+  `apps.<sys>.{mkSet,mkSetting,mkSetting-init,bootstrap}` that materialize
+  skills into `./.claude/skills/set/` from one command (run-time emit).
+  Coarse one-SKILL.md-per-category (V24), facets cloned as markdown-linked
+  on-demand files (V25), clean-replace per category (V26), core+opt-in
+  selection (V27), one emitter for all three paths (V28). Adds I.apps,
+  I.manifest; tasks T35-T39 (incl README first-impression WOW). Flips
+  done-in-#12 tasks T25/26/27/29 to done.
 - Mark T32 done and B1 fixed: repo-wide `lefthook --all-files` is green
   and CI runs the full suite.
 - T24: rename propagation mechanism for consumers to detect upstream
