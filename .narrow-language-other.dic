@@ -6,6 +6,7 @@ ascii
 attr
 author
 auto
+bats
 branch
 branches
 build
@@ -103,6 +104,7 @@ nowicki
 only
 other
 parallel
+parse
 paths
 permissions
 peter
@@ -150,6 +152,7 @@ true
 typos
 ubuntu
 unicode
+unit
 update
 url
 use

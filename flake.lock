@@ -52,6 +52,38 @@
         "type": "github"
       }
     },
+    "nix-lefthook-bats-parse-src": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1780976423,
+        "narHash": "sha256-m3CfPVFzPi9jlxD4LqQw+xVxHwpahPZ5p7B1hQskYdo=",
+        "owner": "pr0d1r2",
+        "repo": "nix-lefthook-bats-parse",
+        "rev": "0562fd1bcd2d382d01da57bde2b629f39b2d503a",
+        "type": "github"
+      },
+      "original": {
+        "owner": "pr0d1r2",
+        "repo": "nix-lefthook-bats-parse",
+        "type": "github"
+      }
+    },
+    "nix-lefthook-bats-unit-src": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1780849239,
+        "narHash": "sha256-g4OoePb0pnf3J9O/LnV/Yudq3Nq6lC3UAXI+Ebop9P0=",
+        "owner": "pr0d1r2",
+        "repo": "nix-lefthook-bats-unit",
+        "rev": "872ed7507d20fd2f03752e8e464b4607db523e07",
+        "type": "github"
+      },
+      "original": {
+        "owner": "pr0d1r2",
+        "repo": "nix-lefthook-bats-unit",
+        "type": "github"
+      }
+    },
     "nix-lefthook-changelog-touched-src": {
       "flake": false,
       "locked": {
@@ -746,6 +778,8 @@
       "inputs": {
         "nix-lefthook": "nix-lefthook",
         "nix-lefthook-ascii-only-src": "nix-lefthook-ascii-only-src",
+        "nix-lefthook-bats-parse-src": "nix-lefthook-bats-parse-src",
+        "nix-lefthook-bats-unit-src": "nix-lefthook-bats-unit-src",
         "nix-lefthook-changelog-touched-src": "nix-lefthook-changelog-touched-src",
         "nix-lefthook-commit-msg-lint-src": "nix-lefthook-commit-msg-lint-src",
         "nix-lefthook-deadnix-src": "nix-lefthook-deadnix-src_2",

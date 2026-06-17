@@ -108,6 +108,7 @@ based
 bash
 basic
 basically
+bats
 before
 behavior
 behavioral
@@ -262,6 +263,7 @@ copilot
 copying
 cores
 correctly
+coverage
 cpu
 create
 created
@@ -380,6 +382,7 @@ emitter
 emulation
 enable
 enabled
+enabling
 encounters
 end
 enforce
@@ -433,6 +436,7 @@ extensions
 external
 extra
 extract
+extracted
 extraction
 facilitate
 fact
@@ -867,6 +871,7 @@ paragraphs
 parallel
 param
 parameter
+parse
 participant
 parts
 pass
