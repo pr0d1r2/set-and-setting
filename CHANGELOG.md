@@ -107,8 +107,9 @@
   macOS + aarch64-linux (QEMU). Runs the full lefthook suite (incl
   `bats-unit` + `nix-flake-check`) over all files via the `ci` devShell;
   `skip-build` (no `packages.default`); `changelog-touched` excluded
-  (commit-gate hook). Caches via cachix `pr0d1r2`. macOS-only
-  `flake-check-timeout: 120` (slower runners; real fix is upstream).
+  (commit-gate hook). Caches via cachix `pr0d1r2`. The macOS cold-runner
+  flake-check timeout is handled upstream (nix-lefthook-nix-flake-check
+  platform-aware default: Darwin 120s).
 - Clear the repo-wide lint debt (B1/T32) so `lefthook --all-files` is
   green: fix markdownlint (MD031/032/038/040, fence languages + blank
   lines) across 16 skill files, fix editorconfig left-padding across 11
