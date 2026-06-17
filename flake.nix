@@ -119,6 +119,14 @@
       url = "github:pr0d1r2/nix-lefthook-yamllint";
       flake = false;
     };
+    nix-lefthook-bats-parse-src = {
+      url = "github:pr0d1r2/nix-lefthook-bats-parse";
+      flake = false;
+    };
+    nix-lefthook-bats-unit-src = {
+      url = "github:pr0d1r2/nix-lefthook-bats-unit";
+      flake = false;
+    };
   };
 
   outputs =
@@ -151,6 +159,8 @@
       nix-lefthook-typos-src,
       nix-lefthook-unicode-lint-src,
       nix-lefthook-yamllint-src,
+      nix-lefthook-bats-parse-src,
+      nix-lefthook-bats-unit-src,
       ...
     }:
     let
@@ -303,6 +313,19 @@
           (w "lefthook-yamllint" nix-lefthook-yamllint-src {
             runtimeInputs = [ pkgs.yamllint ];
           })
+          (w "lefthook-bats-parse" nix-lefthook-bats-parse-src {
+            runtimeInputs = [
+              pkgs.bats
+              pkgs.coreutils
+            ];
+          })
+          (w "lefthook-bats-unit" nix-lefthook-bats-unit-src {
+            runtimeInputs = [
+              pkgs.bats
+              pkgs.parallel
+              pkgs.coreutils
+            ];
+          })
         ];
     in
     {
@@ -358,6 +381,7 @@
             pkgs.coreutils
             pkgs.git
             pkgs.nix
+            pkgs.bats
             nix-lefthook.packages.${pkgs.stdenv.hostPlatform.system}.default
           ];
         };
@@ -367,6 +391,7 @@
             pkgs.git
             pkgs.nix
             pkgs.gh
+            pkgs.bats
             nix-lefthook.packages.${pkgs.stdenv.hostPlatform.system}.default
           ];
           shellHook = ''

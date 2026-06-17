@@ -108,6 +108,7 @@ based
 bash
 basic
 basically
+bats
 before
 behavior
 behavioral
@@ -205,6 +206,7 @@ common
 commonly
 community
 companion
+comparator
 compares
 comparing
 compatible
@@ -262,6 +264,8 @@ copilot
 copying
 cores
 correctly
+coverage
+covered
 cpu
 create
 created
@@ -380,6 +384,7 @@ emitter
 emulation
 enable
 enabled
+enabling
 encounters
 end
 enforce
@@ -433,6 +438,7 @@ extensions
 external
 extra
 extract
+extracted
 extraction
 facilitate
 fact
@@ -627,6 +633,7 @@ interrupted
 into
 introductions
 invariants
+invoke
 invoked
 irrelevant
 iso
@@ -867,6 +874,8 @@ paragraphs
 parallel
 param
 parameter
+parametrized
+parse
 participant
 parts
 pass

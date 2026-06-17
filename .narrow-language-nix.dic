@@ -1,6 +1,7 @@
 aarch
 absent
 actual
+against
 agent
 agentic
 agnostic
@@ -19,6 +20,7 @@ bats
 bin
 body
 build
+built
 builtins
 bundle
 cachix
@@ -41,6 +43,7 @@ cli
 command
 commit
 compact
+compares
 compose
 composed
 concat
@@ -65,18 +68,16 @@ desc
 description
 descsrc
 dest
-detected
 deterministic
 dev
 did
-diff
 diffutils
 dir
-directory
 direnv
 dirname
 domain
 done
+dotfiles
 drafts
 drift
 drop
@@ -94,7 +95,6 @@ entrypoint
 env
 environment
 eof
-error
 esac
 escape
 euo
@@ -117,7 +117,6 @@ filenames
 files
 final
 find
-first
 flake
 flakes
 folded
@@ -125,7 +124,6 @@ folder
 follows
 for
 format
-found
 freeze
 from
 full
@@ -149,6 +147,7 @@ grep
 has
 head
 here
+hint
 hook
 hooks
 host
@@ -189,6 +188,7 @@ loaded
 loads
 local
 lock
+logic
 loose
 map
 markdown
@@ -198,6 +198,7 @@ matching
 mindset
 missing
 mkdir
+modularity
 name
 narrow
 native
@@ -223,6 +224,8 @@ out
 output
 outputs
 packages
+parallel
+parse
 pass
 path
 paths
@@ -231,7 +234,6 @@ permissions
 pipefail
 platform
 pre
-present
 preserved
 printf
 product
@@ -309,6 +311,7 @@ truth
 tunable
 typos
 unicode
+unit
 update
 url
 usr

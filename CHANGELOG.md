@@ -100,6 +100,13 @@
 
 ### Infrastructure
 
+- Extract the drift comparator from `mk-drift-check.nix` and
+  `mk-setting-drift-check.nix` into one generic, layout-parametrized
+  `lib/drift-check.sh` (no embedded shell in nix; both builders now just
+  set env + invoke it). Covered by `tests/drift-check.bats`.
+- Add `nix-lefthook-bats-parse` and `nix-lefthook-bats-unit` hooks
+  (remotes + flake inputs + devShell wrappers) to lint and run bats unit
+  tests, enabling TDD coverage of shell extracted from nix files.
 - Add narrow-language dictionary words for the `update-pins` workflow
   (`.github/workflows/update-pins.yml`) so the nix and other hooks pass
 - Add `.envrc` -- direnv loads the dev shell from the flake via
