@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+### Tests
+
+- Add unit tests for `mk-set.sh` (6 cases) and `sync-set.sh` (4 cases)
+  to complete coverage for all three extracted mkSet shell scripts
+
 ### Set (skills)
 
 - Evolve `mkSet` into the skill-set emitter: groups each category into an
