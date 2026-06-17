@@ -42,7 +42,7 @@ and dogfoods both.
   category (`<dir>/set/<category>/SKILL.md` + topic/aspect files as body
   or supporting files) with derived `name` + `description`; cross-cutting
   categories emit to the always-on file. Args: `pkgs`, `categories`,
-  `concepts`, `exclude`, `extra`, `extraPaths`, `agent ? claude` where
+  `concepts`, `exclude`, `agent ? claude` where
   `agent = { dir, condField, alwaysOnFile }`. Outputs: the emitted tree +
   `bin/sync-set` (target-arg). Agent format lives only here (C2/V17).
 - I.mkSetting: `setting/lib/mk-setting.nix` -- single source of truth for
@@ -81,7 +81,7 @@ and dogfoods both.
 - V6: Every skill file is `*.md`. No other extensions in `set/skills/`.
 - V7: Skill file structure follows `<topic>.md` + `<topic>/<aspect>.md` convention. Cross-cutting aspects (modularity, security) reuse same naming across topics.
 - V8: `exclude` parameter in mkSet filters paths from output -- excluded files must not appear in derivation.
-- V9: `extra` and `extraPaths` in mkSet inject content into `$out/skills/` without requiring source files in this repo.
+- V9: (retired -- extra/extraPaths injection dropped with the mkSet emitter rewrite)
 - V10: Source repo dogfoods `packages.set` -- emits own `set/` into a gitignored `.claude/skills/set/` + always-on rules, auto-synced on devShell/direnv entry. No `@`-ref duplication of skills.
 - V11: Draft skills live in `set/drafts/` mirroring `set/skills/` structure. Not loaded by default -- consumer opts in via `drafts/*` categories.
 - V12: Bundle files compose atomics via `@` references. Own content limited to heading and purpose statement.
@@ -116,7 +116,7 @@ and dogfoods both.
 | T3  | x | add lefthook integration in setting/integrations/    | I.flake   |
 | T4  | x | add `nix flake check` CI (GitHub Actions)            | V1,C3     |
 | T5  | x | expose mkDriftCheck for setting/ (not just set/)     | I.mkDriftCheck |
-| T6  | x | add tests for mkSet exclude/extra/extraPaths params  | V8,V9     |
+| T6  | x | add tests for mkSet exclude param                    | V8        |
 | T7  | . | switch consumer repos from git+file: to github: URLs | C6        |
 | T8  | . | auto-update mechanism -- flake re-eval triggers sync-set + sync-setting + commit in consumer repos | C7,I.sync-set,I.sync-setting |
 | T9  | . | consumer dependency graph: upstream repos switch git+file: to github: URLs after push | C6 |

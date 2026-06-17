@@ -348,6 +348,10 @@
         mkSettingDriftCheck = import ./lib/mk-setting-drift-check.nix;
       };
 
+      packages = forAllSystems (pkgs: {
+        set = import ./set/lib/mk-set.nix { inherit (nixpkgs) lib; } { inherit pkgs; };
+      });
+
       devShells = forAllSystems (pkgs: {
         ci = pkgs.mkShell {
           packages = (lefthookWrappersFor pkgs) ++ [
@@ -373,79 +377,45 @@
       });
 
       checks = forAllSystems (pkgs: {
-        mkSet-generic =
-          let
-            mkSet = import ./set/lib/mk-set.nix { inherit (nixpkgs) lib; };
-          in
-          mkSet {
-            inherit pkgs;
-            categories = [ "generic" ];
-          };
+        mkSet-generic = import ./set/lib/mk-set.nix { inherit (nixpkgs) lib; } {
+          inherit pkgs;
+          categories = [ "generic" ];
+        };
 
-        mkSet-exclude =
+        compose-set =
           let
             mkSet = import ./set/lib/mk-set.nix { inherit (nixpkgs) lib; };
-            result = mkSet {
+            full = mkSet { inherit pkgs; };
+            excluded = mkSet {
               inherit pkgs;
               categories = [ "generic" ];
               exclude = [ "rtk.md" ];
             };
           in
-          pkgs.runCommand "mkSet-exclude-check" { } ''
-            if [ -f "${result}/skills/generic/rtk.md" ]; then
-              echo "FAIL: excluded file rtk.md still present"
-              exit 1
-            fi
-            if [ ! -f "${result}/skills/generic/skill.md" ]; then
-              echo "FAIL: non-excluded file skill.md missing"
-              exit 1
-            fi
-            echo "PASS: exclude works"
-            touch $out
-          '';
+          pkgs.runCommand "compose-set-check" { } ''
+            nixskill="${full}/.claude/skills/set/nix/SKILL.md"
+            gen="${full}/.claude/rules/generic.md"
+            cli="${full}/.claude/skills/set/cli/SKILL.md"
 
-        mkSet-extra =
-          let
-            mkSet = import ./set/lib/mk-set.nix { inherit (nixpkgs) lib; };
-            result = mkSet {
-              inherit pkgs;
-              categories = [ "generic" ];
-              extra = {
-                "custom/test-skill.md" = "# Test Skill\n\nInjected via extra.";
-              };
-            };
-          in
-          pkgs.runCommand "mkSet-extra-check" { } ''
-            if [ ! -f "${result}/skills/custom/test-skill.md" ]; then
-              echo "FAIL: extra skill not created"
-              exit 1
-            fi
-            echo "PASS: extra works"
-            touch $out
-          '';
+            # domain skill carries the conditional-load field + nix glob
+            grep -q '^paths:' "$nixskill" || { echo "FAIL: nix missing paths"; exit 1; }
+            grep -qF '"**/*.nix"' "$nixskill" || { echo "FAIL: nix glob"; exit 1; }
 
-        mkSet-extraPaths =
-          let
-            mkSet = import ./set/lib/mk-set.nix { inherit (nixpkgs) lib; };
-            testFile = pkgs.writeText "external-skill.md" "# External\n\nFrom extraPaths.";
-            result = mkSet {
-              inherit pkgs;
-              categories = [ "generic" ];
-              extraPaths = {
-                "external/injected.md" = testFile;
-              };
-            };
-          in
-          pkgs.runCommand "mkSet-extraPaths-check" { } ''
-            if [ ! -f "${result}/skills/external/injected.md" ]; then
-              echo "FAIL: extraPaths skill not created"
-              exit 1
+            # cross-cutting category is an always-on rule (no paths)
+            if grep -q '^paths:' "$gen"; then echo "FAIL: generic has paths"; exit 1; fi
+
+            # loose top-level cli.md folded into the cli skill
+            grep -q 'justfile' "$cli" || { echo "FAIL: cli core not folded"; exit 1; }
+
+            # agnostic body preserved verbatim (a known source line)
+            grep -q 'Flake entrypoint should be direnv' "$gen" || { echo "FAIL: body"; exit 1; }
+
+            # exclude omits the file from the emitted output
+            if grep -qi 'Rust Token Killer' "${excluded}/.claude/rules/generic.md"; then
+              echo "FAIL: exclude did not drop rtk.md"; exit 1
             fi
-            if ! grep -q "External" "${result}/skills/external/injected.md"; then
-              echo "FAIL: extraPaths content mismatch"
-              exit 1
-            fi
-            echo "PASS: extraPaths works"
+
+            echo PASS
             touch $out
           '';
 

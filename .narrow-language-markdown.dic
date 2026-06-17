@@ -356,6 +356,7 @@ drift
 driven
 drives
 drop
+dropped
 dscacheutil
 due
 duplicating
@@ -474,6 +475,7 @@ flushcache
 focus
 fold
 folder
+folds
 follow
 followed
 follows
@@ -602,6 +604,7 @@ initialize
 initrd
 inject
 injected
+injection
 inline
 input
 inputs
@@ -810,7 +813,6 @@ nvme
 obvious
 off
 offenses
-offline
 old
 omitting
 once
@@ -863,8 +865,8 @@ padding
 paragraph
 paragraphs
 parallel
+param
 parameter
-params
 participant
 parts
 pass
@@ -1031,6 +1033,8 @@ rest
 restart
 restrict
 result
+retained
+retired
 retry
 reuse
 revalidated
@@ -1270,6 +1274,7 @@ traveler
 tree
 triggered
 triggers
+trimmed
 trip
 trips
 true

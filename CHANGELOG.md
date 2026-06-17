@@ -4,7 +4,13 @@
 
 ### Set (skills)
 
-- Drop some micro skills concepts to the tree while offline.
+- Evolve `mkSet` into the skill-set emitter: groups each category into an
+  Agent-Skills folder (`.claude/skills/set/<category>/SKILL.md`) with
+  derived `name`/`description` and a conditional-load `paths` field;
+  cross-cutting categories emit as always-on `.claude/rules/<category>.md`
+  (no paths). Loose top-level `<topic>.md` (e.g. `cli.md`) folds into its
+  category. Expose `packages.set`; `exclude` retained, `extra`/
+  `extraPaths` dropped (V9 retired, T6 trimmed). New `compose-set` check.
 - Add micro-skill vocabulary to the `narrow-language-markdown`
   dictionary so the new skill files lint clean.
 - Scope `narrow-language-other` to yml/toml/justfile/Gemfile via a
