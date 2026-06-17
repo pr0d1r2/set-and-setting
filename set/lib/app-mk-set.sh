@@ -233,6 +233,19 @@ export CONCEPTS="1"
 bash "$MK_SET_SCRIPT"
 
 rm -rf "./.claude/skills/set"
+
+# Clean up stale always-on rule files for dropped categories
+if [ ${#manifest_cats[@]} -gt 0 ] && [ -n "${manifest_cats[0]:-}" ]; then
+    for mc in "${manifest_cats[@]}"; do
+        [ -z "$mc" ] && continue
+        keep=0
+        for fc in "${final_cats[@]}"; do
+            [ "$mc" = "$fc" ] && keep=1 && break
+        done
+        [ "$keep" -eq 0 ] && rm -f "./.claude/rules/$mc.md"
+    done
+fi
+
 cp -r "$out/.claude" "./" 2>/dev/null || true
 
 cats_json=""

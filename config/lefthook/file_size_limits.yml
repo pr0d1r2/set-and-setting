@@ -1,7 +1,9 @@
 ---
 default: 8192
 extensions:
+  bats: 10240
   dic: 32768
   lock: 262144
   md: 32768
   nix: 32768
+  sh: 10240

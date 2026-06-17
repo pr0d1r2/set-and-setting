@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+### Fixed
+
+- `--remove` of always-on (cross-cutting) categories now cleans stale
+  `.claude/rules/<cat>.md` files. Previously only domain categories
+  under `.claude/skills/set/` were cleaned by the `rm -rf` step.
+
 ### Apps
 
 - Add install manifest `.claude/skills/set/.mkset.json` (T37/I.manifest):

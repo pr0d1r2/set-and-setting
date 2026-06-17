@@ -49,6 +49,7 @@ check
 chmod
 claude
 clean
+cleans
 cloned
 clones
 combined
@@ -99,6 +100,7 @@ disable
 domain
 done
 drift
+dropped
 dupe
 duplicated
 each

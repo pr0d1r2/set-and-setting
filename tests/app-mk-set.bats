@@ -224,3 +224,15 @@ teardown() {
     [ "$status" -eq 1 ]
     [[ "$output" == *"--remove requires at least one category"* ]]
 }
+
+@test "--remove of always-on category cleans its rule file" {
+    run bash -c "cd '$TARGET' && bash '$SCRIPT' nix security"
+    [ "$status" -eq 0 ]
+    [ -f "$TARGET/.claude/rules/security.md" ]
+    [ -f "$TARGET/.claude/skills/set/nix/SKILL.md" ]
+    run bash -c "cd '$TARGET' && bash '$SCRIPT' --remove security"
+    [ "$status" -eq 0 ]
+    [ ! -f "$TARGET/.claude/rules/security.md" ]
+    [ -f "$TARGET/.claude/skills/set/nix/SKILL.md" ]
+    [ -f "$TARGET/.claude/rules/generic.md" ]
+}
