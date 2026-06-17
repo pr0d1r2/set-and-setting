@@ -102,6 +102,10 @@
 
 ### Infrastructure
 
+- Extract `mkSet`'s embedded build shell into `set/lib/mk-set.sh`,
+  `emit-skill.sh`, and `sync-set.sh` (parametrized via env, no functions);
+  `mk-set.nix` drops out of the nix-no-embedded-shell allowlist. Covered
+  by `tests/emit-skill.bats`.
 - Switch CI to `nix-lefthook-ci-action` (SHA-pinned), replacing the
   hand-rolled `nix flake check` workflow. Three jobs -- Linux gates
   macOS + aarch64-linux (QEMU). Runs the full lefthook suite (incl
