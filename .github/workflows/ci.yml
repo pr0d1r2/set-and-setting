@@ -24,8 +24,6 @@ jobs:
           cachix-cache: pr0d1r2
           cachix-auth-token: ${{ secrets.CACHIX_AUTH_TOKEN }}
           extra-env: LEFTHOOK_EXCLUDE=changelog-touched
-          flake-check-timeout: "600"
-          flake-eval-timeout: "300"
 
   build-darwin:
     needs: build-linux
@@ -37,8 +35,10 @@ jobs:
           cachix-cache: pr0d1r2
           cachix-auth-token: ${{ secrets.CACHIX_AUTH_TOKEN }}
           extra-env: LEFTHOOK_EXCLUDE=changelog-touched
-          flake-check-timeout: "600"
-          flake-eval-timeout: "300"
+          # macOS GitHub runners are slower; the default 60s nix flake
+          # check times out cold. Workaround until fixed upstream in
+          # nix-lefthook-nix-flake-check (see issue).
+          flake-check-timeout: "120"
 
   build-linux-arm:
     needs: build-linux
@@ -51,5 +51,3 @@ jobs:
           cachix-cache: pr0d1r2
           cachix-auth-token: ${{ secrets.CACHIX_AUTH_TOKEN }}
           extra-env: LEFTHOOK_EXCLUDE=changelog-touched
-          flake-check-timeout: "600"
-          flake-eval-timeout: "300"

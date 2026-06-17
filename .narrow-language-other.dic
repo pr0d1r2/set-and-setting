@@ -4,6 +4,7 @@ actions
 agentic
 all
 and
+are
 arm
 ascii
 attr
@@ -23,6 +24,7 @@ checker
 checkout
 chore
 claude
+cold
 com
 commands
 commit
@@ -63,6 +65,7 @@ few
 file
 files
 final
+fixed
 flagging
 flake
 from
@@ -77,10 +80,12 @@ glob
 gmail
 has
 hook
+hub
 install
 installer
 installs
 intended
+issue
 its
 jobs
 json
@@ -98,6 +103,7 @@ linux
 list
 local
 lock
+mac
 macos
 magic
 main
@@ -121,6 +127,7 @@ nixpkgs
 nowicki
 only
 other
+out
 packages
 parallel
 parse
@@ -145,6 +152,7 @@ result
 rules
 run
 runner
+runners
 runs
 scans
 schedule
@@ -159,6 +167,7 @@ siblings
 size
 skills
 skip
+slower
 spec
 staged
 statix
@@ -170,6 +179,7 @@ the
 then
 this
 timeout
+times
 title
 token
 toml
@@ -180,7 +190,9 @@ typos
 ubuntu
 unicode
 unit
+until
 update
+upstream
 url
 use
 uses
@@ -188,6 +200,7 @@ watch
 whitespace
 with
 without
+workaround
 workflow
 write
 wrongly
