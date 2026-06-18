@@ -40,7 +40,7 @@ and dogfoods both.
 
 ## §I Interfaces
 
-- I.flake: `flake.nix` -- main entry. Exposes `sets`, `drafts`, `settings`, `lib.mkSet`, `lib.mkSetting`, `lib.mkDriftCheck`, `packages.set`, `packages.setting`, `checks`.
+- I.flake: `flake.nix` -- main entry. Exposes `sets`, `drafts`, `settings`, `lib.mkSet`, `lib.mkSetting`, `lib.mkDriftCheck`, `lib.mkMaterializeCheck`, `packages.set`, `packages.setting`, `checks`.
 - I.mkSet: `set/lib/mk-set.nix` -- the skill-set emitter and single
   source of truth for skills. Transforms agnostic `set/skills/` markdown
   into the Agent-Skills open-standard layout: one skill folder per
@@ -61,6 +61,16 @@ and dogfoods both.
   `bin/sync-setting-init` (scaffold, skips files that already exist).
 - I.mkDriftCheck: `lib/mk-drift-check.nix` -- compares synced set files against built derivation. Args: `pkgs`, `skillSet`, `projectRoot`, `setPath`. Fails with exit 1 on drift.
 - I.mkSettingDriftCheck: `lib/mk-setting-drift-check.nix` -- compares synced dotfiles against mkSetting output. Args: `pkgs`, `settingSet`, `projectRoot`. Fails with exit 1 on drift.
+- I.mkMaterializeCheck: `lib/mk-materialize-check.nix` -- deterministic
+  consumer-side test for skill materialization. Runs mkSet for the
+  requested categories (core implied), then asserts the output layout
+  matches expectations self-derived from `categories.nix`: domain
+  categories have `SKILL.md` with the conditional-load field and raw
+  facets (V25); always-on categories have a rule file with no
+  conditional field; excluded files are absent. Args: `pkgs`,
+  `categories`, `exclude ? []`, `agent ? {}`. Shell logic in
+  `lib/materialize-check.sh` (nix/modularity). Consumer wiring is one
+  line in their `checks` output.
 - I.sync-set: CLI script in mkSet output. Copies skills+concepts+set.md to consumer repo target dir.
 - I.sync-setting: CLI script in mkSetting output. Copies dotfiles to consumer repo root.
 - I.sets: Attrset of raw paths to each skill category dir.
@@ -181,6 +191,7 @@ and dogfoods both.
 | T37 | x | install manifest `.claude/skills/set/.mkset.json` -- smart bare re-run (refresh installed), update detection, `--remove` | I.manifest |
 | T38 | x | README headline -- document `nix run github:pr0d1r2/set-and-setting#mkSet` one-command skill materialization as the first-impression WOW (single command, zero deps); cover all three delivery paths (C9) | I.apps,C9 |
 | T39 | x | `--agent` seam passthrough in installers (opencode target); ties the agnosticism proof | V21,V28,T31 |
+| T40 | x | `lib.mkMaterializeCheck` -- deterministic consumer-side test for skill materialization; self-derives expectations from `categories.nix`; bats coverage + `checks` entries | I.mkMaterializeCheck,V20,V25 |
 
 ## §B Bugs
 

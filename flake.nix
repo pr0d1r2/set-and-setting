@@ -371,6 +371,7 @@
         mkSetting = import ./setting/lib/mk-setting.nix { inherit (nixpkgs) lib; };
         mkDriftCheck = import ./lib/mk-drift-check.nix;
         mkSettingDriftCheck = import ./lib/mk-setting-drift-check.nix;
+        mkMaterializeCheck = import ./lib/mk-materialize-check.nix { inherit (nixpkgs) lib; };
       };
 
       packages = forAllSystems (pkgs: {
@@ -561,6 +562,21 @@
             echo PASS
             touch $out
           '';
+
+        materialize-check = import ./lib/mk-materialize-check.nix { inherit (nixpkgs) lib; } {
+          inherit pkgs;
+          categories = [
+            "nix"
+            "test"
+            "lefthook"
+          ];
+        };
+
+        materialize-check-exclude = import ./lib/mk-materialize-check.nix { inherit (nixpkgs) lib; } {
+          inherit pkgs;
+          categories = [ "nix" ];
+          exclude = [ "rtk.md" ];
+        };
 
         default = pkgs.runCommand "set-and-setting-checks" { } ''
           touch $out
