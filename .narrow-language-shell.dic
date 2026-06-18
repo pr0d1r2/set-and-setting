@@ -22,6 +22,7 @@ args
 argument
 artifact
 aspect
+assertion
 assertions
 available
 back
@@ -53,6 +54,7 @@ categories
 category
 cats
 check
+checks
 chmod
 claude
 clean
@@ -78,6 +80,7 @@ continue
 contract
 copies
 core
+correct
 covers
 creates
 current
@@ -126,6 +129,7 @@ emits
 emitted
 emitter
 empty
+engine
 entries
 entry
 env
@@ -159,6 +163,7 @@ field
 file
 filenames
 files
+filtering
 final
 find
 findargs
@@ -184,6 +189,7 @@ guidance
 handles
 happen
 has
+have
 head
 heading
 help
@@ -221,8 +227,10 @@ links
 list
 listed
 load
+local
 lock
 loops
+make
 manifest
 map
 mapentries
@@ -290,7 +298,9 @@ paths
 per
 picks
 pipefail
+placement
 positional
+present
 preserve
 print
 printf
@@ -415,8 +425,10 @@ user
 uses
 usr
 val
+value
 values
 vars
+verifies
 verify
 version
 via

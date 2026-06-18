@@ -12,7 +12,7 @@
   field, facets are raw (V25), and excluded files are absent.
   Expectations self-derive from `categories.nix` so consumers never
   restate the globs map. Shell logic in `lib/materialize-check.sh`,
-  bats coverage in `tests/materialize-check.bats`.
+  bats coverage in `tests/materialize-check.bats` (11 test cases).
 
 ### Documentation
 
