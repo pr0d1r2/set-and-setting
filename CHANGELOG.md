@@ -22,6 +22,15 @@
 
 ### Apps
 
+- Add `--agent` seam passthrough to installers (T39/V21/V23): `mkSet
+  --agent opencode` emits skills to `.opencode/skills/set/` with
+  `globs` conditional-load field instead of Claude's `.claude/skills/set/`
+  with `paths`. Same agnostic source, different agent surface. Known
+  agent seams defined in `set/lib/agents.nix` -- adding a new agent is
+  one attrset entry. `bootstrap --agent NAME` passes through to mkSet.
+  Manifest records the target agent. `--dry-run` shows agent and target
+  path. Ties the agnosticism proof: nix `agent-seam-opencode` check
+  verifies both seams produce identical skill body content and facets.
 - Add install manifest `.claude/skills/set/.mkset.json` (T37/I.manifest):
   records installed categories, upstream rev, and agent. Enables smart
   bare re-run (bare `mkSet` with a manifest refreshes previously installed

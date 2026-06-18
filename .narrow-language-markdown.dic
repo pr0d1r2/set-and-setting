@@ -103,11 +103,11 @@ apps
 apt
 arch
 architecture
-arguments
 architectures
 are
 arg
 args
+arguments
 arm
 artifact
 artifacts
@@ -522,7 +522,6 @@ defines
 definition
 definitions
 delegate
-detects
 delegates
 delete
 deleting
@@ -561,6 +560,7 @@ detailed
 details
 detect
 detection
+detects
 determinate
 deterministic
 deterministically
@@ -2272,8 +2272,8 @@ unblock
 unblocks
 uncertainty
 unchanged
-uncommitted
 uncomment
+uncommitted
 unconditional
 uncovered
 under
@@ -2346,6 +2346,7 @@ verbs
 verifiable
 verification
 verified
+verifies
 verify
 verifying
 version

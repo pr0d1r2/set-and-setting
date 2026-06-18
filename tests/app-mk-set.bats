@@ -32,9 +32,11 @@ setup() {
     export MK_SET_SCRIPT="$BATS_TEST_DIRNAME/../set/lib/mk-set.sh"
     export EMIT_SCRIPT="$BATS_TEST_DIRNAME/../set/lib/emit-skill.sh"
     export SYNC_SCRIPT="$BATS_TEST_DIRNAME/../set/lib/sync-set.sh"
+    export RESOLVE_AGENT_SCRIPT="$BATS_TEST_DIRNAME/../set/lib/resolve-agent.sh"
     export ALL_CATEGORIES="generic git nix security"
     export CORE_CATEGORIES="generic git"
     export GLOBS_MAP="nix=**/*.nix,flake.lock"
+    export AGENT_SEAMS="claude=.claude/skills/set,.claude/rules,paths;opencode=.opencode/skills/set,.opencode/rules,globs"
 }
 
 teardown() {
@@ -48,6 +50,7 @@ teardown() {
     [[ "$output" == *"--list"* ]]
     [[ "$output" == *"--dry-run"* ]]
     [[ "$output" == *"--all"* ]]
+    [[ "$output" == *"--agent NAME"* ]]
 }
 
 @test "--list shows all categories with core label" {
@@ -64,6 +67,8 @@ teardown() {
     [ "$status" -eq 0 ]
     [[ "$output" == *"Would install"* ]]
     [[ "$output" == *"generic git"* ]]
+    [[ "$output" == *"Agent: claude"* ]]
+    [[ "$output" == *"Target: ./.claude/skills/set/"* ]]
     [ ! -d "$TARGET/.claude" ]
 }
 
@@ -236,3 +241,4 @@ teardown() {
     [ -f "$TARGET/.claude/skills/set/nix/SKILL.md" ]
     [ -f "$TARGET/.claude/rules/generic.md" ]
 }
+

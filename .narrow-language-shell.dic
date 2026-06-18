@@ -4,11 +4,13 @@ add
 additional
 after
 agent
+agents
 agnostic
 all
 alongside
 already
 always
+aname
 and
 any
 app
@@ -29,6 +31,7 @@ bin
 body
 bogus
 bootstrap
+both
 box
 branch
 break
@@ -89,6 +92,7 @@ dev
 dic
 dics
 diff
+different
 differs
 diffs
 dir
@@ -109,11 +113,13 @@ editorconfig
 elif
 else
 embedded
+emission
 emit
 emits
 emitted
 emitter
 empty
+entries
 entry
 env
 equivalent
@@ -147,6 +153,7 @@ files
 final
 find
 findargs
+flag
 flake
 fnote
 for
@@ -188,6 +195,7 @@ invokes
 its
 json
 keep
+known
 label
 lacks
 language
@@ -227,6 +235,7 @@ modularity
 more
 multiple
 name
+names
 namespace
 narrow
 nested
@@ -245,11 +254,13 @@ omit
 omits
 one
 only
+opencode
 option
 optional
 options
 orchestrate
 orchestrates
+other
 out
 output
 over
@@ -261,6 +272,7 @@ package
 parent
 pass
 passes
+passthrough
 path
 paths
 per
@@ -273,11 +285,13 @@ printf
 prints
 prior
 process
+proves
 provided
 purpose
 raw
 read
 readlink
+records
 recursively
 refresh
 refreshed
@@ -293,6 +307,7 @@ replaces
 repo
 require
 requires
+resolve
 rev
 root
 rule
@@ -307,6 +322,8 @@ scaffolded
 scaffolding
 scaffolds
 script
+seam
+seams
 secret
 security
 sed
@@ -343,9 +360,12 @@ stale
 standalone
 starter
 status
+stderr
+stdout
 structure
 sub
 succeeds
+supports
 synced
 target
 teardown
@@ -375,8 +395,10 @@ upstream
 usage
 use
 user
+uses
 usr
 val
+values
 vars
 version
 via
