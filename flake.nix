@@ -513,6 +513,55 @@
             touch $out
           '';
 
+        agent-seam-opencode =
+          let
+            mkSet = import ./set/lib/mk-set.nix { inherit (nixpkgs) lib; };
+            agents = import ./set/lib/agents.nix;
+            claude = mkSet { inherit pkgs; };
+            opencode = mkSet {
+              inherit pkgs;
+              agent = agents.opencode;
+            };
+          in
+          pkgs.runCommand "agent-seam-opencode-check" { } ''
+            # V23: agnosticism proof -- opencode seam builds the same sources
+            ocskill="${opencode}/.opencode/skills/set/nix/SKILL.md"
+            ocrule="${opencode}/.opencode/rules/generic.md"
+
+            # opencode domain skill uses globs (not paths)
+            grep -q '^globs:' "$ocskill" || { echo "FAIL: opencode nix missing globs"; exit 1; }
+            grep -qF '"**/*.nix"' "$ocskill" || { echo "FAIL: opencode nix glob value"; exit 1; }
+
+            # opencode always-on rule has no globs field
+            if grep -q '^globs:' "$ocrule"; then echo "FAIL: opencode generic has globs"; exit 1; fi
+
+            # same agnostic body in both agents
+            grep -q 'Flake entrypoint should be direnv' "$ocrule" \
+              || { echo "FAIL: opencode body"; exit 1; }
+
+            # claude counterparts exist at their paths
+            [ -f "${claude}/.claude/skills/set/nix/SKILL.md" ] \
+              || { echo "FAIL: claude nix skill missing"; exit 1; }
+            [ -f "${claude}/.claude/rules/generic.md" ] \
+              || { echo "FAIL: claude generic rule missing"; exit 1; }
+
+            # same skill body content (strip frontmatter, compare body)
+            clbody="$(sed '1,/^---$/d' "${claude}/.claude/skills/set/nix/SKILL.md")"
+            ocbody="$(sed '1,/^---$/d' "$ocskill")"
+            [ "$clbody" = "$ocbody" ] \
+              || { echo "FAIL: nix body differs between agents"; exit 1; }
+
+            # facets identical
+            diff -r \
+              --exclude=SKILL.md \
+              "${claude}/.claude/skills/set/nix" \
+              "${opencode}/.opencode/skills/set/nix" \
+              || { echo "FAIL: nix facets differ"; exit 1; }
+
+            echo PASS
+            touch $out
+          '';
+
         default = pkgs.runCommand "set-and-setting-checks" { } ''
           touch $out
         '';
@@ -523,8 +572,14 @@
         let
           inherit (nixpkgs) lib;
           cats = import ./set/lib/categories.nix;
+          agents = import ./set/lib/agents.nix;
           globsMap = lib.concatStringsSep ";" (
             lib.mapAttrsToList (c: globs: "${c}=${lib.concatStringsSep "," globs}") cats.globs
+          );
+          agentSeams = lib.concatStringsSep ";" (
+            lib.mapAttrsToList (
+              name: seam: "${name}=${seam.skillPath},${seam.rulePath},${seam.condField}"
+            ) agents
           );
           mkSettingFull = import ./setting/lib/mk-setting.nix { inherit lib; } { inherit pkgs; };
 
@@ -540,9 +595,11 @@
               export MK_SET_SCRIPT="${./set/lib/mk-set.sh}"
               export EMIT_SCRIPT="${./set/lib/emit-skill.sh}"
               export SYNC_SCRIPT="${./set/lib/sync-set.sh}"
+              export RESOLVE_AGENT_SCRIPT="${./set/lib/resolve-agent.sh}"
               export ALL_CATEGORIES="${lib.concatStringsSep " " cats.all}"
               export CORE_CATEGORIES="${lib.concatStringsSep " " cats.core}"
               export GLOBS_MAP="${globsMap}"
+              export AGENT_SEAMS="${agentSeams}"
               export MKSET_REV="${self.rev or self.dirtyRev or "unknown"}"
             ''
             + builtins.readFile ./set/lib/app-mk-set.sh;

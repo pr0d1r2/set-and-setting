@@ -2,15 +2,17 @@
 # shellcheck disable=SC2154
 # app-mk-set.sh -- runnable installer for mkSet (C9/V28).
 # Writes .mkset.json manifest for smart re-run (I.manifest/T37).
+# Supports --agent flag for agent seam passthrough (T39/V21/V23).
 # Env in: SKILLS_DIR, CONCEPTS_DIR, MK_SET_SCRIPT, EMIT_SCRIPT,
 #   SYNC_SCRIPT, ALL_CATEGORIES, CORE_CATEGORIES, GLOBS_MAP,
-#   MKSET_REV (optional)
+#   AGENT_SEAMS (agent=skillPath,rulePath,condField;...),
+#   RESOLVE_AGENT_SCRIPT, MKSET_REV (optional)
 set -euo pipefail
 
 read -ra all_cats <<<"$ALL_CATEGORIES"
 read -ra core_cats <<<"$CORE_CATEGORIES"
 
-MANIFEST=".claude/skills/set/.mkset.json"
+agent_name="claude"
 
 mode="default"
 dry_run=0
@@ -22,7 +24,7 @@ while [ $# -gt 0 ]; do
         --help)
             echo "Usage: mkSet [OPTIONS] [CATEGORIES...]"
             echo ""
-            echo "Materialize set-and-setting skills into ./.claude/skills/set/"
+            echo "Materialize set-and-setting skills into the target agent's skill directory."
             echo ""
             echo "Options:"
             echo "  --help          Show this help and exit"
@@ -31,16 +33,19 @@ while [ $# -gt 0 ]; do
             echo "  --all           Install all categories"
             echo "  --all-except    Install all categories except those listed"
             echo "  --remove        Remove listed categories from the install"
+            echo "  --agent NAME    Target agent (default: claude)"
             echo ""
             echo "Core categories (always included): ${core_cats[*]}"
             echo "All categories: ${all_cats[*]}"
             echo ""
             echo "Examples:"
-            echo "  mkSet                      # core only (or refresh manifest)"
-            echo "  mkSet nix security         # core + nix + security"
-            echo "  mkSet --all                # all categories"
-            echo "  mkSet --all-except nixos   # all except nixos"
-            echo "  mkSet --remove nix         # remove nix from install"
+            echo "  mkSet                          # core only (or refresh manifest)"
+            echo "  mkSet nix security             # core + nix + security"
+            echo "  mkSet --all                    # all categories"
+            echo "  mkSet --all-except nixos       # all except nixos"
+            echo "  mkSet --remove nix             # remove nix from install"
+            echo "  mkSet --agent opencode         # emit for opencode agent"
+            echo "  mkSet --agent opencode --all   # all categories for opencode"
             exit 0
             ;;
         --list)
@@ -83,6 +88,16 @@ while [ $# -gt 0 ]; do
                 exit 1
             fi
             ;;
+        --agent)
+            shift
+            if [ $# -eq 0 ]; then
+                echo "error: --agent requires a name"
+                echo "Run 'mkSet --help' for usage."
+                exit 1
+            fi
+            agent_name="$1"
+            shift
+            ;;
         -*)
             echo "error: unknown option '$1'"
             echo "Run 'mkSet --help' for usage."
@@ -94,6 +109,11 @@ while [ $# -gt 0 ]; do
             ;;
     esac
 done
+
+seam="$(AGENT_NAME="$agent_name" bash "$RESOLVE_AGENT_SCRIPT")"
+IFS=',' read -r agent_skill_path agent_rule_path agent_cond_field <<<"$seam"
+
+MANIFEST="$agent_skill_path/.mkset.json"
 
 manifest_cats=()
 manifest_rev=""
@@ -211,7 +231,8 @@ if [ "$dry_run" -eq 1 ]; then
     else
         echo "Would install categories: ${final_cats[*]}"
     fi
-    echo "Target: ./.claude/skills/set/"
+    echo "Agent: $agent_name"
+    echo "Target: ./$agent_skill_path/"
     exit 0
 fi
 
@@ -222,9 +243,9 @@ export out
 export SKILLS_DIR CONCEPTS_DIR
 export EMIT="$EMIT_SCRIPT"
 export SYNC_SRC="$SYNC_SCRIPT"
-export SKILL_PATH=".claude/skills/set"
-export RULE_PATH=".claude/rules"
-export COND_FIELD="paths"
+export SKILL_PATH="$agent_skill_path"
+export RULE_PATH="$agent_rule_path"
+export COND_FIELD="$agent_cond_field"
 export CATEGORIES="${final_cats[*]}"
 export GLOBS_MAP
 export EXCLUDE=""
@@ -232,7 +253,7 @@ export CONCEPTS="1"
 
 bash "$MK_SET_SCRIPT"
 
-rm -rf "./.claude/skills/set"
+rm -rf "./$agent_skill_path"
 
 # Clean up stale always-on rule files for dropped categories
 if [ ${#manifest_cats[@]} -gt 0 ] && [ -n "${manifest_cats[0]:-}" ]; then
@@ -242,11 +263,12 @@ if [ ${#manifest_cats[@]} -gt 0 ] && [ -n "${manifest_cats[0]:-}" ]; then
         for fc in "${final_cats[@]}"; do
             [ "$mc" = "$fc" ] && keep=1 && break
         done
-        [ "$keep" -eq 0 ] && rm -f "./.claude/rules/$mc.md"
+        [ "$keep" -eq 0 ] && rm -f "./$agent_rule_path/$mc.md"
     done
 fi
 
-cp -r "$out/.claude" "./" 2>/dev/null || true
+skill_parent="${agent_skill_path%%/*}"
+cp -r "$out/$skill_parent" "./" 2>/dev/null || true
 
 cats_json=""
 for c in "${final_cats[@]}"; do
@@ -254,9 +276,8 @@ for c in "${final_cats[@]}"; do
     cats_json="$cats_json\"$c\""
 done
 rev="${MKSET_REV:-unknown}"
-agent="claude"
-mkdir -p ".claude/skills/set"
-printf '{"categories":[%s],"rev":"%s","agent":"%s"}\n' "$cats_json" "$rev" "$agent" >"$MANIFEST"
+mkdir -p "$agent_skill_path"
+printf '{"categories":[%s],"rev":"%s","agent":"%s"}\n' "$cats_json" "$rev" "$agent_name" >"$MANIFEST"
 
 if [ "$mode" = "remove" ]; then
     echo "Removed: ${remove_cats[*]}"

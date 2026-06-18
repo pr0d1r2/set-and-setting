@@ -180,7 +180,7 @@ and dogfoods both.
 | T36 | x | `apps.<sys>.{mkSet,mkSetting,mkSetting-init,bootstrap}` runnable installers -- run-time emit into CWD; selection (core always, domains opt-in, `--all`/`--all-except`, default=core+notice); `--list`/`--help`/`--dry-run`; fail-with-guidance | I.apps,V27,V28,C9 |
 | T37 | x | install manifest `.claude/skills/set/.mkset.json` -- smart bare re-run (refresh installed), update detection, `--remove` | I.manifest |
 | T38 | x | README headline -- document `nix run github:pr0d1r2/set-and-setting#mkSet` one-command skill materialization as the first-impression WOW (single command, zero deps); cover all three delivery paths (C9) | I.apps,C9 |
-| T39 | . | `--agent` seam passthrough in installers (opencode target); ties the agnosticism proof | V21,V28,T31 |
+| T39 | x | `--agent` seam passthrough in installers (opencode target); ties the agnosticism proof | V21,V28,T31 |
 
 ## §B Bugs
 

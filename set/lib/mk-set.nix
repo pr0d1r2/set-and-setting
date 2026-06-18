@@ -10,6 +10,7 @@
 
 let
   cats = import ./categories.nix;
+  agents = import ./agents.nix;
 in
 
 {
@@ -18,17 +19,12 @@ in
   concepts ? true,
   # Skill filenames to omit from the emitted output (e.g. "rtk.md").
   exclude ? [ ],
-  # Per-agent seam. Default: Claude.
+  # Per-agent seam. Default: Claude (from agents.nix).
   agent ? { },
 }:
 
 let
-  ag = {
-    skillPath = ".claude/skills/set";
-    rulePath = ".claude/rules";
-    condField = "paths";
-  }
-  // agent;
+  ag = agents.claude // agent;
 
   categoryGlobs = cats.globs;
 

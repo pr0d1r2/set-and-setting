@@ -2,6 +2,7 @@
 
 # Unit tests for set/lib/sync-set.sh -- copies the emitted set tree
 # into a target directory with clean-replace semantics (V26).
+# Covers both claude and opencode agent trees (V21/V23).
 
 setup() {
     SRC="$(mktemp -d)"
@@ -32,7 +33,7 @@ teardown() {
     [ -f "$TARGET/.claude/skills/set/demo/SKILL.md" ]
 }
 
-@test "succeeds when source has no .claude dir" {
+@test "succeeds when source has no agent dir" {
     rm -rf "$SRC/.claude"
     run bash "$SRC/bin/sync-set" "$TARGET"
     [ "$status" -eq 0 ]
@@ -55,4 +56,28 @@ teardown() {
     [ "$status" -eq 0 ]
     [ ! -e "$TARGET/.claude/skills/set/stale" ]
     [ -f "$TARGET/.claude/skills/set/demo/SKILL.md" ]
+}
+
+@test "syncs opencode tree when source has .opencode (V23)" {
+    rm -rf "$SRC/.claude"
+    mkdir -p "$SRC/.opencode/skills/set/demo"
+    echo "opencode skill" >"$SRC/.opencode/skills/set/demo/SKILL.md"
+    run bash "$SRC/bin/sync-set" "$TARGET"
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"synced set"* ]]
+    [ -f "$TARGET/.opencode/skills/set/demo/SKILL.md" ]
+    [ "$(cat "$TARGET/.opencode/skills/set/demo/SKILL.md")" = "opencode skill" ]
+    [ ! -d "$TARGET/.claude" ]
+}
+
+@test "clean-replace works for opencode tree (V23/V26)" {
+    rm -rf "$SRC/.claude"
+    mkdir -p "$SRC/.opencode/skills/set/demo"
+    echo "fresh" >"$SRC/.opencode/skills/set/demo/SKILL.md"
+    mkdir -p "$TARGET/.opencode/skills/set/stale"
+    echo "stale" >"$TARGET/.opencode/skills/set/stale/SKILL.md"
+    run bash "$SRC/bin/sync-set" "$TARGET"
+    [ "$status" -eq 0 ]
+    [ ! -e "$TARGET/.opencode/skills/set/stale" ]
+    [ -f "$TARGET/.opencode/skills/set/demo/SKILL.md" ]
 }
