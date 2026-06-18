@@ -25,6 +25,7 @@ aspect
 available
 back
 bare
+base
 bash
 bats
 bin
@@ -35,6 +36,7 @@ both
 box
 branch
 break
+build
 builders
 bundle
 caller
@@ -68,12 +70,12 @@ cond
 conditional
 config
 configs
-consumers
 content
 continue
 contract
 copies
 core
+covers
 creates
 current
 custom
@@ -101,6 +103,7 @@ directory
 dirname
 dirs
 disable
+discovers
 domain
 done
 drift
@@ -158,6 +161,7 @@ flake
 fnote
 for
 found
+fresh
 from
 frontmatter
 ftitle
@@ -167,7 +171,6 @@ generic
 git
 gitattributes
 gitignore
-gitignored
 globs
 grep
 guidance
@@ -294,7 +297,6 @@ readlink
 records
 recursively
 refresh
-refreshed
 refreshes
 refreshing
 rel
@@ -384,6 +386,7 @@ top
 touch
 trap
 tree
+trees
 true
 type
 unified
@@ -408,6 +411,7 @@ while
 with
 without
 words
+works
 would
 wrapper
 writes

@@ -16,6 +16,9 @@
 
 ### Fixed
 
+- `sync-set.sh` discovers the agent dir from the build output instead
+  of hardcoding `.claude`. The nix build path with `agent = opencode`
+  now produces a working `bin/sync-set` (V21/V23).
 - `--remove` of always-on (cross-cutting) categories now cleans stale
   `.claude/rules/<cat>.md` files. Previously only domain categories
   under `.claude/skills/set/` were cleaned by the `rm -rf` step.
