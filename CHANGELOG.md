@@ -173,6 +173,14 @@
 
 ### Spec
 
+- Reverse the emit model to **rules-only** (B2): `.claude/skills/`
+  `SKILL.md` is model-invoked and doesn't reliably autoload; only
+  `.claude/rules/` loads deterministically. mkSet now mirrors `set/` into
+  `.claude/rules/set/` as path-scoped rules (verbatim body + `paths:`),
+  **everything path-scoped** (core/universal broad globs, domains narrow)
+  to gate loading and avoid context exhaustion. Drop SKILL.md/frontmatter/
+  facets-links (rewrite V17-V20, V24, V25; seam -> `{ dir, condField }`).
+  Tasks T40-T44 rework the shipped emitter/apps/check/dogfood to rules.
 - Specify the zero-dependency `nix run` delivery path (C9): runnable
   `apps.<sys>.{mkSet,mkSetting,mkSetting-init,bootstrap}` that materialize
   skills into `./.claude/skills/set/` from one command (run-time emit).
