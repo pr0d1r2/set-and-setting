@@ -2,14 +2,14 @@
 # shellcheck disable=SC2030,SC2031  # per-@test env vars; bats runs each in its own process
 
 # Unit tests for set/lib/emit-skill.sh -- emits one category's
-# Agent-Skills file from agnostic source markdown. Domain categories
-# (with GLOBS) emit facets-as-linked-files (V25); always-on categories
-# (no GLOBS) concatenate into a single rule.
+# path-scoped rule files from agnostic source markdown. Each source
+# file is mirrored verbatim with the conditional-load field prepended
+# as frontmatter (V17/V18/V19/V25).
 
 setup() {
     bats_require_minimum_version 1.5.0
     SKILLS_DIR="$(mktemp -d)"
-    DESTDIR="$(mktemp -d)"
+    DEST_DIR="$(mktemp -d)"
     SCRIPT="$BATS_TEST_DIRNAME/../set/lib/emit-skill.sh"
     mkdir -p "$SKILLS_DIR/demo"
     printf '# Demo\n\nDemo core rule.\n' >"$SKILLS_DIR/demo.md"
@@ -18,92 +18,91 @@ setup() {
 }
 
 teardown() {
-    rm -rf "$SKILLS_DIR" "$DESTDIR"
+    rm -rf "$SKILLS_DIR" "$DEST_DIR"
 }
 
-@test "conditional skill: frontmatter + globs + linked facets" {
-    export CAT=demo DEST="$DESTDIR/demo/SKILL.md" GLOBS="**/*.nix flake.lock"
+@test "emits core file as a path-scoped rule" {
+    export CAT=demo DEST_DIR="$DEST_DIR" GLOBS="**/*.nix flake.lock"
     run bash "$SCRIPT"
     [ "$status" -eq 0 ]
-    run cat "$DESTDIR/demo/SKILL.md"
-    [[ "$output" == *"name: demo"* ]]
-    [[ "$output" == *"description: \"Demo -- Demo core rule."* ]]
-    [[ "$output" == *"paths:"* ]]
-    [[ "$output" == *"- \"**/*.nix\""* ]]
-    [[ "$output" == *"Demo core rule."* ]]
-    [[ "$output" == *"[Demo: aspect](aspect.md)"* ]]
-    # facet heading not concatenated as standalone content
-    run ! grep -q '^# Demo: aspect' "$DESTDIR/demo/SKILL.md"
+    [ -f "$DEST_DIR/demo.md" ]
+    grep -q '^paths:' "$DEST_DIR/demo.md"
+    grep -q '"**/*.nix"' "$DEST_DIR/demo.md"
+    grep -q '"flake.lock"' "$DEST_DIR/demo.md"
+    grep -q 'Demo core rule.' "$DEST_DIR/demo.md"
 }
 
-@test "conditional skill: facet file cloned raw alongside SKILL.md" {
-    export CAT=demo DEST="$DESTDIR/demo/SKILL.md" GLOBS="**/*.nix"
+@test "emits subdir files as individual path-scoped rules" {
+    export CAT=demo DEST_DIR="$DEST_DIR" GLOBS="**/*.nix"
     run bash "$SCRIPT"
     [ "$status" -eq 0 ]
-    [ -f "$DESTDIR/demo/aspect.md" ]
-    grep -q 'Aspect rule.' "$DESTDIR/demo/aspect.md"
-    run head -1 "$DESTDIR/demo/aspect.md"
-    [[ "$output" == "# Demo: aspect" ]]
+    [ -f "$DEST_DIR/demo/aspect.md" ]
+    grep -q '^paths:' "$DEST_DIR/demo/aspect.md"
+    grep -q '"**/*.nix"' "$DEST_DIR/demo/aspect.md"
+    grep -q 'Aspect rule.' "$DEST_DIR/demo/aspect.md"
 }
 
-@test "conditional skill: facet link carries one-line note" {
-    export CAT=demo DEST="$DESTDIR/demo/SKILL.md" GLOBS="**/*.nix"
+@test "preserves verbatim body after frontmatter" {
+    export CAT=demo DEST_DIR="$DEST_DIR" GLOBS="**/*.nix"
     run bash "$SCRIPT"
     [ "$status" -eq 0 ]
-    grep -q '\[Demo: aspect\](aspect.md) -- Aspect rule\.' "$DESTDIR/demo/SKILL.md"
+    body="$(sed '1,/^---$/d' "$DEST_DIR/demo/aspect.md")"
+    [[ "$body" == *"# Demo: aspect"* ]]
+    [[ "$body" == *"Aspect rule."* ]]
 }
 
-@test "conditional skill: nested facets preserve path structure" {
+@test "nested files preserve path structure" {
     mkdir -p "$SKILLS_DIR/deep/sub"
     printf '# Deep\n\nDeep rule.\n' >"$SKILLS_DIR/deep.md"
     printf '# Deep: top\n\nTop facet.\n' >"$SKILLS_DIR/deep/top.md"
     printf '# Deep: sub nested\n\nNested facet.\n' >"$SKILLS_DIR/deep/sub/nested.md"
-    export CAT=deep DEST="$DESTDIR/deep/SKILL.md" GLOBS="**/*.nix"
+    export CAT=deep DEST_DIR="$DEST_DIR" GLOBS="**/*.nix"
     run bash "$SCRIPT"
     [ "$status" -eq 0 ]
-    grep -q '\[Deep: sub nested\](sub/nested.md)' "$DESTDIR/deep/SKILL.md"
-    grep -q '\[Deep: top\](top.md)' "$DESTDIR/deep/SKILL.md"
-    [ -f "$DESTDIR/deep/top.md" ]
-    [ -f "$DESTDIR/deep/sub/nested.md" ]
+    [ -f "$DEST_DIR/deep.md" ]
+    [ -f "$DEST_DIR/deep/top.md" ]
+    [ -f "$DEST_DIR/deep/sub/nested.md" ]
+    grep -q 'Top facet.' "$DEST_DIR/deep/top.md"
+    grep -q 'Nested facet.' "$DEST_DIR/deep/sub/nested.md"
 }
 
-@test "conditional skill without core: body is links only" {
+@test "category without core: only subdir files emitted" {
     rm "$SKILLS_DIR/demo.md"
-    export CAT=demo DEST="$DESTDIR/demo/SKILL.md" GLOBS="**/*.nix"
+    export CAT=demo DEST_DIR="$DEST_DIR" GLOBS="**/*.nix"
     run bash "$SCRIPT"
     [ "$status" -eq 0 ]
-    grep -q '\[Demo: aspect\](aspect.md)' "$DESTDIR/demo/SKILL.md"
-    run cat "$DESTDIR/demo/SKILL.md"
-    [[ "$output" != *"Demo core rule."* ]]
+    [ ! -f "$DEST_DIR/demo.md" ]
+    [ -f "$DEST_DIR/demo/aspect.md" ]
 }
 
-@test "always-on rule: no globs field, body concatenated" {
-    export CAT=demo DEST="$DESTDIR/demo.md" GLOBS=""
+@test "broad globs for cross-cutting categories" {
+    export CAT=demo DEST_DIR="$DEST_DIR" GLOBS="**/*"
     run bash "$SCRIPT"
     [ "$status" -eq 0 ]
-    run cat "$DESTDIR/demo.md"
-    [[ "$output" == *"name: demo"* ]]
-    [[ "$output" != *"paths:"* ]]
-    [[ "$output" == *"Demo core rule."* ]]
-    [[ "$output" == *"Aspect rule."* ]]
+    grep -q '"**/*"' "$DEST_DIR/demo.md"
+    grep -q '"**/*"' "$DEST_DIR/demo/aspect.md"
 }
 
-@test "exclude omits file from links and facets" {
+@test "exclude omits file from output" {
     printf '# Secret\n\nSHOULD_NOT_APPEAR\n' >"$SKILLS_DIR/demo/secret.md"
-    export CAT=demo DEST="$DESTDIR/demo/SKILL.md" GLOBS="**/*.nix" EXCLUDE="secret.md"
+    export CAT=demo DEST_DIR="$DEST_DIR" GLOBS="**/*.nix" EXCLUDE="secret.md"
     run bash "$SCRIPT"
     [ "$status" -eq 0 ]
-    run cat "$DESTDIR/demo/SKILL.md"
-    [[ "$output" != *"SHOULD_NOT_APPEAR"* ]]
-    [[ "$output" != *"secret.md"* ]]
-    [ ! -f "$DESTDIR/demo/secret.md" ]
+    [ ! -f "$DEST_DIR/demo/secret.md" ]
+    [ -f "$DEST_DIR/demo/aspect.md" ]
 }
 
-@test "falls back to category name when source has no heading" {
-    mkdir -p "$SKILLS_DIR/bare"
-    printf 'no heading here\n' >"$SKILLS_DIR/bare/x.md"
-    export CAT=bare DEST="$DESTDIR/bare.md" GLOBS=""
+@test "exclude of core file prevents its emission" {
+    export CAT=demo DEST_DIR="$DEST_DIR" GLOBS="**/*.nix" EXCLUDE="demo.md"
     run bash "$SCRIPT"
     [ "$status" -eq 0 ]
-    grep -q 'name: bare' "$DESTDIR/bare.md"
+    [ ! -f "$DEST_DIR/demo.md" ]
+    [ -f "$DEST_DIR/demo/aspect.md" ]
+}
+
+@test "no SKILL.md generated" {
+    export CAT=demo DEST_DIR="$DEST_DIR" GLOBS="**/*.nix"
+    run bash "$SCRIPT"
+    [ "$status" -eq 0 ]
+    [ ! -f "$DEST_DIR/demo/SKILL.md" ]
 }

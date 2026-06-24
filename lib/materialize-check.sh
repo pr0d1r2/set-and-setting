@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
 # Verify that mkSet materialization produces the expected layout for the
-# requested categories. Assertions are self-derived from categories.nix
-# (via GLOBS_MAP + CORE_CATEGORIES env), so the consumer never restates
-# globs. Extracted per nix/modularity + sh/modularity.
+# requested categories. Each category's files are path-scoped rules under
+# DIR/ (V17/V18/V19/V25): every .md has the conditional-load field.
+# Assertions self-derive from categories.nix (via GLOBS_MAP env).
+# Extracted per nix/modularity + sh/modularity.
 # Env in:
 #   MATERIALIZED  path to the mkSet output tree
-#   SKILL_PATH    agent skill dir (e.g. .claude/skills/set)
-#   RULE_PATH     agent rule dir (e.g. .claude/rules)
+#   DIR           agent rules dir (e.g. .claude/rules/set)
 #   COND_FIELD    frontmatter field name (e.g. paths)
 #   CATEGORIES    space-separated categories that were requested
 #   GLOBS_MAP     semicolon-separated cat=g1,g2;cat2=g3
@@ -30,49 +30,51 @@ for cat in "${cats[@]:-}"; do
         fi
     done
 
-    if [ -n "$raw_globs" ]; then
-        skill="$MATERIALIZED/$SKILL_PATH/$cat/SKILL.md"
+    catdir="$MATERIALIZED/$DIR/$cat"
+    corefile="$MATERIALIZED/$DIR/$cat.md"
+    has_files=0
 
-        [ -f "$skill" ] || {
-            echo "FAIL: $cat: SKILL.md missing at $SKILL_PATH/$cat/SKILL.md"
-            fail=1
-            continue
-        }
-
-        grep -q "^${COND_FIELD}:" "$skill" || {
-            echo "FAIL: $cat: SKILL.md missing $COND_FIELD frontmatter"
+    if [ -f "$corefile" ]; then
+        has_files=1
+        grep -q "^${COND_FIELD}:" "$corefile" || {
+            echo "FAIL: $cat.md missing $COND_FIELD frontmatter"
             fail=1
         }
+        if [ -n "$raw_globs" ]; then
+            IFS=',' read -ra expected_globs <<<"$raw_globs"
+            for g in "${expected_globs[@]}"; do
+                grep -qF "\"$g\"" "$corefile" || {
+                    echo "FAIL: $cat.md missing glob \"$g\""
+                    fail=1
+                }
+            done
+        fi
+    fi
 
-        IFS=',' read -ra expected_globs <<<"$raw_globs"
-        for g in "${expected_globs[@]}"; do
-            grep -qF "\"$g\"" "$skill" || {
-                echo "FAIL: $cat: SKILL.md missing glob \"$g\""
+    if [ -d "$catdir" ]; then
+        has_files=1
+        while IFS= read -r rule; do
+            [ -n "$rule" ] || continue
+            relname="${rule#"$catdir"/}"
+            grep -q "^${COND_FIELD}:" "$rule" || {
+                echo "FAIL: $cat/$relname missing $COND_FIELD frontmatter"
                 fail=1
             }
-        done
-
-        destdir="$(dirname "$skill")"
-        while IFS= read -r facet; do
-            [ -n "$facet" ] || continue
-            if head -1 "$facet" | grep -q '^---'; then
-                echo "FAIL: $cat: facet $(basename "$facet") has frontmatter (V25 violation)"
-                fail=1
+            if [ -n "$raw_globs" ]; then
+                IFS=',' read -ra expected_globs <<<"$raw_globs"
+                for g in "${expected_globs[@]}"; do
+                    grep -qF "\"$g\"" "$rule" || {
+                        echo "FAIL: $cat/$relname missing glob \"$g\""
+                        fail=1
+                    }
+                done
             fi
-        done < <(find "$destdir" -name '*.md' ! -name 'SKILL.md' 2>/dev/null)
-    else
-        rule="$MATERIALIZED/$RULE_PATH/$cat.md"
+        done < <(find "$catdir" -name '*.md' 2>/dev/null | sort)
+    fi
 
-        [ -f "$rule" ] || {
-            echo "FAIL: $cat: rule file missing at $RULE_PATH/$cat.md"
-            fail=1
-            continue
-        }
-
-        if grep -q "^${COND_FIELD}:" "$rule"; then
-            echo "FAIL: $cat: always-on rule has $COND_FIELD field (should not)"
-            fail=1
-        fi
+    if [ "$has_files" -eq 0 ]; then
+        echo "FAIL: $cat: no rule files found at $DIR/$cat/ or $DIR/$cat.md"
+        fail=1
     fi
 done
 
@@ -84,7 +86,12 @@ for ex in "${excludes[@]:-}"; do
     fi
 done
 
-manifest="$MATERIALIZED/$SKILL_PATH/.mkset.json"
+if find "$MATERIALIZED/$DIR" -name 'SKILL.md' 2>/dev/null | grep -q .; then
+    echo "FAIL: SKILL.md found in output (V17 violation)"
+    fail=1
+fi
+
+manifest="$MATERIALIZED/$DIR/.mkset.json"
 if [ -f "$manifest" ]; then
     for cat in "${cats[@]:-}"; do
         [ -n "$cat" ] || continue

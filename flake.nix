@@ -406,6 +406,7 @@
           shellHook = ''
             export NIX_CONFIG="experimental-features = nix-command flakes"
             [ -f .git/hooks/pre-commit ] || lefthook install
+            ${self.packages.${pkgs.stdenv.hostPlatform.system}.set}/bin/sync-set .
           '';
         };
       });
@@ -427,44 +428,52 @@
             };
           in
           pkgs.runCommand "compose-set-check" { } ''
-            nixskill="${full}/.claude/skills/set/nix/SKILL.md"
-            gen="${full}/.claude/rules/generic.md"
-            cli="${full}/.claude/skills/set/cli/SKILL.md"
+            setdir="${full}/.claude/rules/set"
 
-            # domain skill carries the conditional-load field + nix glob
-            grep -q '^paths:' "$nixskill" || { echo "FAIL: nix missing paths"; exit 1; }
-            grep -qF '"**/*.nix"' "$nixskill" || { echo "FAIL: nix glob"; exit 1; }
+            # domain rule carries the conditional-load field + nix glob (V17/V18)
+            grep -q '^paths:' "$setdir/nix/flake.md" \
+              || { echo "FAIL: nix/flake.md missing paths"; exit 1; }
+            grep -qF '"**/*.nix"' "$setdir/nix/flake.md" \
+              || { echo "FAIL: nix glob"; exit 1; }
 
-            # cross-cutting category is an always-on rule (no paths)
-            if grep -q '^paths:' "$gen"; then echo "FAIL: generic has paths"; exit 1; fi
+            # cross-cutting category also path-scoped with broad globs (V20)
+            grep -q '^paths:' "$setdir/generic/skill.md" \
+              || { echo "FAIL: generic/skill.md missing paths"; exit 1; }
+            grep -qF '"**/*"' "$setdir/generic/skill.md" \
+              || { echo "FAIL: generic broad glob"; exit 1; }
 
-            # loose top-level cli.md folded into the cli skill
-            grep -q 'justfile' "$cli" || { echo "FAIL: cli core not folded"; exit 1; }
+            # loose top-level cli.md emitted as a rule file
+            grep -q 'justfile' "$setdir/cli.md" \
+              || { echo "FAIL: cli core not emitted"; exit 1; }
 
             # agnostic body preserved verbatim (a known source line)
-            grep -q 'Flake entrypoint should be direnv' "$gen" || { echo "FAIL: body"; exit 1; }
+            grep -q 'The project starts with nix flake' "$setdir/nix/flake.md" \
+              || { echo "FAIL: body"; exit 1; }
 
             # exclude omits the file from the emitted output
-            if grep -qi 'Rust Token Killer' "${excluded}/.claude/rules/generic.md"; then
+            exdir="${excluded}/.claude/rules/set"
+            if [ -f "$exdir/generic/rtk.md" ]; then
               echo "FAIL: exclude did not drop rtk.md"; exit 1
             fi
 
-            # domain SKILL.md links facets instead of concatenating (V25)
-            grep -q '\[Nix: flake\](flake.md)' "$nixskill" \
-              || { echo "FAIL: nix SKILL.md missing facet link"; exit 1; }
+            # source tree mirrored 1:1 (V19/V25)
+            [ -f "$setdir/nix/flake.md" ] \
+              || { echo "FAIL: nix rule file missing"; exit 1; }
+            [ -f "$setdir/nix/develop.md" ] \
+              || { echo "FAIL: nix/develop rule missing"; exit 1; }
 
-            # facet files exist alongside SKILL.md (V25)
-            [ -f "${full}/.claude/skills/set/nix/flake.md" ] \
-              || { echo "FAIL: nix facet file missing"; exit 1; }
+            # each rule has paths frontmatter (V18)
+            grep -q '^paths:' "$setdir/nix/develop.md" \
+              || { echo "FAIL: nix/develop.md missing paths"; exit 1; }
 
-            # facets are raw -- no frontmatter (V25)
-            if head -1 "${full}/.claude/skills/set/nix/flake.md" | grep -q '^---'; then
-              echo "FAIL: facet has frontmatter"; exit 1
+            # nested files preserve path structure
+            [ -f "$setdir/nix/infinity/gap.md" ] \
+              || { echo "FAIL: nested rule missing"; exit 1; }
+
+            # no SKILL.md anywhere (V17)
+            if find "$setdir" -name 'SKILL.md' | grep -q .; then
+              echo "FAIL: SKILL.md found (should not exist)"; exit 1
             fi
-
-            # nested facets preserve path structure
-            [ -f "${full}/.claude/skills/set/nix/infinity/gap.md" ] \
-              || { echo "FAIL: nested facet missing"; exit 1; }
 
             echo PASS
             touch $out
@@ -530,38 +539,36 @@
           in
           pkgs.runCommand "agent-seam-opencode-check" { } ''
             # V23: agnosticism proof -- opencode seam builds the same sources
-            ocskill="${opencode}/.opencode/skills/set/nix/SKILL.md"
-            ocrule="${opencode}/.opencode/rules/generic.md"
+            clset="${claude}/.claude/rules/set"
+            ocset="${opencode}/.opencode/rules/set"
 
-            # opencode domain skill uses globs (not paths)
-            grep -q '^globs:' "$ocskill" || { echo "FAIL: opencode nix missing globs"; exit 1; }
-            grep -qF '"**/*.nix"' "$ocskill" || { echo "FAIL: opencode nix glob value"; exit 1; }
+            # opencode domain rule uses globs (not paths)
+            grep -q '^globs:' "$ocset/nix/flake.md" \
+              || { echo "FAIL: opencode nix missing globs"; exit 1; }
+            grep -qF '"**/*.nix"' "$ocset/nix/flake.md" \
+              || { echo "FAIL: opencode nix glob value"; exit 1; }
 
-            # opencode always-on rule has no globs field
-            if grep -q '^globs:' "$ocrule"; then echo "FAIL: opencode generic has globs"; exit 1; fi
+            # opencode cross-cutting rule uses globs too (V20)
+            grep -q '^globs:' "$ocset/generic/skill.md" \
+              || { echo "FAIL: opencode generic missing globs"; exit 1; }
 
-            # same agnostic body in both agents
-            grep -q 'Flake entrypoint should be direnv' "$ocrule" \
-              || { echo "FAIL: opencode body"; exit 1; }
+            # same agnostic body in both agents (strip frontmatter)
+            clbody="$(sed '1,/^---$/d' "$clset/nix/flake.md")"
+            ocbody="$(sed '1,/^---$/d' "$ocset/nix/flake.md")"
+            [ "$clbody" = "$ocbody" ] \
+              || { echo "FAIL: nix/flake body differs between agents"; exit 1; }
 
             # claude counterparts exist at their paths
-            [ -f "${claude}/.claude/skills/set/nix/SKILL.md" ] \
-              || { echo "FAIL: claude nix skill missing"; exit 1; }
-            [ -f "${claude}/.claude/rules/generic.md" ] \
+            [ -f "$clset/nix/flake.md" ] \
+              || { echo "FAIL: claude nix rule missing"; exit 1; }
+            [ -f "$clset/generic/skill.md" ] \
               || { echo "FAIL: claude generic rule missing"; exit 1; }
 
-            # same skill body content (strip frontmatter, compare body)
-            clbody="$(sed '1,/^---$/d' "${claude}/.claude/skills/set/nix/SKILL.md")"
-            ocbody="$(sed '1,/^---$/d' "$ocskill")"
-            [ "$clbody" = "$ocbody" ] \
-              || { echo "FAIL: nix body differs between agents"; exit 1; }
-
-            # facets identical
-            diff -r \
-              --exclude=SKILL.md \
-              "${claude}/.claude/skills/set/nix" \
-              "${opencode}/.opencode/skills/set/nix" \
-              || { echo "FAIL: nix facets differ"; exit 1; }
+            # same rule body across all files (strip frontmatter, diff bodies)
+            clbody2="$(sed '1,/^---$/d' "$clset/generic/skill.md")"
+            ocbody2="$(sed '1,/^---$/d' "$ocset/generic/skill.md")"
+            [ "$clbody2" = "$ocbody2" ] \
+              || { echo "FAIL: generic body differs between agents"; exit 1; }
 
             echo PASS
             touch $out
@@ -598,7 +605,7 @@
           );
           agentSeams = lib.concatStringsSep ";" (
             lib.mapAttrsToList (
-              name: seam: "${name}=${seam.skillPath},${seam.rulePath},${seam.condField}"
+              name: seam: "${name}=${seam.dir},${seam.condField}"
             ) agents
           );
           mkSettingFull = import ./setting/lib/mk-setting.nix { inherit lib; } { inherit pkgs; };
