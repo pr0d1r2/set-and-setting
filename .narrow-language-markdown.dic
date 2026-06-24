@@ -50,7 +50,6 @@ against
 agent
 agentic
 agents
-agentskills
 agnostic
 agnosticism
 agpl
@@ -144,7 +143,8 @@ author
 authoritative
 authorized
 auto
-autoloads
+autoload
+autoloaded
 automated
 automatic
 automatically
@@ -211,6 +211,7 @@ block
 blocked
 blocks
 blue
+bodies
 body
 book
 boot
@@ -230,6 +231,7 @@ breaking
 breaks
 bridges
 briefly
+broad
 budget
 bug
 bugs
@@ -388,7 +390,6 @@ composite
 composition
 compound
 compute
-concatenated
 concatenating
 concatenation
 concept
@@ -453,6 +454,7 @@ conversation
 conveying
 cookies
 cooling
+copied
 copies
 copilot
 copy
@@ -579,6 +581,7 @@ dic
 dics
 dictionaries
 dictionary
+did
 diff
 differ
 different
@@ -677,6 +680,7 @@ emit
 emits
 emitted
 emitter
+empirically
 empty
 emulation
 enable
@@ -744,6 +748,7 @@ executing
 execution
 exempt
 exhaust
+exhaustion
 exist
 existing
 exists
@@ -850,7 +855,6 @@ fold
 folder
 folds
 follow
-followed
 following
 follows
 foo
@@ -1161,6 +1165,7 @@ killing
 kills
 kinds
 kingston
+knob
 know
 knowledge
 known
@@ -1175,6 +1180,7 @@ languages
 last
 late
 latest
+launch
 layer
 layout
 lead
@@ -1293,6 +1299,7 @@ marking
 marks
 mask
 match
+matched
 matches
 matching
 materialization
@@ -1335,6 +1342,8 @@ minimal
 minimize
 minimums
 minutes
+mirror
+mirrored
 mirroring
 mirrors
 misc
@@ -1584,12 +1593,12 @@ pitfalls
 pkill
 place
 placeholder
-placement
 plain
 plan
 plans
 platform
 platforms
+play
 plus
 pname
 point
@@ -1617,9 +1626,9 @@ preferred
 prefix
 prepend
 prepended
+prepending
 prerequisite
 prerequisites
-presence
 present
 presenting
 preservation
@@ -1745,8 +1754,10 @@ records
 recovery
 recur
 recurring
+recursively
 red
 redaction
+redesign
 redistribute
 reduced
 reduces
@@ -1784,6 +1795,7 @@ release
 releases
 relevance
 relevant
+reliable
 reliably
 reload
 reloads
@@ -1840,6 +1852,7 @@ result
 results
 retain
 retained
+retarget
 retired
 retry
 returns
@@ -1848,11 +1861,13 @@ rev
 revalidated
 reveal
 reveals
+reverse
 reversed
 review
 reviewable
 reviewers
 reviews
+rework
 rewrite
 right
 risk
@@ -1970,6 +1985,7 @@ shellcheck
 shells
 shields
 ship
+shipped
 ships
 short
 shortcut
@@ -1981,6 +1997,7 @@ show
 shown
 shows
 shutdown
+sibling
 siblings
 side
 signal
@@ -2016,13 +2033,13 @@ slash
 slirp
 slow
 slowness
-slug
 slurs
 smaller
 smart
 smoke
 snap
 software
+sole
 solutions
 some
 something
@@ -2237,7 +2254,7 @@ traditional
 trailing
 training
 transaction
-transforms
+transform
 translated
 translation
 translations
@@ -2298,6 +2315,7 @@ unicode
 unified
 unique
 unit
+universal
 unix
 unknown
 unless
@@ -2336,7 +2354,6 @@ usr
 usually
 utf
 utilize
-valid
 validation
 values
 vanish
