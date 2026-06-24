@@ -605,9 +605,7 @@
             lib.mapAttrsToList (c: globs: "${c}=${lib.concatStringsSep "," globs}") cats.globs
           );
           agentSeams = lib.concatStringsSep ";" (
-            lib.mapAttrsToList (
-              name: seam: "${name}=${seam.dir},${seam.condField}"
-            ) agents
+            lib.mapAttrsToList (name: seam: "${name}=${seam.dir},${seam.condField}") agents
           );
           mkSettingFull = import ./setting/lib/mk-setting.nix { inherit lib; } { inherit pkgs; };
 
