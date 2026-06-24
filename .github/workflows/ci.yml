@@ -24,6 +24,7 @@ jobs:
           cachix-cache: pr0d1r2
           cachix-auth-token: ${{ secrets.CACHIX_AUTH_TOKEN }}
           extra-env: LEFTHOOK_EXCLUDE=changelog-touched
+          keep-home: "true"
 
   build-darwin:
     needs: build-linux
@@ -35,6 +36,9 @@ jobs:
           cachix-cache: pr0d1r2
           cachix-auth-token: ${{ secrets.CACHIX_AUTH_TOKEN }}
           extra-env: LEFTHOOK_EXCLUDE=changelog-touched
+          keep-home: "true"
+          flake-check-timeout: "600"
+          flake-eval-timeout: "120"
 
   build-linux-arm:
     needs: build-linux
@@ -47,3 +51,4 @@ jobs:
           cachix-cache: pr0d1r2
           cachix-auth-token: ${{ secrets.CACHIX_AUTH_TOKEN }}
           extra-env: LEFTHOOK_EXCLUDE=changelog-touched
+          keep-home: "true"

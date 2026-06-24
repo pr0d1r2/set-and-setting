@@ -30,6 +30,11 @@
 
 ### Fixed
 
+- Add "home" and "keep" to `.narrow-language-other.dic` for the
+  `keep-home` CI setting.
+- CI devShell shellHook sets `HOME` fallback when unset, preventing
+  `fatal: $HOME not set` from git inside `nix develop
+  --ignore-environment`.
 - `sync-set.sh` discovers the agent dir from the build output instead
   of hardcoding `.claude`. The nix build path with `agent = opencode`
   now produces a working `bin/sync-set` (V21/V23).

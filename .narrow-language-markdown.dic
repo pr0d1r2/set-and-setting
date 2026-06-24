@@ -798,10 +798,12 @@ failure
 failures
 fake
 fall
+fallback
 false
 families
 fast
 faster
+fatal
 fbeb
 feat
 feature
@@ -1631,6 +1633,7 @@ prerequisite
 prerequisites
 present
 presenting
+preventing
 preservation
 preserve
 preserved
@@ -2325,6 +2328,7 @@ unrelated
 unreleased
 unrequested
 unsafe
+unset
 unsure
 until
 untouched
