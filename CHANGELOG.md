@@ -30,6 +30,8 @@
 
 ### Fixed
 
+- Add "home" and "keep" to `.narrow-language-other.dic` for the
+  `keep-home` CI setting.
 - CI devShell shellHook sets `HOME` fallback when unset, preventing
   `fatal: $HOME not set` from git inside `nix develop
   --ignore-environment`.

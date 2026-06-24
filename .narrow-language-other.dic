@@ -80,6 +80,7 @@ gitleaks
 glob
 gmail
 has
+home
 hook
 hub
 init
@@ -90,6 +91,7 @@ intended
 its
 jobs
 json
+keep
 justfile
 labels
 language
