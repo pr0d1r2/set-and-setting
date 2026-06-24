@@ -389,6 +389,10 @@
             pkgs.bats
             nix-lefthook.packages.${pkgs.stdenv.hostPlatform.system}.default
           ];
+          shellHook = ''
+            export HOME="''${HOME:-/tmp/ci-home}"
+            mkdir -p "$HOME"
+          '';
         };
         default = pkgs.mkShell {
           packages = (lefthookWrappersFor pkgs) ++ [
