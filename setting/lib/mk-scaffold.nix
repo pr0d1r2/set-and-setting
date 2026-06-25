@@ -3,13 +3,14 @@
 let
   inherit (builtins) readFile;
 
-  assembledLefthook = pkgs.runCommand "scaffold-lefthook"
-    {
-      FRAGMENTS_DIR = ../integrations/lefthook;
-    }
-    ''
-      bash ${./assemble-lefthook.sh}
-    '';
+  assembledLefthook =
+    pkgs.runCommand "scaffold-lefthook"
+      {
+        FRAGMENTS_DIR = ../integrations/lefthook;
+      }
+      ''
+        bash ${./assemble-lefthook.sh}
+      '';
 
   scaffoldBundle = pkgs.symlinkJoin {
     name = "scaffold-repo";

@@ -15,9 +15,8 @@ ordered="base nix shell ascii markdown yaml"
     printf '%s\n' 'remotes:'
 
     for name in $ordered; do
-        awk '/^remotes:/ { r=1; next }
-             /^[a-z]/ { r=0 }
-             r && NF { print }' "$FRAGMENTS_DIR/$name.yml"
+        awk '/^remotes:/{r=1;next} /^[a-z]/{r=0} r&&NF{print}' \
+            "$FRAGMENTS_DIR/$name.yml"
     done
 
     has_precommit=0
@@ -29,11 +28,8 @@ ordered="base nix shell ascii markdown yaml"
                 printf '%s\n' '  commands:'
                 has_precommit=1
             fi
-            awk '/^pre-commit:/ { s=1; next }
-                 s && /^  commands:/ { c=1; next }
-                 /^pre-push:/ { s=0; c=0 }
-                 c && /^[a-z]/ { s=0; c=0 }
-                 c && NF { print }' "$FRAGMENTS_DIR/$name.yml"
+            awk '/^pre-commit:/{s=1;next} s&&/^  commands:/{c=1;next} /^pre-push:/{s=0;c=0} c&&/^[a-z]/{s=0;c=0} c&&NF{print}' \
+                "$FRAGMENTS_DIR/$name.yml"
         fi
     done
 
@@ -46,10 +42,8 @@ ordered="base nix shell ascii markdown yaml"
                 printf '%s\n' '  commands:'
                 has_prepush=1
             fi
-            awk '/^pre-push:/ { s=1; next }
-                 s && /^  commands:/ { c=1; next }
-                 s && /^[a-z]/ { s=0; c=0 }
-                 c && NF { print }' "$FRAGMENTS_DIR/$name.yml"
+            awk '/^pre-push:/{s=1;next} s&&/^  commands:/{c=1;next} s&&/^[a-z]/{s=0;c=0} c&&NF{print}' \
+                "$FRAGMENTS_DIR/$name.yml"
         fi
     done
-} > "$out/lefthook.yml"
+} >"$out/lefthook.yml"

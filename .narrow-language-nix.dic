@@ -1,6 +1,7 @@
 aarch
 absent
 across
+action
 actual
 add
 adding
@@ -22,9 +23,12 @@ apps
 architecture
 are
 ascii
+assemble
+assembled
 assertion
 asserts
 attrs
+base
 bash
 bats
 between
@@ -59,6 +63,7 @@ command
 commit
 compact
 compares
+component
 compose
 concat
 concepts
@@ -124,6 +129,7 @@ expectations
 expected
 experimental
 export
+expression
 extra
 fail
 false
@@ -142,6 +148,7 @@ for
 format
 found
 fragment
+fragments
 freeze
 from
 frontmatter
@@ -182,6 +189,7 @@ init
 inputs
 install
 installer
+integrations
 into
 its
 join
@@ -228,6 +236,7 @@ mirrored
 mirrors
 missing
 mkdir
+mkscaffold
 mkset
 mksetting
 modularity
@@ -273,16 +282,22 @@ prepended
 present
 preserve
 preserved
+produces
 product
 program
 project
 proof
 proves
 public
+push
 qim
 raw
 read
+ref
 rel
+remote
+remotes
+repo
 requested
 resolve
 rev
@@ -293,6 +308,7 @@ run
 runs
 runtime
 same
+scaffold
 scaffolding
 scan
 scanner
@@ -325,6 +341,7 @@ single
 size
 skill
 skills
+skip
 source
 sources
 specific
@@ -349,6 +366,7 @@ the
 their
 then
 they
+three
 too
 top
 touch
@@ -369,12 +387,14 @@ unknown
 update
 url
 uses
+valid
 value
 values
 verbatim
 where
 whitespace
 with
+workflows
 works
 wrap
 wrappers

@@ -68,6 +68,8 @@
 
 ### Fixed
 
+- Fix `assemble-lefthook.bats` teardown deleting real integration
+  fragment files and editorconfig/shellcheck violations (#30).
 - Add "home" and "keep" to `.narrow-language-other.dic` for the
   `keep-home` CI setting.
 - CI devShell shellHook sets `HOME` fallback when unset, preventing

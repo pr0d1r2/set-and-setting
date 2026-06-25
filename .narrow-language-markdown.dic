@@ -117,6 +117,8 @@ artifacts
 ascii
 aspect
 aspects
+assemble
+assembled
 assert
 assertion
 asserts
@@ -1324,6 +1326,7 @@ materialization
 materialize
 materialized
 materializes
+matrix
 matter
 matters
 mature
@@ -2200,6 +2203,7 @@ targeting
 targets
 task
 tasks
+teardown
 tee
 tell
 tells

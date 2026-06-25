@@ -4,118 +4,57 @@
 # Unit tests for setting/lib/assemble-lefthook.sh -- assembles lefthook.yml
 # from integration fragments by merging remotes + pre-commit + pre-push.
 
+write_remote() {
+    printf '%s\n' "---" "remotes:" \
+        "  - git_url: https://github.com/example/$1" \
+        "    ref: main" "    configs:" "      - lefthook-remote.yml"
+}
+
+write_commands() {
+    printf '\n%s\n' "$1:"
+    printf '%s\n' "  parallel: true" "  commands:" \
+        "    $2:" "      glob: \"$3\"" \
+        "      run: lefthook-$2 {$4}"
+}
+
 setup() {
     bats_require_minimum_version 1.5.0
     FRAGMENTS_DIR="$(mktemp -d)"
+    _ORIG_FRAGMENTS_DIR="$FRAGMENTS_DIR"
     export out
     out="$(mktemp -d)"
     SCRIPT="$BATS_TEST_DIRNAME/../setting/lib/assemble-lefthook.sh"
 
-    cat >"$FRAGMENTS_DIR/base.yml" <<'EOF'
----
-remotes:
-  - git_url: https://github.com/example/hook-a
-    ref: main
-    configs:
-      - lefthook-remote.yml
-  - git_url: https://github.com/example/hook-b
-    ref: main
-    configs:
-      - lefthook-remote.yml
-EOF
+    write_remote hook-a >"$FRAGMENTS_DIR/base.yml"
+    printf '%s\n' "  - git_url: https://github.com/example/hook-b" \
+        "    ref: main" "    configs:" "      - lefthook-remote.yml" \
+        >>"$FRAGMENTS_DIR/base.yml"
+    write_remote hook-nix >"$FRAGMENTS_DIR/nix.yml"
+    write_remote hook-shell >"$FRAGMENTS_DIR/shell.yml"
 
-    cat >"$FRAGMENTS_DIR/nix.yml" <<'EOF'
----
-remotes:
-  - git_url: https://github.com/example/hook-nix
-    ref: main
-    configs:
-      - lefthook-remote.yml
-EOF
+    {
+        write_remote hook-ascii
+        write_commands pre-commit ascii-check "*.nix" staged_files
+        write_commands pre-push ascii-check "*.nix" push_files
+    } >"$FRAGMENTS_DIR/ascii.yml"
 
-    cat >"$FRAGMENTS_DIR/shell.yml" <<'EOF'
----
-remotes:
-  - git_url: https://github.com/example/hook-shell
-    ref: main
-    configs:
-      - lefthook-remote.yml
-EOF
+    {
+        write_remote hook-md
+        write_commands pre-commit mdlint "*.md" staged_files
+        write_commands pre-push mdlint "*.md" push_files
+    } >"$FRAGMENTS_DIR/markdown.yml"
 
-    cat >"$FRAGMENTS_DIR/ascii.yml" <<'EOF'
----
-remotes:
-  - git_url: https://github.com/example/hook-ascii
-    ref: main
-    configs:
-      - lefthook-remote.yml
-
-pre-commit:
-  parallel: true
-  commands:
-    ascii-check:
-      glob: "*.nix"
-      run: lefthook-ascii {staged_files}
-
-pre-push:
-  parallel: true
-  commands:
-    ascii-check:
-      glob: "*.nix"
-      run: lefthook-ascii {push_files}
-EOF
-
-    cat >"$FRAGMENTS_DIR/markdown.yml" <<'EOF'
----
-remotes:
-  - git_url: https://github.com/example/hook-md
-    ref: main
-    configs:
-      - lefthook-remote.yml
-
-pre-commit:
-  parallel: true
-  commands:
-    mdlint:
-      glob: "*.md"
-      run: lefthook-mdlint {staged_files}
-
-pre-push:
-  parallel: true
-  commands:
-    mdlint:
-      glob: "*.md"
-      run: lefthook-mdlint {push_files}
-EOF
-
-    cat >"$FRAGMENTS_DIR/yaml.yml" <<'EOF'
----
-remotes:
-  - git_url: https://github.com/example/hook-yaml
-    ref: main
-    configs:
-      - lefthook-remote.yml
-
-pre-commit:
-  parallel: true
-  commands:
-    yamllint:
-      glob: "*.yml"
-      run: lefthook-yamllint {staged_files}
-
-pre-push:
-  parallel: true
-  commands:
-    yamllint:
-      glob: "*.yml"
-      run: lefthook-yamllint {push_files}
-EOF
+    {
+        write_remote hook-yaml
+        write_commands pre-commit yamllint "*.yml" staged_files
+        write_commands pre-push yamllint "*.yml" push_files
+    } >"$FRAGMENTS_DIR/yaml.yml"
 
     export FRAGMENTS_DIR
 }
 
 teardown() {
-    rm -rf "$FRAGMENTS_DIR" "$out"
+    rm -rf "$_ORIG_FRAGMENTS_DIR" "$out"
 }
 
 @test "produces lefthook.yml" {
@@ -172,34 +111,12 @@ teardown() {
 }
 
 @test "fragments without commands do not add empty sections" {
-    rm "$FRAGMENTS_DIR/ascii.yml" "$FRAGMENTS_DIR/markdown.yml" "$FRAGMENTS_DIR/yaml.yml"
-    cat >"$FRAGMENTS_DIR/ascii.yml" <<'EOF'
----
-remotes:
-  - git_url: https://github.com/example/hook-ascii
-    ref: main
-    configs:
-      - lefthook-remote.yml
-EOF
-    cat >"$FRAGMENTS_DIR/markdown.yml" <<'EOF'
----
-remotes:
-  - git_url: https://github.com/example/hook-md
-    ref: main
-    configs:
-      - lefthook-remote.yml
-EOF
-    cat >"$FRAGMENTS_DIR/yaml.yml" <<'EOF'
----
-remotes:
-  - git_url: https://github.com/example/hook-yaml
-    ref: main
-    configs:
-      - lefthook-remote.yml
-EOF
+    for name in ascii markdown yaml; do
+        write_remote "hook-$name" >"$FRAGMENTS_DIR/$name.yml"
+    done
     bash "$SCRIPT"
-    ! grep -q '^pre-commit:' "$out/lefthook.yml"
-    ! grep -q '^pre-push:' "$out/lefthook.yml"
+    run ! grep -q '^pre-commit:' "$out/lefthook.yml"
+    run ! grep -q '^pre-push:' "$out/lefthook.yml"
 }
 
 @test "assembles real fragments from setting/integrations/lefthook" {
