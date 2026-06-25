@@ -65,6 +65,10 @@
   verbatim, mirror, broad, etc. from `lib/*.sh`, `set/lib/*.sh`,
   `tests/*.bats`) and `.narrow-language-markdown.dic` (reworked,
   simplified, stripped from `CHANGELOG.md`).
+- narrow-language (#29): move `anywhere` to
+  `.narrow-language-markdown.dic` -- `CHANGELOG.md` is markdown, so its
+  words must live in the markdown dictionary, not
+  `.narrow-language-other.dic`.
 
 ### Apps
 
