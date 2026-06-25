@@ -53,7 +53,10 @@
     generic = [ "**/*" ];
     architecture = [ "**/*" ];
     git = [ "**/*" ];
-    language = [ "**/*" ];
+    language = [
+      "**/*"
+      "**/.narrow-language-*.dic"
+    ];
     opensource = [ "**/*" ];
     product = [ "**/*" ];
     security = [ "**/*" ];

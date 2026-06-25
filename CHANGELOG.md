@@ -23,6 +23,12 @@
   `checks.materialize-check` and `checks.materialize-check-exclude`
   in `flake.nix`.
 
+- Enrich `language/narrow.md` with deterministic narrow-language
+  recovery procedure (#28): glob-to-dict table, safe-append recipe,
+  compact/freeze/MD024 gotchas, verify step. Add
+  `**/.narrow-language-*.dic` to the `language` category globs so
+  the rule auto-loads on dictionary edits.
+
 ### Changed
 
 - T30: dogfood -- emit set into gitignored `.claude/rules/set/` +
