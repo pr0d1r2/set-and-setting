@@ -10,6 +10,17 @@
   `runtimeInputs` as `compact`. Update `nix-lefthook-narrow-language`
   input to include the new script. Update `language/narrow.md` skill
   to reference the command.
+- `lib.mkMaterializeCheck` (T40/#23): deterministic consumer-side test
+  for skill materialization. Consumers wire one line in their `checks`
+  output and get automatic verification that mkSet produces the correct
+  layout for their selected categories -- domain skills have `SKILL.md`
+  with the conditional-load field, always-on rules have no conditional
+  field, facets are raw (V25), and excluded files are absent.
+  Expectations self-derive from `categories.nix` so consumers never
+  restate the globs map. Shell logic in `lib/materialize-check.sh`,
+  bats coverage in `tests/materialize-check.bats` (11 test cases).
+  Wired as `checks.materialize-check` and
+  `checks.materialize-check-exclude` in `flake.nix`.
 
 ### Changed
 
@@ -23,20 +34,6 @@
   globs -- domains narrow, core/universal broad `**/*` (V20).
   DevShell shellHook auto-syncs `packages.set` on entry.
   CLAUDE.md stripped of `@`-ref blocks for skills/concepts/drafts.
-
-### Added
-
-- `lib.mkMaterializeCheck` (T40/#23): deterministic consumer-side test
-  for skill materialization. Consumers wire one line in their `checks`
-  output and get automatic verification that mkSet produces the correct
-  layout for their selected categories -- domain skills have `SKILL.md`
-  with the conditional-load field, always-on rules have no conditional
-  field, facets are raw (V25), and excluded files are absent.
-  Expectations self-derive from `categories.nix` so consumers never
-  restate the globs map. Shell logic in `lib/materialize-check.sh`,
-  bats coverage in `tests/materialize-check.bats` (11 test cases).
-  Wired as `checks.materialize-check` and
-  `checks.materialize-check-exclude` in `flake.nix`.
 
 ### Documentation
 
