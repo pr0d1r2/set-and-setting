@@ -54,6 +54,10 @@
 - `--remove` of always-on (cross-cutting) categories now cleans stale
   `.claude/rules/<cat>.md` files. Previously only domain categories
   under `.claude/skills/set/` were cleaned by the `rm -rf` step.
+- CI: add missing words to `.narrow-language-shell.dic` (scoped,
+  verbatim, mirror, broad, etc. from `lib/*.sh`, `set/lib/*.sh`,
+  `tests/*.bats`) and `.narrow-language-markdown.dic` (reworked,
+  simplified, stripped from `CHANGELOG.md`).
 
 ### Apps
 
