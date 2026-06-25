@@ -1,16 +1,16 @@
 #!/usr/bin/env bash
 # shellcheck disable=SC2154
 # app-bootstrap.sh -- combined installer: mkSet core + mkSetting +
-# mkSetting-init (C9). Equivalent to running all three in sequence.
-# Passes --agent and --dry-run through to mkSet (T39).
-# Env in: MKSET_APP, MKSETTING_APP, MKSETTING_INIT_APP
+# mkSetting-init + mkScaffold (C9). Equivalent to running all four
+# in sequence. Passes --agent and --dry-run through to mkSet (T39).
+# Env in: MKSET_APP, MKSETTING_APP, MKSETTING_INIT_APP, MKSCAFFOLD_APP
 set -euo pipefail
 
 if [ "${1:-}" = "--help" ]; then
     echo "Usage: bootstrap [--help] [--dry-run] [--agent NAME]"
     echo ""
-    echo "Combined installer: mkSet (core) + mkSetting + mkSetting-init."
-    echo "Equivalent to running all three in sequence."
+    echo "Combined installer: mkSet (core) + mkSetting + mkSetting-init"
+    echo "+ mkScaffold. Equivalent to running all four in sequence."
     echo ""
     echo "Options:"
     echo "  --agent NAME  Target agent for mkSet (default: claude)"
@@ -44,3 +44,4 @@ done
 "$MKSET_APP" "${mkset_args[@]+"${mkset_args[@]}"}"
 "$MKSETTING_APP" "${other_args[@]+"${other_args[@]}"}"
 "$MKSETTING_INIT_APP" "${other_args[@]+"${other_args[@]}"}"
+"$MKSCAFFOLD_APP" "${other_args[@]+"${other_args[@]}"}"
