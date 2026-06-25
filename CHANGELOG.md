@@ -2,6 +2,27 @@
 
 ## Unreleased
 
+### Added
+
+- `lefthook-narrow-language-add` wrapper (#29): wire upstream
+  `narrow-language-add` script that auto-appends unknown words to
+  the correct dictionary (sorted, deduped, `git add`ed). Same
+  `runtimeInputs` as `compact`. Update `nix-lefthook-narrow-language`
+  input to include the new script. Update `language/narrow.md` skill
+  to reference the command.
+- `lib.mkMaterializeCheck` (T40/#23): deterministic consumer-side test
+  for skill materialization. Consumers wire one line in their `checks`
+  output and get automatic verification that mkSet produces the correct
+  layout for their selected categories -- every rule file (domain and
+  core/universal) carries `paths:` frontmatter with the category globs
+  (V18/V20), no `SKILL.md` exists anywhere (V17), bodies are verbatim
+  (V25), and excluded files are absent. Expectations self-derive from
+  `categories.nix` so consumers never restate the globs map. Shell
+  logic in `lib/materialize-check.sh`, bats coverage in
+  `tests/materialize-check.bats` (11 test cases). Wired as
+  `checks.materialize-check` and `checks.materialize-check-exclude`
+  in `flake.nix`.
+
 ### Changed
 
 - T30: dogfood -- emit set into gitignored `.claude/rules/set/` +
@@ -14,20 +35,6 @@
   globs -- domains narrow, core/universal broad `**/*` (V20).
   DevShell shellHook auto-syncs `packages.set` on entry.
   CLAUDE.md stripped of `@`-ref blocks for skills/concepts/drafts.
-
-### Added
-
-- `lib.mkMaterializeCheck` (T40/#23): deterministic consumer-side test
-  for skill materialization. Consumers wire one line in their `checks`
-  output and get automatic verification that mkSet produces the correct
-  layout for their selected categories -- domain skills have `SKILL.md`
-  with the conditional-load field, always-on rules have no conditional
-  field, facets are raw (V25), and excluded files are absent.
-  Expectations self-derive from `categories.nix` so consumers never
-  restate the globs map. Shell logic in `lib/materialize-check.sh`,
-  bats coverage in `tests/materialize-check.bats` (11 test cases).
-  Wired as `checks.materialize-check` and
-  `checks.materialize-check-exclude` in `flake.nix`.
 
 ### Documentation
 
@@ -58,6 +65,10 @@
   verbatim, mirror, broad, etc. from `lib/*.sh`, `set/lib/*.sh`,
   `tests/*.bats`) and `.narrow-language-markdown.dic` (reworked,
   simplified, stripped from `CHANGELOG.md`).
+- narrow-language (#29): move `anywhere` to
+  `.narrow-language-markdown.dic` -- `CHANGELOG.md` is markdown, so its
+  words must live in the markdown dictionary, not
+  `.narrow-language-other.dic`.
 
 ### Apps
 
