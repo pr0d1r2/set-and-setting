@@ -28,6 +28,7 @@
   ];
 
   globs = {
+    # Domain: narrow
     nix = [
       "**/*.nix"
       "flake.lock"
@@ -48,5 +49,14 @@
       ".github/**/*.yml"
       ".github/**/*.yaml"
     ];
+    # Core/universal: broad (V20)
+    generic = [ "**/*" ];
+    architecture = [ "**/*" ];
+    git = [ "**/*" ];
+    language = [ "**/*" ];
+    opensource = [ "**/*" ];
+    product = [ "**/*" ];
+    security = [ "**/*" ];
+    update = [ "**/*" ];
   };
 }

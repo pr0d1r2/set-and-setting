@@ -35,8 +35,8 @@ setup() {
     export RESOLVE_AGENT_SCRIPT="$BATS_TEST_DIRNAME/../set/lib/resolve-agent.sh"
     export ALL_CATEGORIES="generic git nix security"
     export CORE_CATEGORIES="generic git"
-    export GLOBS_MAP="nix=**/*.nix,flake.lock"
-    export AGENT_SEAMS="claude=.claude/skills/set,.claude/rules,paths;opencode=.opencode/skills/set,.opencode/rules,globs"
+    export GLOBS_MAP="nix=**/*.nix,flake.lock;generic=**/*;git=**/*;security=**/*"
+    export AGENT_SEAMS="claude=.claude/rules/set,paths;opencode=.opencode/rules/set,globs"
 }
 
 teardown() {
@@ -68,7 +68,7 @@ teardown() {
     [[ "$output" == *"Would install"* ]]
     [[ "$output" == *"generic git"* ]]
     [[ "$output" == *"Agent: claude"* ]]
-    [[ "$output" == *"Target: ./.claude/skills/set/"* ]]
+    [[ "$output" == *"Target: ./.claude/rules/set/"* ]]
     [ ! -d "$TARGET/.claude" ]
 }
 
@@ -78,33 +78,33 @@ teardown() {
     [[ "$output" == *"Installing core categories"* ]]
     [[ "$output" == *"Additional categories available"* ]]
     [[ "$output" == *"Installed categories: generic git"* ]]
-    [ -f "$TARGET/.claude/rules/generic.md" ]
+    [ -f "$TARGET/.claude/rules/set/generic/skill.md" ]
 }
 
 @test "positional args add categories to core" {
     run bash -c "cd '$TARGET' && bash '$SCRIPT' nix"
     [ "$status" -eq 0 ]
     [[ "$output" == *"Installed categories: generic git nix"* ]]
-    [ -f "$TARGET/.claude/skills/set/nix/SKILL.md" ]
-    [ -f "$TARGET/.claude/rules/generic.md" ]
+    [ -f "$TARGET/.claude/rules/set/nix/flake.md" ]
+    [ -f "$TARGET/.claude/rules/set/generic/skill.md" ]
 }
 
 @test "--all installs all categories" {
     run bash -c "cd '$TARGET' && bash '$SCRIPT' --all"
     [ "$status" -eq 0 ]
     [[ "$output" == *"Installed categories: generic git nix security"* ]]
-    [ -f "$TARGET/.claude/rules/generic.md" ]
-    [ -f "$TARGET/.claude/skills/set/nix/SKILL.md" ]
-    [ -f "$TARGET/.claude/rules/security.md" ]
+    [ -f "$TARGET/.claude/rules/set/generic/skill.md" ]
+    [ -f "$TARGET/.claude/rules/set/nix/flake.md" ]
+    [ -f "$TARGET/.claude/rules/set/security.md" ]
 }
 
 @test "--all-except excludes listed categories" {
     run bash -c "cd '$TARGET' && bash '$SCRIPT' --all-except security"
     [ "$status" -eq 0 ]
     [[ "$output" == *"Installed categories: generic git nix"* ]]
-    [ -f "$TARGET/.claude/rules/generic.md" ]
-    [ -f "$TARGET/.claude/skills/set/nix/SKILL.md" ]
-    [ ! -f "$TARGET/.claude/rules/security.md" ]
+    [ -f "$TARGET/.claude/rules/set/generic/skill.md" ]
+    [ -f "$TARGET/.claude/rules/set/nix/flake.md" ]
+    [ ! -f "$TARGET/.claude/rules/set/security.md" ]
 }
 
 @test "unknown category fails with guidance" {
@@ -135,44 +135,44 @@ teardown() {
 @test "concepts are included in output" {
     run bash -c "cd '$TARGET' && bash '$SCRIPT'"
     [ "$status" -eq 0 ]
-    [ -f "$TARGET/.claude/rules/concepts-user.md" ]
+    [ -f "$TARGET/.claude/rules/set/concepts-user.md" ]
 }
 
 @test "clean-replace removes stale set files (V26)" {
-    mkdir -p "$TARGET/.claude/skills/set/stale"
-    echo "stale" >"$TARGET/.claude/skills/set/stale/SKILL.md"
+    mkdir -p "$TARGET/.claude/rules/set/stale"
+    echo "stale" >"$TARGET/.claude/rules/set/stale/old.md"
     run bash -c "cd '$TARGET' && bash '$SCRIPT' nix"
     [ "$status" -eq 0 ]
-    [ ! -e "$TARGET/.claude/skills/set/stale" ]
-    [ -f "$TARGET/.claude/skills/set/nix/SKILL.md" ]
+    [ ! -e "$TARGET/.claude/rules/set/stale" ]
+    [ -f "$TARGET/.claude/rules/set/nix/flake.md" ]
 }
 
 @test "writes manifest after install" {
     run bash -c "cd '$TARGET' && bash '$SCRIPT' nix"
     [ "$status" -eq 0 ]
-    [ -f "$TARGET/.claude/skills/set/.mkset.json" ]
-    grep -q '"categories"' "$TARGET/.claude/skills/set/.mkset.json"
-    grep -q '"generic"' "$TARGET/.claude/skills/set/.mkset.json"
-    grep -q '"nix"' "$TARGET/.claude/skills/set/.mkset.json"
-    grep -q '"rev"' "$TARGET/.claude/skills/set/.mkset.json"
-    grep -q '"agent":"claude"' "$TARGET/.claude/skills/set/.mkset.json"
+    [ -f "$TARGET/.claude/rules/set/.mkset.json" ]
+    grep -q '"categories"' "$TARGET/.claude/rules/set/.mkset.json"
+    grep -q '"generic"' "$TARGET/.claude/rules/set/.mkset.json"
+    grep -q '"nix"' "$TARGET/.claude/rules/set/.mkset.json"
+    grep -q '"rev"' "$TARGET/.claude/rules/set/.mkset.json"
+    grep -q '"agent":"claude"' "$TARGET/.claude/rules/set/.mkset.json"
 }
 
 @test "bare re-run with manifest refreshes installed categories" {
     run bash -c "cd '$TARGET' && bash '$SCRIPT' nix"
     [ "$status" -eq 0 ]
-    [ -f "$TARGET/.claude/skills/set/.mkset.json" ]
+    [ -f "$TARGET/.claude/rules/set/.mkset.json" ]
     run bash -c "cd '$TARGET' && bash '$SCRIPT'"
     [ "$status" -eq 0 ]
     [[ "$output" == *"Refreshing from manifest"* ]]
     [[ "$output" == *"nix"* ]]
-    [ -f "$TARGET/.claude/skills/set/nix/SKILL.md" ]
+    [ -f "$TARGET/.claude/rules/set/nix/flake.md" ]
 }
 
 @test "bare re-run detects upstream update" {
     run bash -c "cd '$TARGET' && bash '$SCRIPT' nix"
     [ "$status" -eq 0 ]
-    sed -i 's/"rev":"[^"]*"/"rev":"oldrev"/' "$TARGET/.claude/skills/set/.mkset.json"
+    sed -i 's/"rev":"[^"]*"/"rev":"oldrev"/' "$TARGET/.claude/rules/set/.mkset.json"
     export MKSET_REV="newrev"
     run bash -c "cd '$TARGET' && MKSET_REV=newrev bash '$SCRIPT'"
     [ "$status" -eq 0 ]
@@ -182,14 +182,14 @@ teardown() {
 @test "--remove removes categories and updates manifest" {
     run bash -c "cd '$TARGET' && bash '$SCRIPT' nix security"
     [ "$status" -eq 0 ]
-    grep -q '"nix"' "$TARGET/.claude/skills/set/.mkset.json"
-    grep -q '"security"' "$TARGET/.claude/skills/set/.mkset.json"
+    grep -q '"nix"' "$TARGET/.claude/rules/set/.mkset.json"
+    grep -q '"security"' "$TARGET/.claude/rules/set/.mkset.json"
     run bash -c "cd '$TARGET' && bash '$SCRIPT' --remove nix"
     [ "$status" -eq 0 ]
     [[ "$output" == *"Removed: nix"* ]]
-    run ! grep -q '"nix"' "$TARGET/.claude/skills/set/.mkset.json"
-    grep -q '"security"' "$TARGET/.claude/skills/set/.mkset.json"
-    [ ! -e "$TARGET/.claude/skills/set/nix" ]
+    run ! grep -q '"nix"' "$TARGET/.claude/rules/set/.mkset.json"
+    grep -q '"security"' "$TARGET/.claude/rules/set/.mkset.json"
+    [ ! -e "$TARGET/.claude/rules/set/nix" ]
 }
 
 @test "--remove fails on core category" {
@@ -221,7 +221,7 @@ teardown() {
     [ "$status" -eq 0 ]
     [[ "$output" == *"Would remove: nix"* ]]
     [[ "$output" == *"Would keep"* ]]
-    grep -q '"nix"' "$TARGET/.claude/skills/set/.mkset.json"
+    grep -q '"nix"' "$TARGET/.claude/rules/set/.mkset.json"
 }
 
 @test "--remove requires at least one category" {
@@ -229,16 +229,3 @@ teardown() {
     [ "$status" -eq 1 ]
     [[ "$output" == *"--remove requires at least one category"* ]]
 }
-
-@test "--remove of always-on category cleans its rule file" {
-    run bash -c "cd '$TARGET' && bash '$SCRIPT' nix security"
-    [ "$status" -eq 0 ]
-    [ -f "$TARGET/.claude/rules/security.md" ]
-    [ -f "$TARGET/.claude/skills/set/nix/SKILL.md" ]
-    run bash -c "cd '$TARGET' && bash '$SCRIPT' --remove security"
-    [ "$status" -eq 0 ]
-    [ ! -f "$TARGET/.claude/rules/security.md" ]
-    [ -f "$TARGET/.claude/skills/set/nix/SKILL.md" ]
-    [ -f "$TARGET/.claude/rules/generic.md" ]
-}
-

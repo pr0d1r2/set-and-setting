@@ -1,9 +1,9 @@
 # Deterministic consumer-side test for skill materialization. Runs mkSet
 # for the requested categories, then asserts the output layout matches
-# expectations self-derived from categories.nix: domain categories have
-# SKILL.md with the conditional-load field and raw facets (V25); always-on
-# categories have a rule file with no conditional field; excluded files
-# are absent. Assertion logic lives in ./materialize-check.sh
+# expectations self-derived from categories.nix: every rule file has the
+# conditional-load field with correct globs (V17/V18/V20), source tree is
+# mirrored 1:1 (V19/V25), no SKILL.md anywhere (V17), excluded files are
+# absent. Assertion logic lives in ./materialize-check.sh
 # (nix/modularity: no embedded shell).
 { lib }:
 
@@ -41,8 +41,7 @@ in
 pkgs.runCommand "materialize-check"
   {
     MATERIALIZED = materializedSet;
-    SKILL_PATH = ag.skillPath;
-    RULE_PATH = ag.rulePath;
+    DIR = ag.dir;
     COND_FIELD = ag.condField;
     CATEGORIES = lib.concatStringsSep " " uniqueCats;
     GLOBS_MAP = globsMap;

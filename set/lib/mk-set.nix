@@ -1,11 +1,11 @@
 # mkSet -- the skill-set emitter (single source of truth for skills).
-# Transforms agnostic set/skills/ markdown into the Agent-Skills
-# open-standard layout: one skill folder per category. Domain categories
-# get a SKILL.md with the conditional-load field (paths) so the body
-# loads when matching files are edited; cross-cutting categories emit to
-# the always-on rules dir (no globs, always loaded). The agent format
-# lives only here (C2/V17). The `agent` seam is the only agent-specific
-# surface. Shell logic lives in the sibling *.sh scripts (nix/modularity).
+# Mirrors agnostic set/skills/ markdown 1:1 into <dir>/ as path-scoped
+# rules: each source file copied verbatim with its category conditional-
+# load field prepended (V17/V18/V19/V25). Everything is path-scoped
+# (V20): domains narrow, core/universal broad. The agent format lives
+# only here (C2/V17). The `agent` seam ({ dir, condField }) is the only
+# agent-specific surface (V21). Shell logic lives in the sibling *.sh
+# scripts (nix/modularity).
 { lib }:
 
 let
@@ -37,8 +37,7 @@ pkgs.runCommand "agent-set"
     SKILLS_DIR = ../skills;
     CONCEPTS_DIR = ../concepts;
     CONCEPTS = if concepts then "1" else "0";
-    SKILL_PATH = ag.skillPath;
-    RULE_PATH = ag.rulePath;
+    DIR = ag.dir;
     COND_FIELD = ag.condField;
     CATEGORIES = lib.concatStringsSep " " categories;
     GLOBS_MAP = globsMap;

@@ -2,6 +2,19 @@
 
 ## Unreleased
 
+### Changed
+
+- T30: dogfood -- emit set into gitignored `.claude/rules/set/` +
+  auto-sync on devShell entry; drop CLAUDE.md `@`-ref block. Reworked
+  mkSet emission from SKILL.md-based `.claude/skills/set/` to
+  path-scoped rules mirror in `.claude/rules/set/` (V17-V20, V25).
+  Each source file is copied verbatim with its category `paths:`
+  prepended. Agent seam simplified from 3-field to 2-field
+  `{ dir, condField }` (V21). All categories now path-scoped with
+  globs -- domains narrow, core/universal broad `**/*` (V20).
+  DevShell shellHook auto-syncs `packages.set` on entry.
+  CLAUDE.md stripped of `@`-ref blocks for skills/concepts/drafts.
+
 ### Added
 
 - `lib.mkMaterializeCheck` (T40/#23): deterministic consumer-side test
@@ -41,6 +54,10 @@
 - `--remove` of always-on (cross-cutting) categories now cleans stale
   `.claude/rules/<cat>.md` files. Previously only domain categories
   under `.claude/skills/set/` were cleaned by the `rm -rf` step.
+- CI: add missing words to `.narrow-language-shell.dic` (scoped,
+  verbatim, mirror, broad, etc. from `lib/*.sh`, `set/lib/*.sh`,
+  `tests/*.bats`) and `.narrow-language-markdown.dic` (reworked,
+  simplified, stripped from `CHANGELOG.md`).
 
 ### Apps
 

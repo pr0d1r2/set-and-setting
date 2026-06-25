@@ -5,7 +5,7 @@
 # Supports --agent flag for agent seam passthrough (T39/V21/V23).
 # Env in: SKILLS_DIR, CONCEPTS_DIR, MK_SET_SCRIPT, EMIT_SCRIPT,
 #   SYNC_SCRIPT, ALL_CATEGORIES, CORE_CATEGORIES, GLOBS_MAP,
-#   AGENT_SEAMS (agent=skillPath,rulePath,condField;...),
+#   AGENT_SEAMS (agent=dir,condField;...),
 #   RESOLVE_AGENT_SCRIPT, MKSET_REV (optional)
 set -euo pipefail
 
@@ -24,7 +24,7 @@ while [ $# -gt 0 ]; do
         --help)
             echo "Usage: mkSet [OPTIONS] [CATEGORIES...]"
             echo ""
-            echo "Materialize set-and-setting skills into the target agent's skill directory."
+            echo "Materialize set-and-setting skills into the target agent's rules directory."
             echo ""
             echo "Options:"
             echo "  --help          Show this help and exit"
@@ -111,9 +111,9 @@ while [ $# -gt 0 ]; do
 done
 
 seam="$(AGENT_NAME="$agent_name" bash "$RESOLVE_AGENT_SCRIPT")"
-IFS=',' read -r agent_skill_path agent_rule_path agent_cond_field <<<"$seam"
+IFS=',' read -r agent_dir agent_cond_field <<<"$seam"
 
-MANIFEST="$agent_skill_path/.mkset.json"
+MANIFEST="$agent_dir/.mkset.json"
 
 manifest_cats=()
 manifest_rev=""
@@ -232,7 +232,7 @@ if [ "$dry_run" -eq 1 ]; then
         echo "Would install categories: ${final_cats[*]}"
     fi
     echo "Agent: $agent_name"
-    echo "Target: ./$agent_skill_path/"
+    echo "Target: ./$agent_dir/"
     exit 0
 fi
 
@@ -243,8 +243,7 @@ export out
 export SKILLS_DIR CONCEPTS_DIR
 export EMIT="$EMIT_SCRIPT"
 export SYNC_SRC="$SYNC_SCRIPT"
-export SKILL_PATH="$agent_skill_path"
-export RULE_PATH="$agent_rule_path"
+export DIR="$agent_dir"
 export COND_FIELD="$agent_cond_field"
 export CATEGORIES="${final_cats[*]}"
 export GLOBS_MAP
@@ -253,22 +252,10 @@ export CONCEPTS="1"
 
 bash "$MK_SET_SCRIPT"
 
-rm -rf "./$agent_skill_path"
+rm -rf "./$agent_dir"
 
-# Clean up stale always-on rule files for dropped categories
-if [ ${#manifest_cats[@]} -gt 0 ] && [ -n "${manifest_cats[0]:-}" ]; then
-    for mc in "${manifest_cats[@]}"; do
-        [ -z "$mc" ] && continue
-        keep=0
-        for fc in "${final_cats[@]}"; do
-            [ "$mc" = "$fc" ] && keep=1 && break
-        done
-        [ "$keep" -eq 0 ] && rm -f "./$agent_rule_path/$mc.md"
-    done
-fi
-
-skill_parent="${agent_skill_path%%/*}"
-cp -r "$out/$skill_parent" "./" 2>/dev/null || true
+set_parent="${agent_dir%%/*}"
+cp -r "$out/$set_parent" "./" 2>/dev/null || true
 
 cats_json=""
 for c in "${final_cats[@]}"; do
@@ -276,7 +263,7 @@ for c in "${final_cats[@]}"; do
     cats_json="$cats_json\"$c\""
 done
 rev="${MKSET_REV:-unknown}"
-mkdir -p "$agent_skill_path"
+mkdir -p "$agent_dir"
 printf '{"categories":[%s],"rev":"%s","agent":"%s"}\n' "$cats_json" "$rev" "$agent_name" >"$MANIFEST"
 
 if [ "$mode" = "remove" ]; then
