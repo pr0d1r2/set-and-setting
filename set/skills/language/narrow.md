@@ -13,5 +13,8 @@ Do not create or add words to dictionaries for languages not
 present in this repo: ruby, javascript, typescript, erb, hcl,
 terraform, css, scss.
 
-When narrow-language hook reports unknown words, add them to
-correct dictionary file (one word per line, sorted).
+When narrow-language hook reports unknown words, run
+`lefthook-narrow-language-add` to auto-append them to the correct
+dictionary (sorted, deduplicated, git-staged). Review the diff
+before committing. Manual alternative: add words to the correct
+dictionary file (one word per line, sorted).

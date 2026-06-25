@@ -17,6 +17,15 @@
 
 ### Added
 
+- `lefthook-narrow-language-add` (#29): auto-append unknown words to the
+  correct narrow-language dictionary. Mirror of `compact` (inverse:
+  appends instead of removes). Same env contract
+  (`NARROW_LANGUAGE_DICT`, `NARROW_LANGUAGE_GLOB_INCLUDE`), same word
+  extraction pipeline, idempotent, sorted + deduplicated, git-staged.
+  Wired as a nix wrapper in `flake.nix`; bats test coverage (15 tests)
+  in `tests/narrow-language-add.bats`. Not wired into pre-commit/CI
+  (deliberate recovery tool, not auto-run).
+
 - `lib.mkMaterializeCheck` (T40/#23): deterministic consumer-side test
   for skill materialization. Consumers wire one line in their `checks`
   output and get automatic verification that mkSet produces the correct

@@ -273,6 +273,17 @@
               pkgs.gnugrep
             ];
           })
+          (pkgs.writeShellApplication {
+            name = "lefthook-narrow-language-add";
+            runtimeInputs = [
+              pkgs.coreutils
+              pkgs.gawk
+              pkgs.git
+              pkgs.gnugrep
+              pkgs.gnused
+            ];
+            text = builtins.readFile ./lefthook-narrow-language-add.sh;
+          })
           (w "lefthook-nix-flake-eval" nix-lefthook-nix-flake-eval-src {
             runtimeInputs = [ pkgs.nix ];
           })
