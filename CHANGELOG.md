@@ -2,6 +2,15 @@
 
 ## Unreleased
 
+### Added
+
+- `lefthook-narrow-language-add` wrapper (#29): wire upstream
+  `narrow-language-add` script that auto-appends unknown words to
+  the correct dictionary (sorted, deduped, `git add`ed). Same
+  `runtimeInputs` as `compact`. Update `nix-lefthook-narrow-language`
+  input to include the new script. Update `language/narrow.md` skill
+  to reference the command.
+
 ### Changed
 
 - T30: dogfood -- emit set into gitignored `.claude/rules/set/` +

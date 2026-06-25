@@ -258,6 +258,15 @@
               pkgs.gnused
             ];
           })
+          (w "lefthook-narrow-language-add" nix-lefthook-narrow-language-src {
+            runtimeInputs = [
+              pkgs.coreutils
+              pkgs.gawk
+              pkgs.git
+              pkgs.gnugrep
+              pkgs.gnused
+            ];
+          })
           (w "lefthook-narrow-language-compact" nix-lefthook-narrow-language-src {
             runtimeInputs = [
               pkgs.coreutils
