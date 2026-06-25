@@ -13,14 +13,15 @@
 - `lib.mkMaterializeCheck` (T40/#23): deterministic consumer-side test
   for skill materialization. Consumers wire one line in their `checks`
   output and get automatic verification that mkSet produces the correct
-  layout for their selected categories -- domain skills have `SKILL.md`
-  with the conditional-load field, always-on rules have no conditional
-  field, facets are raw (V25), and excluded files are absent.
-  Expectations self-derive from `categories.nix` so consumers never
-  restate the globs map. Shell logic in `lib/materialize-check.sh`,
-  bats coverage in `tests/materialize-check.bats` (11 test cases).
-  Wired as `checks.materialize-check` and
-  `checks.materialize-check-exclude` in `flake.nix`.
+  layout for their selected categories -- every rule file (domain and
+  core/universal) carries `paths:` frontmatter with the category globs
+  (V18/V20), no `SKILL.md` exists anywhere (V17), bodies are verbatim
+  (V25), and excluded files are absent. Expectations self-derive from
+  `categories.nix` so consumers never restate the globs map. Shell
+  logic in `lib/materialize-check.sh`, bats coverage in
+  `tests/materialize-check.bats` (11 test cases). Wired as
+  `checks.materialize-check` and `checks.materialize-check-exclude`
+  in `flake.nix`.
 
 ### Changed
 
