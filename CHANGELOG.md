@@ -68,6 +68,8 @@
 
 ### Fixed
 
+- `file_size_limits.yml`: add `txt: 10240` limit for scaffold templates
+  (`component-flake.txt` exceeded the 8192-byte default).
 - Fix `assemble-lefthook.bats` teardown deleting real integration
   fragment files and editorconfig/shellcheck violations (#30).
 - Add "home" and "keep" to `.narrow-language-other.dic` for the

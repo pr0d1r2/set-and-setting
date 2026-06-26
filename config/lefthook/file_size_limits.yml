@@ -7,3 +7,4 @@ extensions:
   md: 32768
   nix: 32768
   sh: 10240
+  txt: 10240
