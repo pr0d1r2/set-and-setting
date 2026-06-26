@@ -1,0 +1,26 @@
+---
+# Override narrow-language remote timeouts for --all-files CI runs.
+# lefthook-local.yml has higher merge priority than remotes, so these
+# values take effect where lefthook.yml cannot override them.
+
+pre-commit:
+  commands:
+    narrow-language-markdown:
+      timeout: 120s
+    narrow-language-shell:
+      timeout: 120s
+    narrow-language-nix:
+      timeout: 120s
+    narrow-language-other:
+      timeout: 120s
+
+pre-push:
+  commands:
+    narrow-language-markdown:
+      timeout: 120s
+    narrow-language-shell:
+      timeout: 120s
+    narrow-language-nix:
+      timeout: 120s
+    narrow-language-other:
+      timeout: 120s

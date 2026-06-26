@@ -1524,6 +1524,7 @@ opposite
 ops
 opt
 optimized
+option
 optional
 options
 opts
@@ -1696,6 +1697,7 @@ print
 printf
 prints
 prior
+priority
 private
 privilege
 privileged
