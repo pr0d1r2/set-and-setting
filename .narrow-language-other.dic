@@ -4,6 +4,7 @@ able
 aborts
 about
 above
+absence
 absent
 abstract
 abstraction
@@ -13,6 +14,7 @@ acceptable
 access
 according
 accumulated
+accumulates
 accurate
 accurately
 across
@@ -243,6 +245,7 @@ breaks
 bridges
 briefly
 broad
+broken
 budget
 bug
 bugs
@@ -264,7 +267,6 @@ burns
 but
 bypass
 byte
-bytes
 cache
 cached
 caches
@@ -325,6 +327,8 @@ churn
 cites
 ckia
 cla
+claim
+claims
 clarity
 classify
 claude
@@ -455,6 +459,7 @@ consumed
 consumer
 consumers
 contain
+contained
 containing
 contains
 content
@@ -565,6 +570,7 @@ deleting
 deletions
 deliberately
 delimiter
+delivered
 delivers
 delivery
 demand
@@ -581,6 +587,7 @@ depends
 deployable
 deploying
 deployment
+deprecated
 deps
 depth
 derivation
@@ -763,6 +770,7 @@ environment
 envrc
 eof
 equal
+equals
 equivalence
 equivalent
 equivalents
@@ -781,6 +789,7 @@ every
 everyone
 everything
 everywhere
+evidence
 evolve
 exact
 examines
@@ -1008,6 +1017,7 @@ graph
 graphic
 green
 grep
+greps
 group
 grouped
 groups
@@ -1055,6 +1065,7 @@ health
 healthcheck
 heavy
 help
+helper
 here
 hero
 hidden
@@ -1083,6 +1094,7 @@ hosts
 hours
 how
 hub
+human
 hup
 hxegsi
 hybrid
@@ -1092,6 +1104,7 @@ idempotent
 identical
 identically
 identifiable
+identifier
 identifiers
 identify
 identifying
@@ -1164,6 +1177,7 @@ input
 inputs
 inside
 inspect
+inspection
 install
 installed
 installer
@@ -1345,6 +1359,7 @@ loops
 loose
 lost
 lower
+lowercase
 mac
 machine
 machines
@@ -1544,6 +1559,7 @@ numerically
 numpy
 nvme
 oauth
+observable
 observe
 obvious
 ocbody
@@ -1804,6 +1820,7 @@ prose
 protect
 protection
 prototype
+prove
 proven
 proves
 provided
@@ -1847,6 +1864,7 @@ reach
 reachability
 reaches
 read
+readable
 reader
 reading
 readlink
@@ -2151,6 +2169,7 @@ six
 size
 sized
 sizes
+skeleton
 skill
 skills
 skip
@@ -2308,11 +2327,13 @@ target
 targeting
 targets
 task
+taskid
 tasks
 teardown
 tee
 tell
 tells
+temp
 template
 templates
 temporary
@@ -2512,6 +2533,7 @@ ver
 verb
 verbatim
 verbs
+verdict
 verifiable
 verification
 verified
@@ -2564,6 +2586,7 @@ wide
 will
 window
 wins
+wipes
 wire
 wired
 wires
