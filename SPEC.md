@@ -30,7 +30,7 @@ and dogfoods both.
 - C3: Cross-platform -- aarch64-darwin, x86_64-darwin, x86_64-linux, aarch64-linux.
 - C4: Skills are markdown only (*.md). No executable code in set/.
 - C5: MIT license.
-- C6: Consumers use `git+file:` or `github:` flake inputs.
+- C6: Consumers use `github:` flake inputs.
 - C7: Deterministic updates -- consumer `nix flake update set-and-setting` + `sync-set`/`sync-setting` + commit = reproducible upgrade path for both skills and standards.
 - C8: Composable outputs -- `packages.set` is the path-scoped-rules tree emitted from agnostic `set/` by `mkSet` (agent format only there: just `paths:` frontmatter). Consumed per-repo (sync) or home-level. Per-agent surface is one seam `{ dir, condField }`. Reinforces C2.
 - C9: Three delivery paths, one emitter. (1) flake input -- pinned/
@@ -169,7 +169,7 @@ and dogfoods both.
 | T4  | x | add `nix flake check` CI (GitHub Actions)            | V1,C3     |
 | T5  | x | expose mkDriftCheck for setting/ (not just set/)     | I.mkDriftCheck |
 | T6  | x | add tests for mkSet exclude param                    | V8        |
-| T7  | . | switch consumer repos from git+file: to github: URLs | C6        |
+| T7  | x | switch consumer repos from git+file: to github: URLs | C6        |
 | T8  | . | auto-update mechanism -- flake re-eval triggers sync-set + sync-setting + commit in consumer repos | C7,I.sync-set,I.sync-setting |
 | T9  | . | consumer dependency graph: upstream repos switch git+file: to github: URLs after push | C6 |
 | T10 | x | add `set/drafts/` tree with atomic skill files and bundles | V11,V12,V13 |

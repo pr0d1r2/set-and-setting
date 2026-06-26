@@ -644,6 +644,13 @@
             grep -q 'skip-build' "${scaffold}/.github/workflows/ci.yml" \
               || { echo "FAIL: ci.yml missing skip-build"; exit 1; }
 
+            # C6/T7: all flake inputs use github: URLs, no git+file:
+            if grep -q 'git+file:' "${scaffold}/flake.nix"; then
+              echo "FAIL: scaffold flake.nix contains git+file: URL (C6)"; exit 1
+            fi
+            grep -q 'github:' "${scaffold}/flake.nix" \
+              || { echo "FAIL: scaffold flake.nix has no github: URLs"; exit 1; }
+
             echo PASS
             touch $out
           '';

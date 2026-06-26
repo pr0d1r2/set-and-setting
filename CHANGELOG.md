@@ -2,6 +2,14 @@
 
 ## Unreleased
 
+### Changed
+
+- T7: switch consumer repos from `git+file:` to `github:` flake inputs
+  (C6). All flake inputs and the scaffold template already use `github:`
+  URLs; constraint C6 updated to drop `git+file:` as an option.
+  `compose-scaffold` nix check now rejects `git+file:` URLs in the
+  scaffolded `flake.nix`.
+
 ### Added
 
 - `apps.<sys>.mkScaffold` + bootstrap integration (#30): emit the three
