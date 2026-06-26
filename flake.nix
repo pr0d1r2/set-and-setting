@@ -599,6 +599,49 @@
           exclude = [ "rtk.md" ];
         };
 
+        compose-scaffold =
+          let
+            scaffold = import ./setting/lib/mk-scaffold.nix { inherit pkgs; };
+          in
+          pkgs.runCommand "compose-scaffold-check" { } ''
+            # scaffold produces all three files
+            [ -f "${scaffold}/flake.nix" ] \
+              || { echo "FAIL: no flake.nix"; exit 1; }
+            [ -f "${scaffold}/lefthook.yml" ] \
+              || { echo "FAIL: no lefthook.yml"; exit 1; }
+            [ -f "${scaffold}/.github/workflows/ci.yml" ] \
+              || { echo "FAIL: no ci.yml"; exit 1; }
+
+            # flake.nix is a valid nix expression (has description)
+            grep -q 'description' "${scaffold}/flake.nix" \
+              || { echo "FAIL: flake.nix missing description"; exit 1; }
+            grep -q 'devShells' "${scaffold}/flake.nix" \
+              || { echo "FAIL: flake.nix missing devShells"; exit 1; }
+            grep -q 'lefthookWrappersFor' "${scaffold}/flake.nix" \
+              || { echo "FAIL: flake.nix missing lefthookWrappersFor"; exit 1; }
+
+            # lefthook.yml has remotes from all fragments
+            grep -q 'nix-lefthook-trailing-whitespace' "${scaffold}/lefthook.yml" \
+              || { echo "FAIL: lefthook.yml missing base remote"; exit 1; }
+            grep -q 'nix-lefthook-nixfmt' "${scaffold}/lefthook.yml" \
+              || { echo "FAIL: lefthook.yml missing nix remote"; exit 1; }
+            grep -q 'nix-lefthook-shellcheck' "${scaffold}/lefthook.yml" \
+              || { echo "FAIL: lefthook.yml missing shell remote"; exit 1; }
+            grep -q '^pre-commit:' "${scaffold}/lefthook.yml" \
+              || { echo "FAIL: lefthook.yml missing pre-commit"; exit 1; }
+            grep -q '^pre-push:' "${scaffold}/lefthook.yml" \
+              || { echo "FAIL: lefthook.yml missing pre-push"; exit 1; }
+
+            # ci.yml uses nix-lefthook-ci-action
+            grep -q 'nix-lefthook-ci-action' "${scaffold}/.github/workflows/ci.yml" \
+              || { echo "FAIL: ci.yml missing action ref"; exit 1; }
+            grep -q 'skip-build' "${scaffold}/.github/workflows/ci.yml" \
+              || { echo "FAIL: ci.yml missing skip-build"; exit 1; }
+
+            echo PASS
+            touch $out
+          '';
+
         default = pkgs.runCommand "set-and-setting-checks" { } ''
           touch $out
         '';
@@ -664,12 +707,26 @@
             + builtins.readFile ./setting/lib/app-mk-setting-init.sh;
           };
 
+          mkScaffoldBundle = import ./setting/lib/mk-scaffold.nix { inherit pkgs; };
+          mkScaffoldApp = pkgs.writeShellApplication {
+            name = "mkScaffold";
+            runtimeInputs = [
+              pkgs.coreutils
+              pkgs.findutils
+            ];
+            text = ''
+              export SCAFFOLD_SRC="${mkScaffoldBundle}"
+            ''
+            + builtins.readFile ./setting/lib/app-mk-scaffold.sh;
+          };
+
           bootstrapApp = pkgs.writeShellApplication {
             name = "bootstrap";
             text = ''
               export MKSET_APP="${mkSetApp}/bin/mkSet"
               export MKSETTING_APP="${mkSettingApp}/bin/mkSetting"
               export MKSETTING_INIT_APP="${mkSettingInitApp}/bin/mkSetting-init"
+              export MKSCAFFOLD_APP="${mkScaffoldApp}/bin/mkScaffold"
             ''
             + builtins.readFile ./set/lib/app-bootstrap.sh;
           };
@@ -686,6 +743,10 @@
           "mkSetting-init" = {
             type = "app";
             program = "${mkSettingInitApp}/bin/mkSetting-init";
+          };
+          mkScaffold = {
+            type = "app";
+            program = "${mkScaffoldApp}/bin/mkScaffold";
           };
           bootstrap = {
             type = "app";

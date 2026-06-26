@@ -27,11 +27,18 @@ MOCK
 [ "${1:-}" = "--dry-run" ] && echo "mkSetting-init: dry-run" && exit 0
 echo "mkSetting-init: installed"
 MOCK
-    chmod +x "$TARGET/mock-bin/mkSet" "$TARGET/mock-bin/mkSetting" "$TARGET/mock-bin/mkSetting-init"
+    cat >"$TARGET/mock-bin/mkScaffold" <<'MOCK'
+#!/usr/bin/env bash
+[ "${1:-}" = "--dry-run" ] && echo "mkScaffold: dry-run" && exit 0
+echo "mkScaffold: installed"
+MOCK
+    chmod +x "$TARGET/mock-bin/mkSet" "$TARGET/mock-bin/mkSetting" \
+        "$TARGET/mock-bin/mkSetting-init" "$TARGET/mock-bin/mkScaffold"
 
     export MKSET_APP="$TARGET/mock-bin/mkSet"
     export MKSETTING_APP="$TARGET/mock-bin/mkSetting"
     export MKSETTING_INIT_APP="$TARGET/mock-bin/mkSetting-init"
+    export MKSCAFFOLD_APP="$TARGET/mock-bin/mkScaffold"
 }
 
 teardown() {
@@ -46,12 +53,13 @@ teardown() {
     [[ "$output" == *"--agent NAME"* ]]
 }
 
-@test "default mode calls all three sub-apps" {
+@test "default mode calls all four sub-apps" {
     run bash "$SCRIPT"
     [ "$status" -eq 0 ]
     [[ "$output" == *"mkSet: installed"* ]]
     [[ "$output" == *"mkSetting: installed"* ]]
     [[ "$output" == *"mkSetting-init: installed"* ]]
+    [[ "$output" == *"mkScaffold: installed"* ]]
 }
 
 @test "--dry-run passes through to all sub-apps" {
@@ -60,6 +68,7 @@ teardown() {
     [[ "$output" == *"mkSet: dry-run"* ]]
     [[ "$output" == *"mkSetting: dry-run"* ]]
     [[ "$output" == *"mkSetting-init: dry-run"* ]]
+    [[ "$output" == *"mkScaffold: dry-run"* ]]
 }
 
 @test "--agent passes through to mkSet only" {
@@ -68,6 +77,7 @@ teardown() {
     [[ "$output" == *"mkSet: args=--agent opencode"* ]]
     [[ "$output" == *"mkSetting: installed"* ]]
     [[ "$output" == *"mkSetting-init: installed"* ]]
+    [[ "$output" == *"mkScaffold: installed"* ]]
 }
 
 @test "--agent with --dry-run passes both to mkSet" {

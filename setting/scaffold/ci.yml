@@ -1,0 +1,47 @@
+---
+name: CI
+
+"on":
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+# Linux gates the expensive jobs (darwin runner + aarch64 QEMU).
+# Requires CACHIX_AUTH_TOKEN repo secret for caching.
+
+jobs:
+  build-linux:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: pr0d1r2/nix-lefthook-ci-action@ce9a118b05e90e186dba48a82067adeed185f7d4
+        with:
+          skip-build: "true"
+          cachix-cache: pr0d1r2
+          cachix-auth-token: ${{ secrets.CACHIX_AUTH_TOKEN }}
+          keep-home: "true"
+
+  build-darwin:
+    needs: build-linux
+    runs-on: macos-latest
+    steps:
+      - uses: pr0d1r2/nix-lefthook-ci-action@ce9a118b05e90e186dba48a82067adeed185f7d4
+        with:
+          skip-build: "true"
+          cachix-cache: pr0d1r2
+          cachix-auth-token: ${{ secrets.CACHIX_AUTH_TOKEN }}
+          keep-home: "true"
+          flake-check-timeout: "600"
+          flake-eval-timeout: "120"
+
+  build-linux-arm:
+    needs: build-linux
+    runs-on: ubuntu-latest
+    steps:
+      - uses: pr0d1r2/nix-lefthook-ci-action@ce9a118b05e90e186dba48a82067adeed185f7d4
+        with:
+          extra-platforms: aarch64-linux
+          skip-build: "true"
+          cachix-cache: pr0d1r2
+          cachix-auth-token: ${{ secrets.CACHIX_AUTH_TOKEN }}
+          keep-home: "true"

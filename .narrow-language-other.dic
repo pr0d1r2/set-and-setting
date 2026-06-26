@@ -119,6 +119,9 @@ artifacts
 ascii
 aspect
 aspects
+assemble
+assembled
+assembles
 assert
 assertion
 assertions
@@ -261,6 +264,7 @@ burns
 but
 bypass
 byte
+bytes
 cache
 cached
 caches
@@ -782,6 +786,7 @@ exact
 examines
 example
 examples
+exceeded
 exceeds
 except
 exception
@@ -1385,6 +1390,7 @@ materialization
 materialize
 materialized
 materializes
+matrix
 matter
 matters
 mature
@@ -1392,6 +1398,7 @@ maturin
 max
 maximum
 may
+mdlint
 mean
 meaning
 meaningless
@@ -1438,6 +1445,7 @@ mistake
 mistakes
 mit
 mkdir
+mkscaffold
 mkset
 mksetting
 mktemp
@@ -1585,6 +1593,7 @@ ordered
 ordering
 org
 organized
+orig
 origin
 orphan
 other
@@ -1722,12 +1731,14 @@ poweroff
 pre
 precise
 precision
+precommit
 prefer
 preferred
 prefix
 prepend
 prepended
 prepending
+prepush
 prerequisite
 prerequisites
 present
@@ -2289,6 +2300,7 @@ table
 tables
 tag
 tags
+tail
 take
 takes
 tarball
@@ -2482,6 +2494,7 @@ usually
 utf
 utilize
 val
+valid
 validation
 value
 values

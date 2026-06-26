@@ -4,6 +4,18 @@
 
 ### Added
 
+- `apps.<sys>.mkScaffold` + bootstrap integration (#30): emit the three
+  files a bare repo needs to reach green CI -- `flake.nix` (nix-lefthook
+  component shape with `devShells.ci` + `default` built from
+  `lefthookWrappersFor`), `lefthook.yml` (assembled from the composable
+  `setting/integrations/lefthook/*.yml` fragments), and
+  `.github/workflows/ci.yml` (`nix-lefthook-ci-action` matrix with
+  `skip-build: true`). All three are skip-if-exists (repo-owned after
+  scaffolding). `bootstrap` now runs mkSet + mkSetting + mkSetting-init +
+  mkScaffold in sequence. Add `compose-scaffold` nix check verifying the
+  scaffold output. Note: green CI also requires a `CACHIX_AUTH_TOKEN`
+  repo secret (operator-set, out of scope).
+
 - `lefthook-narrow-language-add` wrapper (#29): wire upstream
   `narrow-language-add` script that auto-appends unknown words to
   the correct dictionary (sorted, deduped, `git add`ed). Same
@@ -56,6 +68,10 @@
 
 ### Fixed
 
+- `file_size_limits.yml`: add `txt: 10240` limit for scaffold templates
+  (`component-flake.txt` exceeded the 8192-byte default).
+- Fix `assemble-lefthook.bats` teardown deleting real integration
+  fragment files and editorconfig/shellcheck violations (#30).
 - Add "home" and "keep" to `.narrow-language-other.dic` for the
   `keep-home` CI setting.
 - CI devShell shellHook sets `HOME` fallback when unset, preventing
