@@ -11,9 +11,13 @@ import as flake input, build via nix closure, sync to repo -- skills
 update deterministically when upstream improves.
 
 North star: two builders are the single sources of truth across every
-consumer repo. `mkSet` owns the skill set -- it emits **path-scoped
-rules** into `.claude/rules/set/` that load deterministically when Claude
-reads matching files, materialized and gitignored in consumers.
+consumer repo. `mkSet` owns the skill set -- from one agnostic source it
+emits a **per-agent, multi-channel** load layout (V17): always-on core,
+conditional domains, and portable `SKILL.md`. Claude first, opencode
+(then others) via a per-agent profile. `@`-import is Claude-only, so
+cross-agent always-on is delivered by **compiling** the Claude
+`CLAUDE.md` `@`-manifest into an inline, gitignored `AGENTS.md` (V29).
+All emitted artifacts are materialized and gitignored in consumers.
 `mkSetting`
 owns unified config -- shareable configs (e.g. `.markdownlint.yml`,
 `.yamllint.yml`, agent commands/allowances) are exposed as
@@ -97,6 +101,23 @@ and dogfoods both.
   `bootstrap` = mkSet core + mkSetting + mkSetting-init in one. Each
   supports `--list`/`--help`/`--dry-run`.
 - I.manifest: `./.claude/rules/set/.mkset.json` -- records installed categories + upstream rev + agent. Drives smart re-run (bare `mkSet` with a manifest refreshes what's installed), update detection, and `--remove`. Distinguishes mkSet-managed files from hand-added ones.
+- I.agentProfile: per-agent profile (default Claude). Carries each agent's
+  channel mechanisms: always-on file + import syntax, conditional
+  mechanism, skill format/location. Claude: `{ alwaysOn = CLAUDE.md(@);
+  conditional = .claude/rules(paths); skill = .claude/skills/<n>/SKILL.md
+  }`. opencode: `{ alwaysOn = AGENTS.md(inline); conditional =
+  opencode.json instructions globs; skill = SKILL.md }`. The only place an
+  agent format appears (C2/V17).
+- I.meta: `set/meta.nix` -- sidecar channel map (V30), keyed by source
+  path/subtree, `{ channel, paths, keywords, always? }`, subtree-inherit +
+  per-file override. Single source for channel assignment; feeds all
+  channels. Keeps `set/` markdown agnostic.
+- I.compiler: `lib/agents-md-compile.nix` (+ `.sh`) -- the `@`->`AGENTS.md`
+  resolver (V29). Args: the Claude `CLAUDE.md` (or `@`-manifest). Output:
+  inline `AGENTS.md`. Mirrors Claude `@`-parse rules.
+- I.mechanism-tests: `tests/mechanism/` -- headless-agent probe suite
+  (V31) verifying loading semantics. Each probe: marker fixture + run
+  `claude -p`/opencode + assert marker behavior. Skip-if-no-binary.
 
 ## §V Invariants
 
@@ -116,24 +137,30 @@ and dogfoods both.
 - V14: Hardware concepts are composable templates under `concepts/hardware/<vendor>/<model>.md`. Templates describe capabilities, not roles.
 - V15: Concept files may compose sub-concepts via `@` references, same pattern as skill bundles (V12).
 - V16: No secrets, credentials, or PII (beyond public GitHub usernames) in any tracked file or git history.
-- V17: mkSet emits **path-scoped rules** to `.claude/rules/set/`, NOT
-  `SKILL.md` and NOT `.claude/skills/` (empirically `skills/` is not
-  reliably autoloaded -- model-invoked; only `.claude/rules/` loads
-  deterministically -- see B2). No agent-specific frontmatter in
-  `set/skills/` sources; the sole emit transform is prepending `paths:`.
-- V18: Each emitted rule's only added frontmatter is `paths:` (the
-  conditional globs); the agnostic markdown body is copied **verbatim**.
-  No `name`/`description`, no `@`-imports, no `SKILL.md`.
-- V19: mkSet mirrors the source tree recursively into `.claude/rules/set/`
-  (content inline). Path-specific rules load deterministically when Claude
-  reads matching files (verified vs docs); rules carry context, loading is
-  reliable (compliance still Claude's, like CLAUDE.md).
-- V20: EVERYTHING is path-scoped via a complete category-globs map --
-  domains narrow (`nix` -> `**/*.nix`), core/universal broad (`generic` ->
-  `**/*`). Nothing is path-less/launch-loaded; gating everywhere avoids
-  context exhaustion (only the rules whose globs match the files in play
-  load). Map covers every category.
-- V21: The only agent-specific surface is the seam `{ dir, condField }` (default Claude: `.claude/rules/set`, `paths`). Everything is path-scoped, so no always-on-file knob. The same agnostic sources build for any agent given its seam values.
+- V17: mkSet emits a **multi-channel** layout per agent (B2 -- `SKILL.md`
+  under `.claude/skills/` is model-invoked, not reliably always-on; only
+  `.claude/rules/` / always-on files load reliably). Channels: (a)
+  always-on core, (b) conditional domains, (c) portable `SKILL.md`. The
+  sidecar meta map (I.meta), not the source markdown, declares each
+  file's channel. Sources stay agnostic (C2).
+- V18: Always-on core (channel a) -- the few categories that must apply
+  every turn (`generic`, `git`) load unconditionally. Authored as the
+  Claude `CLAUDE.md` `@`-manifest, compiled to an inline gitignored
+  `AGENTS.md` (V29) for opencode/others. Keep it small (initial context
+  is the enemy).
+- V19: Conditional domains (channel b) load only when relevant, via each
+  agent's mechanism: Claude path-scoped `.claude/rules/` (`paths`);
+  opencode `opencode.json` `instructions` globs. Deterministic on the
+  Claude side (verified: path-rules load on matching-file read).
+- V20: Portable skills (channel c) -- `SKILL.md` (agentskills.io) for
+  `/`-invocability and cross-agent reach. On Claude, deduped from the
+  rule channel via `disable-model-invocation: true` so the same content
+  never double-loads (rule is the loader; SKILL.md is `/`-invoke +
+  cross-agent only).
+- V21: The agent-specific surface is a per-agent **profile** (I.agentProfile),
+  not one path/field: it carries each agent's channel mechanisms (Claude:
+  `CLAUDE.md`+`@`, `.claude/rules`+`paths`, `SKILL.md`; opencode:
+  `AGENTS.md`, `opencode.json` instructions, `SKILL.md`). Default Claude.
 - V22: `mkSetting` is the single source of truth for unified config, with
   two output kinds: seed/init (repo-specific starters -- `.gitattributes`,
   `.editorconfig`, `file_size_limits.yml`, `.narrow-language-*.dic`,
@@ -158,6 +185,24 @@ and dogfoods both.
   Exception: `mkSetting-init` seeds skip-if-exists (repo-owned).
 - V27: Selection -- core (`generic`+`git`) is always pulled; domains and other cross-cutting are opt-in. No args => core only + a notice listing selectable categories. `--all` and `--all-except a b ...` available. Unknown category => error + list (fail with guidance).
 - V28: Run-time emit for the `nix run` path -- the installer ships agnostic source + emitter scripts and emits into CWD at run time; one emitter serves all three delivery paths (C9). The same `mk-set.sh`/`emit-skill.sh` produce the flake-input, home-manager, and `nix run` outputs.
+- V29: The `@`->`AGENTS.md` compiler recursively resolves the Claude
+  `CLAUDE.md` `@`-manifest and inlines it into a gitignored `AGENTS.md`,
+  mirroring Claude's `@`-rules for fidelity (skip `@` in code spans/fences,
+  strip block-level HTML comments, max 4 hops). Compiled `AGENTS.md` ==
+  what Claude loads. `@` stays a Claude-internal authoring convenience;
+  cross-agent always-on is delivered inline.
+- V30: The sidecar meta map `set/meta.nix` (data, not in-source
+  frontmatter -- C2/V17 hold) is keyed by source path/subtree and carries
+  `{ channel, paths, keywords, always? }` with subtree-inheritance + per-
+  file override + category fallback. It is the single source for channel
+  assignment and feeds all channels (paths -> rule globs + SKILL.md
+  `paths`; keywords -> SKILL.md `description`/`when_to_use`).
+- V31: Loading semantics are TESTED, not assumed (I.mechanism-tests): a
+  probe suite drives headless `claude -p` (and opencode) on marker
+  fixtures to confirm autoload, write-trigger, `@`-recursion, `@`-in-rules,
+  symlink load, and `disable-model-invocation`. Every channel decision
+  cites a passing probe. Integration suite (needs agent binary + auth);
+  skip-if-absent, not hermetic CI.
 
 ## §T Tasks
 
@@ -208,6 +253,14 @@ and dogfoods both.
 | T43 | . | README: update WOW + delivery docs -- skills materialize into `.claude/rules/set/` (not `.claude/skills/`) | I.apps,C9 |
 | T44 | . | re-dogfood -- emit own set into gitignored `.claude/rules/set/`; update `.gitignore`/`.envrc` | V10,I.self-wire |
 | T40 | x | `lib.mkMaterializeCheck` -- deterministic consumer-side test for skill materialization; self-derives expectations from `categories.nix`; bats coverage + `checks` entries | I.mkMaterializeCheck,V20,V25 |
+| T50 | . | **GATE** mechanism test suite (`tests/mechanism/`) -- headless `claude -p`/opencode probes confirming autoload, write-trigger, `@`-recursion, `@`-in-rules, symlink load, `disable-model-invocation`; skip-if-no-binary. Run BEFORE committing content to a channel | I.mechanism-tests,V31,B3 |
+| T45 | . | sidecar meta map `set/meta.nix` -- `{ channel, paths, keywords, always? }` keyed by path, subtree-inherit + per-file override + category fallback | I.meta,V30 |
+| T46 | . | per-agent profile (`I.agentProfile`) -- Claude + opencode channel mechanisms (always-on file/import, conditional mechanism, skill format) | I.agentProfile,V21 |
+| T47 | . | multi-channel emitter -- mkSet emits 3 channels per profile from the meta map: always-on core, conditional domains, portable `SKILL.md`. Supersedes the rules-only T40-T44 emit | I.mkSet,V17,V18,V19,V20 |
+| T48 | . | `@`->`AGENTS.md` compiler (`lib/agents-md-compile`) -- recursive inline, Claude `@`-parse fidelity | I.compiler,V29 |
+| T49 | . | dedup -- emit `SKILL.md` with `disable-model-invocation: true` on Claude so the rule is the sole loader (no double-load) | V20 |
+| T51 | . | opencode profile + agnosticism proof -- build the same sources for opencode (AGENTS.md + opencode.json); ties T31 | V21,V23,T31 |
+| T52 | . | README -- document the multi-channel model + three delivery paths; keep the one-command WOW | I.apps,C9 |
 
 ## §B Bugs
 
@@ -215,3 +268,4 @@ and dogfoods both.
 |----|------|-------|-----|
 | B1 | 2026-06-16 | upstream nix-lefthook tightened checks; repo never revalidated, so `main` fails `lefthook run pre-commit --all-files` on pre-existing files (prose markdownlint, `*.nix` em-dashes, editorconfig padding, drift-check embedded shell) | fixed: narrow-other glob (#10), drift+embedded-shell extracted (#13), markdownlint/editorconfig/narrow cleared + CI runs lefthook (T32) |
 | B2 | 2026-06-18 | emitted `SKILL.md` under `.claude/skills/` does not reliably autoload -- skills are model-invoked (description-indexed, body on-demand), not always-on; only `.claude/rules/` loads deterministically (path-scoped on matching-file read; path-less at launch). The shipped SKILL.md model (T25/T35-T39) effectively did not autoload. | redesign rules-only: drop SKILL.md, mirror source as `.claude/rules/set/` with `paths` everywhere (T40-T44). Verified vs Claude Code memory/skills docs. |
+| B3 | 2026-06-26 | rules-only (B2 fix) over-corrected: `.claude/rules` is Claude-proprietary (reduces agnosticism, C2/V23), and `@`-import is Claude-only (opencode/Codex/AGENTS.md spec have no `@` -- opencode uses `opencode.json` instructions globs or Read-on-demand). So a single mechanism can't be both reliable-on-Claude and portable. | best-of-both multi-channel (V17-V21): per-agent profile + sidecar meta + `SKILL.md` (portable) + Claude rules (reliable) + `@`->`AGENTS.md` compiler (portable always-on) + dedup; gated by the mechanism test suite (T50). Verified vs opencode/Codex docs. |

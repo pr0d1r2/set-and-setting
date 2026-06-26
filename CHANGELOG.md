@@ -247,6 +247,15 @@
 
 ### Spec
 
+- Multi-channel per-agent emit (B3): rules-only over-corrected
+  (`.claude/rules` is Claude-only; `@`-import is Claude-only -- opencode
+  uses `opencode.json` globs). Best-of-both: per-agent **profile** +
+  sidecar **meta map** (`set/meta.nix`) + three channels (always-on core,
+  conditional domains, portable `SKILL.md`) + `@`->`AGENTS.md` **compiler**
+  for portable always-on + Claude `disable-model-invocation` dedup --
+  **gated by a mechanism test suite** (headless agent probes, T50).
+  Target Claude now, opencode later. Rewrite V17-V21; add V29-V31,
+  I.agentProfile/I.meta/I.compiler/I.mechanism-tests; tasks T45-T52.
 - Reverse the emit model to **rules-only** (B2): `.claude/skills/`
   `SKILL.md` is model-invoked and doesn't reliably autoload; only
   `.claude/rules/` loads deterministically. mkSet now mirrors `set/` into

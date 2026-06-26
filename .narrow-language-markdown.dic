@@ -52,6 +52,7 @@ against
 agent
 agentic
 agents
+agentskills
 agnostic
 agnosticism
 agpl
@@ -126,8 +127,10 @@ assertion
 assertions
 asserts
 assigned
+assignment
 assigns
 assume
+assumed
 assumes
 assuming
 assumptions
@@ -148,11 +151,12 @@ audit
 auditable
 auth
 author
+authored
+authoring
 authoritative
 authorized
 auto
 autoload
-autoloaded
 automated
 automatic
 automatically
@@ -302,6 +306,7 @@ changelog
 changelogs
 changes
 channel
+channels
 character
 characteristics
 cheap
@@ -385,7 +390,11 @@ compatibility
 compatible
 competes
 compilation
+compile
+compiled
+compiler
 compiles
+compiling
 complete
 completing
 completion
@@ -426,6 +435,7 @@ configurations
 configure
 confirm
 confirmation
+confirming
 conflict
 conflicts
 confusing
@@ -465,6 +475,7 @@ control
 controlled
 controlling
 controls
+convenience
 convention
 conventional
 conventions
@@ -482,6 +493,7 @@ core
 cores
 coreutils
 correct
+corrected
 correctly
 corresponding
 count
@@ -529,9 +541,11 @@ declarations
 declaratively
 declare
 declared
+declares
 declaring
 decomposition
 dedicated
+dedup
 deduped
 deduplicated
 deeper
@@ -654,6 +668,7 @@ done
 dot
 dotfile
 dotfiles
+double
 downloads
 downstream
 draft
@@ -705,7 +720,6 @@ emit
 emits
 emitted
 emitter
-empirically
 empty
 emulation
 enable
@@ -716,6 +730,7 @@ encode
 encounters
 end
 endings
+enemy
 enforce
 enforced
 enforcement
@@ -838,11 +853,14 @@ feature
 features
 feeds
 fence
+fences
 fetch
 fetched
 fetching
 fetchurl
+few
 fewer
+fidelity
 field
 file
 filename
@@ -869,6 +887,8 @@ fits
 fix
 fixed
 fixes
+fixture
+fixtures
 flag
 flagged
 flags
@@ -928,6 +948,7 @@ game
 gap
 gaps
 gate
+gated
 gatekeeper
 gates
 gateways
@@ -1025,6 +1046,7 @@ heavy
 help
 helper
 here
+hermetic
 hero
 hidden
 hide
@@ -1042,6 +1064,7 @@ homepage
 honor
 hook
 hooks
+hops
 host
 hosted
 hostile
@@ -1114,6 +1137,7 @@ informed
 infrastructure
 ingest
 inherit
+inheritance
 inherits
 init
 initial
@@ -1125,6 +1149,7 @@ inject
 injected
 injection
 inline
+inlines
 input
 inputs
 inside
@@ -1162,6 +1187,8 @@ introductions
 invariant
 invariants
 investigating
+invocability
+invocation
 invocations
 invoke
 invoked
@@ -1193,6 +1220,7 @@ keep
 keeps
 kernel
 key
+keyed
 keys
 keywords
 kill
@@ -1203,7 +1231,6 @@ killing
 kills
 kinds
 kingston
-knob
 know
 knowledge
 known
@@ -1218,6 +1245,7 @@ language
 languages
 last
 late
+later
 latest
 launch
 layer
@@ -1289,6 +1317,7 @@ local
 localized
 locally
 locate
+location
 lock
 locked
 log
@@ -1362,6 +1391,7 @@ measure
 measures
 mechanically
 mechanism
+mechanisms
 mega
 memory
 merge
@@ -1591,6 +1621,7 @@ party
 pass
 passed
 passes
+passing
 passive
 passthrough
 passthru
@@ -1645,7 +1676,6 @@ plan
 plans
 platform
 platforms
-play
 plus
 pname
 point
@@ -1673,7 +1703,6 @@ preferred
 prefix
 prepend
 prepended
-prepending
 prerequisite
 prerequisites
 present
@@ -1705,6 +1734,8 @@ privileged
 privileges
 pro
 probability
+probe
+probes
 procedure
 procedures
 proceed
@@ -1809,6 +1840,8 @@ records
 recovery
 recur
 recurring
+recursion
+recursive
 recursively
 red
 redaction
@@ -1895,6 +1928,8 @@ reserved
 reset
 resolution
 resolve
+resolver
+resolves
 resource
 resources
 rest
@@ -2001,6 +2036,7 @@ selective
 selects
 self
 semantic
+semantics
 semble
 sensible
 sensitive
@@ -2055,6 +2091,7 @@ shutdown
 sibling
 siblings
 side
+sidecar
 signal
 signaling
 signals
@@ -2091,6 +2128,7 @@ slirp
 slow
 slowness
 slurs
+small
 smaller
 smart
 smoke
@@ -2108,6 +2146,7 @@ sources
 sourcing
 space
 spaces
+spans
 spawn
 spec
 specific
@@ -2168,6 +2207,7 @@ strict
 stricter
 string
 strings
+strip
 stripped
 structural
 structure
@@ -2182,6 +2222,7 @@ subset
 substituters
 subtask
 subtasks
+subtree
 success
 successful
 such
@@ -2317,7 +2358,6 @@ traditional
 trailing
 training
 transaction
-transform
 translated
 translation
 translations
@@ -2343,6 +2383,7 @@ ttou
 tunables
 tunnel
 tunnels
+turn
 twice
 two
 type
@@ -2364,6 +2405,7 @@ unchanged
 uncomment
 uncommitted
 unconditional
+unconditionally
 uncovered
 under
 underlay
