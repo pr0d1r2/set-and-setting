@@ -59,6 +59,7 @@ Run from any directory. Nix is the only dependency.
 nix run github:pr0d1r2/set-and-setting#mkSet -- --all
 nix run github:pr0d1r2/set-and-setting#mkSetting
 nix run github:pr0d1r2/set-and-setting#mkSetting-init
+nix run github:pr0d1r2/set-and-setting#mkScaffold
 ```
 
 | App | What it does |
@@ -66,7 +67,8 @@ nix run github:pr0d1r2/set-and-setting#mkSetting-init
 | `mkSet` | Materialize skills into `.claude/skills/set/` |
 | `mkSetting` | Materialize unified configs (always overwrites) |
 | `mkSetting-init` | Scaffold repo starters (skips files that exist) |
-| `bootstrap` | All three in one command |
+| `mkScaffold` | Scaffold flake.nix, lefthook.yml, CI workflow (skips files that exist) |
+| `bootstrap` | All four in one command |
 
 Skills are emitted at run time -- the installer carries agnostic
 source and emitter scripts, not a pre-built per-agent tree.
