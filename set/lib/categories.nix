@@ -50,9 +50,9 @@
       ".github/**/*.yml"
       ".github/**/*.yaml"
     ];
-    integration = [ "**/*" ];
     # Core/universal: broad (V20)
     generic = [ "**/*" ];
+    integration = [ "**/*" ];
     architecture = [ "**/*" ];
     git = [ "**/*" ];
     language = [
