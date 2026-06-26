@@ -2,6 +2,30 @@
 
 ## Unreleased
 
+### Changed
+
+- CI: increase lefthook hook timeouts from 120s to 300s for parallel
+  `--all-files` runs. Multiple checks (narrow-language-markdown,
+  bats-parse, nix-flake-check, file-size-check, gitleaks, unicode-lint)
+  exceeded 120s under concurrent load on CI runners. Both CI env-var
+  timeouts (`ci.yml`) and lefthook-native timeouts (`lefthook-local.yml`)
+  raised to 300s.
+- T7: switch consumer repos from `git+file:` to `github:` flake inputs
+  (C6). All flake inputs and the scaffold template already use `github:`
+  URLs; constraint C6 updated to drop `git+file:` as an option.
+  `compose-scaffold` nix check now rejects `git+file:` URLs in the
+  scaffolded `flake.nix`.
+- T30: dogfood -- emit set into gitignored `.claude/rules/set/` +
+  auto-sync on devShell entry; drop CLAUDE.md `@`-ref block. Reworked
+  mkSet emission from SKILL.md-based `.claude/skills/set/` to
+  path-scoped rules mirror in `.claude/rules/set/` (V17-V20, V25).
+  Each source file is copied verbatim with its category `paths:`
+  prepended. Agent seam simplified from 3-field to 2-field
+  `{ dir, condField }` (V21). All categories now path-scoped with
+  globs -- domains narrow, core/universal broad `**/*` (V20).
+  DevShell shellHook auto-syncs `packages.set` on entry.
+  CLAUDE.md stripped of `@`-ref blocks for skills/concepts/drafts.
+
 ### Added
 
 - `apps.<sys>.mkScaffold` + bootstrap integration (#30): emit the three
@@ -41,19 +65,6 @@
   `**/.narrow-language-*.dic` to the `language` category globs so
   the rule auto-loads on dictionary edits.
 
-### Changed
-
-- T30: dogfood -- emit set into gitignored `.claude/rules/set/` +
-  auto-sync on devShell entry; drop CLAUDE.md `@`-ref block. Reworked
-  mkSet emission from SKILL.md-based `.claude/skills/set/` to
-  path-scoped rules mirror in `.claude/rules/set/` (V17-V20, V25).
-  Each source file is copied verbatim with its category `paths:`
-  prepended. Agent seam simplified from 3-field to 2-field
-  `{ dir, condField }` (V21). All categories now path-scoped with
-  globs -- domains narrow, core/universal broad `**/*` (V20).
-  DevShell shellHook auto-syncs `packages.set` on entry.
-  CLAUDE.md stripped of `@`-ref blocks for skills/concepts/drafts.
-
 ### Documentation
 
 - Rewrite README.md with `nix run` one-command hero (T38): lead with
@@ -68,6 +79,11 @@
 
 ### Fixed
 
+- CI: increase lefthook hook timeouts for parallel `--all-files` runs.
+  Workflow-level env block in `ci.yml` sets bash-timeout hooks to 120s
+  (300s for `bats-unit`). `lefthook-local.yml` overrides narrow-language
+  remote timeouts from 30s to 120s (lefthook-local has higher merge
+  priority than remotes).
 - Narrow-language dictionaries for integration category (#36): add
   "integration" to nix.dic, 30 new words to markdown.dic from the new
   skill files, compact stale entry from other.dic.

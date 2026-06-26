@@ -412,6 +412,7 @@ concern
 concerns
 concise
 concrete
+concurrent
 cond
 condition
 conditional
@@ -1524,6 +1525,7 @@ opposite
 ops
 opt
 optimized
+option
 optional
 options
 opts
@@ -1696,6 +1698,7 @@ print
 printf
 prints
 prior
+priority
 private
 privilege
 privileged
@@ -1771,6 +1774,7 @@ query
 quite
 quota
 raise
+raised
 raising
 ram
 rather
