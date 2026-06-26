@@ -171,6 +171,7 @@ awk
 back
 background
 backoff
+backprop
 badge
 badges
 baked
@@ -191,13 +192,16 @@ become
 becomes
 been
 before
+begin
 beginning
 begins
 behave
 behavior
 behavioral
+behaviour
 behind
 being
+belief
 belong
 belongs
 below
@@ -219,6 +223,7 @@ bios
 bisectable
 blank
 blanket
+blind
 block
 blocked
 blocks
@@ -298,6 +303,7 @@ cats
 cause
 causes
 causing
+caveat
 cavekit
 chain
 change
@@ -401,6 +407,7 @@ completion
 complex
 compliance
 complicated
+comply
 component
 components
 composability
@@ -494,8 +501,10 @@ cores
 coreutils
 correct
 corrected
+correction
 correctly
 corresponding
+corroborate
 count
 counterpart
 counts
@@ -558,6 +567,7 @@ defined
 defines
 definition
 definitions
+definitive
 delegate
 delegates
 delete
@@ -627,6 +637,7 @@ dilute
 dir
 direct
 direction
+directive
 directives
 directly
 directories
@@ -692,6 +703,7 @@ each
 earlyoom
 earns
 echo
+echoes
 ecosystem
 edit
 edited
@@ -720,6 +732,7 @@ emit
 emits
 emitted
 emitter
+empirically
 empty
 emulation
 enable
@@ -761,6 +774,7 @@ equivalent
 equivalents
 error
 errors
+especially
 etc
 eval
 evaluate
@@ -798,6 +812,7 @@ exists
 exit
 exits
 exp
+expands
 expect
 expectations
 expected
@@ -836,6 +851,7 @@ fact
 facts
 fail
 failed
+failing
 fails
 failure
 failures
@@ -876,6 +892,8 @@ filtering
 filters
 final
 find
+finding
+findings
 findutils
 finish
 finite
@@ -1052,6 +1070,7 @@ hidden
 hide
 hides
 higher
+hint
 history
 hit
 hits
@@ -1119,6 +1138,7 @@ include
 including
 inclusion
 incompatible
+inconclusive
 increase
 indent
 indentation
@@ -1192,6 +1212,7 @@ invocation
 invocations
 invoke
 invoked
+invokes
 ipaddress
 ips
 iptables
@@ -1255,6 +1276,7 @@ leader
 leaf
 leakage
 leaked
+leans
 least
 leave
 leaves
@@ -1365,6 +1387,7 @@ markdown
 markdownlint
 marked
 marker
+markers
 marking
 marks
 mask
@@ -1405,6 +1428,7 @@ meta
 metadata
 metal
 metaphor
+method
 micro
 microcode
 mid
@@ -1501,6 +1525,7 @@ noexec
 noise
 non
 none
+normal
 north
 not
 notation
@@ -1674,6 +1699,7 @@ placeholder
 plain
 plan
 plans
+plants
 platform
 platforms
 plus
@@ -1759,6 +1785,7 @@ projects
 promoting
 prompt
 prompts
+prone
 proof
 propagate
 propagation
@@ -1802,6 +1829,7 @@ pythonhosted
 qemu
 quality
 query
+question
 quite
 quota
 raise
@@ -1857,6 +1885,7 @@ refactors
 reference
 referenced
 references
+referencing
 reflect
 reflection
 reflective
@@ -1938,6 +1967,7 @@ restate
 restrict
 restriction
 restrictions
+rests
 result
 results
 retain
@@ -1964,6 +1994,7 @@ right
 risk
 risks
 road
+robust
 role
 roles
 rolled
@@ -2209,11 +2240,13 @@ string
 strings
 strip
 stripped
+strong
 structural
 structure
 structured
 stub
 style
+styles
 sub
 subdirectories
 subgraph
@@ -2251,6 +2284,8 @@ survives
 sustained
 switch
 symlink
+symlinked
+symlinks
 symmetric
 symmetry
 symptom
@@ -2364,6 +2399,7 @@ translations
 trap
 traveler
 treat
+treating
 tree
 trigger
 triggered
@@ -2376,6 +2412,7 @@ true
 truly
 truncate
 trusted
+trusting
 truth
 truthy
 ttin
@@ -2406,6 +2443,7 @@ uncomment
 uncommitted
 unconditional
 unconditionally
+unconfirmed
 uncovered
 under
 underlay
@@ -2487,6 +2525,7 @@ versions
 versus
 very
 via
+viable
 violation
 violations
 visible
@@ -2518,6 +2557,7 @@ wheels
 when
 whenever
 where
+whether
 which
 while
 whitespace

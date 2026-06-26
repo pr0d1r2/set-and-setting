@@ -145,6 +145,12 @@
 
 ### Tests
 
+- Add T50 mechanism probe suite (`tests/mechanism/`): headless `claude -p`
+  probes that empirically confirm Claude loading semantics the
+  multi-channel design rests on (skill autoload, path-scoped rule
+  read/write trigger, `@`-recursion, `@`-in-rules, symlink load,
+  `disable-model-invocation`). Gated behind `MECHANISM_PROBES=1` + a
+  `claude` binary so normal hooks/CI skip it (no token burn).
 - Update emit-skill, mk-set, and sync-set tests for facets-as-linked-files
   format (9 emit-skill tests, 6 mk-set tests, 5 sync-set tests)
 - Add unit tests for `mk-set.sh` (6 cases) and `sync-set.sh` (4 cases)

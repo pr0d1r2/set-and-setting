@@ -253,7 +253,7 @@ and dogfoods both.
 | T43 | . | README: update WOW + delivery docs -- skills materialize into `.claude/rules/set/` (not `.claude/skills/`) | I.apps,C9 |
 | T44 | . | re-dogfood -- emit own set into gitignored `.claude/rules/set/`; update `.gitignore`/`.envrc` | V10,I.self-wire |
 | T40 | x | `lib.mkMaterializeCheck` -- deterministic consumer-side test for skill materialization; self-derives expectations from `categories.nix`; bats coverage + `checks` entries | I.mkMaterializeCheck,V20,V25 |
-| T50 | . | **GATE** mechanism test suite (`tests/mechanism/`) -- headless `claude -p`/opencode probes confirming autoload, write-trigger, `@`-recursion, `@`-in-rules, symlink load, `disable-model-invocation`; skip-if-no-binary. Run BEFORE committing content to a channel | I.mechanism-tests,V31,B3 |
+| T50 | x | **GATE** mechanism test suite (`tests/mechanism/`) -- headless `claude -p`/opencode probes confirming autoload, write-trigger, `@`-recursion, `@`-in-rules, symlink load, `disable-model-invocation`; skip-if-no-binary. Run BEFORE committing content to a channel | I.mechanism-tests,V31,B3 |
 | T45 | . | sidecar meta map `set/meta.nix` -- `{ channel, paths, keywords, always? }` keyed by path, subtree-inherit + per-file override + category fallback | I.meta,V30 |
 | T46 | . | per-agent profile (`I.agentProfile`) -- Claude + opencode channel mechanisms (always-on file/import, conditional mechanism, skill format) | I.agentProfile,V21 |
 | T47 | . | multi-channel emitter -- mkSet emits 3 channels per profile from the meta map: always-on core, conditional domains, portable `SKILL.md`. Supersedes the rules-only T40-T44 emit | I.mkSet,V17,V18,V19,V20 |
