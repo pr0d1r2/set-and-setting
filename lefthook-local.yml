@@ -6,21 +6,21 @@
 pre-commit:
   commands:
     narrow-language-markdown:
-      timeout: 120s
+      timeout: 300s
     narrow-language-shell:
-      timeout: 120s
+      timeout: 300s
     narrow-language-nix:
-      timeout: 120s
+      timeout: 300s
     narrow-language-other:
-      timeout: 120s
+      timeout: 300s
 
 pre-push:
   commands:
     narrow-language-markdown:
-      timeout: 120s
+      timeout: 300s
     narrow-language-shell:
-      timeout: 120s
+      timeout: 300s
     narrow-language-nix:
-      timeout: 120s
+      timeout: 300s
     narrow-language-other:
-      timeout: 120s
+      timeout: 300s

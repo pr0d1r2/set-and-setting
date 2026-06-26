@@ -4,6 +4,12 @@
 
 ### Changed
 
+- CI: increase lefthook hook timeouts from 120s to 300s for parallel
+  `--all-files` runs. Multiple checks (narrow-language-markdown,
+  bats-parse, nix-flake-check, file-size-check, gitleaks, unicode-lint)
+  exceeded 120s under concurrent load on CI runners. Both CI env-var
+  timeouts (`ci.yml`) and lefthook-native timeouts (`lefthook-local.yml`)
+  raised to 300s.
 - T7: switch consumer repos from `git+file:` to `github:` flake inputs
   (C6). All flake inputs and the scaffold template already use `github:`
   URLs; constraint C6 updated to drop `git+file:` as an option.
