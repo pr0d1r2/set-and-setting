@@ -10,6 +10,7 @@
     "cli"
     "git"
     "gnu"
+    "integration"
     "just"
     "language"
     "lefthook"
@@ -49,6 +50,7 @@
       ".github/**/*.yml"
       ".github/**/*.yaml"
     ];
+    integration = [ "**/*" ];
     # Core/universal: broad (V20)
     generic = [ "**/*" ];
     architecture = [ "**/*" ];
