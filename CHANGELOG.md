@@ -68,6 +68,9 @@
 
 ### Fixed
 
+- Narrow-language dictionaries for integration category (#36): add
+  "integration" to nix.dic, 30 new words to markdown.dic from the new
+  skill files, compact stale entry from other.dic.
 - `file_size_limits.yml`: add `txt: 10240` limit for scaffold templates
   (`component-flake.txt` exceeded the 8192-byte default).
 - Fix `assemble-lefthook.bats` teardown deleting real integration

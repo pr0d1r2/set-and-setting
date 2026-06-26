@@ -347,6 +347,7 @@
         cli = ./set/skills/cli;
         git = ./set/skills/git;
         gnu = ./set/skills/gnu;
+        integration = ./set/skills/integration;
         just = ./set/skills/just;
         language = ./set/skills/language;
         lefthook = ./set/skills/lefthook;
@@ -591,6 +592,11 @@
             "test"
             "lefthook"
           ];
+        };
+
+        materialize-check-integration = import ./lib/mk-materialize-check.nix { inherit (nixpkgs) lib; } {
+          inherit pkgs;
+          categories = [ "integration" ];
         };
 
         materialize-check-exclude = import ./lib/mk-materialize-check.nix { inherit (nixpkgs) lib; } {

@@ -10,6 +10,7 @@
     "cli"
     "git"
     "gnu"
+    "integration"
     "just"
     "language"
     "lefthook"
@@ -51,6 +52,7 @@
     ];
     # Core/universal: broad (V20)
     generic = [ "**/*" ];
+    integration = [ "**/*" ];
     architecture = [ "**/*" ];
     git = [ "**/*" ];
     language = [
