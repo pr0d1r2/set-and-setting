@@ -259,6 +259,11 @@
 
 ### Spec
 
+- Backprop T50 probe findings: narrow B2 (`SKILL.md` is description-gated,
+  not broken -- model-invokes on a matching prompt, just not always-on)
+  and add V32 recording the confirmed semantics (path-less rules always-on,
+  `@`-recursion, `@`-in-rules, symlink load, `disable-model-invocation`
+  blocks) plus the open G2 write-trigger.
 - Multi-channel per-agent emit (B3): rules-only over-corrected
   (`.claude/rules` is Claude-only; `@`-import is Claude-only -- opencode
   uses `opencode.json` globs). Best-of-both: per-agent **profile** +

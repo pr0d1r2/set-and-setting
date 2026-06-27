@@ -203,6 +203,18 @@ and dogfoods both.
   symlink load, and `disable-model-invocation`. Every channel decision
   cites a passing probe. Integration suite (needs agent binary + auth);
   skip-if-absent, not hermetic CI.
+- V32: T50 probes empirically confirm Claude loading semantics
+  (2026-06-26, query-style marker + majority vote over nondeterministic
+  runs): (a) `.claude/skills/` `SKILL.md` model-invokes on a matching
+  prompt -- NOT always-on (narrows B2: description-gated, not broken);
+  (b) path-less `.claude/rules` load always; (c) `@`-import recurses
+  through `CLAUDE.md` (V29 compiler viable); (d) `@` expands inside a
+  rule file (DRY rule-refs viable -- T48/T49); (e) symlinked rule loads;
+  (f) `disable-model-invocation: true` blocks autoload (dedup V20 works).
+  Open (G2): path-scoped rule read-vs-write trigger -- verdict flips even
+  voted, not reliably probe-observable (mechanism is real; path-scoped
+  rules load live in this repo's dogfood). Design defensively --
+  write-critical rules -> broad/always-on globs.
 
 ## §T Tasks
 
@@ -267,5 +279,5 @@ and dogfoods both.
 | id | date | cause | fix |
 |----|------|-------|-----|
 | B1 | 2026-06-16 | upstream nix-lefthook tightened checks; repo never revalidated, so `main` fails `lefthook run pre-commit --all-files` on pre-existing files (prose markdownlint, `*.nix` em-dashes, editorconfig padding, drift-check embedded shell) | fixed: narrow-other glob (#10), drift+embedded-shell extracted (#13), markdownlint/editorconfig/narrow cleared + CI runs lefthook (T32) |
-| B2 | 2026-06-18 | emitted `SKILL.md` under `.claude/skills/` does not reliably autoload -- skills are model-invoked (description-indexed, body on-demand), not always-on; only `.claude/rules/` loads deterministically (path-scoped on matching-file read; path-less at launch). The shipped SKILL.md model (T25/T35-T39) effectively did not autoload. | redesign rules-only: drop SKILL.md, mirror source as `.claude/rules/set/` with `paths` everywhere (T40-T44). Verified vs Claude Code memory/skills docs. |
+| B2 | 2026-06-18 | emitted `SKILL.md` under `.claude/skills/` is not always-on -- skills are model-invoked (description-indexed, body on-demand), loading only when a prompt matches their description; only `.claude/rules/` loads unconditionally (path-less at launch; path-scoped on matching-file read). The shipped always-on SKILL.md model (T25/T35-T39) thus never autoloaded -- description-gated, NOT broken (T50 probes confirm, V32). | redesign rules-only: drop SKILL.md, mirror source as `.claude/rules/set/` with `paths` everywhere (T40-T44). Verified vs Claude Code memory/skills docs; since superseded by B3 multi-channel. |
 | B3 | 2026-06-26 | rules-only (B2 fix) over-corrected: `.claude/rules` is Claude-proprietary (reduces agnosticism, C2/V23), and `@`-import is Claude-only (opencode/Codex/AGENTS.md spec have no `@` -- opencode uses `opencode.json` instructions globs or Read-on-demand). So a single mechanism can't be both reliable-on-Claude and portable. | best-of-both multi-channel (V17-V21): per-agent profile + sidecar meta + `SKILL.md` (portable) + Claude rules (reliable) + `@`->`AGENTS.md` compiler (portable always-on) + dedup; gated by the mechanism test suite (T50). Verified vs opencode/Codex docs. |
