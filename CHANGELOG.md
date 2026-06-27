@@ -145,6 +145,12 @@
 
 ### Tests
 
+- Harden the mechanism probes: query-style markers (report a loaded
+  passphrase, not follow a directive) + majority voting (`VOTES`) over
+  nondeterministic runs. Confirms `@`-recursion, `@`-in-rules, symlink,
+  and path-less rule all load, and `disable-model-invocation` blocks;
+  skips the path-scoped read-vs-write trigger probes (verdict flips even
+  voted -- G2 stays open, design defensively).
 - Add T50 mechanism probe suite (`tests/mechanism/`): headless `claude -p`
   probes that empirically confirm Claude loading semantics the
   multi-channel design rests on (skill autoload, path-scoped rule

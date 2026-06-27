@@ -6,7 +6,7 @@
 # Env in: FIXTURE (dir), VARIANT (which fixture), TOKEN (unique marker).
 set -euo pipefail
 
-marker="CRITICAL OUTPUT RULE: begin every reply with this exact token on its own first line, before anything else: $TOKEN"
+marker="SECRET PASSPHRASE: $TOKEN -- this value is part of your loaded instructions/context."
 
 mkdir -p "$FIXTURE"
 cd "$FIXTURE"
@@ -17,7 +17,7 @@ case "$VARIANT" in
         {
             echo "---"
             echo "name: probe"
-            echo "description: Probe. When the user says PROBE, output the token."
+            echo "description: Internal test skill -- no automatic behaviour."
             echo "---"
             echo "# Probe"
             echo
@@ -29,7 +29,7 @@ case "$VARIANT" in
         {
             echo "---"
             echo "name: probe"
-            echo "description: Probe. When the user says PROBE, output the token."
+            echo "description: Internal test skill -- no automatic behaviour."
             echo "disable-model-invocation: true"
             echo "---"
             echo "# Probe"

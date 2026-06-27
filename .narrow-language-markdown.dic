@@ -199,6 +199,7 @@ behave
 behavior
 behavioral
 behaviour
+behaviourally
 behind
 being
 belief
@@ -442,7 +443,9 @@ configurations
 configure
 confirm
 confirmation
+confirmed
 confirming
+confirms
 conflict
 conflicts
 confusing
@@ -561,6 +564,7 @@ deeper
 default
 defaulting
 defaults
+defensively
 deferred
 define
 defined
@@ -787,6 +791,7 @@ everything
 everywhere
 evidence
 evolve
+evolved
 exact
 examines
 example
@@ -1044,6 +1049,7 @@ happens
 hard
 hardcoded
 hardcoding
+harden
 hardening
 harder
 hardware
@@ -1276,7 +1282,6 @@ leader
 leaf
 leakage
 leaked
-leans
 least
 leave
 leaves
@@ -1367,6 +1372,7 @@ magic
 main
 maintainers
 maintaining
+majority
 make
 makefile
 makes
@@ -1523,7 +1529,9 @@ node
 nodes
 noexec
 noise
+noisy
 non
+nondeterministic
 none
 normal
 north
@@ -1534,6 +1542,7 @@ notes
 nothing
 notice
 noting
+notloaded
 noun
 now
 null
@@ -1648,6 +1657,7 @@ passed
 passes
 passing
 passive
+passphrase
 passthrough
 passthru
 password
@@ -1762,6 +1772,7 @@ pro
 probability
 probe
 probes
+probing
 procedure
 procedures
 proceed
@@ -1868,6 +1879,7 @@ records
 recovery
 recur
 recurring
+recurses
 recursion
 recursive
 recursively
@@ -1994,7 +2006,6 @@ right
 risk
 risks
 road
-robust
 role
 roles
 rolled
@@ -2140,6 +2151,7 @@ simpler
 simplified
 simplifies
 simply
+since
 single
 sits
 sitter
@@ -2240,7 +2252,6 @@ string
 strings
 strip
 stripped
-strong
 structural
 structure
 structured
@@ -2283,6 +2294,7 @@ survive
 survives
 sustained
 switch
+switched
 symlink
 symlinked
 symlinks
@@ -2443,7 +2455,6 @@ uncomment
 uncommitted
 unconditional
 unconditionally
-unconfirmed
 uncovered
 under
 underlay
@@ -2533,6 +2544,9 @@ visitors
 vocabulary
 voice
 volumes
+voted
+votes
+voting
 vulnix
 wait
 waiting
