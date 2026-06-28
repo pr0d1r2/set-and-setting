@@ -548,6 +548,18 @@
             [ -f "$setdir/nix/infinity/gap.md" ] \
               || { echo "FAIL: nested rule missing"; exit 1; }
 
+            # always-on @-manifest (channel a, V18/V29): sibling set.md
+            # lists @-refs to concepts + core, omits domain rules
+            manifest="${full}/.claude/rules/set.md"
+            [ -f "$manifest" ] || { echo "FAIL: set.md manifest missing"; exit 1; }
+            grep -q '^@set/concepts-user.md$' "$manifest" \
+              || { echo "FAIL: set.md missing concept ref"; exit 1; }
+            grep -q '^@set/generic/skill.md$' "$manifest" \
+              || { echo "FAIL: set.md missing core ref"; exit 1; }
+            if grep -q 'nix/flake.md' "$manifest"; then
+              echo "FAIL: set.md must not list domain rules"; exit 1
+            fi
+
             echo PASS
             touch $out
           '';

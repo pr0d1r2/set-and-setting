@@ -81,6 +81,7 @@ compat
 component
 compose
 concat
+concept
 concepts
 cond
 conditional
@@ -273,6 +274,7 @@ line
 lint
 linux
 list
+lists
 lives
 load
 loaded
@@ -283,6 +285,7 @@ locks
 logic
 loose
 manager
+manifest
 map
 markdown
 markdownlint
@@ -381,6 +384,7 @@ raw
 read
 rec
 ref
+refs
 regardless
 rel
 relative
@@ -505,6 +509,7 @@ update
 url
 urls
 use
+user
 uses
 valid
 value

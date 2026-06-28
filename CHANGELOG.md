@@ -171,6 +171,11 @@
 
 ### Set (skills)
 
+- Emit an always-on `@`-manifest `set.md` (T47, V18): a sibling of the
+  set dir listing `@`-refs to every always-on (path-less) file --
+  concepts first, then core rules; domain rules omitted. This is the
+  authoring surface for the `@`->AGENTS.md compiler (V29/T48). `sync-set`
+  copies it alongside the set tree.
 - Multi-channel emit driven by the meta map (T47, V17/V30): mkSet now
   emits two rule channels per the channel resolved for each file -- core
   categories (generic, git) emit path-less always-on rules (no

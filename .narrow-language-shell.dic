@@ -33,6 +33,7 @@ assert
 assertion
 assertions
 auth
+authoring
 automatic
 available
 awk
@@ -91,6 +92,7 @@ commands
 commit
 comparator
 compares
+compiler
 compliance
 concept
 concepts
@@ -184,6 +186,7 @@ esac
 euo
 eval
 even
+every
 example
 examples
 except
@@ -273,6 +276,7 @@ init
 injected
 injection
 inlined
+input
 inside
 install
 installed
@@ -310,6 +314,7 @@ limits
 lines
 list
 listed
+lists
 live
 load
 loaded
@@ -339,6 +344,7 @@ materialization
 materialize
 materialized
 materializes
+maxdepth
 mdlint
 mechanism
 mechprobe
@@ -390,6 +396,7 @@ old
 oldrev
 omit
 omits
+omitted
 once
 one
 only
@@ -466,6 +473,7 @@ ref
 refresh
 refreshes
 refreshing
+refs
 rel
 relative
 reliably
@@ -525,6 +533,8 @@ separate
 separated
 sequence
 set
+setbase
+setroot
 setting
 setup
 shell
@@ -533,6 +543,7 @@ shift
 should
 show
 shows
+sibling
 single
 size
 skill
@@ -560,6 +571,7 @@ sub
 subdir
 succeeds
 supports
+surface
 symlink
 symlinked
 synced
@@ -572,6 +584,7 @@ tests
 that
 the
 then
+they
 this
 those
 through
@@ -642,6 +655,7 @@ write
 writer
 writes
 writing
+written
 yaml
 yamllint
 your

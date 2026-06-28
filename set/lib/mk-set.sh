@@ -42,6 +42,27 @@ if [ "$CONCEPTS" = "1" ]; then
     done
 fi
 
+# Always-on @-manifest (channel a authoring surface, V18; input to the
+# @->AGENTS.md compiler, V29). Lists @-refs to every always-on (path-less)
+# file under the set dir: concepts first (V2), then core rule files.
+# Domain rules (with frontmatter) are conditional, not always-on, so they
+# are omitted. Written as a sibling of the set dir so "@<base>/<rel>"
+# resolves into it.
+setroot="$out/$DIR"
+setbase="${DIR##*/}"
+manifest="$out/${DIR%/*}/$setbase.md"
+mkdir -p "$(dirname "$manifest")"
+{
+    printf '# Set (always-on)\n\n'
+    find "$setroot" -maxdepth 1 -name 'concepts-*.md' | sort | while read -r f; do
+        printf '@%s/%s\n' "$setbase" "${f#"$setroot"/}"
+    done
+    find "$setroot" -name '*.md' ! -name 'concepts-*.md' | sort | while read -r f; do
+        head -1 "$f" | grep -q '^---$' && continue
+        printf '@%s/%s\n' "$setbase" "${f#"$setroot"/}"
+    done
+} >"$manifest"
+
 mkdir -p "$out/bin"
 cp "$SYNC_SRC" "$out/bin/sync-set"
 chmod +x "$out/bin/sync-set"
