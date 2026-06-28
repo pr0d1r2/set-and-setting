@@ -125,6 +125,15 @@
 
 ### Apps
 
+- `mkSet --auto` smart materialization (T53, V34/V37): scans the consumer
+  repo (`git ls-files`, vendored/generated excluded) and installs only
+  skills with evidence -- core always, a domain/facet kept iff a tracked
+  file matches its `paths` AND a path-matched file contains a `content`
+  pattern, with facet->topic-core backfill. Records per-skill evidence in
+  `.mkset.json` (`applicability`). `--dry-run` previews the applicable
+  set; a non-git/empty tree falls back to core. `--all`/explicit/`--auto`
+  are distinct modes.
+
 - Add `--agent` seam passthrough to installers (T39/V21/V23): `mkSet
   --agent opencode` emits skills to `.opencode/skills/set/` with
   `globs` conditional-load field instead of Claude's `.claude/skills/set/`

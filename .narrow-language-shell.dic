@@ -46,8 +46,11 @@ assert
 assertion
 assertions
 asserts
+attr
+audit
 auth
 authoring
+auto
 automatic
 available
 avoids
@@ -136,6 +139,7 @@ compiled
 compiler
 complete
 compliance
+compute
 concept
 concepts
 cond
@@ -144,6 +148,7 @@ config
 configs
 confirm
 confirmed
+considers
 consumer
 contain
 contained
@@ -168,6 +173,7 @@ cross
 cthree
 current
 custom
+cut
 cutting
 dangerously
 decide
@@ -289,6 +295,7 @@ filenames
 files
 filesystem
 filter
+filtered
 filtering
 final
 find
@@ -417,6 +424,7 @@ leading
 learn
 least
 leave
+leaves
 lefthook
 less
 level
@@ -425,6 +433,7 @@ limit
 limits
 line
 lines
+linguist
 list
 listed
 lists
@@ -439,6 +448,7 @@ loads
 local
 location
 lock
+logic
 look
 looks
 loops
@@ -498,6 +508,7 @@ name
 names
 namespace
 narrow
+nconcept
 needs
 nested
 never
@@ -520,6 +531,7 @@ nothing
 notice
 notloaded
 now
+nrule
 ntest
 null
 observable
@@ -603,6 +615,7 @@ prompt
 proves
 provided
 pruned
+prunes
 push
 pyproject
 python
@@ -674,6 +687,8 @@ scaffold
 scaffolded
 scaffolding
 scaffolds
+scan
+scans
 scoped
 scored
 script
