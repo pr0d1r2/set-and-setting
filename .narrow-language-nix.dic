@@ -22,6 +22,7 @@ and
 any
 anywhere
 app
+appears
 application
 apps
 architecture
@@ -73,6 +74,7 @@ command
 commit
 compact
 compares
+compat
 component
 compose
 concat
@@ -83,6 +85,7 @@ config
 configs
 conflict
 consumer
+consumers
 contains
 context
 copied
@@ -101,6 +104,7 @@ default
 define
 derivation
 derived
+derives
 description
 deterministic
 dev
@@ -146,6 +150,7 @@ exdir
 executable
 execute
 exist
+existing
 exit
 expectations
 expected
@@ -220,15 +225,18 @@ inherit
 inherited
 inherits
 init
+inline
 inputs
 install
 installer
+instructions
 integration
 integrations
 interchange
 into
 its
 join
+json
 just
 justfile
 keep
@@ -261,13 +269,13 @@ lives
 load
 loaded
 local
+location
 lock
 locks
 logic
 loose
 manager
 map
-maps
 markdown
 markdownlint
 markers
@@ -276,6 +284,8 @@ matches
 materialization
 materialize
 materialized
+mechanism
+mechanisms
 merge
 meta
 metadata
@@ -333,6 +343,7 @@ paths
 per
 permissions
 picks
+place
 platform
 portable
 pre
@@ -344,6 +355,8 @@ preserve
 preserved
 produces
 product
+profile
+profiles
 program
 project
 proof
@@ -355,6 +368,7 @@ push
 qim
 raw
 read
+rec
 ref
 regardless
 rel
@@ -434,6 +448,7 @@ supported
 surface
 symlink
 synced
+syntax
 system
 systems
 terms
@@ -460,9 +475,9 @@ tree
 true
 trusted
 truth
-two
 type
 typos
+unchanged
 under
 unicode
 unique
@@ -478,16 +493,16 @@ use
 uses
 valid
 value
-values
 verbatim
 via
 vocabulary
 when
-where
 whitespace
 wins
 with
+within
 workflows
+working
 works
 wrap
 wrappers

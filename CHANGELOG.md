@@ -145,6 +145,10 @@
 
 ### Tests
 
+- Add `agent-profiles` check (T46/V21): asserts each agent profile in
+  `agents.nix` carries all channel mechanisms (always-on file+import,
+  conditional, skill) and the back-compat `dir`/`condField` seam derives
+  from `conditional`.
 - Add `meta-resolve` check (T45/V30): asserts `set/meta.nix` resolves a
   source path to `{ channel, paths, keywords, always }` via category
   fallback <- subtree entry <- exact-file override.
