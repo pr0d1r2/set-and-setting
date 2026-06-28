@@ -19,10 +19,16 @@
 #   EXCLUDE     space-separated filenames to omit
 #   DISABLE_INVOCATION  "1" to add disable-model-invocation: true (Claude
 #                       dedup, V20); "0"/unset to leave it model-invocable
+#   KEEP        optional newline-separated relpaths to include (smart
+#               materialization, V34); unset/empty = include all
 set -euo pipefail
 
+keep_active=0
+if [ -n "${KEEP:-}" ]; then
+    keep_active=1
+fi
+
 dir="$SKILL_DEST/set-$CAT"
-mkdir -p "$dir"
 
 catdir="$SKILLS_DIR/$CAT"
 core="$SKILLS_DIR/$CAT.md"
@@ -40,6 +46,30 @@ desc="${KEYWORDS//,/, }"
 
 read -ra garr <<<"${GLOBS:-}"
 
+# Collect the kept source files (KEEP filter, V34); skip the whole skill
+# folder when nothing is kept.
+keep_core=0
+if [ -n "$core" ] && [ -f "$core" ]; then
+    if [ "$keep_active" -eq 0 ] || printf '%s\n' "$KEEP" | grep -qxF "$CAT.md"; then
+        keep_core=1
+    fi
+fi
+tree_files=()
+if [ -d "$catdir" ]; then
+    while read -r f; do
+        sub="${f#"$catdir"/}"
+        if [ "$keep_active" -eq 1 ] && ! printf '%s\n' "$KEEP" | grep -qxF "$CAT/$sub"; then
+            continue
+        fi
+        tree_files+=("$f")
+    done < <(find "$catdir" -name '*.md' ${findargs[@]+"${findargs[@]}"} | sort)
+fi
+
+if [ "$keep_core" -eq 0 ] && [ "${#tree_files[@]}" -eq 0 ]; then
+    exit 0
+fi
+
+mkdir -p "$dir"
 dest="$dir/SKILL.md"
 {
     printf '%s\n' "---"
@@ -52,19 +82,17 @@ dest="$dir/SKILL.md"
     printf '# %s\n' "$CAT"
 } >"$dest"
 
-if [ -n "$core" ] && [ -f "$core" ]; then
+if [ "$keep_core" -eq 1 ]; then
     {
         printf '\n## %s.md\n\n' "$CAT"
         cat "$core"
     } >>"$dest"
 fi
 
-if [ -d "$catdir" ]; then
-    while read -r f; do
-        sub="${f#"$catdir"/}"
-        {
-            printf '\n## %s\n\n' "$sub"
-            cat "$f"
-        } >>"$dest"
-    done < <(find "$catdir" -name '*.md' ${findargs[@]+"${findargs[@]}"} | sort)
-fi
+for f in "${tree_files[@]}"; do
+    sub="${f#"$catdir"/}"
+    {
+        printf '\n## %s\n\n' "$sub"
+        cat "$f"
+    } >>"$dest"
+done

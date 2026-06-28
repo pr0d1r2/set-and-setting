@@ -169,7 +169,37 @@ let
       ) overrides
     )
   );
+  # Per-source-file applicability signals for smart materialization
+  # (V34/V35, I.applicability), one line per skill file:
+  #   "relpath|p1,p2|c1,c2"  (paths | content, both resolved via meta)
+  # `paths` answer "is a file of this shape present", `content` "is the
+  # feature actually used". Enumerated here (single source) so the bash
+  # filter only greps. Loose top-level "<cat>.md" resolves via its
+  # category. Delimiter "|" (see channelOverrides).
+  skillFiles = map (p: lib.removePrefix (toString ./skills + "/") (toString p)) (
+    lib.filter (p: lib.hasSuffix ".md" (toString p)) (lib.filesystem.listFilesRecursive ./skills)
+  );
+  signalKey =
+    rel:
+    let
+      parts = lib.splitString "/" rel;
+    in
+    if lib.length parts == 1 then lib.removeSuffix ".md" rel else rel;
+  signals = lib.concatStringsSep "\n" (
+    map (
+      rel:
+      let
+        r = resolve (signalKey rel);
+      in
+      "${rel}|${lib.concatStringsSep "," r.paths}|${lib.concatStringsSep "," r.content}"
+    ) (lib.sort (a: b: a < b) skillFiles)
+  );
 in
 {
-  inherit overrides resolve channelOverrides;
+  inherit
+    overrides
+    resolve
+    channelOverrides
+    signals
+    ;
 }

@@ -125,6 +125,15 @@
 
 ### Apps
 
+- `mkSet --auto` smart materialization (T53, V34/V37): scans the consumer
+  repo (`git ls-files`, vendored/generated excluded) and installs only
+  skills with evidence -- core always, a domain/facet kept iff a tracked
+  file matches its `paths` AND a path-matched file contains a `content`
+  pattern, with facet->topic-core backfill. Records per-skill evidence in
+  `.mkset.json` (`applicability`). `--dry-run` previews the applicable
+  set; a non-git/empty tree falls back to core. `--all`/explicit/`--auto`
+  are distinct modes.
+
 - Add `--agent` seam passthrough to installers (T39/V21/V23): `mkSet
   --agent opencode` emits skills to `.opencode/skills/set/` with
   `globs` conditional-load field instead of Claude's `.claude/skills/set/`
@@ -187,6 +196,18 @@
 
 ### Set (skills)
 
+- Wire the KEEP filter into the emitter (T53, V34): mkSet honours an
+  optional `KEEP` set of relpaths -- the rule channel skips non-kept
+  files and the SKILL.md channel inlines only kept files (skipping a
+  skill folder entirely when nothing is kept). Empty/unset `KEEP` is a
+  no-op, so `packages.set` and explicit installs stay full.
+- Add the applicability filter engine (T53, V34/V35/V36): `meta.signals`
+  serializes each skill file's `paths`+`content`; `applicability.sh` keeps
+  a file iff core, or a tracked file matches its `paths` AND a
+  path-matched file contains a `content` pattern, then backfills a kept
+  facet's `<topic>.md` core. Deterministic over a tracked-file list; the
+  bash glob matcher honours gitignore leading-`**/` (matches top-level).
+  Engine only -- emitter wiring + app `--auto` follow.
 - Fill the meta relevance map (T41, V34/V35): high-value facets get
   narrow `paths` + `content` grep signals -- qemu (`tests/integration/**`,
   `**/*.exp` / `qemu`, `enable-kvm`), iso, qemu/mdns, nixos hardening,

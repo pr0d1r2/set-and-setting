@@ -331,7 +331,7 @@ and dogfoods both.
 | T49 | x | dedup -- emit `SKILL.md` with `disable-model-invocation: true` on Claude so the rule is the sole loader (no double-load) | V20 |
 | T51 | . | opencode profile + agnosticism proof -- build the same sources for opencode (AGENTS.md + opencode.json); ties T31. Always-on stays universal-only (V38) | V21,V23,V38,T31 |
 | T52 | . | README -- document the multi-channel model + three delivery paths; keep the one-command WOW | I.apps,C9 |
-| T53 | . | smart auto-materialization (`I.applicability`) -- boolean facet-grained filter over `git ls-files` (`paths` AND `content`, vendored/generated excluded) + facet->core backfill + per-skill manifest evidence; `--auto` default for the `nix run` path, `--all`/explicit/`--pin`/`--exclude` override; scored mode deferred. Needs T41 | V34,V35,V36,V37,I.applicability,I.manifest,I.apps |
+| T53 | x | smart auto-materialization (`I.applicability`) -- boolean facet-grained filter over `git ls-files` (`paths` AND `content`, vendored/generated excluded) + facet->core backfill + per-skill manifest evidence; `--auto` default for the `nix run` path, `--all`/explicit/`--pin`/`--exclude` override; scored mode deferred. Needs T41 | V34,V35,V36,V37,I.applicability,I.manifest,I.apps |
 
 ## §B Bugs
 

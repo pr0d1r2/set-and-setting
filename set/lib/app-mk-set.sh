@@ -32,6 +32,7 @@ while [ $# -gt 0 ]; do
             echo "  --dry-run       Show what would be emitted without writing"
             echo "  --all           Install all categories"
             echo "  --all-except    Install all categories except those listed"
+            echo "  --auto          Install only skills with repo evidence (smart)"
             echo "  --remove        Remove listed categories from the install"
             echo "  --agent NAME    Target agent (default: claude)"
             echo ""
@@ -43,6 +44,7 @@ while [ $# -gt 0 ]; do
             echo "  mkSet nix security             # core + nix + security"
             echo "  mkSet --all                    # all categories"
             echo "  mkSet --all-except nixos       # all except nixos"
+            echo "  mkSet --auto                   # only skills the repo needs"
             echo "  mkSet --remove nix             # remove nix from install"
             echo "  mkSet --agent opencode         # emit for opencode agent"
             echo "  mkSet --agent opencode --all   # all categories for opencode"
@@ -65,6 +67,10 @@ while [ $# -gt 0 ]; do
             ;;
         --all)
             mode="all"
+            shift
+            ;;
+        --auto)
+            mode="auto"
             shift
             ;;
         --all-except)
@@ -156,7 +162,8 @@ if [ "$mode" = "remove" ]; then
         done
         [ "$skip" -eq 0 ] && final_cats+=("$mc")
     done
-elif [ "$mode" = "all" ]; then
+elif [ "$mode" = "all" ] || [ "$mode" = "auto" ]; then
+    # auto considers every category, then prunes to applicable files (V34)
     final_cats=("${all_cats[@]}")
 elif [ "$mode" = "all-except" ]; then
     for ex in "${selected[@]:-}"; do
@@ -224,10 +231,23 @@ if [ "$mode" = "default" ] && [ ${#selected[@]} -eq 0 ] && [ ${#manifest_cats[@]
     echo ""
 fi
 
+# Smart materialization (V34): derive the applicable file set from repo
+# evidence and pass it to the emitter as KEEP. Scan logic is extracted to
+# app-auto-keep.sh (sh/modularity).
+applicability_evidence=""
+if [ "$mode" = "auto" ]; then
+    applicability_evidence="$(bash "$AUTO_KEEP_SCRIPT")"
+    KEEP="$(printf '%s\n' "$applicability_evidence" | cut -d'|' -f1)"
+    export KEEP
+fi
+
 if [ "$dry_run" -eq 1 ]; then
     if [ "$mode" = "remove" ]; then
         echo "Would remove: ${remove_cats[*]}"
         echo "Would keep: ${final_cats[*]}"
+    elif [ "$mode" = "auto" ]; then
+        echo "Would install applicable skills (repo evidence):"
+        printf '%s\n' "$applicability_evidence" | sed 's/^/  /'
     else
         echo "Would install categories: ${final_cats[*]}"
     fi
@@ -273,7 +293,24 @@ for c in "${final_cats[@]}"; do
 done
 rev="${MKSET_REV:-unknown}"
 mkdir -p "$agent_dir"
-printf '{"categories":[%s],"rev":"%s","agent":"%s"}\n' "$cats_json" "$rev" "$agent_name" >"$MANIFEST"
+
+# Record applicability evidence per kept skill under --auto (V37 audit).
+app_json=""
+if [ "$mode" = "auto" ]; then
+    while IFS='|' read -r rel reason; do
+        [ -n "$rel" ] || continue
+        [ -n "$app_json" ] && app_json="$app_json,"
+        app_json="$app_json\"$rel\":\"$reason\""
+    done <<<"$applicability_evidence"
+fi
+
+if [ -n "$app_json" ]; then
+    printf '{"categories":[%s],"rev":"%s","agent":"%s","applicability":{%s}}\n' \
+        "$cats_json" "$rev" "$agent_name" "$app_json" >"$MANIFEST"
+else
+    printf '{"categories":[%s],"rev":"%s","agent":"%s"}\n' \
+        "$cats_json" "$rev" "$agent_name" >"$MANIFEST"
+fi
 
 if [ "$mode" = "remove" ]; then
     echo "Removed: ${remove_cats[*]}"

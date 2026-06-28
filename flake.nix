@@ -497,6 +497,12 @@
             touch $out
           '';
 
+        # meta-applicability -- V34: the smart-materialization filter keeps
+        # only skills with repo evidence (paths AND content), facet->core.
+        meta-applicability = import ./set/lib/applicability.nix { inherit (nixpkgs) lib; } {
+          inherit pkgs;
+        };
+
         # agents-md-compile -- V29: the @->AGENTS.md compiler resolves a
         # Claude @-manifest recursively, mirroring Claude @-parse rules.
         agents-md-compile =
@@ -841,12 +847,16 @@
               export MK_SET_SCRIPT="${./set/lib/mk-set.sh}"
               export EMIT_SCRIPT="${./set/lib/emit-skill.sh}"
               export EMIT_RULE_SCRIPT="${./set/lib/emit-rule.sh}"
+              export EMIT_SKILLMD_SCRIPT="${./set/lib/emit-skillmd.sh}"
+              export APPLICABILITY_SCRIPT="${./set/lib/applicability.sh}"
+              export AUTO_KEEP_SCRIPT="${./set/lib/app-auto-keep.sh}"
               export SYNC_SCRIPT="${./set/lib/sync-set.sh}"
               export RESOLVE_AGENT_SCRIPT="${./set/lib/resolve-agent.sh}"
               export ALL_CATEGORIES="${lib.concatStringsSep " " cats.all}"
               export CORE_CATEGORIES="${lib.concatStringsSep " " cats.core}"
               export GLOBS_MAP="${globsMap}"
               export CHANNEL_OVERRIDES=${lib.escapeShellArg meta.channelOverrides}
+              export SIGNALS_MANIFEST=${lib.escapeShellArg meta.signals}
               export AGENT_SEAMS="${agentSeams}"
               export MKSET_REV="${self.rev or self.dirtyRev or "unknown"}"
             ''
