@@ -171,6 +171,10 @@
 
 ### Set (skills)
 
+- Fix mkSet with no categories/concepts (T47): the `set.md` manifest
+  step now creates the set dir before scanning it, so an empty selection
+  no longer errors. Drop the obsolete "no SKILL.md in rules output"
+  materialize-check assertion -- SKILL.md is now a valid channel.
 - Emit a portable per-category `SKILL.md` channel (T47, V20): each
   category gets an agentskills.io folder `set-<cat>/SKILL.md` with
   frontmatter (name + description from meta keywords + conditional-load

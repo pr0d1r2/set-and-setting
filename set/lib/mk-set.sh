@@ -70,7 +70,7 @@ fi
 setroot="$out/$DIR"
 setbase="${DIR##*/}"
 manifest="$out/${DIR%/*}/$setbase.md"
-mkdir -p "$(dirname "$manifest")"
+mkdir -p "$setroot" "$(dirname "$manifest")"
 {
     printf '# Set (always-on)\n\n'
     find "$setroot" -maxdepth 1 -name 'concepts-*.md' | sort | while read -r f; do
