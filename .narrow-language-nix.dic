@@ -59,6 +59,7 @@ bundle
 but
 byte
 cachix
+carrier
 carries
 cat
 categories
@@ -104,10 +105,12 @@ core
 coreutils
 correct
 counterparts
+cross
 cumulative
 darwin
 data
 deadnix
+dedup
 deep
 default
 define
@@ -128,6 +131,7 @@ diffutils
 dir
 directory
 dirty
+disable
 documentation
 domain
 domains
@@ -258,6 +262,10 @@ integration
 integrations
 interchange
 into
+invocable
+invocation
+invoke
+invoked
 its
 join
 json
@@ -296,6 +304,7 @@ lists
 lives
 load
 loaded
+loader
 loads
 local
 location
@@ -328,6 +337,7 @@ mkdir
 mkscaffold
 mkset
 mksetting
+model
 modularity
 more
 most
@@ -349,6 +359,7 @@ none
 not
 ocbody
 ocset
+ocskill
 omit
 omits
 one

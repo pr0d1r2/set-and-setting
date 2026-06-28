@@ -17,6 +17,8 @@
 #   GLOBS       space-separated conditional-load globs
 #   COND_FIELD  frontmatter field name (e.g. paths)
 #   EXCLUDE     space-separated filenames to omit
+#   DISABLE_INVOCATION  "1" to add disable-model-invocation: true (Claude
+#                       dedup, V20); "0"/unset to leave it model-invocable
 set -euo pipefail
 
 dir="$SKILL_DEST/set-$CAT"
@@ -43,6 +45,7 @@ dest="$dir/SKILL.md"
     printf '%s\n' "---"
     printf 'name: set-%s\n' "$CAT"
     printf 'description: "%s: %s"\n' "$CAT" "$desc"
+    [ "${DISABLE_INVOCATION:-0}" = "1" ] && printf 'disable-model-invocation: true\n'
     printf '%s:\n' "$COND_FIELD"
     for g in "${garr[@]}"; do printf '  - "%s"\n' "$g"; done
     printf '%s\n\n' "---"

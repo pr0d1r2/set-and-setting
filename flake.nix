@@ -606,6 +606,9 @@
               || { echo "FAIL: SKILL.md missing name"; exit 1; }
             grep -q '^description:' "$skill" \
               || { echo "FAIL: SKILL.md missing description"; exit 1; }
+            # Claude dedup (V20): SKILL.md is not model-invoked (rule loads)
+            grep -q '^disable-model-invocation: true$' "$skill" \
+              || { echo "FAIL: SKILL.md missing disable-model-invocation"; exit 1; }
             grep -qF '"**/*.nix"' "$skill" \
               || { echo "FAIL: SKILL.md missing nix glob"; exit 1; }
             grep -q 'The project starts with nix flake' "$skill" \
@@ -716,6 +719,13 @@
             # frontmatter to strip)
             [ "$(cat "$clset/generic/skill.md")" = "$(cat "$ocset/generic/skill.md")" ] \
               || { echo "FAIL: generic body differs between agents"; exit 1; }
+
+            # opencode SKILL.md stays model-invocable (no Claude dedup, V20)
+            ocskill="${opencode}/set-nix/SKILL.md"
+            [ -f "$ocskill" ] || { echo "FAIL: opencode SKILL.md missing"; exit 1; }
+            if grep -q 'disable-model-invocation' "$ocskill"; then
+              echo "FAIL: opencode SKILL.md must not disable invocation"; exit 1
+            fi
 
             echo PASS
             touch $out

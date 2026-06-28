@@ -328,7 +328,7 @@ and dogfoods both.
 | T46 | x | per-agent profile (`I.agentProfile`) -- Claude + opencode channel mechanisms (always-on file/import, conditional mechanism, skill format) | I.agentProfile,V21 |
 | T47 | x | multi-channel emitter -- mkSet emits 3 channels per profile from the meta map: always-on core, conditional domains, portable `SKILL.md`. Supersedes the rules-only T40-T44 emit | I.mkSet,V17,V18,V19,V20 |
 | T48 | x | `@`->`AGENTS.md` compiler (`lib/agents-md-compile`) -- recursive inline, Claude `@`-parse fidelity | I.compiler,V29 |
-| T49 | . | dedup -- emit `SKILL.md` with `disable-model-invocation: true` on Claude so the rule is the sole loader (no double-load) | V20 |
+| T49 | x | dedup -- emit `SKILL.md` with `disable-model-invocation: true` on Claude so the rule is the sole loader (no double-load) | V20 |
 | T51 | . | opencode profile + agnosticism proof -- build the same sources for opencode (AGENTS.md + opencode.json); ties T31. Always-on stays universal-only (V38) | V21,V23,V38,T31 |
 | T52 | . | README -- document the multi-channel model + three delivery paths; keep the one-command WOW | I.apps,C9 |
 | T53 | . | smart auto-materialization (`I.applicability`) -- boolean facet-grained filter over `git ls-files` (`paths` AND `content`, vendored/generated excluded) + facet->core backfill + per-skill manifest evidence; `--auto` default for the `nix run` path, `--all`/explicit/`--pin`/`--exclude` override; scored mode deferred. Needs T41 | V34,V35,V36,V37,I.applicability,I.manifest,I.apps |

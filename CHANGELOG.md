@@ -187,6 +187,12 @@
 
 ### Set (skills)
 
+- Dedup the SKILL.md channel on Claude (T49, V20): the Claude profile
+  emits `disable-model-invocation: true` in each `SKILL.md` so the rule
+  channel is the sole loader and the same content never double-loads.
+  SKILL.md stays `/`-invoke + cross-agent only. opencode keeps SKILL.md
+  model-invocable (no such field). The flag lives in the agent profile
+  (`agents.nix` `skill.disableModelInvocation`).
 - Fix mkSet with no categories/concepts (T47): the `set.md` manifest
   step now creates the set dir before scanning it, so an empty selection
   no longer errors. Drop the obsolete "no SKILL.md in rules output"

@@ -58,3 +58,15 @@ teardown() {
     run grep -c '"\*\*/\*"' "$SKILL_DEST/set-demo/SKILL.md"
     [ "$output" = "1" ]
 }
+
+@test "disable-model-invocation added only when flag set (V20)" {
+    CAT=demo KEYWORDS="demo" GLOBS="**/*" DISABLE_INVOCATION=1 run bash "$SCRIPT"
+    run grep -c '^disable-model-invocation: true$' "$SKILL_DEST/set-demo/SKILL.md"
+    [ "$output" = "1" ]
+}
+
+@test "no disable-model-invocation when flag unset" {
+    CAT=demo KEYWORDS="demo" GLOBS="**/*" run bash "$SCRIPT"
+    run grep -c 'disable-model-invocation' "$SKILL_DEST/set-demo/SKILL.md"
+    [ "$output" = "0" ]
+}
