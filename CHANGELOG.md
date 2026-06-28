@@ -145,6 +145,9 @@
 
 ### Tests
 
+- Add `meta-resolve` check (T45/V30): asserts `set/meta.nix` resolves a
+  source path to `{ channel, paths, keywords, always }` via category
+  fallback <- subtree entry <- exact-file override.
 - Harden the mechanism probes: query-style markers (report a loaded
   passphrase, not follow a directive) + majority voting (`VOTES`) over
   nondeterministic runs. Confirms `@`-recursion, `@`-in-rules, symlink,

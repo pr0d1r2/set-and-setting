@@ -428,6 +428,36 @@
           categories = [ "generic" ];
         };
 
+        # meta-resolve -- V30: the sidecar map resolves each source path to
+        # { channel, paths, keywords, always } via category fallback <-
+        # subtree entry <- exact-file override (most specific wins).
+        meta-resolve =
+          let
+            meta = import ./set/meta.nix { inherit (nixpkgs) lib; };
+            r = meta.resolve;
+            ok =
+              # category fallback: domain category gets its narrow globs
+              assert (r "nix/flake.md").channel == "domain";
+              assert builtins.elem "**/*.nix" (r "nix/flake.md").paths;
+              assert (r "nix/flake.md").keywords == [ "nix" ];
+              assert !(r "nix/flake.md").always;
+              # core fallback: core category is always-on
+              assert (r "git/git.md").channel == "core";
+              assert (r "git/git.md").always;
+              # subtree inherit: language/* picks up the language subtree keywords
+              assert builtins.elem "prose" (r "language/language.md").keywords;
+              # per-file override beats subtree
+              assert builtins.elem "narrow-language" (r "language/narrow.md").keywords;
+              # deep path still resolves via category fallback (core + broad)
+              assert (r "generic/skill/interchange.md").always;
+              assert (r "generic/skill/interchange.md").paths == [ "**/*" ];
+              true;
+          in
+          pkgs.runCommand "meta-resolve-check" { inherit ok; } ''
+            echo PASS
+            touch $out
+          '';
+
         compose-set =
           let
             mkSet = import ./set/lib/mk-set.nix { inherit (nixpkgs) lib; };
