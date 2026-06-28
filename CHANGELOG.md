@@ -347,6 +347,11 @@
 
 ### Spec
 
+- Reconcile task status against the multi-channel/smart-mat reality:
+  T40 (rules-only mirror) marked superseded by T47; T42 (apps +
+  materialize-check + sync to `.claude/rules/set`) marked done; T43
+  folded into T52; T44 reframed as multi-channel re-dogfood (add
+  `AGENTS.md` + `SKILL.md` channels to the already-dogfooded rules).
 - Spec smart auto-materialization (T53 + V34-V38): mkSet `--auto`
   installs only the *applicable* skill set, derived from repo evidence
   (`paths` AND `content` grep over `git ls-files`) at facet granularity.
