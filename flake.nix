@@ -489,6 +489,45 @@
             touch $out
           '';
 
+        # agents-md-compile -- V29: the @->AGENTS.md compiler resolves a
+        # Claude @-manifest recursively, mirroring Claude @-parse rules.
+        agents-md-compile =
+          pkgs.runCommand "agents-md-compile-check"
+            {
+              SCRIPT = ./lib/agents-md-compile.sh;
+            }
+            ''
+              bash ${./lib/agents-md-compile-check.sh}
+            '';
+
+        # agents-md -- V29 end-to-end: compile the real mkSet set.md
+        # manifest via the nix wrapper; the always-on core inlines.
+        agents-md =
+          let
+            mkSet = import ./set/lib/mk-set.nix { inherit (nixpkgs) lib; };
+            full = mkSet { inherit pkgs; };
+            compile = import ./lib/agents-md-compile.nix;
+            compiled = compile {
+              inherit pkgs;
+              src = "${full}/.claude/rules";
+              entry = "set.md";
+            };
+          in
+          pkgs.runCommand "agents-md-check" { } ''
+            f="${compiled}/AGENTS.md"
+            [ -f "$f" ] || { echo "FAIL: no AGENTS.md"; exit 1; }
+            grep -q 'Auto commit after successful prompt' "$f" \
+              || { echo "FAIL: git core not inlined"; exit 1; }
+            grep -q "behavioral rules" "$f" \
+              || { echo "FAIL: generic core not inlined"; exit 1; }
+            # always-on manifest had no domain refs, so none leak in
+            if grep -q '^@set/nix' "$f"; then
+              echo "FAIL: unexpected domain ref in AGENTS.md"; exit 1
+            fi
+            echo PASS
+            touch $out
+          '';
+
         compose-set =
           let
             mkSet = import ./set/lib/mk-set.nix { inherit (nixpkgs) lib; };

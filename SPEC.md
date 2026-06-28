@@ -215,6 +215,12 @@ and dogfoods both.
   voted, not reliably probe-observable (mechanism is real; path-scoped
   rules load live in this repo's dogfood). Design defensively --
   write-critical rules -> broad/always-on globs.
+- V33: Materialized trees are writable. `sync-set`/`app-mk-set` copy from
+  `/nix/store` (read-only -- dirs 555, files 444); `cp -r` carries those
+  perms. The clean-replace `rm` (V26) needs the write bit on parent dirs,
+  so each emitter `chmod -R u+w` the copied tree (and any prior tree
+  before removing it). Re-sync is idempotent, never `Permission denied`
+  (B4).
 
 ## §T Tasks
 
@@ -269,7 +275,7 @@ and dogfoods both.
 | T45 | x | sidecar meta map `set/meta.nix` -- `{ channel, paths, keywords, always? }` keyed by path, subtree-inherit + per-file override + category fallback | I.meta,V30 |
 | T46 | x | per-agent profile (`I.agentProfile`) -- Claude + opencode channel mechanisms (always-on file/import, conditional mechanism, skill format) | I.agentProfile,V21 |
 | T47 | x | multi-channel emitter -- mkSet emits 3 channels per profile from the meta map: always-on core, conditional domains, portable `SKILL.md`. Supersedes the rules-only T40-T44 emit | I.mkSet,V17,V18,V19,V20 |
-| T48 | . | `@`->`AGENTS.md` compiler (`lib/agents-md-compile`) -- recursive inline, Claude `@`-parse fidelity | I.compiler,V29 |
+| T48 | x | `@`->`AGENTS.md` compiler (`lib/agents-md-compile`) -- recursive inline, Claude `@`-parse fidelity | I.compiler,V29 |
 | T49 | . | dedup -- emit `SKILL.md` with `disable-model-invocation: true` on Claude so the rule is the sole loader (no double-load) | V20 |
 | T51 | . | opencode profile + agnosticism proof -- build the same sources for opencode (AGENTS.md + opencode.json); ties T31 | V21,V23,T31 |
 | T52 | . | README -- document the multi-channel model + three delivery paths; keep the one-command WOW | I.apps,C9 |
@@ -280,4 +286,5 @@ and dogfoods both.
 |----|------|-------|-----|
 | B1 | 2026-06-16 | upstream nix-lefthook tightened checks; repo never revalidated, so `main` fails `lefthook run pre-commit --all-files` on pre-existing files (prose markdownlint, `*.nix` em-dashes, editorconfig padding, drift-check embedded shell) | fixed: narrow-other glob (#10), drift+embedded-shell extracted (#13), markdownlint/editorconfig/narrow cleared + CI runs lefthook (T32) |
 | B2 | 2026-06-18 | emitted `SKILL.md` under `.claude/skills/` is not always-on -- skills are model-invoked (description-indexed, body on-demand), loading only when a prompt matches their description; only `.claude/rules/` loads unconditionally (path-less at launch; path-scoped on matching-file read). The shipped always-on SKILL.md model (T25/T35-T39) thus never autoloaded -- description-gated, NOT broken (T50 probes confirm, V32). | redesign rules-only: drop SKILL.md, mirror source as `.claude/rules/set/` with `paths` everywhere (T40-T44). Verified vs Claude Code memory/skills docs; since superseded by B3 multi-channel. |
+| B4 | 2026-06-28 | `sync-set`/`app-mk-set` `cp -r` the emitted tree from `/nix/store` (read-only: dirs 555, files 444) and kept those perms. The next sync's clean-replace `rm -rf` (V26) then failed with `Permission denied` -- `rm` deletes by writing the parent dir, which lacked the write bit. Surfaced as a wall of `rm: cannot remove ...` on devShell/direnv entry; the dogfood tree stuck read-only. | fixed: each emitter `chmod -R u+w` the copied tree after `cp`, and the prior tree before `rm` (V33); bats cover read-only re-sync for both scripts |
 | B3 | 2026-06-26 | rules-only (B2 fix) over-corrected: `.claude/rules` is Claude-proprietary (reduces agnosticism, C2/V23), and `@`-import is Claude-only (opencode/Codex/AGENTS.md spec have no `@` -- opencode uses `opencode.json` instructions globs or Read-on-demand). So a single mechanism can't be both reliable-on-Claude and portable. | best-of-both multi-channel (V17-V21): per-agent profile + sidecar meta + `SKILL.md` (portable) + Claude rules (reliable) + `@`->`AGENTS.md` compiler (portable always-on) + dedup; gated by the mechanism test suite (T50). Verified vs opencode/Codex docs. |

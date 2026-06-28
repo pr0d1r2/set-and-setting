@@ -4,6 +4,12 @@
 
 ### Changed
 
+- Add the `@`->AGENTS.md compiler (T48/V29, `lib/agents-md-compile`):
+  resolves a Claude `@`-manifest (the mkSet `set.md`) recursively into an
+  inline, self-contained AGENTS.md so non-Claude agents get the same
+  always-on content Claude loads. Mirrors Claude `@`-parse rules -- skip
+  `@` in fenced code blocks and code spans, strip block-level HTML
+  comments, cap at 4 hops, leave unresolvable refs literal.
 - CI: increase lefthook hook timeouts from 120s to 300s for parallel
   `--all-files` runs. Multiple checks (narrow-language-markdown,
   bats-parse, nix-flake-check, file-size-check, gitleaks, unicode-lint)
@@ -79,6 +85,12 @@
 
 ### Fixed
 
+- B4: `sync-set` and `app-mk-set` no longer fail with `Permission denied`
+  on re-sync. Both `cp -r` the emitted tree from `/nix/store` (read-only),
+  which carried 555/444 perms to the target; the next clean-replace `rm`
+  then could not delete it. Each emitter now `chmod -R u+w` the copied
+  tree (and any prior tree before removing it). Re-sync is idempotent
+  (V33). Surfaced as a wall of `rm: cannot remove` on devShell entry.
 - CI: increase lefthook hook timeouts for parallel `--all-files` runs.
   Workflow-level env block in `ci.yml` sets bash-timeout hooks to 120s
   (300s for `bats-unit`). `lefthook-local.yml` overrides narrow-language
@@ -145,6 +157,10 @@
 
 ### Tests
 
+- Add `agents-md-compile` + `agents-md` checks (T48/V29): fixture-based
+  fidelity check (recursion, fence/code-span skipping, HTML-comment
+  stripping, hop limit) plus an end-to-end build that compiles the real
+  mkSet `set.md` manifest and asserts the always-on core inlines.
 - Add `agent-profiles` check (T46/V21): asserts each agent profile in
   `agents.nix` carries all channel mechanisms (always-on file+import,
   conditional, skill) and the back-compat `dir`/`condField` seam derives

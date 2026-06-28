@@ -224,6 +224,7 @@ binfmt
 binfmts
 bios
 bisectable
+bit
 blank
 blanket
 blind
@@ -288,10 +289,12 @@ candidates
 cannot
 canonical
 canvas
+cap
 capabilities
 capability
 captures
 cares
+carried
 carries
 carry
 case
@@ -511,6 +514,7 @@ correction
 correctly
 corresponding
 corroborate
+could
 count
 counterpart
 counts
@@ -578,6 +582,7 @@ definitive
 delegate
 delegates
 delete
+deletes
 deleting
 deletions
 deliberately
@@ -587,6 +592,7 @@ delivers
 delivery
 demand
 demonstrate
+denied
 deny
 dep
 depend
@@ -877,6 +883,7 @@ feature
 features
 feeds
 fence
+fenced
 fences
 fetch
 fetched
@@ -1092,6 +1099,7 @@ homepage
 honor
 hook
 hooks
+hop
 hops
 host
 hosted
@@ -1251,6 +1259,7 @@ just
 justfile
 keep
 keeps
+kept
 kernel
 key
 keyed
@@ -1271,6 +1280,7 @@ knows
 kyson
 lab
 label
+lacked
 lacks
 land
 lang
@@ -1338,6 +1348,7 @@ listed
 listener
 listing
 lists
+literal
 literals
 live
 lives
@@ -1654,6 +1665,7 @@ param
 parameter
 parametrize
 parametrized
+parent
 parse
 parseable
 part
@@ -1689,8 +1701,10 @@ period
 peripheral
 perl
 permanently
+permission
 permissions
 permissive
+perms
 persists
 personal
 personally
@@ -2201,6 +2215,7 @@ sources
 sourcing
 space
 spaces
+span
 spans
 spawn
 spec
@@ -2264,10 +2279,12 @@ string
 strings
 strip
 stripped
+stripping
 structural
 structure
 structured
 stub
+stuck
 style
 styles
 sub
@@ -2301,6 +2318,7 @@ supported
 supporting
 supports
 surface
+surfaced
 surfaces
 survive
 survives
@@ -2426,6 +2444,7 @@ traveler
 treat
 treating
 tree
+trees
 trigger
 triggered
 triggers
@@ -2490,6 +2509,7 @@ unreachable
 unrelated
 unreleased
 unrequested
+unresolvable
 unsafe
 unset
 unsure
@@ -2565,6 +2585,7 @@ voting
 vulnix
 wait
 waiting
+wall
 want
 warm
 warms

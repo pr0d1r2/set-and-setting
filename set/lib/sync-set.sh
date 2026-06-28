@@ -19,9 +19,16 @@ for d in "$src"/.*; do
 done
 
 if [ -n "$set_parent" ]; then
+    # Prior sync copied from /nix/store (read-only); restore the write bit
+    # so the clean-replace rm can delete the tree (V26).
+    [ -e "$target/$set_parent/rules/set" ] &&
+        chmod -R u+w "$target/$set_parent/rules/set"
     rm -rf "$target/$set_parent/rules/set"
     mkdir -p "$target/$set_parent/rules"
     cp -r "$src/$set_parent/rules/set" "$target/$set_parent/rules/"
+    # cp -r preserves the store's read-only perms; make writable so the
+    # next sync's rm can clean-replace it.
+    chmod -R u+w "$target/$set_parent/rules/set"
     # always-on @-manifest (sibling of the set dir), if present
     rm -f "$target/$set_parent/rules/set.md"
     [ -f "$src/$set_parent/rules/set.md" ] &&
