@@ -57,6 +57,7 @@ beta
 between
 bin
 binary
+bit
 blind
 bodies
 body
@@ -77,6 +78,7 @@ calls
 can
 cannot
 carries
+carry
 carrying
 case
 cat
@@ -123,6 +125,7 @@ contract
 contradicts
 copied
 copies
+copy
 core
 corefile
 correct
@@ -140,6 +143,7 @@ dedup
 deep
 default
 defaults
+delete
 deliberately
 demo
 derivation
@@ -269,6 +273,7 @@ glob
 globs
 green
 grep
+guard
 guidance
 half
 handles
@@ -382,6 +387,7 @@ mechprobe
 merges
 merging
 meta
+mimic
 minimum
 mirrored
 missing
@@ -464,10 +470,12 @@ pathless
 paths
 per
 permissions
+perms
 pipefail
 plants
 portable
 positional
+post
 pre
 precommit
 prepended
@@ -528,6 +536,7 @@ require
 requires
 resolve
 resolves
+restore
 rests
 return
 rev
@@ -577,6 +586,7 @@ should
 show
 shows
 sibling
+simulate
 single
 size
 skill
@@ -601,6 +611,7 @@ starts
 status
 stderr
 stdout
+store
 structure
 style
 sub
@@ -692,6 +703,7 @@ workflows
 works
 would
 wrapper
+writable
 write
 writer
 writes

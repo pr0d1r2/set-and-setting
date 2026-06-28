@@ -215,6 +215,12 @@ and dogfoods both.
   voted, not reliably probe-observable (mechanism is real; path-scoped
   rules load live in this repo's dogfood). Design defensively --
   write-critical rules -> broad/always-on globs.
+- V33: Materialized trees are writable. `sync-set`/`app-mk-set` copy from
+  `/nix/store` (read-only -- dirs 555, files 444); `cp -r` carries those
+  perms. The clean-replace `rm` (V26) needs the write bit on parent dirs,
+  so each emitter `chmod -R u+w` the copied tree (and any prior tree
+  before removing it). Re-sync is idempotent, never `Permission denied`
+  (B4).
 
 ## §T Tasks
 
@@ -280,4 +286,5 @@ and dogfoods both.
 |----|------|-------|-----|
 | B1 | 2026-06-16 | upstream nix-lefthook tightened checks; repo never revalidated, so `main` fails `lefthook run pre-commit --all-files` on pre-existing files (prose markdownlint, `*.nix` em-dashes, editorconfig padding, drift-check embedded shell) | fixed: narrow-other glob (#10), drift+embedded-shell extracted (#13), markdownlint/editorconfig/narrow cleared + CI runs lefthook (T32) |
 | B2 | 2026-06-18 | emitted `SKILL.md` under `.claude/skills/` is not always-on -- skills are model-invoked (description-indexed, body on-demand), loading only when a prompt matches their description; only `.claude/rules/` loads unconditionally (path-less at launch; path-scoped on matching-file read). The shipped always-on SKILL.md model (T25/T35-T39) thus never autoloaded -- description-gated, NOT broken (T50 probes confirm, V32). | redesign rules-only: drop SKILL.md, mirror source as `.claude/rules/set/` with `paths` everywhere (T40-T44). Verified vs Claude Code memory/skills docs; since superseded by B3 multi-channel. |
+| B4 | 2026-06-28 | `sync-set`/`app-mk-set` `cp -r` the emitted tree from `/nix/store` (read-only: dirs 555, files 444) and kept those perms. The next sync's clean-replace `rm -rf` (V26) then failed with `Permission denied` -- `rm` deletes by writing the parent dir, which lacked the write bit. Surfaced as a wall of `rm: cannot remove ...` on devShell/direnv entry; the dogfood tree stuck read-only. | fixed: each emitter `chmod -R u+w` the copied tree after `cp`, and the prior tree before `rm` (V33); bats cover read-only re-sync for both scripts |
 | B3 | 2026-06-26 | rules-only (B2 fix) over-corrected: `.claude/rules` is Claude-proprietary (reduces agnosticism, C2/V23), and `@`-import is Claude-only (opencode/Codex/AGENTS.md spec have no `@` -- opencode uses `opencode.json` instructions globs or Read-on-demand). So a single mechanism can't be both reliable-on-Claude and portable. | best-of-both multi-channel (V17-V21): per-agent profile + sidecar meta + `SKILL.md` (portable) + Claude rules (reliable) + `@`->`AGENTS.md` compiler (portable always-on) + dedup; gated by the mechanism test suite (T50). Verified vs opencode/Codex docs. |

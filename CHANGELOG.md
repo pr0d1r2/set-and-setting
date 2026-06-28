@@ -79,6 +79,12 @@
 
 ### Fixed
 
+- B4: `sync-set` and `app-mk-set` no longer fail with `Permission denied`
+  on re-sync. Both `cp -r` the emitted tree from `/nix/store` (read-only),
+  which carried 555/444 perms to the target; the next clean-replace `rm`
+  then could not delete it. Each emitter now `chmod -R u+w` the copied
+  tree (and any prior tree before removing it). Re-sync is idempotent
+  (V33). Surfaced as a wall of `rm: cannot remove` on devShell entry.
 - CI: increase lefthook hook timeouts for parallel `--all-files` runs.
   Workflow-level env block in `ci.yml` sets bash-timeout hooks to 120s
   (300s for `bats-unit`). `lefthook-local.yml` overrides narrow-language

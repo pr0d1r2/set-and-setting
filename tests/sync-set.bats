@@ -16,6 +16,7 @@ setup() {
 }
 
 teardown() {
+    chmod -R u+w "$SRC" "$TARGET" 2>/dev/null || true
     rm -rf "$SRC" "$TARGET"
 }
 
@@ -55,6 +56,28 @@ teardown() {
     [ "$status" -eq 0 ]
     [ ! -e "$TARGET/.claude/rules/set/stale" ]
     [ -f "$TARGET/.claude/rules/set/demo/sub.md" ]
+}
+
+@test "re-syncs over a read-only tree from a prior store copy (B4)" {
+    # Simulate a prior sync that cp'd from /nix/store: tree is read-only,
+    # so the clean-replace rm would fail without a chmod u+w first.
+    mkdir -p "$TARGET/.claude/rules/set/stale"
+    echo "stale" >"$TARGET/.claude/rules/set/stale/old.md"
+    chmod -R a-w "$TARGET/.claude/rules/set"
+    run bash "$SRC/bin/sync-set" "$TARGET"
+    [ "$status" -eq 0 ]
+    [ ! -e "$TARGET/.claude/rules/set/stale" ]
+    [ -f "$TARGET/.claude/rules/set/demo/sub.md" ]
+}
+
+@test "emitted tree is writable even when source is read-only (B4)" {
+    # Mimic the /nix/store source: read-only. cp -r would carry those
+    # perms to the target without the post-copy chmod u+w.
+    chmod -R a-w "$SRC/.claude/rules/set"
+    run bash "$SRC/bin/sync-set" "$TARGET"
+    [ "$status" -eq 0 ]
+    [ -w "$TARGET/.claude/rules/set" ]
+    [ -w "$TARGET/.claude/rules/set/demo/sub.md" ]
 }
 
 @test "syncs opencode tree when source has .opencode (V23)" {

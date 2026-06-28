@@ -42,6 +42,7 @@ setup() {
 }
 
 teardown() {
+    chmod -R u+w "$SKILLS_DIR" "$CONCEPTS_DIR" "$TARGET" 2>/dev/null || true
     rm -rf "$SKILLS_DIR" "$CONCEPTS_DIR" "$TARGET"
 }
 
@@ -147,6 +148,18 @@ teardown() {
     [ "$status" -eq 0 ]
     [ ! -e "$TARGET/.claude/rules/set/stale" ]
     [ -f "$TARGET/.claude/rules/set/nix/flake.md" ]
+}
+
+@test "re-run over a read-only tree from a prior store copy (B4)" {
+    # A real install cp's from /nix/store (read-only); the prior tree's
+    # rm would fail without a chmod u+w guard before the clean-replace.
+    run bash -c "cd '$TARGET' && bash '$SCRIPT' nix"
+    [ "$status" -eq 0 ]
+    chmod -R a-w "$TARGET/.claude/rules/set"
+    run bash -c "cd '$TARGET' && bash '$SCRIPT' nix"
+    [ "$status" -eq 0 ]
+    [ -f "$TARGET/.claude/rules/set/nix/flake.md" ]
+    [ -w "$TARGET/.claude/rules/set/nix/flake.md" ]
 }
 
 @test "writes manifest after install" {

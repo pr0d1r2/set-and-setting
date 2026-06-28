@@ -255,10 +255,16 @@ export CONCEPTS="1"
 
 bash "$MK_SET_SCRIPT"
 
+# Prior run copied from /nix/store (read-only); restore the write bit so
+# rm can clean-replace the tree (V26).
+[ -e "./$agent_dir" ] && chmod -R u+w "./$agent_dir"
 rm -rf "./$agent_dir"
 
 set_parent="${agent_dir%%/*}"
 cp -r "$out/$set_parent" "./" 2>/dev/null || true
+# cp -r preserves the store's read-only perms; make writable so the next
+# run's rm can clean-replace it.
+chmod -R u+w "./$agent_dir"
 
 cats_json=""
 for c in "${final_cats[@]}"; do
