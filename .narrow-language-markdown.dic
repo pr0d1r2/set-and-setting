@@ -324,6 +324,7 @@ changelogs
 changes
 channel
 channels
+char
 character
 characteristics
 cheap
@@ -374,6 +375,7 @@ cognition
 coherent
 cohesive
 cold
+collapses
 collections
 collide
 colliding
@@ -899,6 +901,7 @@ feat
 feature
 features
 feeds
+fell
 fence
 fenced
 fences
@@ -910,11 +913,13 @@ few
 fewer
 fidelity
 field
+fields
 file
 filename
 filenames
 files
 filesystem
+fill
 filled
 filler
 filling
@@ -930,6 +935,7 @@ findutils
 finish
 finite
 fire
+fires
 firewall
 first
 fit
@@ -1146,6 +1152,7 @@ identify
 identifying
 identity
 iff
+ifs
 ignore
 ignored
 ignores
@@ -1312,6 +1319,7 @@ language
 languages
 last
 late
+latent
 later
 latest
 launch
@@ -1492,6 +1500,7 @@ mirrors
 misc
 mismatch
 mismatches
+misparsed
 miss
 missed
 missing
@@ -1963,6 +1972,7 @@ regardless
 regex
 register
 registered
+regression
 regular
 reinforces
 rejected
@@ -2144,6 +2154,7 @@ separately
 sequence
 sequences
 serial
+serialization
 serve
 server
 serves
@@ -2370,6 +2381,7 @@ system
 systemctl
 systemd
 systems
+tab
 table
 tables
 tag
@@ -2434,6 +2446,7 @@ tier
 tiers
 ties
 tight
+tighten
 tightened
 time
 timeout

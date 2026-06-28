@@ -451,6 +451,14 @@
               # deep path still resolves via category fallback (core + broad)
               assert (r "generic/skill/interchange.md").always;
               assert (r "generic/skill/interchange.md").paths == [ "**/*" ];
+              # facet relevance signals (T41/V35): content + narrow paths
+              assert builtins.elem "qemu" (r "test/qemu.md").content;
+              assert builtins.elem "tests/integration/**" (r "test/qemu.md").paths;
+              assert !(builtins.elem "**/*.bats" (r "test/qemu.md").paths);
+              assert builtins.elem "buildPythonPackage" (r "nix/python-package.md").content;
+              # unsigned facet -> no content, paths fall back to category
+              assert (r "test/coverage.md").content == [ ];
+              assert (r "test/coverage.md").paths == [ "**/*.bats" ];
               true;
           in
           pkgs.runCommand "meta-resolve-check" { inherit ok; } ''

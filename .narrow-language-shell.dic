@@ -26,6 +26,7 @@ apfs
 app
 appear
 appears
+applies
 apps
 are
 arg
@@ -107,6 +108,8 @@ claude
 clean
 close
 code
+collapse
+collapses
 collides
 collision
 com
@@ -163,6 +166,8 @@ default
 defaults
 delete
 deliberately
+delim
+delimiter
 demo
 depth
 derivation
@@ -243,6 +248,7 @@ existing
 exists
 exit
 exits
+exp
 expanded
 expands
 expected
@@ -436,6 +442,7 @@ mimic
 minimum
 mirrored
 mirrors
+misassigns
 missing
 mkdir
 mkscaffold
@@ -572,6 +579,7 @@ refresh
 refreshes
 refreshing
 refs
+regression
 rel
 relative
 reliably
@@ -696,7 +704,6 @@ synced
 tab
 tail
 target
-tdomain
 teardown
 test
 tests

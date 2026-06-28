@@ -14,7 +14,7 @@
 #   CATEGORIES    space-separated categories that were requested
 #   GLOBS_MAP     semicolon-separated cat=g1,g2;cat2=g3
 #   CORE          space-separated core (always-on) category names
-#   OVERRIDES     per-file overrides: "path<TAB>channel<TAB>g1,g2" lines
+#   OVERRIDES     per-file overrides: "path|channel|g1,g2" lines
 #   EXCLUDE       space-separated filenames that were excluded
 set -euo pipefail
 
@@ -53,7 +53,7 @@ for cat in "${cats[@]:-}"; do
         rel="$cat.md"
         channel="$cat_channel"
         globs="$raw_globs"
-        while IFS=$'\t' read -r opath ochannel oglobs; do
+        while IFS='|' read -r opath ochannel oglobs; do
             [ "$opath" = "$rel" ] || continue
             [ -n "$ochannel" ] && channel="$ochannel"
             [ -n "$oglobs" ] && globs="$oglobs"
@@ -90,7 +90,7 @@ for cat in "${cats[@]:-}"; do
             rel="$cat/$relname"
             channel="$cat_channel"
             globs="$raw_globs"
-            while IFS=$'\t' read -r opath ochannel oglobs; do
+            while IFS='|' read -r opath ochannel oglobs; do
                 [ "$opath" = "$rel" ] || continue
                 [ -n "$ochannel" ] && channel="$ochannel"
                 [ -n "$oglobs" ] && globs="$oglobs"

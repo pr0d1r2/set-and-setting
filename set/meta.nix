@@ -62,6 +62,67 @@ let
         "proxy"
       ];
     };
+
+    # High-value facets (V34/V35): narrow paths (also tighten the rule
+    # globs) + content signals so smart materialization (T53) installs
+    # them only when the feature is actually used. The qemu subtree shares
+    # one signal; mdns refines it.
+    "test/qemu.md" = {
+      paths = [
+        "tests/integration/**"
+        "**/*.exp"
+      ];
+      content = [
+        "qemu"
+        "enable-kvm"
+      ];
+    };
+    "test/qemu" = {
+      paths = [
+        "tests/integration/**"
+        "**/*.exp"
+      ];
+      content = [
+        "qemu"
+        "enable-kvm"
+      ];
+    };
+    "test/qemu/mdns.md" = {
+      paths = [ "**/*.nix" ];
+      content = [
+        "avahi"
+        "mDNS"
+      ];
+    };
+    "test/iso.md" = {
+      paths = [ "**/*.nix" ];
+      content = [
+        "ISO9660"
+        "El Torito"
+        "isoImage"
+      ];
+    };
+    "security/hardening.md" = {
+      paths = [ "**/*.nix" ];
+      content = [
+        "ProtectSystem"
+        "CapabilityBoundingSet"
+      ];
+    };
+    "opensource/cachix.md" = {
+      paths = [
+        "flake.nix"
+        "**/*.nix"
+      ];
+      content = [
+        "cachix"
+        "extra-substituters"
+      ];
+    };
+    "nix/python-package.md" = {
+      paths = [ "**/*.nix" ];
+      content = [ "buildPythonPackage" ];
+    };
   };
 
   resolve =
@@ -76,6 +137,9 @@ let
         paths = cats.globs.${category} or [ "**/*" ];
         keywords = [ category ];
         always = isCore;
+        # content = materialize-time grep relevance signal (V35); empty =
+        # rely on paths/category evidence only.
+        content = [ ];
       };
 
       # Cumulative path prefixes, least specific first:
@@ -89,18 +153,19 @@ let
     lib.foldl' (acc: p: acc // overrides.${p}) fallback matched;
 
   # Serialized channel-affecting overrides for the bash emitter, one per
-  # line: "path<TAB>channel<TAB>g1,g2". Only entries that actually set
-  # `channel` or `paths` (keyword-only overrides do not affect the rule
-  # channel). Keeps meta.nix the single source of channel data (V30) while
-  # the emitter stays plain bash that works for both the nix and the
-  # run-time app paths (C9/V28). Empty channel/globs fields fall back to
-  # the file's category in the emitter.
+  # line: "path|channel|g1,g2". The delimiter is "|" (NOT a tab): tab is an
+  # IFS-whitespace char, so `IFS=$'\t' read` collapses an empty channel
+  # field and misassigns the globs. "|" never appears in paths/globs. Only
+  # entries that set `channel` or `paths` (keyword-only overrides do not
+  # affect the rule channel). Keeps meta.nix the single source of channel
+  # data (V30) while the emitter stays plain bash for both the nix and
+  # run-time app paths (C9/V28). Empty fields fall back to the category.
   channelOverrides = lib.concatStringsSep "\n" (
     lib.filter (s: s != "") (
       lib.mapAttrsToList (
         p: o:
         lib.optionalString (o ? channel || o ? paths)
-          "${p}\t${o.channel or ""}\t${lib.concatStringsSep "," (o.paths or [ ])}"
+          "${p}|${o.channel or ""}|${lib.concatStringsSep "," (o.paths or [ ])}"
       ) overrides
     )
   );

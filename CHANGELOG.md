@@ -187,6 +187,18 @@
 
 ### Set (skills)
 
+- Fill the meta relevance map (T41, V34/V35): high-value facets get
+  narrow `paths` + `content` grep signals -- qemu (`tests/integration/**`,
+  `**/*.exp` / `qemu`, `enable-kvm`), iso, qemu/mdns, nixos hardening,
+  cachix, python-package. `resolve` now surfaces `content`. The narrow
+  `paths` also tighten the emitted rule globs (qemu no longer fires on
+  every `.bats`); `content` is materialize-only, consumed by T53.
+- Fix a tab-IFS bug in the channel-override emitter: a paths-only
+  override (empty channel field) was misparsed because tab is an
+  IFS-whitespace char that collapses empty fields, so the narrow globs
+  silently fell back to the category. Switch the serialization delimiter
+  to `|`. Latent since T47; surfaced by T41's paths-only overrides.
+  Regression test added.
 - Dedup the SKILL.md channel on Claude (T49, V20): the Claude profile
   emits `disable-model-invocation: true` in each `SKILL.md` so the rule
   channel is the sole loader and the same content never double-loads.
