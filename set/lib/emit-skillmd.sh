@@ -1,0 +1,67 @@
+#!/usr/bin/env bash
+# Emit one category's portable SKILL.md (channel c, V20). An
+# agentskills.io skill folder set-<cat>/SKILL.md with frontmatter
+# (name + description from meta keywords + the agent's conditional-load
+# field/globs) and a body that inlines the category's source files
+# verbatim, each under a heading. Inlining (rather than separate
+# supporting files) keeps the content self-contained for agents without a
+# rules channel AND avoids a case-insensitive-filesystem collision
+# between a supporting "skill.md" and the entry "SKILL.md" (macOS APFS).
+# No disable-model-invocation here -- Claude load dedup is T49. No
+# functions (sh/modularity).
+# Env in:
+#   CAT         category name
+#   SKILLS_DIR  root of the agnostic set/skills tree
+#   SKILL_DEST  base skills dir (e.g. $out/.claude/skills)
+#   KEYWORDS    comma-separated keywords for the description
+#   GLOBS       space-separated conditional-load globs
+#   COND_FIELD  frontmatter field name (e.g. paths)
+#   EXCLUDE     space-separated filenames to omit
+set -euo pipefail
+
+dir="$SKILL_DEST/set-$CAT"
+mkdir -p "$dir"
+
+catdir="$SKILLS_DIR/$CAT"
+core="$SKILLS_DIR/$CAT.md"
+
+read -ra excludes <<<"${EXCLUDE:-}"
+findargs=()
+for e in "${excludes[@]:-}"; do
+    [ -n "$e" ] || continue
+    findargs+=(! -name "$e")
+    [ "$e" = "$CAT.md" ] && core=""
+done
+
+desc="${KEYWORDS//,/, }"
+[ -n "$desc" ] || desc="$CAT"
+
+read -ra garr <<<"${GLOBS:-}"
+
+dest="$dir/SKILL.md"
+{
+    printf '%s\n' "---"
+    printf 'name: set-%s\n' "$CAT"
+    printf 'description: "%s: %s"\n' "$CAT" "$desc"
+    printf '%s:\n' "$COND_FIELD"
+    for g in "${garr[@]}"; do printf '  - "%s"\n' "$g"; done
+    printf '%s\n\n' "---"
+    printf '# %s\n' "$CAT"
+} >"$dest"
+
+if [ -n "$core" ] && [ -f "$core" ]; then
+    {
+        printf '\n## %s.md\n\n' "$CAT"
+        cat "$core"
+    } >>"$dest"
+fi
+
+if [ -d "$catdir" ]; then
+    while read -r f; do
+        sub="${f#"$catdir"/}"
+        {
+            printf '\n## %s\n\n' "$sub"
+            cat "$f"
+        } >>"$dest"
+    done < <(find "$catdir" -name '*.md' ${findargs[@]+"${findargs[@]}"} | sort)
+fi

@@ -3,17 +3,22 @@ across
 actual
 add
 additional
+afile
 after
+against
 agent
 agents
+agentskills
 agnostic
 all
+alpha
 already
 also
 always
 aname
 and
 any
+apfs
 app
 appear
 appears
@@ -36,6 +41,7 @@ auth
 authoring
 automatic
 available
+avoids
 awk
 back
 backprop
@@ -47,9 +53,12 @@ because
 before
 behaviour
 below
+beta
+between
 bin
 binary
 blind
+bodies
 body
 bogus
 bootstrap
@@ -84,9 +93,12 @@ chmod
 claude
 clean
 code
+collides
+collision
 com
 combined
 comes
+comma
 command
 commands
 commit
@@ -102,6 +114,7 @@ config
 configs
 confirm
 confirmed
+contained
 containing
 content
 context
@@ -113,6 +126,7 @@ copies
 core
 corefile
 correct
+coverage
 covers
 create
 creates
@@ -130,9 +144,11 @@ deliberately
 demo
 derivation
 derive
+desc
 description
 design
 dest
+destdir
 destination
 detected
 detects
@@ -153,6 +169,7 @@ dirs
 disable
 discovers
 dispatch
+distinct
 docs
 document
 does
@@ -176,6 +193,7 @@ emitted
 emitter
 empirically
 empty
+enabled
 engine
 entries
 entry
@@ -198,6 +216,7 @@ existing
 exists
 exit
 exits
+expanded
 expands
 expected
 explicit
@@ -213,6 +232,7 @@ field
 file
 filenames
 files
+filesystem
 filtering
 final
 find
@@ -225,6 +245,7 @@ flag
 flake
 flip
 flips
+folder
 for
 format
 found
@@ -236,6 +257,7 @@ from
 frontmatter
 full
 functions
+garr
 gated
 generated
 generic
@@ -255,6 +277,7 @@ harness
 has
 have
 head
+heading
 headless
 help
 here
@@ -276,7 +299,10 @@ init
 injected
 injection
 inlined
+inlines
+inlining
 input
+insensitive
 inside
 install
 installed
@@ -298,8 +324,11 @@ isolates
 its
 json
 keep
+keeps
 key
+keywords
 known
+kwentries
 label
 lacks
 language
@@ -311,6 +340,7 @@ lefthook
 less
 lib
 limits
+line
 lines
 list
 listed
@@ -328,6 +358,7 @@ look
 looks
 loops
 loose
+mac
 main
 majority
 make
@@ -435,6 +466,7 @@ per
 permissions
 pipefail
 plants
+portable
 positional
 pre
 precommit
@@ -459,6 +491,7 @@ proves
 provided
 push
 query
+rather
 raw
 read
 reading
@@ -547,8 +580,10 @@ sibling
 single
 size
 skill
+skillmd
 skills
 skip
+skipped
 skipping
 skips
 smart
@@ -558,6 +593,7 @@ source
 space
 spec
 specific
+srcdir
 staged
 stale
 starter
@@ -570,17 +606,21 @@ style
 sub
 subdir
 succeeds
+supporting
 supports
 surface
+survives
 symlink
 symlinked
 synced
 tab
 tail
 target
+tdomain
 teardown
 test
 tests
+than
 that
 the
 then
@@ -611,6 +651,7 @@ unit
 unknown
 unless
 unresolved
+unset
 update
 updates
 upstream

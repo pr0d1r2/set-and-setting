@@ -162,6 +162,7 @@ expected
 experimental
 export
 expression
+exskill
 extra
 fail
 fall
@@ -182,6 +183,7 @@ flake
 flakes
 flip
 flipped
+folder
 foldl
 follows
 for
@@ -234,6 +236,7 @@ inherited
 inherits
 init
 inline
+inlined
 inputs
 install
 installer
@@ -258,6 +261,7 @@ known
 lang
 language
 layout
+leaked
 least
 lefthook
 legacy
@@ -374,6 +378,7 @@ profiles
 program
 project
 proof
+propagates
 prose
 proves
 proxy
@@ -394,6 +399,7 @@ replaces
 repo
 requested
 resolve
+resolved
 resolves
 returns
 rev
@@ -439,6 +445,7 @@ single
 sits
 size
 skill
+skillmd
 skills
 skip
 source
@@ -485,6 +492,7 @@ though
 three
 time
 token
+too
 top
 topic
 touch

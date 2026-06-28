@@ -32,6 +32,12 @@ let
   globsMap = lib.concatStringsSep ";" (
     lib.mapAttrsToList (c: globs: "${c}=${lib.concatStringsSep "," globs}") categoryGlobs
   );
+
+  # Per-category keywords for the portable SKILL.md description (V20/V30),
+  # resolved from the meta map.
+  keywordsMap = lib.concatStringsSep ";" (
+    map (c: "${c}=${lib.concatStringsSep "," (meta.resolve c).keywords}") categories
+  );
 in
 pkgs.runCommand "agent-set"
   {
@@ -45,8 +51,11 @@ pkgs.runCommand "agent-set"
     EXCLUDE = lib.concatStringsSep " " exclude;
     CORE = lib.concatStringsSep " " cats.core;
     OVERRIDES = meta.channelOverrides;
+    SKILL_DIR = ag.skill.dir;
+    KEYWORDS_MAP = keywordsMap;
     EMIT = ./emit-skill.sh;
     EMIT_RULE = ./emit-rule.sh;
+    EMIT_SKILLMD = ./emit-skillmd.sh;
     SYNC_SRC = ./sync-set.sh;
   }
   ''

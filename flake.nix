@@ -560,6 +560,25 @@
               echo "FAIL: set.md must not list domain rules"; exit 1
             fi
 
+            # CHANNEL c (portable SKILL.md, V20): per-category skill folder
+            skill="${full}/.claude/skills/set-nix/SKILL.md"
+            [ -f "$skill" ] || { echo "FAIL: set-nix SKILL.md missing"; exit 1; }
+            grep -q '^name: set-nix$' "$skill" \
+              || { echo "FAIL: SKILL.md missing name"; exit 1; }
+            grep -q '^description:' "$skill" \
+              || { echo "FAIL: SKILL.md missing description"; exit 1; }
+            grep -qF '"**/*.nix"' "$skill" \
+              || { echo "FAIL: SKILL.md missing nix glob"; exit 1; }
+            grep -q 'The project starts with nix flake' "$skill" \
+              || { echo "FAIL: SKILL.md missing inlined body"; exit 1; }
+
+            # exclude propagates to the SKILL.md channel too (V8)
+            exskill="${excluded}/.claude/skills/set-generic/SKILL.md"
+            [ -f "$exskill" ] || { echo "FAIL: excluded set-generic SKILL.md missing"; exit 1; }
+            if grep -qi 'rtk' "$exskill"; then
+              echo "FAIL: excluded rtk leaked into SKILL.md"; exit 1
+            fi
+
             echo PASS
             touch $out
           '';

@@ -30,9 +30,10 @@ mkdir -p "$(dirname "$DEST")"
 if [ "$channel" = "core" ]; then
     cat "$SRC" >"$DEST"
 else
+    read -ra garr <<<"$globs"
     {
         printf '%s\n%s:\n' "---" "$COND_FIELD"
-        for g in $globs; do printf '  - "%s"\n' "$g"; done
+        for g in "${garr[@]}"; do printf '  - "%s"\n' "$g"; done
         printf '%s\n\n' "---"
     } >"$DEST"
     cat "$SRC" >>"$DEST"

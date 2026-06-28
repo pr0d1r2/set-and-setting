@@ -171,6 +171,14 @@
 
 ### Set (skills)
 
+- Emit a portable per-category `SKILL.md` channel (T47, V20): each
+  category gets an agentskills.io folder `set-<cat>/SKILL.md` with
+  frontmatter (name + description from meta keywords + conditional-load
+  globs) and the category's source files inlined verbatim. Inlining
+  (not separate supporting files) keeps it self-contained for agents
+  without a rules channel and avoids a case-insensitive-filesystem
+  collision between a `skill.md` source and the `SKILL.md` entry (macOS
+  APFS). No `disable-model-invocation` yet (Claude dedup is T49).
 - Emit an always-on `@`-manifest `set.md` (T47, V18): a sibling of the
   set dir listing `@`-refs to every always-on (path-less) file --
   concepts first, then core rules; domain rules omitted. This is the
