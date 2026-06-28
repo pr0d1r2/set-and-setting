@@ -458,6 +458,37 @@
             touch $out
           '';
 
+        # agent-profiles -- V21/I.agentProfile: each profile carries all
+        # channel mechanisms (always-on file+import, conditional, skill),
+        # and the back-compat dir/condField seam derives from conditional.
+        agent-profiles =
+          let
+            agents = import ./set/lib/agents.nix;
+            c = agents.claude;
+            o = agents.opencode;
+            ok =
+              # Claude profile mechanisms
+              assert c.alwaysOn.file == "CLAUDE.md";
+              assert c.alwaysOn.import == "@";
+              assert c.conditional.field == "paths";
+              assert c.skill.dir == ".claude/skills";
+              assert c.skill.file == "SKILL.md";
+              # opencode differs (agnosticism seam, V23)
+              assert o.alwaysOn.file == "AGENTS.md";
+              assert o.alwaysOn.import == "inline";
+              assert o.conditional.field == "globs";
+              # back-compat seam derives from conditional (single source)
+              assert c.dir == c.conditional.dir;
+              assert c.condField == c.conditional.field;
+              assert o.dir == o.conditional.dir;
+              assert o.condField == o.conditional.field;
+              true;
+          in
+          pkgs.runCommand "agent-profiles-check" { inherit ok; } ''
+            echo PASS
+            touch $out
+          '';
+
         compose-set =
           let
             mkSet = import ./set/lib/mk-set.nix { inherit (nixpkgs) lib; };
