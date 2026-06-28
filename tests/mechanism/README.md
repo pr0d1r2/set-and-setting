@@ -50,24 +50,28 @@ especially prone to non-compliance on an unrelated prompt. Treat a
 single negative as a hint, not proof; corroborate across runs and marker
 styles.
 
-### First-run findings (2026-06-26, claude 2.1.193)
+### Findings (2026-06-26, claude 2.1.193, query-style + VOTES=3)
 
-Reliable (consistent, strong signal):
+Method evolved across runs: directive markers ("always begin with X")
+were compliance-noisy; switched to **query** markers (a secret
+passphrase the model reports from loaded context) + **majority voting**
+over N runs, since single runs are nondeterministic.
 
-- default `SKILL.md` is **not always-on** -- absent on a neutral prompt;
-  it model-invokes only when the prompt matches its description.
-- path-less rule **loads always**; path-scoped rule **loads on read**;
-  **symlinked** rule loads; **`@`-import expands inside a rule** (so
-  DRY `@`-referencing rules are viable).
+Confirmed (stable across voted runs):
+
+- default `SKILL.md` is **NOT always-on** -- model-invokes only when the
+  prompt matches its description.
+- path-less rule **loads always**.
+- **`@`-import recurses** through `CLAUDE.md` (V29 compiler fidelity).
+- **`@`-import expands inside a rule** -> DRY `@`-referencing rules viable.
+- **symlinked** rule loads.
 - `disable-model-invocation: true` **blocks** auto-load (dedup works).
 
-Inconclusive (compliance noise -- need a more robust, query-style probe):
+Inconclusive (skipped -- not reliably observable by probing):
 
-- path-scoped rule on **write/create** of a matching file (G2): leans
-  read-only-trigger, unconfirmed.
-- `@`-recursion through `CLAUDE.md`: loaded under a conditional marker,
-  dropped under an unconditional one.
-
-Follow-up: replace directive markers with a **query** style ("report the
-secret token in your context, or NONE") to separate loading from
-compliance, and re-run the two inconclusive probes.
+- path-scoped rule **read-vs-write trigger**: verdict flips across voted
+  runs (read NOTLOADED / write LOADED one run, reverse another). The
+  mechanism itself is real -- path-scoped rules load live in this repo's
+  dogfood (editing `.md` surfaces the markdown set-rules) -- but the
+  precise trigger can't be pinned behaviourally. So **G2 stays open**;
+  design defensively (write-critical rules -> broad/always-on globs).

@@ -145,6 +145,12 @@
 
 ### Tests
 
+- Harden the mechanism probes: query-style markers (report a loaded
+  passphrase, not follow a directive) + majority voting (`VOTES`) over
+  nondeterministic runs. Confirms `@`-recursion, `@`-in-rules, symlink,
+  and path-less rule all load, and `disable-model-invocation` blocks;
+  skips the path-scoped read-vs-write trigger probes (verdict flips even
+  voted -- G2 stays open, design defensively).
 - Add T50 mechanism probe suite (`tests/mechanism/`): headless `claude -p`
   probes that empirically confirm Claude loading semantics the
   multi-channel design rests on (skill autoload, path-scoped rule
@@ -253,6 +259,11 @@
 
 ### Spec
 
+- Backprop T50 probe findings: narrow B2 (`SKILL.md` is description-gated,
+  not broken -- model-invokes on a matching prompt, just not always-on)
+  and add V32 recording the confirmed semantics (path-less rules always-on,
+  `@`-recursion, `@`-in-rules, symlink load, `disable-model-invocation`
+  blocks) plus the open G2 write-trigger.
 - Multi-channel per-agent emit (B3): rules-only over-corrected
   (`.claude/rules` is Claude-only; `@`-import is Claude-only -- opencode
   uses `opencode.json` globs). Best-of-both: per-agent **profile** +
