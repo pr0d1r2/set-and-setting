@@ -308,6 +308,14 @@
 
 ### Spec
 
+- Spec smart auto-materialization (T53 + V34-V38): mkSet `--auto`
+  installs only the *applicable* skill set, derived from repo evidence
+  (`paths` AND `content` grep over `git ls-files`) at facet granularity.
+  Facets are structural dependencies (facet -> topic core, no declared
+  DAG); content is materialize-time-only (`paths` do double duty);
+  always-on stays universal-only; selection is audited in the manifest.
+  Extend I.meta (`content`), add I.applicability, expand T41 (the meta
+  relevance map) as its prerequisite.
 - Backprop T50 probe findings: narrow B2 (`SKILL.md` is description-gated,
   not broken -- model-invokes on a matching prompt, just not always-on)
   and add V32 recording the confirmed semantics (path-less rules always-on,
