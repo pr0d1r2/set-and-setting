@@ -171,6 +171,15 @@
 
 ### Set (skills)
 
+- Multi-channel emit driven by the meta map (T47, V17/V30): mkSet now
+  emits two rule channels per the channel resolved for each file -- core
+  categories (generic, git) emit path-less always-on rules (no
+  frontmatter, load every turn per V18/V32); domain categories emit
+  conditional rules with the agent's conditional-load field + globs
+  (V19). A per-file override (meta.channelOverrides, e.g. generic/rtk.md)
+  flips an individual file's channel. Per-file rule writing extracted to
+  `emit-rule.sh`. Works for both the nix package path and the run-time
+  app path (C9). Supersedes the rules-only emit (T40-T44).
 - Refactor mkSet emission to facets-as-linked-files (T35): domain
   categories now emit `<cat>/SKILL.md` with frontmatter + core body +
   markdown links to raw-cloned facet files instead of concatenating all

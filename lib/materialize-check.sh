@@ -1,8 +1,11 @@
 #!/usr/bin/env bash
-# Verify that mkSet materialization produces the expected layout for the
-# requested categories. Each category's files are path-scoped rules under
-# DIR/ (V17/V18/V19/V25): every .md has the conditional-load field.
-# Assertions self-derive from categories.nix (via GLOBS_MAP env).
+# Verify that mkSet materialization produces the expected multi-channel
+# layout for the requested categories (V17/V18/V19/V25/V30). The channel
+# is decided by the meta map: a core category emits path-less rules (no
+# conditional field -> always-on, V18/V32); a domain category emits rules
+# carrying the conditional-load field + its globs (V19). A per-file
+# override (meta.channelOverrides) can flip a single file. Assertions
+# self-derive from categories.nix (GLOBS_MAP + CORE) and meta (OVERRIDES).
 # Extracted per nix/modularity + sh/modularity.
 # Env in:
 #   MATERIALIZED  path to the mkSet output tree
@@ -10,6 +13,8 @@
 #   COND_FIELD    frontmatter field name (e.g. paths)
 #   CATEGORIES    space-separated categories that were requested
 #   GLOBS_MAP     semicolon-separated cat=g1,g2;cat2=g3
+#   CORE          space-separated core (always-on) category names
+#   OVERRIDES     per-file overrides: "path<TAB>channel<TAB>g1,g2" lines
 #   EXCLUDE       space-separated filenames that were excluded
 set -euo pipefail
 
@@ -18,6 +23,10 @@ IFS=';' read -ra mapentries <<<"${GLOBS_MAP:-}"
 read -ra excludes <<<"${EXCLUDE:-}"
 
 fail=0
+
+# assert_rule <relpath> <file> <category-channel> <raw-globs-csv>
+# inlined twice below (no functions, sh/modularity) -- once for the core
+# file, once per tree file.
 
 for cat in "${cats[@]:-}"; do
     [ -n "$cat" ] || continue
@@ -30,24 +39,46 @@ for cat in "${cats[@]:-}"; do
         fi
     done
 
+    cat_channel="domain"
+    for c in ${CORE:-}; do
+        [ "$c" = "$cat" ] && cat_channel="core" && break
+    done
+
     catdir="$MATERIALIZED/$DIR/$cat"
     corefile="$MATERIALIZED/$DIR/$cat.md"
     has_files=0
 
     if [ -f "$corefile" ]; then
         has_files=1
-        grep -q "^${COND_FIELD}:" "$corefile" || {
-            echo "FAIL: $cat.md missing $COND_FIELD frontmatter"
-            fail=1
-        }
-        if [ -n "$raw_globs" ]; then
-            IFS=',' read -ra expected_globs <<<"$raw_globs"
-            for g in "${expected_globs[@]}"; do
-                grep -qF "\"$g\"" "$corefile" || {
-                    echo "FAIL: $cat.md missing glob \"$g\""
-                    fail=1
-                }
-            done
+        rel="$cat.md"
+        channel="$cat_channel"
+        globs="$raw_globs"
+        while IFS=$'\t' read -r opath ochannel oglobs; do
+            [ "$opath" = "$rel" ] || continue
+            [ -n "$ochannel" ] && channel="$ochannel"
+            [ -n "$oglobs" ] && globs="$oglobs"
+            break
+        done <<<"${OVERRIDES:-}"
+
+        if [ "$channel" = "core" ]; then
+            grep -q "^${COND_FIELD}:" "$corefile" && {
+                echo "FAIL: core $rel must be path-less"
+                fail=1
+            }
+        else
+            grep -q "^${COND_FIELD}:" "$corefile" || {
+                echo "FAIL: $rel missing $COND_FIELD frontmatter"
+                fail=1
+            }
+            if [ -n "$globs" ]; then
+                IFS=',' read -ra expected_globs <<<"$globs"
+                for g in "${expected_globs[@]}"; do
+                    grep -qF "\"$g\"" "$corefile" || {
+                        echo "FAIL: $rel missing glob \"$g\""
+                        fail=1
+                    }
+                done
+            fi
         fi
     fi
 
@@ -56,18 +87,35 @@ for cat in "${cats[@]:-}"; do
         while IFS= read -r rule; do
             [ -n "$rule" ] || continue
             relname="${rule#"$catdir"/}"
-            grep -q "^${COND_FIELD}:" "$rule" || {
-                echo "FAIL: $cat/$relname missing $COND_FIELD frontmatter"
-                fail=1
-            }
-            if [ -n "$raw_globs" ]; then
-                IFS=',' read -ra expected_globs <<<"$raw_globs"
-                for g in "${expected_globs[@]}"; do
-                    grep -qF "\"$g\"" "$rule" || {
-                        echo "FAIL: $cat/$relname missing glob \"$g\""
-                        fail=1
-                    }
-                done
+            rel="$cat/$relname"
+            channel="$cat_channel"
+            globs="$raw_globs"
+            while IFS=$'\t' read -r opath ochannel oglobs; do
+                [ "$opath" = "$rel" ] || continue
+                [ -n "$ochannel" ] && channel="$ochannel"
+                [ -n "$oglobs" ] && globs="$oglobs"
+                break
+            done <<<"${OVERRIDES:-}"
+
+            if [ "$channel" = "core" ]; then
+                grep -q "^${COND_FIELD}:" "$rule" && {
+                    echo "FAIL: core $rel must be path-less"
+                    fail=1
+                }
+            else
+                grep -q "^${COND_FIELD}:" "$rule" || {
+                    echo "FAIL: $rel missing $COND_FIELD frontmatter"
+                    fail=1
+                }
+                if [ -n "$globs" ]; then
+                    IFS=',' read -ra expected_globs <<<"$globs"
+                    for g in "${expected_globs[@]}"; do
+                        grep -qF "\"$g\"" "$rule" || {
+                            echo "FAIL: $rel missing glob \"$g\""
+                            fail=1
+                        }
+                    done
+                fi
             fi
         done < <(find "$catdir" -name '*.md' 2>/dev/null | sort)
     fi
@@ -85,11 +133,6 @@ for ex in "${excludes[@]:-}"; do
         fail=1
     fi
 done
-
-if find "$MATERIALIZED/$DIR" -name 'SKILL.md' 2>/dev/null | grep -q .; then
-    echo "FAIL: SKILL.md found in output (V17 violation)"
-    fail=1
-fi
 
 manifest="$MATERIALIZED/$DIR/.mkset.json"
 if [ -f "$manifest" ]; then

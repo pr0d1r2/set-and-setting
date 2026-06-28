@@ -1,15 +1,17 @@
 # Deterministic consumer-side test for skill materialization. Runs mkSet
-# for the requested categories, then asserts the output layout matches
-# expectations self-derived from categories.nix: every rule file has the
-# conditional-load field with correct globs (V17/V18/V20), source tree is
-# mirrored 1:1 (V19/V25), no SKILL.md anywhere (V17), excluded files are
-# absent. Assertion logic lives in ./materialize-check.sh
-# (nix/modularity: no embedded shell).
+# for the requested categories, then asserts the multi-channel output
+# layout matches expectations self-derived from categories.nix + meta:
+# core categories emit path-less always-on rules (V18/V32), domain
+# categories emit conditional rules with correct globs (V17/V19), per-file
+# overrides flip individual files (V30), source tree mirrored 1:1
+# (V19/V25), excluded files absent (V8). Assertion logic lives in
+# ./materialize-check.sh (nix/modularity: no embedded shell).
 { lib }:
 
 let
   cats = import ../set/lib/categories.nix;
   agents = import ../set/lib/agents.nix;
+  meta = import ../set/meta.nix { inherit lib; };
   mkSet = import ../set/lib/mk-set.nix { inherit lib; };
 in
 
@@ -45,6 +47,8 @@ pkgs.runCommand "materialize-check"
     COND_FIELD = ag.condField;
     CATEGORIES = lib.concatStringsSep " " uniqueCats;
     GLOBS_MAP = globsMap;
+    CORE = lib.concatStringsSep " " cats.core;
+    OVERRIDES = meta.channelOverrides;
     EXCLUDE = lib.concatStringsSep " " exclude;
   }
   ''

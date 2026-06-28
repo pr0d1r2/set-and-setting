@@ -11,6 +11,7 @@
 let
   cats = import ./categories.nix;
   agents = import ./agents.nix;
+  meta = import ../meta.nix { inherit lib; };
 in
 
 {
@@ -42,7 +43,10 @@ pkgs.runCommand "agent-set"
     CATEGORIES = lib.concatStringsSep " " categories;
     GLOBS_MAP = globsMap;
     EXCLUDE = lib.concatStringsSep " " exclude;
+    CORE = lib.concatStringsSep " " cats.core;
+    OVERRIDES = meta.channelOverrides;
     EMIT = ./emit-skill.sh;
+    EMIT_RULE = ./emit-rule.sh;
     SYNC_SRC = ./sync-set.sh;
   }
   ''

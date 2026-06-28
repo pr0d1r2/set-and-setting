@@ -87,7 +87,24 @@ let
       matched = lib.filter (p: overrides ? ${p}) prefixes;
     in
     lib.foldl' (acc: p: acc // overrides.${p}) fallback matched;
+
+  # Serialized channel-affecting overrides for the bash emitter, one per
+  # line: "path<TAB>channel<TAB>g1,g2". Only entries that actually set
+  # `channel` or `paths` (keyword-only overrides do not affect the rule
+  # channel). Keeps meta.nix the single source of channel data (V30) while
+  # the emitter stays plain bash that works for both the nix and the
+  # run-time app paths (C9/V28). Empty channel/globs fields fall back to
+  # the file's category in the emitter.
+  channelOverrides = lib.concatStringsSep "\n" (
+    lib.filter (s: s != "") (
+      lib.mapAttrsToList (
+        p: o:
+        lib.optionalString (o ? channel || o ? paths)
+          "${p}\t${o.channel or ""}\t${lib.concatStringsSep "," (o.paths or [ ])}"
+      ) overrides
+    )
+  );
 in
 {
-  inherit overrides resolve;
+  inherit overrides resolve channelOverrides;
 }

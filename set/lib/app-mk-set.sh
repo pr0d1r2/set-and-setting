@@ -242,11 +242,14 @@ trap 'rm -rf "$out"' EXIT
 export out
 export SKILLS_DIR CONCEPTS_DIR
 export EMIT="$EMIT_SCRIPT"
+export EMIT_RULE="$EMIT_RULE_SCRIPT"
 export SYNC_SRC="$SYNC_SCRIPT"
 export DIR="$agent_dir"
 export COND_FIELD="$agent_cond_field"
 export CATEGORIES="${final_cats[*]}"
 export GLOBS_MAP
+export CORE="$CORE_CATEGORIES"
+export OVERRIDES="${CHANNEL_OVERRIDES:-}"
 export EXCLUDE=""
 export CONCEPTS="1"
 

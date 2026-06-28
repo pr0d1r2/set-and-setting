@@ -11,17 +11,19 @@ setup() {
     CONCEPTS_DIR="$(mktemp -d)"
     SCRIPT="$BATS_TEST_DIRNAME/../set/lib/mk-set.sh"
     EMIT="$BATS_TEST_DIRNAME/../set/lib/emit-skill.sh"
+    EMIT_RULE="$BATS_TEST_DIRNAME/../set/lib/emit-rule.sh"
     SYNC_SRC="$BATS_TEST_DIRNAME/../set/lib/sync-set.sh"
 
     mkdir -p "$SKILLS_DIR/demo"
     printf '# Demo\n\nDemo rule.\n' >"$SKILLS_DIR/demo.md"
     printf '# Demo: sub\n\nSub rule.\n' >"$SKILLS_DIR/demo/sub.md"
 
-    export out SKILLS_DIR CONCEPTS_DIR EMIT SYNC_SRC
+    export out SKILLS_DIR CONCEPTS_DIR EMIT EMIT_RULE SYNC_SRC
     export DIR=".claude/rules/set"
     export COND_FIELD="paths"
     export CONCEPTS="0"
     export EXCLUDE=""
+    export CORE="" OVERRIDES=""
 }
 
 teardown() {

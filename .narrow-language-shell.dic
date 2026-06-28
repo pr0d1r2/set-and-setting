@@ -29,6 +29,7 @@ aspect
 assemble
 assembled
 assembles
+assert
 assertion
 assertions
 auth
@@ -42,9 +43,9 @@ base
 bash
 bats
 because
-becomes
 before
 behaviour
+below
 bin
 binary
 blind
@@ -75,6 +76,7 @@ category
 cats
 changes
 channel
+channels
 check
 checks
 chmod
@@ -90,7 +92,6 @@ commit
 comparator
 compares
 compliance
-concatenation
 concept
 concepts
 cond
@@ -105,6 +106,7 @@ context
 continue
 contract
 contradicts
+copied
 copies
 core
 corefile
@@ -117,6 +119,7 @@ current
 custom
 cutting
 dangerously
+decided
 dedup
 deep
 default
@@ -128,6 +131,7 @@ derive
 description
 design
 dest
+destination
 detected
 detects
 deterministic
@@ -159,6 +163,7 @@ duplicated
 each
 echo
 editorconfig
+effective
 elif
 else
 embedded
@@ -179,7 +184,6 @@ esac
 euo
 eval
 even
-every
 example
 examples
 except
@@ -216,6 +220,7 @@ fix
 fixture
 flag
 flake
+flip
 flips
 for
 format
@@ -249,6 +254,7 @@ have
 head
 headless
 help
+here
 hermetic
 hint
 hits
@@ -266,6 +272,7 @@ infrastructure
 init
 injected
 injection
+inlined
 inside
 install
 installed
@@ -287,6 +294,7 @@ isolates
 its
 json
 keep
+key
 known
 label
 lacks
@@ -299,6 +307,7 @@ lefthook
 less
 lib
 limits
+lines
 list
 listed
 live
@@ -313,6 +322,7 @@ lock
 look
 looks
 loops
+loose
 main
 majority
 make
@@ -334,10 +344,9 @@ mechanism
 mechprobe
 merges
 merging
+meta
 minimum
-mirror
 mirrored
-mirrors
 missing
 mkdir
 mkscaffold
@@ -351,6 +360,7 @@ modularity
 more
 multi
 multiple
+must
 name
 names
 namespace
@@ -374,12 +384,16 @@ notice
 notloaded
 null
 observable
+ochannel
+oglobs
 old
 oldrev
 omit
 omits
+once
 one
 only
+opath
 opencode
 option
 optional
@@ -393,6 +407,8 @@ other
 out
 output
 over
+override
+overrides
 overwrites
 overwriting
 own
@@ -454,6 +470,8 @@ rel
 relative
 reliably
 relname
+relpath
+relpaths
 remote
 remotes
 remove
@@ -468,6 +486,7 @@ requested
 require
 requires
 resolve
+resolves
 rests
 return
 rev
@@ -544,6 +563,7 @@ supports
 symlink
 symlinked
 synced
+tab
 tail
 target
 teardown
@@ -569,6 +589,7 @@ trees
 trigger
 true
 trusting
+twice
 type
 under
 unified
@@ -597,7 +618,6 @@ verifies
 verify
 version
 via
-violation
 vote
 voted
 votes
@@ -609,6 +629,7 @@ whether
 which
 while
 whitespace
+wins
 with
 without
 words
@@ -618,6 +639,7 @@ works
 would
 wrapper
 write
+writer
 writes
 writing
 yaml
