@@ -49,7 +49,8 @@ for cat in "${cats[@]:-}"; do
         done
         CAT="$cat" SKILLS_DIR="$SKILLS_DIR" SKILL_DEST="$out/$SKILL_DIR" \
             KEYWORDS="$keywords" GLOBS="$globs" COND_FIELD="$COND_FIELD" \
-            EXCLUDE="$EXCLUDE" bash "$EMIT_SKILLMD"
+            EXCLUDE="$EXCLUDE" DISABLE_INVOCATION="${SKILL_DISABLE_INVOCATION:-0}" \
+            bash "$EMIT_SKILLMD"
     fi
 done
 

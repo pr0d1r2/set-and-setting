@@ -26,6 +26,9 @@
     skill = {
       dir = ".claude/skills";
       file = "SKILL.md";
+      # Claude dedup (V20): the rule channel is the loader, so the SKILL.md
+      # is not model-invoked -- it stays /-invoke + cross-agent only.
+      disableModelInvocation = true;
     };
 
     # back-compat seam
@@ -46,6 +49,9 @@
     skill = {
       dir = ".";
       file = "SKILL.md";
+      # opencode has no disable-model-invocation; SKILL.md stays
+      # model-invocable (cross-agent content carrier).
+      disableModelInvocation = false;
     };
 
     # back-compat seam

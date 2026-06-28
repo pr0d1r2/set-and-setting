@@ -52,6 +52,7 @@ pkgs.runCommand "agent-set"
     CORE = lib.concatStringsSep " " cats.core;
     OVERRIDES = meta.channelOverrides;
     SKILL_DIR = ag.skill.dir;
+    SKILL_DISABLE_INVOCATION = if ag.skill.disableModelInvocation or false then "1" else "0";
     KEYWORDS_MAP = keywordsMap;
     EMIT = ./emit-skill.sh;
     EMIT_RULE = ./emit-rule.sh;
