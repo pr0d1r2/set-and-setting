@@ -289,6 +289,7 @@ candidates
 cannot
 canonical
 canvas
+cap
 capabilities
 capability
 captures
@@ -882,6 +883,7 @@ feature
 features
 feeds
 fence
+fenced
 fences
 fetch
 fetched
@@ -1097,6 +1099,7 @@ homepage
 honor
 hook
 hooks
+hop
 hops
 host
 hosted
@@ -1345,6 +1348,7 @@ listed
 listener
 listing
 lists
+literal
 literals
 live
 lives
@@ -2211,6 +2215,7 @@ sources
 sourcing
 space
 spaces
+span
 spans
 spawn
 spec
@@ -2274,6 +2279,7 @@ string
 strings
 strip
 stripped
+stripping
 structural
 structure
 structured
@@ -2503,6 +2509,7 @@ unreachable
 unrelated
 unreleased
 unrequested
+unresolvable
 unsafe
 unset
 unsure

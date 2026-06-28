@@ -37,11 +37,13 @@ assertion
 asserts
 assignment
 attrs
+auto
 back
 base
 bash
 bats
 beats
+behavioral
 between
 bin
 body
@@ -78,6 +80,9 @@ commit
 compact
 compares
 compat
+compile
+compiled
+compiler
 component
 compose
 concat
@@ -90,7 +95,9 @@ configs
 conflict
 consumer
 consumers
+contained
 contains
+content
 context
 copied
 core
@@ -119,6 +126,7 @@ did
 differs
 diffutils
 dir
+directory
 dirty
 documentation
 domain
@@ -139,6 +147,7 @@ emits
 emitted
 emitter
 empty
+end
 entries
 entry
 environment
@@ -213,10 +222,12 @@ gnu
 gnugrep
 gnused
 grep
+had
 has
 head
 here
 hint
+holds
 home
 hook
 hooks
@@ -237,6 +248,8 @@ inherits
 init
 inline
 inlined
+inlines
+input
 inputs
 install
 installer
@@ -261,6 +274,7 @@ known
 lang
 language
 layout
+leak
 leaked
 least
 lefthook
@@ -282,6 +296,7 @@ lists
 lives
 load
 loaded
+loads
 local
 location
 lock
@@ -306,6 +321,7 @@ meta
 metadata
 mindset
 mirrored
+mirroring
 mirrors
 missing
 mkdir
@@ -328,6 +344,8 @@ nix
 nixfmt
 nixos
 nixpkgs
+non
+none
 not
 ocbody
 ocset
@@ -343,6 +361,7 @@ optional
 org
 other
 out
+outname
 output
 outputs
 override
@@ -377,6 +396,7 @@ profile
 profiles
 program
 project
+prompt
 proof
 propagates
 prose
@@ -387,7 +407,9 @@ push
 qim
 raw
 read
+real
 rec
+recursively
 ref
 refs
 regardless
@@ -468,6 +490,7 @@ style
 sublist
 substituters
 subtree
+successful
 supported
 surface
 symlink
@@ -506,6 +529,7 @@ type
 typos
 unchanged
 under
+unexpected
 unicode
 unique
 unit
@@ -525,6 +549,7 @@ verbatim
 via
 vocabulary
 when
+which
 while
 whitespace
 wins
@@ -534,6 +559,7 @@ workflows
 working
 works
 wrap
+wrapper
 wrappers
 write
 writing
