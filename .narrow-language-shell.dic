@@ -1,5 +1,6 @@
 absent
 across
+active
 actual
 add
 added
@@ -116,6 +117,7 @@ close
 code
 collapse
 collapses
+collect
 collides
 collision
 com
@@ -357,6 +359,7 @@ iff
 ifs
 ignores
 import
+include
 included
 includes
 including
@@ -505,6 +508,7 @@ next
 nix
 nixfmt
 nixos
+non
 nondeterministic
 none
 nope
@@ -844,6 +848,7 @@ whether
 which
 while
 whitespace
+whole
 wins
 with
 without

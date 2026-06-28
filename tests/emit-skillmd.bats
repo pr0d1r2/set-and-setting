@@ -59,6 +59,18 @@ teardown() {
     [ "$output" = "1" ]
 }
 
+@test "KEEP inlines only kept files; skips folder when none kept (V34)" {
+    CAT=demo KEYWORDS="demo" GLOBS="**/*" KEEP="demo/aspect.md" run bash "$SCRIPT"
+    run cat "$SKILL_DEST/set-demo/SKILL.md"
+    [[ "$output" == *"Aspect body."* ]]
+    [[ "$output" != *"Core body."* ]]
+    # nothing kept -> no folder (fresh dest)
+    rm -rf "$SKILL_DEST/set-demo"
+    CAT=demo KEYWORDS="demo" GLOBS="**/*" KEEP="other/x.md" run bash "$SCRIPT"
+    [ "$status" -eq 0 ]
+    [ ! -e "$SKILL_DEST/set-demo/SKILL.md" ]
+}
+
 @test "disable-model-invocation added only when flag set (V20)" {
     CAT=demo KEYWORDS="demo" GLOBS="**/*" DISABLE_INVOCATION=1 run bash "$SCRIPT"
     run grep -c '^disable-model-invocation: true$' "$SKILL_DEST/set-demo/SKILL.md"

@@ -187,6 +187,11 @@
 
 ### Set (skills)
 
+- Wire the KEEP filter into the emitter (T53, V34): mkSet honours an
+  optional `KEEP` set of relpaths -- the rule channel skips non-kept
+  files and the SKILL.md channel inlines only kept files (skipping a
+  skill folder entirely when nothing is kept). Empty/unset `KEEP` is a
+  no-op, so `packages.set` and explicit installs stay full.
 - Add the applicability filter engine (T53, V34/V35/V36): `meta.signals`
   serializes each skill file's `paths`+`content`; `applicability.sh` keeps
   a file iff core, or a tracked file matches its `paths` AND a

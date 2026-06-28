@@ -35,7 +35,7 @@ for cat in "${cats[@]:-}"; do
 
     CAT="$cat" DEST_DIR="$out/$DIR" GLOBS="$globs" COND_FIELD="$COND_FIELD" \
         SKILLS_DIR="$SKILLS_DIR" EXCLUDE="$EXCLUDE" CORE="${CORE:-}" \
-        OVERRIDES="${OVERRIDES:-}" EMIT_RULE="$EMIT_RULE" bash "$EMIT"
+        OVERRIDES="${OVERRIDES:-}" EMIT_RULE="$EMIT_RULE" KEEP="${KEEP:-}" bash "$EMIT"
 
     # portable SKILL.md channel (V20), if enabled
     if [ -n "${SKILL_DIR:-}" ]; then
@@ -50,7 +50,7 @@ for cat in "${cats[@]:-}"; do
         CAT="$cat" SKILLS_DIR="$SKILLS_DIR" SKILL_DEST="$out/$SKILL_DIR" \
             KEYWORDS="$keywords" GLOBS="$globs" COND_FIELD="$COND_FIELD" \
             EXCLUDE="$EXCLUDE" DISABLE_INVOCATION="${SKILL_DISABLE_INVOCATION:-0}" \
-            bash "$EMIT_SKILLMD"
+            KEEP="${KEEP:-}" bash "$EMIT_SKILLMD"
     fi
 done
 

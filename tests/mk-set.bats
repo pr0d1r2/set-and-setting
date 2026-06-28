@@ -43,6 +43,26 @@ teardown() {
     grep -q 'Sub rule.' "$out/$DIR/demo/sub.md"
 }
 
+@test "KEEP filter emits only listed relpaths (V34)" {
+    export CATEGORIES="demo"
+    export GLOBS_MAP="demo=**/*.nix,flake.lock"
+    export KEEP="demo/sub.md"
+    run bash "$SCRIPT"
+    [ "$status" -eq 0 ]
+    [ -f "$out/$DIR/demo/sub.md" ]
+    [ ! -f "$out/$DIR/demo.md" ]
+}
+
+@test "empty KEEP is a no-op (emits all)" {
+    export CATEGORIES="demo"
+    export GLOBS_MAP="demo=**/*.nix,flake.lock"
+    export KEEP=""
+    run bash "$SCRIPT"
+    [ "$status" -eq 0 ]
+    [ -f "$out/$DIR/demo.md" ]
+    [ -f "$out/$DIR/demo/sub.md" ]
+}
+
 @test "emits broad-glob category with paths" {
     export CATEGORIES="demo"
     export GLOBS_MAP="demo=**/*"
