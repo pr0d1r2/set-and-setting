@@ -99,14 +99,6 @@ make_core_rule() {
     [[ "$output" == *"excluded file rtk.md"* ]]
 }
 
-@test "FAIL when SKILL.md found in output (V17)" {
-    make_rule_files nix "**/*.nix" "flake.lock"
-    printf 'skill\n' >"$MATERIALIZED/$DIR/nix/SKILL.md"
-    CATEGORIES="nix" run bash "$SCRIPT"
-    [ "$status" -eq 1 ]
-    [[ "$output" == *"SKILL.md found"* ]]
-}
-
 @test "checks multiple categories in one run" {
     make_rule_files generic "**/*"
     make_rule_files nix "**/*.nix" "flake.lock"

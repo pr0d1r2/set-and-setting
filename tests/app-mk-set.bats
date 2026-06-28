@@ -31,11 +31,13 @@ setup() {
     export SKILLS_DIR CONCEPTS_DIR
     export MK_SET_SCRIPT="$BATS_TEST_DIRNAME/../set/lib/mk-set.sh"
     export EMIT_SCRIPT="$BATS_TEST_DIRNAME/../set/lib/emit-skill.sh"
+    export EMIT_RULE_SCRIPT="$BATS_TEST_DIRNAME/../set/lib/emit-rule.sh"
     export SYNC_SCRIPT="$BATS_TEST_DIRNAME/../set/lib/sync-set.sh"
     export RESOLVE_AGENT_SCRIPT="$BATS_TEST_DIRNAME/../set/lib/resolve-agent.sh"
     export ALL_CATEGORIES="generic git nix security"
     export CORE_CATEGORIES="generic git"
     export GLOBS_MAP="nix=**/*.nix,flake.lock;generic=**/*;git=**/*;security=**/*"
+    export CHANNEL_OVERRIDES=""
     export AGENT_SEAMS="claude=.claude/rules/set,paths;opencode=.opencode/rules/set,globs"
 }
 

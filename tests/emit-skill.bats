@@ -15,6 +15,8 @@ setup() {
     printf '# Demo\n\nDemo core rule.\n' >"$SKILLS_DIR/demo.md"
     printf '# Demo: aspect\n\nAspect rule.\n' >"$SKILLS_DIR/demo/aspect.md"
     export SKILLS_DIR COND_FIELD=paths EXCLUDE=""
+    export EMIT_RULE="$BATS_TEST_DIRNAME/../set/lib/emit-rule.sh"
+    export CORE="" OVERRIDES=""
 }
 
 teardown() {

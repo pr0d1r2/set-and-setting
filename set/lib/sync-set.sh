@@ -22,5 +22,9 @@ if [ -n "$set_parent" ]; then
     rm -rf "$target/$set_parent/rules/set"
     mkdir -p "$target/$set_parent/rules"
     cp -r "$src/$set_parent/rules/set" "$target/$set_parent/rules/"
+    # always-on @-manifest (sibling of the set dir), if present
+    rm -f "$target/$set_parent/rules/set.md"
+    [ -f "$src/$set_parent/rules/set.md" ] &&
+        cp "$src/$set_parent/rules/set.md" "$target/$set_parent/rules/set.md"
 fi
 echo "synced set -> $target"

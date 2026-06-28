@@ -502,19 +502,29 @@
           pkgs.runCommand "compose-set-check" { } ''
             setdir="${full}/.claude/rules/set"
 
-            # domain rule carries the conditional-load field + nix glob (V17/V18)
+            # CHANNEL b (conditional domain): rule carries the conditional-
+            # load field + nix glob (V17/V19)
             grep -q '^paths:' "$setdir/nix/flake.md" \
               || { echo "FAIL: nix/flake.md missing paths"; exit 1; }
             grep -qF '"**/*.nix"' "$setdir/nix/flake.md" \
               || { echo "FAIL: nix glob"; exit 1; }
 
-            # cross-cutting category also path-scoped with broad globs (V20)
-            grep -q '^paths:' "$setdir/generic/skill.md" \
-              || { echo "FAIL: generic/skill.md missing paths"; exit 1; }
-            grep -qF '"**/*"' "$setdir/generic/skill.md" \
-              || { echo "FAIL: generic broad glob"; exit 1; }
+            # CHANNEL a (always-on core, V18/V32): core category emits
+            # path-less rules -- NO frontmatter, body starts at line 1
+            if grep -q '^paths:' "$setdir/generic/skill.md"; then
+              echo "FAIL: core generic/skill.md must be path-less"; exit 1
+            fi
+            head -1 "$setdir/generic/skill.md" | grep -q '^# Skill' \
+              || { echo "FAIL: core body not verbatim from line 1"; exit 1; }
+            if grep -q '^paths:' "$setdir/git/git.md"; then
+              echo "FAIL: core git/git.md must be path-less"; exit 1
+            fi
 
-            # loose top-level cli.md emitted as a rule file
+            # per-file override (meta V30): generic/rtk.md flipped to domain
+            grep -q '^paths:' "$setdir/generic/rtk.md" \
+              || { echo "FAIL: rtk override should be domain (paths)"; exit 1; }
+
+            # loose top-level cli.md emitted as a (domain) rule file
             grep -q 'justfile' "$setdir/cli.md" \
               || { echo "FAIL: cli core not emitted"; exit 1; }
 
@@ -522,19 +532,15 @@
             grep -q 'The project starts with nix flake' "$setdir/nix/flake.md" \
               || { echo "FAIL: body"; exit 1; }
 
-            # exclude omits the file from the emitted output
+            # exclude omits the file from the emitted output (V8)
             exdir="${excluded}/.claude/rules/set"
             if [ -f "$exdir/generic/rtk.md" ]; then
               echo "FAIL: exclude did not drop rtk.md"; exit 1
             fi
 
             # source tree mirrored 1:1 (V19/V25)
-            [ -f "$setdir/nix/flake.md" ] \
-              || { echo "FAIL: nix rule file missing"; exit 1; }
             [ -f "$setdir/nix/develop.md" ] \
               || { echo "FAIL: nix/develop rule missing"; exit 1; }
-
-            # each rule has paths frontmatter (V18)
             grep -q '^paths:' "$setdir/nix/develop.md" \
               || { echo "FAIL: nix/develop.md missing paths"; exit 1; }
 
@@ -542,9 +548,35 @@
             [ -f "$setdir/nix/infinity/gap.md" ] \
               || { echo "FAIL: nested rule missing"; exit 1; }
 
-            # no SKILL.md anywhere (V17)
-            if find "$setdir" -name 'SKILL.md' | grep -q .; then
-              echo "FAIL: SKILL.md found (should not exist)"; exit 1
+            # always-on @-manifest (channel a, V18/V29): sibling set.md
+            # lists @-refs to concepts + core, omits domain rules
+            manifest="${full}/.claude/rules/set.md"
+            [ -f "$manifest" ] || { echo "FAIL: set.md manifest missing"; exit 1; }
+            grep -q '^@set/concepts-user.md$' "$manifest" \
+              || { echo "FAIL: set.md missing concept ref"; exit 1; }
+            grep -q '^@set/generic/skill.md$' "$manifest" \
+              || { echo "FAIL: set.md missing core ref"; exit 1; }
+            if grep -q 'nix/flake.md' "$manifest"; then
+              echo "FAIL: set.md must not list domain rules"; exit 1
+            fi
+
+            # CHANNEL c (portable SKILL.md, V20): per-category skill folder
+            skill="${full}/.claude/skills/set-nix/SKILL.md"
+            [ -f "$skill" ] || { echo "FAIL: set-nix SKILL.md missing"; exit 1; }
+            grep -q '^name: set-nix$' "$skill" \
+              || { echo "FAIL: SKILL.md missing name"; exit 1; }
+            grep -q '^description:' "$skill" \
+              || { echo "FAIL: SKILL.md missing description"; exit 1; }
+            grep -qF '"**/*.nix"' "$skill" \
+              || { echo "FAIL: SKILL.md missing nix glob"; exit 1; }
+            grep -q 'The project starts with nix flake' "$skill" \
+              || { echo "FAIL: SKILL.md missing inlined body"; exit 1; }
+
+            # exclude propagates to the SKILL.md channel too (V8)
+            exskill="${excluded}/.claude/skills/set-generic/SKILL.md"
+            [ -f "$exskill" ] || { echo "FAIL: excluded set-generic SKILL.md missing"; exit 1; }
+            if grep -qi 'rtk' "$exskill"; then
+              echo "FAIL: excluded rtk leaked into SKILL.md"; exit 1
             fi
 
             echo PASS
@@ -620,11 +652,16 @@
             grep -qF '"**/*.nix"' "$ocset/nix/flake.md" \
               || { echo "FAIL: opencode nix glob value"; exit 1; }
 
-            # opencode cross-cutting rule uses globs too (V20)
-            grep -q '^globs:' "$ocset/generic/skill.md" \
-              || { echo "FAIL: opencode generic missing globs"; exit 1; }
+            # always-on core is path-less in BOTH agents (channel a is
+            # agent-independent: no conditional field either side, V18)
+            if grep -q '^globs:' "$ocset/generic/skill.md"; then
+              echo "FAIL: opencode core generic must be path-less"; exit 1
+            fi
+            if grep -q '^paths:' "$clset/generic/skill.md"; then
+              echo "FAIL: claude core generic must be path-less"; exit 1
+            fi
 
-            # same agnostic body in both agents (strip frontmatter)
+            # same agnostic body in both agents (strip domain frontmatter)
             clbody="$(sed '1,/^---$/d' "$clset/nix/flake.md")"
             ocbody="$(sed '1,/^---$/d' "$ocset/nix/flake.md")"
             [ "$clbody" = "$ocbody" ] \
@@ -636,10 +673,9 @@
             [ -f "$clset/generic/skill.md" ] \
               || { echo "FAIL: claude generic rule missing"; exit 1; }
 
-            # same rule body across all files (strip frontmatter, diff bodies)
-            clbody2="$(sed '1,/^---$/d' "$clset/generic/skill.md")"
-            ocbody2="$(sed '1,/^---$/d' "$ocset/generic/skill.md")"
-            [ "$clbody2" = "$ocbody2" ] \
+            # core file body byte-identical across agents (path-less, no
+            # frontmatter to strip)
+            [ "$(cat "$clset/generic/skill.md")" = "$(cat "$ocset/generic/skill.md")" ] \
               || { echo "FAIL: generic body differs between agents"; exit 1; }
 
             echo PASS
@@ -727,6 +763,7 @@
           inherit (nixpkgs) lib;
           cats = import ./set/lib/categories.nix;
           agents = import ./set/lib/agents.nix;
+          meta = import ./set/meta.nix { inherit lib; };
           globsMap = lib.concatStringsSep ";" (
             lib.mapAttrsToList (c: globs: "${c}=${lib.concatStringsSep "," globs}") cats.globs
           );
@@ -746,11 +783,13 @@
               export CONCEPTS_DIR="${./set/concepts}"
               export MK_SET_SCRIPT="${./set/lib/mk-set.sh}"
               export EMIT_SCRIPT="${./set/lib/emit-skill.sh}"
+              export EMIT_RULE_SCRIPT="${./set/lib/emit-rule.sh}"
               export SYNC_SCRIPT="${./set/lib/sync-set.sh}"
               export RESOLVE_AGENT_SCRIPT="${./set/lib/resolve-agent.sh}"
               export ALL_CATEGORIES="${lib.concatStringsSep " " cats.all}"
               export CORE_CATEGORIES="${lib.concatStringsSep " " cats.core}"
               export GLOBS_MAP="${globsMap}"
+              export CHANNEL_OVERRIDES=${lib.escapeShellArg meta.channelOverrides}
               export AGENT_SEAMS="${agentSeams}"
               export MKSET_REV="${self.rev or self.dirtyRev or "unknown"}"
             ''

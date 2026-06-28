@@ -92,6 +92,7 @@ anti
 any
 anywhere
 apache
+apfs
 api
 apis
 app
@@ -1177,9 +1178,12 @@ inject
 injected
 injection
 inline
+inlined
 inlines
+inlining
 input
 inputs
+insensitive
 inside
 inspect
 inspection
@@ -1559,6 +1563,7 @@ nvme
 oauth
 observable
 observe
+obsolete
 obvious
 occurrence
 off
@@ -1568,6 +1573,7 @@ offset
 old
 older
 omit
+omitted
 omitting
 once
 one
@@ -1974,6 +1980,7 @@ reserved
 reset
 resolution
 resolve
+resolved
 resolver
 resolves
 resource
@@ -2514,6 +2521,7 @@ usr
 usually
 utf
 utilize
+valid
 validation
 values
 vanish
