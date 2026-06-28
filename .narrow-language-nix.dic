@@ -22,9 +22,11 @@ allowlist
 also
 always
 and
+answer
 any
 app
 appears
+applicability
 application
 apps
 architecture
@@ -47,6 +49,7 @@ bats
 beats
 behavioral
 between
+beyond
 bin
 body
 bool
@@ -161,8 +164,10 @@ emitter
 empty
 enable
 end
+engine
 entries
 entry
+enumerated
 environment
 escape
 eval
@@ -202,10 +207,12 @@ fields
 file
 filenames
 files
+filesystem
 filter
 final
 findutils
 first
+fixture
 flake
 flakes
 flip
@@ -240,7 +247,9 @@ gnu
 gnugrep
 gnused
 grep
+greps
 had
+happens
 hardening
 has
 head
@@ -445,6 +454,7 @@ raw
 read
 real
 rec
+recursive
 recursively
 ref
 refines
@@ -453,9 +463,11 @@ regardless
 rel
 relative
 relevance
+relpath
 rely
 remote
 remotes
+remove
 replaces
 repo
 requested
@@ -468,6 +480,7 @@ root
 rule
 rules
 run
+runner
 runs
 runtime
 same
@@ -483,6 +496,7 @@ seams
 section
 security
 sed
+see
 seed
 seeds
 selection
@@ -494,6 +508,7 @@ setdir
 sets
 setting
 settings
+shape
 shared
 shares
 shell
@@ -513,6 +528,7 @@ skillmd
 skills
 skip
 smart
+sort
 source
 sources
 specific
@@ -534,6 +550,7 @@ sublist
 substituters
 subtree
 successful
+suffix
 supported
 surface
 symlink
@@ -601,6 +618,7 @@ which
 while
 whitespace
 wins
+wires
 with
 within
 workflows

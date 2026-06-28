@@ -187,6 +187,13 @@
 
 ### Set (skills)
 
+- Add the applicability filter engine (T53, V34/V35/V36): `meta.signals`
+  serializes each skill file's `paths`+`content`; `applicability.sh` keeps
+  a file iff core, or a tracked file matches its `paths` AND a
+  path-matched file contains a `content` pattern, then backfills a kept
+  facet's `<topic>.md` core. Deterministic over a tracked-file list; the
+  bash glob matcher honours gitignore leading-`**/` (matches top-level).
+  Engine only -- emitter wiring + app `--auto` follow.
 - Fill the meta relevance map (T41, V34/V35): high-value facets get
   narrow `paths` + `content` grep signals -- qemu (`tests/integration/**`,
   `**/*.exp` / `qemu`, `enable-kvm`), iso, qemu/mdns, nixos hardening,

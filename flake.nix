@@ -497,6 +497,12 @@
             touch $out
           '';
 
+        # meta-applicability -- V34: the smart-materialization filter keeps
+        # only skills with repo evidence (paths AND content), facet->core.
+        meta-applicability = import ./set/lib/applicability.nix { inherit (nixpkgs) lib; } {
+          inherit pkgs;
+        };
+
         # agents-md-compile -- V29: the @->AGENTS.md compiler resolves a
         # Claude @-manifest recursively, mirroring Claude @-parse rules.
         agents-md-compile =
