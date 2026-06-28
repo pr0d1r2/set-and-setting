@@ -19,6 +19,7 @@ agnostic
 agnosticism
 all
 allowlist
+also
 always
 and
 any
@@ -38,6 +39,7 @@ asserts
 assignment
 attrs
 auto
+avahi
 back
 base
 bash
@@ -50,6 +52,7 @@ body
 bool
 bootstrap
 both
+bounding
 broad
 build
 builds
@@ -59,6 +62,7 @@ bundle
 but
 byte
 cachix
+capability
 carrier
 carries
 cat
@@ -67,6 +71,7 @@ category
 cats
 changelog
 channel
+char
 check
 checked
 checker
@@ -76,6 +81,7 @@ claude
 clbody
 cli
 clset
+collapses
 command
 commit
 compact
@@ -105,6 +111,7 @@ core
 coreutils
 correct
 counterparts
+coverage
 cross
 cumulative
 darwin
@@ -114,6 +121,7 @@ dedup
 deep
 default
 define
+delimiter
 derivation
 derived
 derives
@@ -151,6 +159,7 @@ emits
 emitted
 emitter
 empty
+enable
 end
 entries
 entry
@@ -161,6 +170,7 @@ even
 every
 everything
 everywhere
+evidence
 exact
 exclude
 excluded
@@ -170,6 +180,7 @@ execute
 exist
 existing
 exit
+exp
 expectations
 expected
 experimental
@@ -177,10 +188,13 @@ export
 expression
 exskill
 extra
+facet
+facets
 fail
 fall
 fallback
 false
+feature
 features
 feeds
 field
@@ -227,9 +241,11 @@ gnugrep
 gnused
 grep
 had
+hardening
 has
 head
 here
+high
 hint
 holds
 home
@@ -238,6 +254,8 @@ hooks
 host
 hxegsi
 identical
+ifs
+image
 import
 imported
 includes
@@ -257,6 +275,7 @@ input
 inputs
 install
 installer
+installs
 instructions
 integration
 integrations
@@ -266,6 +285,7 @@ invocable
 invocation
 invoke
 invoked
+iso
 its
 join
 json
@@ -332,6 +352,7 @@ mindset
 mirrored
 mirroring
 mirrors
+misassigns
 missing
 mkdir
 mkscaffold
@@ -378,6 +399,7 @@ outputs
 override
 overrides
 owned
+package
 packages
 parallel
 parse
@@ -411,10 +433,13 @@ prompt
 proof
 propagates
 prose
+protect
 proves
 proxy
 public
 push
+python
+qemu
 qim
 raw
 read
@@ -422,10 +447,13 @@ real
 rec
 recursively
 ref
+refines
 refs
 regardless
 rel
 relative
+relevance
+rely
 remote
 remotes
 replaces
@@ -467,6 +495,7 @@ sets
 setting
 settings
 shared
+shares
 shell
 shellcheck
 shells
@@ -474,6 +503,8 @@ should
 sibling
 side
 sidecar
+signal
+signals
 single
 sits
 size
@@ -481,6 +512,7 @@ skill
 skillmd
 skills
 skip
+smart
 source
 sources
 specific
@@ -512,6 +544,7 @@ systems
 tab
 terms
 test
+tests
 text
 tez
 that
@@ -524,11 +557,13 @@ they
 this
 though
 three
+tighten
 time
 token
 too
 top
 topic
+torito
 touch
 touched
 trailing
@@ -547,11 +582,13 @@ unit
 universal
 unknown
 unless
+unsigned
 unspecified
 update
 url
 urls
 use
+used
 user
 uses
 valid

@@ -12,13 +12,14 @@
 #   CAT_CHANNEL category default channel (core|domain)
 #   CAT_GLOBS   space-separated category globs
 #   COND_FIELD  frontmatter field name (e.g. "paths")
-#   OVERRIDES   "path<TAB>channel<TAB>g1,g2" lines
+#   OVERRIDES   "path|channel|g1,g2" lines ("|" delim, not tab -- tab is
+#               IFS-whitespace and would collapse an empty channel field)
 set -euo pipefail
 
 channel="$CAT_CHANNEL"
 globs="$CAT_GLOBS"
 
-while IFS=$'\t' read -r opath ochannel oglobs; do
+while IFS='|' read -r opath ochannel oglobs; do
     [ "$opath" = "$REL" ] || continue
     [ -n "$ochannel" ] && channel="$ochannel"
     [ -n "$oglobs" ] && globs="${oglobs//,/ }"

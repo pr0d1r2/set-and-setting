@@ -34,12 +34,24 @@ teardown() {
 }
 
 @test "per-file override flips channel to domain" {
-    printf 'generic/demo.md\tdomain\t\n' >"$SRCDIR/ov"
+    printf 'generic/demo.md|domain|\n' >"$SRCDIR/ov"
     SRC="$SRCDIR/demo.md" REL="generic/demo.md" DEST="$DESTDIR/demo.md" \
         CAT_CHANNEL=core CAT_GLOBS="**/*" OVERRIDES="$(cat "$SRCDIR/ov")" \
         run bash "$SCRIPT"
     run head -1 "$DESTDIR/demo.md"
     [ "$output" = "---" ]
+}
+
+@test "paths-only override (empty channel) applies narrow globs" {
+    # Regression: "|" delimiter, not tab -- tab collapses the empty
+    # channel field and misassigns globs.
+    printf 'nix/demo.md||a/b/**,**/*.exp\n' >"$SRCDIR/ov"
+    SRC="$SRCDIR/demo.md" REL="nix/demo.md" DEST="$DESTDIR/demo.md" \
+        CAT_CHANNEL=domain CAT_GLOBS="**/*.nix" OVERRIDES="$(cat "$SRCDIR/ov")" \
+        run bash "$SCRIPT"
+    run cat "$DESTDIR/demo.md"
+    [[ "$output" == *'"a/b/**"'* ]]
+    [[ "$output" != *'"**/*.nix"'* ]]
 }
 
 @test "globs are not shell-expanded against cwd" {
