@@ -47,6 +47,7 @@ admins
 advertise
 advocating
 affects
+affinity
 after
 against
 agent
@@ -101,6 +102,7 @@ appears
 append
 appends
 apple
+applicability
 applicable
 application
 applies
@@ -150,6 +152,7 @@ attrset
 audience
 audit
 auditable
+audited
 auth
 author
 authored
@@ -171,6 +174,7 @@ aware
 awareness
 awk
 back
+backfill
 background
 backoff
 backprop
@@ -235,6 +239,7 @@ blue
 bodies
 body
 book
+boolean
 boot
 boots
 bootstrap
@@ -442,6 +447,7 @@ conditional
 conditions
 conduct
 conf
+confidence
 config
 configs
 configuration
@@ -459,6 +465,7 @@ connect
 connection
 connectivity
 consequence
+conservative
 consider
 considering
 consistency
@@ -542,6 +549,7 @@ cutting
 cve
 daemon
 daemons
+dag
 daily
 darwin
 dashes
@@ -585,6 +593,7 @@ delete
 deletes
 deleting
 deletions
+deliberate
 deliberately
 delimiter
 delivered
@@ -642,11 +651,13 @@ dictionaries
 dictionary
 did
 diff
+diffable
 differ
 different
 differs
 diffs
 dilute
+dimensions
 dir
 direct
 direction
@@ -710,6 +721,7 @@ duplicate
 duplicating
 duplication
 during
+duty
 dynamic
 dynamically
 each
@@ -718,6 +730,7 @@ earns
 echo
 echoes
 ecosystem
+edge
 edit
 edited
 editing
@@ -826,12 +839,14 @@ exists
 exit
 exits
 exp
+expand
 expands
 expect
 expectations
 expected
 expensive
 experience
+explainable
 explaining
 explanations
 explanatory
@@ -847,6 +862,7 @@ expr
 expression
 ext
 extend
+extends
 extension
 extensions
 extensive
@@ -872,6 +888,7 @@ failures
 fake
 fall
 fallback
+falls
 false
 families
 fast
@@ -942,6 +959,7 @@ follow
 following
 follows
 foo
+footprint
 for
 force
 forkpty
@@ -1022,6 +1040,7 @@ gotcha
 gotchas
 grade
 graduate
+grained
 grammars
 grant
 granularity
@@ -1074,6 +1093,7 @@ headings
 headless
 headline
 heads
+heal
 health
 healthcheck
 heavy
@@ -1085,6 +1105,7 @@ hero
 hidden
 hide
 hides
+high
 higher
 hint
 history
@@ -1161,6 +1182,7 @@ indent
 indentation
 independent
 independently
+index
 indexed
 individual
 inet
@@ -1258,6 +1280,7 @@ json
 just
 justfile
 keep
+keeping
 keeps
 kept
 kernel
@@ -1762,6 +1785,7 @@ preferred
 prefix
 prepend
 prepended
+prereq
 prerequisite
 prerequisites
 present
@@ -1817,6 +1841,7 @@ prohibited
 prohibitions
 project
 projects
+promoted
 promoting
 prompt
 prompts
@@ -1840,6 +1865,7 @@ provides
 provisioned
 proxy
 prunes
+pruning
 psychedelic
 public
 publicly
@@ -2079,6 +2105,7 @@ schedule
 scheme
 scope
 scoped
+scored
 script
 scripts
 seam
@@ -2155,6 +2182,7 @@ should
 show
 shown
 shows
+shrinks
 shutdown
 sibling
 siblings
@@ -2202,6 +2230,7 @@ smaller
 smart
 smoke
 snap
+soft
 software
 sole
 solutions
@@ -2302,6 +2331,7 @@ such
 sudo
 suffices
 suffix
+suggests
 suidsgid
 suitable
 suite
@@ -2394,6 +2424,7 @@ this
 those
 threads
 three
+threshold
 throat
 through
 thus
@@ -2512,6 +2543,7 @@ unrequested
 unresolvable
 unsafe
 unset
+unsigned
 unsure
 until
 untouched
@@ -2543,6 +2575,7 @@ utf
 utilize
 valid
 validation
+value
 values
 vanish
 var

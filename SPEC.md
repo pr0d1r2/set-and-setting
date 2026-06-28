@@ -100,7 +100,13 @@ and dogfoods both.
   `mkSetting-init` seeds repo-specific starters (skip-if-exists);
   `bootstrap` = mkSet core + mkSetting + mkSetting-init in one. Each
   supports `--list`/`--help`/`--dry-run`.
-- I.manifest: `./.claude/rules/set/.mkset.json` -- records installed categories + upstream rev + agent. Drives smart re-run (bare `mkSet` with a manifest refreshes what's installed), update detection, and `--remove`. Distinguishes mkSet-managed files from hand-added ones.
+- I.manifest: `./.claude/rules/set/.mkset.json` -- records installed
+  categories + upstream rev + agent. Drives smart re-run (bare `mkSet`
+  with a manifest refreshes what's installed), update detection, and
+  `--remove`. Distinguishes mkSet-managed files from hand-added ones.
+  Under `--auto` (V34), also records per-skill applicability evidence --
+  matched `paths`/`content`, or `required-by: <topic>` (facet->core pull)
+  -- for audit + smart re-eval (V37).
 - I.agentProfile: per-agent profile (default Claude). Carries each agent's
   channel mechanisms: always-on file + import syntax, conditional
   mechanism, skill format/location. Claude: `{ alwaysOn = CLAUDE.md(@);
@@ -108,10 +114,20 @@ and dogfoods both.
   }`. opencode: `{ alwaysOn = AGENTS.md(inline); conditional =
   opencode.json instructions globs; skill = SKILL.md }`. The only place an
   agent format appears (C2/V17).
-- I.meta: `set/meta.nix` -- sidecar channel map (V30), keyed by source
-  path/subtree, `{ channel, paths, keywords, always? }`, subtree-inherit +
-  per-file override. Single source for channel assignment; feeds all
-  channels. Keeps `set/` markdown agnostic.
+- I.meta: `set/meta.nix` -- sidecar channel + relevance map (V30/V34),
+  keyed by source path/subtree, `{ channel, paths, keywords, content?,
+  always? }`, subtree-inherit + per-file override. `paths` do double duty
+  (runtime conditional-load globs + static applicability); `content` is a
+  materialize-time-only grep signal (V35). Single source for channel
+  assignment and applicability; feeds all channels. Keeps `set/` markdown
+  agnostic.
+- I.applicability: `set/lib/applicability.{nix,sh}` -- materialize-time
+  smart-selection filter (V34). Given the meta signals + `git ls-files`,
+  returns the applicable skill-file set: a topic core/facet is kept iff
+  its resolved `paths` + `content` evidence matches tracked files
+  (vendored/generated excluded), and any kept facet force-pulls its
+  `<topic>.md` core (V36). Boolean now (scored later). Emits the
+  per-skill evidence for the manifest (V37). Drives `--auto`.
 - I.compiler: `lib/agents-md-compile.nix` (+ `.sh`) -- the `@`->`AGENTS.md`
   resolver (V29). Args: the Claude `CLAUDE.md` (or `@`-manifest). Output:
   inline `AGENTS.md`. Mirrors Claude `@`-parse rules.
@@ -221,6 +237,42 @@ and dogfoods both.
   so each emitter `chmod -R u+w` the copied tree (and any prior tree
   before removing it). Re-sync is idempotent, never `Permission denied`
   (B4).
+- V34: Smart materialization -- mkSet `--auto` installs only the
+  *applicable* skill set derived from repo evidence, not a blanket copy. A
+  topic core / facet is kept iff its resolved meta signal matches the
+  consumer's tracked files: `paths` (file shape) AND `content` (grep --
+  feature actually used). Boolean now; scored (confidence threshold) is a
+  later extension. core (`generic`, `git`) always kept; an unsigned file
+  falls back to its subtree/category signal (conservative include, never
+  silently drop a needed skill). `--auto` is the default for the zero-dep
+  `nix run` path; `--all` / explicit categories / `--pin` / `--exclude`
+  override. Deterministic over `git ls-files` (C7).
+- V35: Two relevance dimensions, two mechanisms. `paths` globs do double
+  duty -- runtime conditional-load (Claude rules / opencode instructions)
+  AND static applicability. `content` grep is *materialize-time only*: it
+  decides whether a skill is copied, never when it loads (Claude/opencode
+  gate on path globs only, not file content). So `content` shrinks the
+  on-disk footprint and the `SKILL.md` description index, not per-turn
+  load.
+- V36: Facets are structural dependencies. A facet `<topic>/<aspect>.md`
+  extends its topic core `<topic>.md` and may not apply even when the core
+  does; the include unit is the facet. The only dependency edge is facet
+  -> its topic core, read from the path (parent dir) -- no declared
+  `requires` DAG. Keeping any facet force-pulls its `<topic>.md` core;
+  pruning is per-facet. (Soft "suggests" affinity is deferred to the
+  scored phase.)
+- V37: Materialization is audited. `.mkset.json` (I.manifest) records, per
+  installed skill, WHY it was kept -- matched `paths`/`content` evidence,
+  or `required-by: <topic>` (facet->core pull) -- so re-eval is smart,
+  explainable, and diffable. Update = `nix flake update` + `--auto`
+  re-eval re-applies upstream skill changes and re-prunes (C7/V26
+  self-heal).
+- V38: Always-on stays universal-only. The always-on channel (`AGENTS.md`
+  / path-less core rules) carries only genuinely-universal content (core
+  topics). Domain topics/facets are never inlined always-on -- they reach
+  every agent via the conditional channel (Claude path-rules, opencode
+  instructions globs), evidence-gated. A domain promoted to always-on is a
+  deliberate, documented exception. Keeps initial context minimal (V18).
 
 ## §T Tasks
 
@@ -266,7 +318,7 @@ and dogfoods both.
 | T38 | x | README headline -- document `nix run github:pr0d1r2/set-and-setting#mkSet` one-command skill materialization as the first-impression WOW (single command, zero deps); cover all three delivery paths (C9) | I.apps,C9 |
 | T39 | x | `--agent` seam passthrough in installers (opencode target); ties the agnosticism proof | V21,V28,T31 |
 | T40 | . | rework mkSet emission to a path-scoped rules mirror -- drop SKILL.md/frontmatter/facets-links; copy each source file verbatim with its category `paths:` prepended; emit to `<dir>/set/`. Supersedes T25/T35 | I.mkSet,V17,V18,V19,B2 |
-| T41 | . | complete category-globs map -- every category has `paths` (domains narrow e.g. `**/*.nix`; core/universal broad e.g. `generic`->`**/*`); nothing path-less | V20 |
+| T41 | . | complete the meta relevance map -- every topic core has a broad `paths` (domains narrow e.g. `**/*.nix`; core/universal broad e.g. `generic`->`**/*`); high-value facets get narrow `paths`+`content` (qemu, iso, mdns, nixos hardening, cachix, python-package); unsigned facets inherit subtree/category; nothing path-less. Prereq for T53 | V20,V34,V35,I.meta |
 | T42 | . | retarget apps + `mkMaterializeCheck` + sync to `.claude/rules/set`; assert rules layout (paths + verbatim body), not SKILL.md | I.apps,I.mkMaterializeCheck,V24,V25 |
 | T43 | . | README: update WOW + delivery docs -- skills materialize into `.claude/rules/set/` (not `.claude/skills/`) | I.apps,C9 |
 | T44 | . | re-dogfood -- emit own set into gitignored `.claude/rules/set/`; update `.gitignore`/`.envrc` | V10,I.self-wire |
@@ -277,8 +329,9 @@ and dogfoods both.
 | T47 | x | multi-channel emitter -- mkSet emits 3 channels per profile from the meta map: always-on core, conditional domains, portable `SKILL.md`. Supersedes the rules-only T40-T44 emit | I.mkSet,V17,V18,V19,V20 |
 | T48 | x | `@`->`AGENTS.md` compiler (`lib/agents-md-compile`) -- recursive inline, Claude `@`-parse fidelity | I.compiler,V29 |
 | T49 | . | dedup -- emit `SKILL.md` with `disable-model-invocation: true` on Claude so the rule is the sole loader (no double-load) | V20 |
-| T51 | . | opencode profile + agnosticism proof -- build the same sources for opencode (AGENTS.md + opencode.json); ties T31 | V21,V23,T31 |
+| T51 | . | opencode profile + agnosticism proof -- build the same sources for opencode (AGENTS.md + opencode.json); ties T31. Always-on stays universal-only (V38) | V21,V23,V38,T31 |
 | T52 | . | README -- document the multi-channel model + three delivery paths; keep the one-command WOW | I.apps,C9 |
+| T53 | . | smart auto-materialization (`I.applicability`) -- boolean facet-grained filter over `git ls-files` (`paths` AND `content`, vendored/generated excluded) + facet->core backfill + per-skill manifest evidence; `--auto` default for the `nix run` path, `--all`/explicit/`--pin`/`--exclude` override; scored mode deferred. Needs T41 | V34,V35,V36,V37,I.applicability,I.manifest,I.apps |
 
 ## §B Bugs
 
