@@ -14,6 +14,7 @@
 #   KEYWORDS_MAP (cat=kw1,kw2;cat2=kw3). Skipped when SKILL_DIR unset.
 # shellcheck disable=SC2154  # $out is provided by the nix runCommand env
 # shellcheck disable=SC2153  # SKILLS_DIR and SKILL_DIR are distinct env vars
+# shellcheck disable=SC2016  # "$schema" is a literal JSON key, not expansion
 set -euo pipefail
 
 mkdir -p "$out"
@@ -82,6 +83,26 @@ mkdir -p "$setroot" "$(dirname "$manifest")"
         printf '@%s/%s\n' "$setbase" "${f#"$setroot"/}"
     done
 } >"$manifest"
+
+# Inline always-on for agents without @-import (V39): compile set.md into
+# an AGENTS.md (universal core only). Only when the profile imports inline.
+manifest_dir="$out/${DIR%/*}"
+if [ "${ALWAYSON_IMPORT:-}" = "inline" ]; then
+    INPUT="$manifest" BASE="$manifest_dir" SELF="$COMPILER" \
+        bash "$COMPILER" >"$out/${ALWAYSON_FILE}"
+fi
+
+# opencode conditional mechanism (V39): opencode.json instructions are
+# always-on, so list ONLY the always-on file; domains reach opencode via
+# SKILL.md + Read-on-demand.
+if [ "${CONDITIONAL_MECHANISM:-}" = "opencode.json-instructions" ]; then
+    {
+        printf '{\n'
+        printf '  "$schema": "https://opencode.ai/config.json",\n'
+        printf '  "instructions": ["%s"]\n' "$ALWAYSON_FILE"
+        printf '}\n'
+    } >"$out/opencode.json"
+fi
 
 mkdir -p "$out/bin"
 cp "$SYNC_SRC" "$out/bin/sync-set"
