@@ -54,6 +54,26 @@ teardown() {
     [[ "$output" != *'"**/*.nix"'* ]]
 }
 
+@test "subtree override applies to files under that subtree (V30)" {
+    printf 'test/qemu||tests/int/**,**/*.exp\n' >"$SRCDIR/ov"
+    SRC="$SRCDIR/demo.md" REL="test/qemu/cleanup.md" DEST="$DESTDIR/demo.md" \
+        CAT_CHANNEL=domain CAT_GLOBS="**/*.bats" OVERRIDES="$(cat "$SRCDIR/ov")" \
+        run bash "$SCRIPT"
+    run cat "$DESTDIR/demo.md"
+    [[ "$output" == *'"tests/int/**"'* ]]
+    [[ "$output" != *'"**/*.bats"'* ]]
+}
+
+@test "exact override wins over subtree prefix (V30)" {
+    printf 'test/qemu||tests/int/**,**/*.exp\ntest/qemu/cleanup.md||**/*.nix\n' >"$SRCDIR/ov"
+    SRC="$SRCDIR/demo.md" REL="test/qemu/cleanup.md" DEST="$DESTDIR/demo.md" \
+        CAT_CHANNEL=domain CAT_GLOBS="**/*.bats" OVERRIDES="$(cat "$SRCDIR/ov")" \
+        run bash "$SCRIPT"
+    run cat "$DESTDIR/demo.md"
+    [[ "$output" == *'"**/*.nix"'* ]]
+    [[ "$output" != *'"tests/int/**"'* ]]
+}
+
 @test "globs are not shell-expanded against cwd" {
     cd "$DESTDIR"
     mkdir -p subdir && touch subdir/afile.nix

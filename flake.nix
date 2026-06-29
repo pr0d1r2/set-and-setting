@@ -861,7 +861,15 @@
             lib.mapAttrsToList (c: globs: "${c}=${lib.concatStringsSep "," globs}") cats.globs
           );
           agentSeams = lib.concatStringsSep ";" (
-            lib.mapAttrsToList (name: seam: "${name}=${seam.dir},${seam.condField}") agents
+            lib.mapAttrsToList (
+              name: seam:
+              "${name}=${seam.dir},${seam.condField},${seam.skill.dir},${
+                if seam.skill.disableModelInvocation or false then "1" else "0"
+              },${seam.alwaysOn.import},${seam.alwaysOn.file},${seam.conditional.mechanism}"
+            ) agents
+          );
+          keywordsMap = lib.concatStringsSep ";" (
+            map (c: "${c}=${lib.concatStringsSep "," (meta.resolve c).keywords}") cats.all
           );
           mkSettingFull = import ./setting/lib/mk-setting.nix { inherit lib; } { inherit pkgs; };
 
@@ -888,6 +896,8 @@
               export CHANNEL_OVERRIDES=${lib.escapeShellArg meta.channelOverrides}
               export SIGNALS_MANIFEST=${lib.escapeShellArg meta.signals}
               export AGENT_SEAMS="${agentSeams}"
+              export KEYWORDS_MAP="${keywordsMap}"
+              export COMPILER_SCRIPT="${./lib/agents-md-compile.sh}"
               export MKSET_REV="${self.rev or self.dirtyRev or "unknown"}"
             ''
             + builtins.readFile ./set/lib/app-mk-set.sh;

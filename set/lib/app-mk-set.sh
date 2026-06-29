@@ -5,7 +5,7 @@
 # Supports --agent flag for agent seam passthrough (T39/V21/V23).
 # Env in: SKILLS_DIR, CONCEPTS_DIR, MK_SET_SCRIPT, EMIT_SCRIPT,
 #   SYNC_SCRIPT, ALL_CATEGORIES, CORE_CATEGORIES, GLOBS_MAP,
-#   AGENT_SEAMS (agent=dir,condField;...),
+#   AGENT_SEAMS (agent=dir,condField,skillDir,...;...),
 #   RESOLVE_AGENT_SCRIPT, MKSET_REV (optional)
 set -euo pipefail
 
@@ -117,7 +117,8 @@ while [ $# -gt 0 ]; do
 done
 
 seam="$(AGENT_NAME="$agent_name" bash "$RESOLVE_AGENT_SCRIPT")"
-IFS=',' read -r agent_dir agent_cond_field <<<"$seam"
+IFS=',' read -r agent_dir agent_cond_field agent_skill_dir agent_disable_invocation \
+    agent_alwayson_import agent_alwayson_file agent_conditional_mechanism <<<"$seam"
 
 MANIFEST="$agent_dir/.mkset.json"
 
@@ -272,6 +273,20 @@ export CORE="$CORE_CATEGORIES"
 export OVERRIDES="${CHANNEL_OVERRIDES:-}"
 export EXCLUDE=""
 export CONCEPTS="1"
+# Multi-channel env vars (V17/V28): only export when the supporting
+# scripts are available (the flake wrapper sets them; bats tests may not).
+if [ -n "${EMIT_SKILLMD_SCRIPT:-}" ]; then
+    export SKILL_DIR="${agent_skill_dir:-}"
+    export SKILL_DISABLE_INVOCATION="${agent_disable_invocation:-0}"
+    export EMIT_SKILLMD="$EMIT_SKILLMD_SCRIPT"
+    export KEYWORDS_MAP="${KEYWORDS_MAP:-}"
+fi
+if [ -n "${COMPILER_SCRIPT:-}" ]; then
+    export ALWAYSON_IMPORT="${agent_alwayson_import:-}"
+    export ALWAYSON_FILE="${agent_alwayson_file:-}"
+    export CONDITIONAL_MECHANISM="${agent_conditional_mechanism:-}"
+    export COMPILER="$COMPILER_SCRIPT"
+fi
 
 bash "$MK_SET_SCRIPT"
 
@@ -285,6 +300,25 @@ cp -r "$out/$set_parent" "./" 2>/dev/null || true
 # cp -r preserves the store's read-only perms; make writable so the next
 # run's rm can clean-replace it.
 chmod -R u+w "./$agent_dir"
+
+# Multi-channel root-level artifacts (V17/V28/V39): AGENTS.md,
+# opencode.json, and portable SKILL.md dirs when the skill dir is
+# outside the set parent tree (e.g. opencode skill.dir = ".").
+for f in "$out/AGENTS.md" "$out/opencode.json"; do
+    [ -f "$f" ] || continue
+    rm -f "./${f##*/}"
+    cp "$f" "./"
+done
+for d in "$out"/set-*/; do
+    [ -d "$d" ] || continue
+    d_stripped="${d%/}"
+    base="${d_stripped##*/}"
+    [ -e "$out/$set_parent/$base" ] && continue
+    [ -e "./$base" ] && chmod -R u+w "./$base"
+    rm -rf "./$base"
+    cp -r "$d_stripped" "./"
+    chmod -R u+w "./$base"
+done
 
 cats_json=""
 for c in "${final_cats[@]}"; do

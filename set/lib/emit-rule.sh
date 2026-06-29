@@ -19,12 +19,28 @@ set -euo pipefail
 channel="$CAT_CHANNEL"
 globs="$CAT_GLOBS"
 
+# Match overrides: exact wins over prefix; longest prefix wins (V30
+# subtree-inherit). Mirrors meta.nix resolve's cascading behaviour.
+exact_ch="" exact_gl="" pfx_ch="" pfx_gl="" pfx_len=0
 while IFS='|' read -r opath ochannel oglobs; do
-    [ "$opath" = "$REL" ] || continue
-    [ -n "$ochannel" ] && channel="$ochannel"
-    [ -n "$oglobs" ] && globs="${oglobs//,/ }"
-    break
+    [ -n "$opath" ] || continue
+    if [ "$opath" = "$REL" ]; then
+        exact_ch="$ochannel"
+        exact_gl="$oglobs"
+    elif [[ "$REL" == "$opath/"* ]] && [ ${#opath} -gt $pfx_len ]; then
+        pfx_len=${#opath}
+        pfx_ch="$ochannel"
+        pfx_gl="$oglobs"
+    fi
 done <<<"${OVERRIDES:-}"
+
+if [ -n "$exact_ch" ] || [ -n "$exact_gl" ]; then
+    [ -n "$exact_ch" ] && channel="$exact_ch"
+    [ -n "$exact_gl" ] && globs="${exact_gl//,/ }"
+elif [ "$pfx_len" -gt 0 ]; then
+    [ -n "$pfx_ch" ] && channel="$pfx_ch"
+    [ -n "$pfx_gl" ] && globs="${pfx_gl//,/ }"
+fi
 
 mkdir -p "$(dirname "$DEST")"
 
