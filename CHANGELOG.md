@@ -347,6 +347,11 @@
 
 ### Spec
 
+- Backprop the opencode loading model (B5, V39; correct V19): opencode
+  `opencode.json` `instructions` + `AGENTS.md` are always-on (not
+  per-open-file conditional), and opencode ignores per-file frontmatter.
+  So only the universal core is always-on for opencode; domains reach it
+  via `SKILL.md` + Read-on-demand. Verified vs opencode.ai docs.
 - Reconcile task status against the multi-channel/smart-mat reality:
   T40 (rules-only mirror) marked superseded by T47; T42 (apps +
   materialize-check + sync to `.claude/rules/set`) marked done; T43
