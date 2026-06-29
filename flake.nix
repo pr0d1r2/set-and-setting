@@ -741,6 +741,36 @@
               echo "FAIL: opencode SKILL.md must not disable invocation"; exit 1
             fi
 
+            # opencode always-on: compiled AGENTS.md (V39), universal core
+            # only (V38) -- no domain content leaks in.
+            ocagents="${opencode}/AGENTS.md"
+            [ -f "$ocagents" ] || { echo "FAIL: opencode AGENTS.md missing"; exit 1; }
+            grep -q 'Auto commit after successful prompt' "$ocagents" \
+              || { echo "FAIL: AGENTS.md missing git core"; exit 1; }
+            if grep -q 'The project starts with nix flake' "$ocagents"; then
+              echo "FAIL: domain content leaked into always-on AGENTS.md"; exit 1
+            fi
+            # manifest-level refs are fully inlined: no top-level "@set/<x>.md"
+            # line survives (nested concept-bundle @refs to flattened
+            # sub-concepts stay literal -- a known emission wart, their
+            # content is inlined separately).
+            if grep -qE '^@set/[^/]+\.md$' "$ocagents"; then
+              echo "FAIL: AGENTS.md has an unresolved manifest @ref"; exit 1
+            fi
+
+            # opencode.json instructions list ONLY the always-on file (V39)
+            ocjson="${opencode}/opencode.json"
+            [ -f "$ocjson" ] || { echo "FAIL: opencode.json missing"; exit 1; }
+            grep -q '"instructions": \["AGENTS.md"\]' "$ocjson" \
+              || { echo "FAIL: opencode.json instructions wrong"; exit 1; }
+            grep -q 'opencode.ai/config.json' "$ocjson" \
+              || { echo "FAIL: opencode.json missing schema"; exit 1; }
+
+            # Claude profile emits NEITHER (uses native @ + path-rules)
+            if [ -e "${claude}/AGENTS.md" ] || [ -e "${claude}/opencode.json" ]; then
+              echo "FAIL: claude must not emit AGENTS.md/opencode.json"; exit 1
+            fi
+
             echo PASS
             touch $out
           '';

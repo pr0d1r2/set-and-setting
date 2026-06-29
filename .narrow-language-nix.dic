@@ -21,6 +21,7 @@ all
 allowlist
 also
 always
+alwayson
 and
 answer
 any
@@ -157,6 +158,7 @@ either
 elem
 else
 embedded
+emission
 emit
 emits
 emitted
@@ -215,6 +217,7 @@ first
 fixture
 flake
 flakes
+flattened
 flip
 flipped
 folder
@@ -229,6 +232,7 @@ freeze
 from
 frontmatter
 full
+fully
 functions
 gap
 gawk
@@ -313,6 +317,7 @@ language
 layout
 leak
 leaked
+leaks
 least
 lefthook
 legacy
@@ -329,7 +334,9 @@ line
 lint
 linux
 list
+listing
 lists
+literal
 lives
 load
 loaded
@@ -376,6 +383,7 @@ must
 name
 narrow
 native
+neither
 nested
 never
 new
@@ -387,7 +395,9 @@ nixpkgs
 non
 none
 not
+ocagents
 ocbody
+ocjson
 ocset
 ocskill
 omit
@@ -488,6 +498,7 @@ scaffold
 scaffolding
 scan
 scanner
+schema
 scoped
 script
 scripts
@@ -502,6 +513,7 @@ seeds
 selection
 self
 sep
+separately
 serialized
 set
 setdir
@@ -538,6 +550,7 @@ split
 standards
 starts
 statix
+stay
 stays
 stdenv
 still
@@ -546,6 +559,7 @@ strings
 strip
 structure
 style
+sub
 sublist
 substituters
 subtree
@@ -553,6 +567,7 @@ successful
 suffix
 supported
 surface
+survives
 symlink
 synced
 syntax
@@ -599,6 +614,7 @@ unit
 universal
 unknown
 unless
+unresolved
 unsigned
 unspecified
 update
@@ -613,6 +629,7 @@ value
 verbatim
 via
 vocabulary
+wart
 when
 which
 while
@@ -629,5 +646,6 @@ wrapper
 wrappers
 write
 writing
+wrong
 yaml
 yamllint

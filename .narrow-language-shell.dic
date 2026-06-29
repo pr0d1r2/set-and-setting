@@ -19,6 +19,7 @@ already
 also
 altered
 always
+alwayson
 aname
 and
 any
@@ -187,6 +188,7 @@ delete
 deliberately
 delim
 delimiter
+demand
 demo
 depth
 derivation
@@ -223,6 +225,7 @@ document
 does
 dogfood
 domain
+domains
 done
 drift
 drop
@@ -273,6 +276,7 @@ exits
 exp
 expanded
 expands
+expansion
 expected
 explicit
 export
@@ -366,6 +370,7 @@ iff
 ifs
 ignores
 import
+imports
 include
 included
 includes
@@ -610,6 +615,7 @@ probes
 probing
 process
 produces
+profile
 project
 prompt
 proves
@@ -624,6 +630,7 @@ query
 quoted
 rather
 raw
+reach
 read
 reading
 readlink
@@ -689,6 +696,7 @@ scaffolding
 scaffolds
 scan
 scans
+schema
 scoped
 scored
 script
@@ -824,6 +832,7 @@ under
 unified
 unique
 unit
+universal
 unknown
 unless
 unresolvable

@@ -54,6 +54,13 @@ pkgs.runCommand "agent-set"
     SKILL_DIR = ag.skill.dir;
     SKILL_DISABLE_INVOCATION = if ag.skill.disableModelInvocation or false then "1" else "0";
     KEYWORDS_MAP = keywordsMap;
+    # Always-on channel (V18/V29/V39): "inline" import => compile set.md to
+    # an inline AGENTS.md (universal core only). "opencode.json-instructions"
+    # => also emit an opencode.json listing only the always-on file.
+    ALWAYSON_IMPORT = ag.alwaysOn.import;
+    ALWAYSON_FILE = ag.alwaysOn.file;
+    CONDITIONAL_MECHANISM = ag.conditional.mechanism;
+    COMPILER = ../../lib/agents-md-compile.sh;
     EMIT = ./emit-skill.sh;
     EMIT_RULE = ./emit-rule.sh;
     EMIT_SKILLMD = ./emit-skillmd.sh;

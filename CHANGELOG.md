@@ -196,6 +196,15 @@
 
 ### Set (skills)
 
+- Emit the opencode always-on channel (T51, V39/V38/V23): for the
+  opencode profile mkSet compiles `set.md` into an inline `AGENTS.md`
+  (universal core only -- no domain) via the V29 compiler, and writes an
+  `opencode.json` whose `instructions` list only the always-on file
+  (opencode instructions are always-loaded, so domains stay out and reach
+  the agent via SKILL.md + Read-on-demand). The Claude profile emits
+  neither (native `@` + path-rules). Proves the same agnostic sources
+  build for a second agent (C2/V23). Profile-driven off `alwaysOn.import`
+  / `conditional.mechanism`.
 - Wire the KEEP filter into the emitter (T53, V34): mkSet honours an
   optional `KEEP` set of relpaths -- the rule channel skips non-kept
   files and the SKILL.md channel inlines only kept files (skipping a
