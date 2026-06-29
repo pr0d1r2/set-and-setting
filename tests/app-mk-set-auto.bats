@@ -34,7 +34,7 @@ setup() {
     export CORE_CATEGORIES="generic"
     export GLOBS_MAP="nix=**/*.nix,flake.lock;generic=**/*;lefthook=lefthook.yml;test=**/*.bats"
     export CHANNEL_OVERRIDES="test/qemu.md||tests/integration/**,**/*.exp"
-    export AGENT_SEAMS="claude=.claude/rules/set,paths;opencode=.opencode/rules/set,globs"
+    export AGENT_SEAMS="claude=.claude/rules/set,paths,.claude/skills,1,@,CLAUDE.md,path-rules;opencode=.opencode/rules/set,globs,.,0,inline,AGENTS.md,opencode.json-instructions"
     SIGNALS_MANIFEST="$(printf '%s\n' \
         'generic.md|**/*|' \
         'generic/skill.md|**/*|' \

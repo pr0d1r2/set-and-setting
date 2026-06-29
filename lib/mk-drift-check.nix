@@ -4,15 +4,15 @@
   pkgs,
   skillSet,
   projectRoot,
-  setPath ? "agent/set",
+  setPath ? ".claude/rules/set",
 }:
 
 pkgs.runCommand "skill-drift-check"
   {
     nativeBuildInputs = [ pkgs.diffutils ];
-    EXPECTED = skillSet;
+    EXPECTED = "${skillSet}/${setPath}";
     ACTUAL = "${projectRoot}/${setPath}";
-    REL_PATHS = "skills concepts set.md";
+    REL_PATHS = ".";
     SYNC_HINT = "run: nix run .#sync-set";
   }
   ''

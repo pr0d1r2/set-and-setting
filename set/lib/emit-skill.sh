@@ -16,8 +16,8 @@
 #   SKILLS_DIR root of the agnostic set/skills tree
 #   EXCLUDE    space-separated filenames to omit (e.g. "rtk.md")
 #   CORE       space-separated core (always-on) category names (V18)
-#   OVERRIDES  per-file channel overrides: "path<TAB>channel<TAB>g1,g2"
-#              lines (relpaths under SKILLS_DIR)
+#   OVERRIDES  per-file channel overrides: "path|channel|g1,g2"
+#              lines (relpaths under SKILLS_DIR, "|" delimiter)
 #   EMIT_RULE  path to emit-rule.sh (per-file rule writer)
 #   KEEP       optional newline-separated relpaths to emit (smart
 #              materialization, V34); unset/empty = emit all (no filter)

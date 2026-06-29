@@ -38,7 +38,10 @@ setup() {
     export CORE_CATEGORIES="generic git"
     export GLOBS_MAP="nix=**/*.nix,flake.lock;generic=**/*;git=**/*;security=**/*"
     export CHANNEL_OVERRIDES=""
-    export AGENT_SEAMS="claude=.claude/rules/set,paths;opencode=.opencode/rules/set,globs"
+    export AGENT_SEAMS="claude=.claude/rules/set,paths,.claude/skills,1,@,CLAUDE.md,path-rules;opencode=.opencode/rules/set,globs,.,0,inline,AGENTS.md,opencode.json-instructions"
+    export EMIT_SKILLMD_SCRIPT="$BATS_TEST_DIRNAME/../set/lib/emit-skillmd.sh"
+    export KEYWORDS_MAP="generic=generic;git=git;nix=nix;security=security"
+    export COMPILER_SCRIPT="$BATS_TEST_DIRNAME/../lib/agents-md-compile.sh"
 }
 
 teardown() {
@@ -103,4 +106,39 @@ teardown() {
     [ "$status" -eq 0 ]
     [ -f "$TARGET/.opencode/rules/set/concepts-user.md" ]
     [ ! -d "$TARGET/.claude" ]
+}
+
+@test "--agent opencode emits AGENTS.md (V39)" {
+    run bash -c "cd '$TARGET' && bash '$SCRIPT' --agent opencode nix"
+    [ "$status" -eq 0 ]
+    [ -f "$TARGET/AGENTS.md" ]
+    grep -q 'Generic skill' "$TARGET/AGENTS.md"
+}
+
+@test "--agent opencode emits opencode.json (V39)" {
+    run bash -c "cd '$TARGET' && bash '$SCRIPT' --agent opencode nix"
+    [ "$status" -eq 0 ]
+    [ -f "$TARGET/opencode.json" ]
+    grep -q '"instructions": \["AGENTS.md"\]' "$TARGET/opencode.json"
+}
+
+@test "--agent opencode emits portable SKILL.md at root (V20)" {
+    run bash -c "cd '$TARGET' && bash '$SCRIPT' --agent opencode nix"
+    [ "$status" -eq 0 ]
+    [ -f "$TARGET/set-nix/SKILL.md" ]
+    run ! grep -q 'disable-model-invocation' "$TARGET/set-nix/SKILL.md"
+}
+
+@test "--agent claude emits SKILL.md with dedup (V20)" {
+    run bash -c "cd '$TARGET' && bash '$SCRIPT' nix"
+    [ "$status" -eq 0 ]
+    [ -f "$TARGET/.claude/skills/set-nix/SKILL.md" ]
+    grep -q 'disable-model-invocation: true' "$TARGET/.claude/skills/set-nix/SKILL.md"
+}
+
+@test "--agent claude does not emit AGENTS.md or opencode.json" {
+    run bash -c "cd '$TARGET' && bash '$SCRIPT' nix"
+    [ "$status" -eq 0 ]
+    [ ! -f "$TARGET/AGENTS.md" ]
+    [ ! -f "$TARGET/opencode.json" ]
 }

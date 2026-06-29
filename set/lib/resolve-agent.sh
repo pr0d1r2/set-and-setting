@@ -2,7 +2,8 @@
 # resolve-agent.sh -- resolve an agent name to its seam values.
 # Prints dir,condField to stdout if found; exits 1 with known agent
 # names on stderr if not found.
-# Env in: AGENT_SEAMS (agent=dir,condField;...), AGENT_NAME (name to resolve)
+# Env in: AGENT_SEAMS (agent=dir,condField,skillDir,disableInvoc,alwaysOnImport,
+#         alwaysOnFile,condMechanism;...), AGENT_NAME (name to resolve)
 set -euo pipefail
 
 IFS=';' read -ra seam_entries <<<"${AGENT_SEAMS:-}"
