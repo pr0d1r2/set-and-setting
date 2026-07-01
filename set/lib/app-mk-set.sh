@@ -48,6 +48,7 @@ while [ $# -gt 0 ]; do
             echo "  mkSet --remove nix             # remove nix from install"
             echo "  mkSet --agent opencode         # emit for opencode agent"
             echo "  mkSet --agent opencode --all   # all categories for opencode"
+            echo "  mkSet --agent caveman-code     # emit for caveman-code agent"
             exit 0
             ;;
         --list)

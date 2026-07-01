@@ -2,7 +2,7 @@
 
 # Unit tests for set/lib/sync-set.sh -- copies the emitted set tree
 # into a target directory with clean-replace semantics (V26).
-# Covers both claude and opencode agent trees (V21/V23).
+# Covers claude, opencode, and caveman-code agent trees (V21/V23).
 
 setup() {
     SRC="$(mktemp -d)"
@@ -102,4 +102,28 @@ teardown() {
     [ "$status" -eq 0 ]
     [ ! -e "$TARGET/.opencode/rules/set/stale" ]
     [ -f "$TARGET/.opencode/rules/set/demo/sub.md" ]
+}
+
+@test "syncs caveman-code tree when source has .cave (V23)" {
+    rm -rf "$SRC/.claude"
+    mkdir -p "$SRC/.cave/rules/set/demo"
+    echo "cave rule" >"$SRC/.cave/rules/set/demo/sub.md"
+    run bash "$SRC/bin/sync-set" "$TARGET"
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"synced set"* ]]
+    [ -f "$TARGET/.cave/rules/set/demo/sub.md" ]
+    [ "$(cat "$TARGET/.cave/rules/set/demo/sub.md")" = "cave rule" ]
+    [ ! -d "$TARGET/.claude" ]
+}
+
+@test "clean-replace works for caveman-code tree (V23/V26)" {
+    rm -rf "$SRC/.claude"
+    mkdir -p "$SRC/.cave/rules/set/demo"
+    echo "fresh" >"$SRC/.cave/rules/set/demo/sub.md"
+    mkdir -p "$TARGET/.cave/rules/set/stale"
+    echo "stale" >"$TARGET/.cave/rules/set/stale/old.md"
+    run bash "$SRC/bin/sync-set" "$TARGET"
+    [ "$status" -eq 0 ]
+    [ ! -e "$TARGET/.cave/rules/set/stale" ]
+    [ -f "$TARGET/.cave/rules/set/demo/sub.md" ]
 }

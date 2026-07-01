@@ -13,6 +13,12 @@ pre-commit:
       timeout: 300s
     narrow-language-other:
       timeout: 300s
+    markdownlint:
+      timeout: 300s
+    markdownlint-agentic:
+      timeout: 300s
+    shellcheck:
+      timeout: 300s
 
 pre-push:
   commands:

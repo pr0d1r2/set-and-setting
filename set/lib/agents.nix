@@ -58,4 +58,26 @@
     inherit (conditional) dir;
     condField = conditional.field;
   };
+
+  caveman-code = rec {
+    alwaysOn = {
+      file = "CAVE.md";
+      import = "@";
+    };
+    conditional = {
+      dir = ".cave/rules/set";
+      field = "paths";
+      mechanism = "path-rules";
+    };
+    skill = {
+      dir = ".cave/skills";
+      file = "SKILL.md";
+      # caveman-code is a Claude Code superset; same dedup (V20).
+      disableModelInvocation = true;
+    };
+
+    # back-compat seam
+    inherit (conditional) dir;
+    condField = conditional.field;
+  };
 }

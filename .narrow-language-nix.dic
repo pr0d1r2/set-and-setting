@@ -73,6 +73,8 @@ cat
 categories
 category
 cats
+cave
+caveman
 changelog
 channel
 char
@@ -85,6 +87,7 @@ claude
 clbody
 cli
 clset
+code
 collapses
 command
 commit
@@ -118,6 +121,9 @@ counterparts
 coverage
 cross
 cumulative
+cvbody
+cvset
+cvskill
 darwin
 data
 deadnix
@@ -186,6 +192,7 @@ executable
 execute
 exist
 existing
+exists
 exit
 exp
 expectations
@@ -328,6 +335,7 @@ level
 levels
 lib
 libiconv
+like
 limit
 limits
 line
@@ -565,6 +573,7 @@ substituters
 subtree
 successful
 suffix
+superset
 supported
 surface
 survives

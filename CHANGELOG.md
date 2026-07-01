@@ -34,6 +34,13 @@
 
 ### Added
 
+- T54: caveman-code agent profile -- third agent seam proving
+  agnosticism (V23). Caveman-code is a Claude Code superset using
+  `.cave/` paths, `CAVE.md`+`@` always-on, `paths` conditional,
+  same dedup. Profile in `agents.nix`, nix check
+  `agent-seam-caveman-code`, bats coverage in `app-mk-set-agent`
+  and `sync-set`. `mkSet --agent caveman-code` emits to
+  `.cave/rules/set/`.
 - `apps.<sys>.mkScaffold` + bootstrap integration (#30): emit the three
   files a bare repo needs to reach green CI -- `flake.nix` (nix-lefthook
   component shape with `devShells.ci` + `default` built from
