@@ -38,7 +38,7 @@ setup() {
     export CORE_CATEGORIES="generic git"
     export GLOBS_MAP="nix=**/*.nix,flake.lock;generic=**/*;git=**/*;security=**/*"
     export CHANNEL_OVERRIDES=""
-    export AGENT_SEAMS="claude=.claude/rules/set,paths,.claude/skills,1,@,CLAUDE.md,path-rules;opencode=.opencode/rules/set,globs,.,0,inline,AGENTS.md,opencode.json-instructions"
+    export AGENT_SEAMS="claude=.claude/rules/set,paths,.claude/skills,1,@,CLAUDE.md,path-rules;opencode=.opencode/rules/set,globs,.,0,inline,AGENTS.md,opencode.json-instructions;caveman-code=.cave/rules/set,paths,.cave/skills,1,@,CAVE.md,path-rules"
     export EMIT_SKILLMD_SCRIPT="$BATS_TEST_DIRNAME/../set/lib/emit-skillmd.sh"
     export KEYWORDS_MAP="generic=generic;git=git;nix=nix;security=security"
     export COMPILER_SCRIPT="$BATS_TEST_DIRNAME/../lib/agents-md-compile.sh"
@@ -141,4 +141,66 @@ teardown() {
     [ "$status" -eq 0 ]
     [ ! -f "$TARGET/AGENTS.md" ]
     [ ! -f "$TARGET/opencode.json" ]
+}
+
+@test "--agent caveman-code emits to .cave paths" {
+    run bash -c "cd '$TARGET' && bash '$SCRIPT' --agent caveman-code nix"
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"Installed categories: generic git nix"* ]]
+    [ -f "$TARGET/.cave/rules/set/generic/skill.md" ]
+    [ -f "$TARGET/.cave/rules/set/nix/flake.md" ]
+    [ ! -d "$TARGET/.claude" ]
+    [ ! -d "$TARGET/.opencode" ]
+}
+
+@test "--agent caveman-code uses paths in frontmatter" {
+    run bash -c "cd '$TARGET' && bash '$SCRIPT' --agent caveman-code nix"
+    [ "$status" -eq 0 ]
+    grep -q '^paths:' "$TARGET/.cave/rules/set/nix/flake.md"
+    run ! grep -q '^globs:' "$TARGET/.cave/rules/set/nix/flake.md"
+}
+
+@test "--agent caveman-code manifest records caveman-code" {
+    run bash -c "cd '$TARGET' && bash '$SCRIPT' --agent caveman-code nix"
+    [ "$status" -eq 0 ]
+    [ -f "$TARGET/.cave/rules/set/.mkset.json" ]
+    grep -q '"agent":"caveman-code"' "$TARGET/.cave/rules/set/.mkset.json"
+}
+
+@test "--agent caveman-code dry-run shows caveman target" {
+    run bash -c "cd '$TARGET' && bash '$SCRIPT' --agent caveman-code --dry-run"
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"Agent: caveman-code"* ]]
+    [[ "$output" == *"Target: ./.cave/rules/set/"* ]]
+}
+
+@test "--agent caveman-code same body as claude (V23)" {
+    run bash -c "cd '$TARGET' && bash '$SCRIPT' nix"
+    [ "$status" -eq 0 ]
+    claude_body="$(sed '1,/^---$/d' "$TARGET/.claude/rules/set/nix/flake.md")"
+    run bash -c "cd '$TARGET' && bash '$SCRIPT' --agent caveman-code nix"
+    [ "$status" -eq 0 ]
+    caveman_body="$(sed '1,/^---$/d' "$TARGET/.cave/rules/set/nix/flake.md")"
+    [ "$claude_body" = "$caveman_body" ]
+}
+
+@test "--agent caveman-code emits SKILL.md with dedup (V20)" {
+    run bash -c "cd '$TARGET' && bash '$SCRIPT' --agent caveman-code nix"
+    [ "$status" -eq 0 ]
+    [ -f "$TARGET/.cave/skills/set-nix/SKILL.md" ]
+    grep -q 'disable-model-invocation: true' "$TARGET/.cave/skills/set-nix/SKILL.md"
+}
+
+@test "--agent caveman-code does not emit AGENTS.md or opencode.json" {
+    run bash -c "cd '$TARGET' && bash '$SCRIPT' --agent caveman-code nix"
+    [ "$status" -eq 0 ]
+    [ ! -f "$TARGET/AGENTS.md" ]
+    [ ! -f "$TARGET/opencode.json" ]
+}
+
+@test "--agent caveman-code concepts go to .cave rules" {
+    run bash -c "cd '$TARGET' && bash '$SCRIPT' --agent caveman-code"
+    [ "$status" -eq 0 ]
+    [ -f "$TARGET/.cave/rules/set/concepts-user.md" ]
+    [ ! -d "$TARGET/.claude" ]
 }

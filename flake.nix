@@ -474,6 +474,7 @@
             agents = import ./set/lib/agents.nix;
             c = agents.claude;
             o = agents.opencode;
+            cv = agents.caveman-code;
             ok =
               # Claude profile mechanisms
               assert c.alwaysOn.file == "CLAUDE.md";
@@ -485,11 +486,20 @@
               assert o.alwaysOn.file == "AGENTS.md";
               assert o.alwaysOn.import == "inline";
               assert o.conditional.field == "globs";
+              # caveman-code (Claude Code superset, .cave/ paths)
+              assert cv.alwaysOn.file == "CAVE.md";
+              assert cv.alwaysOn.import == "@";
+              assert cv.conditional.dir == ".cave/rules/set";
+              assert cv.conditional.field == "paths";
+              assert cv.skill.dir == ".cave/skills";
+              assert cv.skill.disableModelInvocation;
               # back-compat seam derives from conditional (single source)
               assert c.dir == c.conditional.dir;
               assert c.condField == c.conditional.field;
               assert o.dir == o.conditional.dir;
               assert o.condField == o.conditional.field;
+              assert cv.dir == cv.conditional.dir;
+              assert cv.condField == cv.conditional.field;
               true;
           in
           pkgs.runCommand "agent-profiles-check" { inherit ok; } ''
@@ -770,6 +780,66 @@
             if [ -e "${claude}/AGENTS.md" ] || [ -e "${claude}/opencode.json" ]; then
               echo "FAIL: claude must not emit AGENTS.md/opencode.json"; exit 1
             fi
+
+            echo PASS
+            touch $out
+          '';
+
+        agent-seam-caveman-code =
+          let
+            mkSet = import ./set/lib/mk-set.nix { inherit (nixpkgs) lib; };
+            agents = import ./set/lib/agents.nix;
+            claude = mkSet { inherit pkgs; };
+            caveman = mkSet {
+              inherit pkgs;
+              agent = agents.caveman-code;
+            };
+          in
+          pkgs.runCommand "agent-seam-caveman-code-check" { } ''
+            # V23: agnosticism proof -- caveman-code seam builds the same sources
+            clset="${claude}/.claude/rules/set"
+            cvset="${caveman}/.cave/rules/set"
+
+            # caveman-code domain rule uses paths (same field as Claude)
+            grep -q '^paths:' "$cvset/nix/flake.md" \
+              || { echo "FAIL: caveman nix missing paths"; exit 1; }
+            grep -qF '"**/*.nix"' "$cvset/nix/flake.md" \
+              || { echo "FAIL: caveman nix glob value"; exit 1; }
+
+            # always-on core is path-less (channel a, V18)
+            if grep -q '^paths:' "$cvset/generic/skill.md"; then
+              echo "FAIL: caveman core generic must be path-less"; exit 1
+            fi
+
+            # same agnostic body in both agents (strip domain frontmatter)
+            clbody="$(sed '1,/^---$/d' "$clset/nix/flake.md")"
+            cvbody="$(sed '1,/^---$/d' "$cvset/nix/flake.md")"
+            [ "$clbody" = "$cvbody" ] \
+              || { echo "FAIL: nix/flake body differs between agents"; exit 1; }
+
+            # core file body byte-identical across agents (path-less)
+            [ "$(cat "$clset/generic/skill.md")" = "$(cat "$cvset/generic/skill.md")" ] \
+              || { echo "FAIL: generic body differs between agents"; exit 1; }
+
+            # caveman-code SKILL.md has Claude dedup (superset, same mechanism)
+            cvskill="${caveman}/.cave/skills/set-nix/SKILL.md"
+            [ -f "$cvskill" ] || { echo "FAIL: caveman SKILL.md missing"; exit 1; }
+            grep -q 'disable-model-invocation: true' "$cvskill" \
+              || { echo "FAIL: caveman SKILL.md missing disable-model-invocation"; exit 1; }
+
+            # caveman-code uses @-import like Claude: no AGENTS.md, no config file
+            if [ -e "${caveman}/AGENTS.md" ]; then
+              echo "FAIL: caveman must not emit AGENTS.md"; exit 1
+            fi
+            if [ -e "${caveman}/opencode.json" ]; then
+              echo "FAIL: caveman must not emit opencode.json"; exit 1
+            fi
+
+            # always-on @-manifest exists at .cave/rules/set.md
+            [ -f "${caveman}/.cave/rules/set.md" ] \
+              || { echo "FAIL: caveman set.md manifest missing"; exit 1; }
+            grep -q '^@set/generic/skill.md$' "${caveman}/.cave/rules/set.md" \
+              || { echo "FAIL: caveman set.md missing core ref"; exit 1; }
 
             echo PASS
             touch $out
