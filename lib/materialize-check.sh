@@ -53,12 +53,25 @@ for cat in "${cats[@]:-}"; do
         rel="$cat.md"
         channel="$cat_channel"
         globs="$raw_globs"
+        exact_ch="" exact_gl="" pfx_ch="" pfx_gl="" pfx_len=0
         while IFS='|' read -r opath ochannel oglobs; do
-            [ "$opath" = "$rel" ] || continue
-            [ -n "$ochannel" ] && channel="$ochannel"
-            [ -n "$oglobs" ] && globs="$oglobs"
-            break
+            [ -n "$opath" ] || continue
+            if [ "$opath" = "$rel" ]; then
+                exact_ch="$ochannel"
+                exact_gl="$oglobs"
+            elif [[ "$rel" == "$opath/"* ]] && [ ${#opath} -gt "$pfx_len" ]; then
+                pfx_len=${#opath}
+                pfx_ch="$ochannel"
+                pfx_gl="$oglobs"
+            fi
         done <<<"${OVERRIDES:-}"
+        if [ -n "$exact_ch" ] || [ -n "$exact_gl" ]; then
+            [ -n "$exact_ch" ] && channel="$exact_ch"
+            [ -n "$exact_gl" ] && globs="$exact_gl"
+        elif [ "$pfx_len" -gt 0 ]; then
+            [ -n "$pfx_ch" ] && channel="$pfx_ch"
+            [ -n "$pfx_gl" ] && globs="$pfx_gl"
+        fi
 
         if [ "$channel" = "core" ]; then
             grep -q "^${COND_FIELD}:" "$corefile" && {
@@ -90,12 +103,25 @@ for cat in "${cats[@]:-}"; do
             rel="$cat/$relname"
             channel="$cat_channel"
             globs="$raw_globs"
+            exact_ch="" exact_gl="" pfx_ch="" pfx_gl="" pfx_len=0
             while IFS='|' read -r opath ochannel oglobs; do
-                [ "$opath" = "$rel" ] || continue
-                [ -n "$ochannel" ] && channel="$ochannel"
-                [ -n "$oglobs" ] && globs="$oglobs"
-                break
+                [ -n "$opath" ] || continue
+                if [ "$opath" = "$rel" ]; then
+                    exact_ch="$ochannel"
+                    exact_gl="$oglobs"
+                elif [[ "$rel" == "$opath/"* ]] && [ ${#opath} -gt "$pfx_len" ]; then
+                    pfx_len=${#opath}
+                    pfx_ch="$ochannel"
+                    pfx_gl="$oglobs"
+                fi
             done <<<"${OVERRIDES:-}"
+            if [ -n "$exact_ch" ] || [ -n "$exact_gl" ]; then
+                [ -n "$exact_ch" ] && channel="$exact_ch"
+                [ -n "$exact_gl" ] && globs="$exact_gl"
+            elif [ "$pfx_len" -gt 0 ]; then
+                [ -n "$pfx_ch" ] && channel="$pfx_ch"
+                [ -n "$pfx_gl" ] && globs="$pfx_gl"
+            fi
 
             if [ "$channel" = "core" ]; then
                 grep -q "^${COND_FIELD}:" "$rule" && {

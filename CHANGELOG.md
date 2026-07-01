@@ -91,6 +91,14 @@
   then could not delete it. Each emitter now `chmod -R u+w` the copied
   tree (and any prior tree before removing it). Re-sync is idempotent
   (V33). Surfaced as a wall of `rm: cannot remove` on devShell entry.
+- CI: gate cachix push to main-branch pushes only so PRs do not fail
+  when the auth token is unavailable.
+- Fix `shfmt` and `shellcheck` violations in `lib/materialize-check.sh`.
+- CI: move LEFTHOOK_*_TIMEOUT env vars from workflow `env:` block to
+  `extra-env` input. The CI action runs `nix develop --ignore-environment`
+  which strips all parent env vars; hooks fell back to 30-second defaults
+  and timed out under parallel load.
+- shellcheck SC2086: quote `$pfx_len` in `set/lib/emit-rule.sh`.
 - CI: increase lefthook hook timeouts for parallel `--all-files` runs.
   Workflow-level env block in `ci.yml` sets bash-timeout hooks to 120s
   (300s for `bats-unit`). `lefthook-local.yml` overrides narrow-language

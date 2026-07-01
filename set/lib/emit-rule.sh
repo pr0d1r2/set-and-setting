@@ -27,7 +27,7 @@ while IFS='|' read -r opath ochannel oglobs; do
     if [ "$opath" = "$REL" ]; then
         exact_ch="$ochannel"
         exact_gl="$oglobs"
-    elif [[ "$REL" == "$opath/"* ]] && [ ${#opath} -gt $pfx_len ]; then
+    elif [[ "$REL" == "$opath/"* ]] && [ ${#opath} -gt "$pfx_len" ]; then
         pfx_len=${#opath}
         pfx_ch="$ochannel"
         pfx_gl="$oglobs"

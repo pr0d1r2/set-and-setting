@@ -37,6 +37,7 @@ arg
 args
 argument
 artifact
+artifacts
 ascii
 asks
 aspect
@@ -102,6 +103,7 @@ cannot
 carries
 carry
 carrying
+cascading
 case
 cat
 catdir
@@ -117,6 +119,7 @@ checks
 chmod
 claude
 clean
+cleanup
 close
 code
 collapse
@@ -261,6 +264,7 @@ eval
 even
 every
 evidence
+exact
 example
 examples
 exceeded
@@ -378,6 +382,7 @@ including
 inconclusive
 individual
 infrastructure
+inherit
 init
 injected
 injection
@@ -396,11 +401,13 @@ installs
 instead
 instruction
 instructions
+int
 integration
 integrations
 intentional
 internal
 into
+invoc
 invocable
 invocation
 invoked
@@ -431,6 +438,7 @@ least
 leave
 leaves
 lefthook
+len
 less
 level
 lib
@@ -454,6 +462,7 @@ local
 location
 lock
 logic
+longest
 look
 looks
 loops
@@ -482,6 +491,7 @@ materialized
 materializes
 max
 maxdepth
+may
 mdlint
 means
 mechanism
@@ -567,6 +577,7 @@ other
 otherwise
 out
 output
+outside
 over
 override
 overrides
@@ -599,6 +610,7 @@ positional
 post
 pre
 precommit
+prefix
 prepended
 prepush
 present
@@ -700,6 +712,7 @@ schema
 scoped
 scored
 script
+scripts
 seam
 seams
 second
@@ -725,6 +738,7 @@ serial
 set
 setbase
 setroot
+sets
 setting
 setup
 shape
@@ -781,6 +795,7 @@ structure
 style
 sub
 subdir
+subtree
 succeeds
 supporting
 supports
