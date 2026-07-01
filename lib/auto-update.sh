@@ -82,14 +82,9 @@ if set_pkg="$(nix build .#set --print-out-paths --no-link 2>/dev/null)"; then
     "$set_pkg/bin/sync-set" .
 fi
 
-# Sync setting: build packages.setting and copy config files.
+# Sync setting: build packages.setting and run its sync-setting script.
 if setting_pkg="$(nix build .#setting --print-out-paths --no-link 2>/dev/null)"; then
-    find -L "$setting_pkg" -type f | while read -r f; do
-        rel="${f#"$setting_pkg/"}"
-        mkdir -p "$(dirname "$rel")"
-        cp -f "$f" "$rel"
-    done
-    echo "synced setting -> ."
+    "$setting_pkg/bin/sync-setting" .
 fi
 
 if [ "$do_commit" -eq 1 ]; then
