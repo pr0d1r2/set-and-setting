@@ -49,7 +49,7 @@ jobs:
         with:
           skip-build: "true"
           cachix-cache: pr0d1r2
-          cachix-auth-token: ${{ secrets.CACHIX_AUTH_TOKEN }}
+          cachix-auth-token: ${{ github.event_name == 'push' && secrets.CACHIX_AUTH_TOKEN || '' }}
           extra-env: LEFTHOOK_EXCLUDE=changelog-touched
           keep-home: "true"
 
@@ -61,7 +61,7 @@ jobs:
         with:
           skip-build: "true"
           cachix-cache: pr0d1r2
-          cachix-auth-token: ${{ secrets.CACHIX_AUTH_TOKEN }}
+          cachix-auth-token: ${{ github.event_name == 'push' && secrets.CACHIX_AUTH_TOKEN || '' }}
           extra-env: LEFTHOOK_EXCLUDE=changelog-touched
           keep-home: "true"
           flake-check-timeout: "600"
@@ -76,6 +76,6 @@ jobs:
           extra-platforms: aarch64-linux
           skip-build: "true"
           cachix-cache: pr0d1r2
-          cachix-auth-token: ${{ secrets.CACHIX_AUTH_TOKEN }}
+          cachix-auth-token: ${{ github.event_name == 'push' && secrets.CACHIX_AUTH_TOKEN || '' }}
           extra-env: LEFTHOOK_EXCLUDE=changelog-touched
           keep-home: "true"
