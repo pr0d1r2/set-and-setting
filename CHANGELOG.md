@@ -93,6 +93,7 @@
   (V33). Surfaced as a wall of `rm: cannot remove` on devShell entry.
 - CI: gate cachix push to main-branch pushes only so PRs do not fail
   when the auth token is unavailable.
+- Fix `shfmt` and `shellcheck` violations in `lib/materialize-check.sh`.
 - CI: increase lefthook hook timeouts for parallel `--all-files` runs.
   Workflow-level env block in `ci.yml` sets bash-timeout hooks to 120s
   (300s for `bats-unit`). `lefthook-local.yml` overrides narrow-language

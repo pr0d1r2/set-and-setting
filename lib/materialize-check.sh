@@ -57,9 +57,12 @@ for cat in "${cats[@]:-}"; do
         while IFS='|' read -r opath ochannel oglobs; do
             [ -n "$opath" ] || continue
             if [ "$opath" = "$rel" ]; then
-                exact_ch="$ochannel"; exact_gl="$oglobs"
-            elif [[ "$rel" == "$opath/"* ]] && [ ${#opath} -gt $pfx_len ]; then
-                pfx_len=${#opath}; pfx_ch="$ochannel"; pfx_gl="$oglobs"
+                exact_ch="$ochannel"
+                exact_gl="$oglobs"
+            elif [[ "$rel" == "$opath/"* ]] && [ ${#opath} -gt "$pfx_len" ]; then
+                pfx_len=${#opath}
+                pfx_ch="$ochannel"
+                pfx_gl="$oglobs"
             fi
         done <<<"${OVERRIDES:-}"
         if [ -n "$exact_ch" ] || [ -n "$exact_gl" ]; then
@@ -104,9 +107,12 @@ for cat in "${cats[@]:-}"; do
             while IFS='|' read -r opath ochannel oglobs; do
                 [ -n "$opath" ] || continue
                 if [ "$opath" = "$rel" ]; then
-                    exact_ch="$ochannel"; exact_gl="$oglobs"
-                elif [[ "$rel" == "$opath/"* ]] && [ ${#opath} -gt $pfx_len ]; then
-                    pfx_len=${#opath}; pfx_ch="$ochannel"; pfx_gl="$oglobs"
+                    exact_ch="$ochannel"
+                    exact_gl="$oglobs"
+                elif [[ "$rel" == "$opath/"* ]] && [ ${#opath} -gt "$pfx_len" ]; then
+                    pfx_len=${#opath}
+                    pfx_ch="$ochannel"
+                    pfx_gl="$oglobs"
                 fi
             done <<<"${OVERRIDES:-}"
             if [ -n "$exact_ch" ] || [ -n "$exact_gl" ]; then
