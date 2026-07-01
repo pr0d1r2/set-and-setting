@@ -114,3 +114,66 @@ make_core_rule() {
     [ "$status" -eq 0 ]
     [[ "$output" == *"PASS"* ]]
 }
+
+# --- CORE channel tests (V18/V32) ---
+
+@test "PASS when core-channel category has path-less files" {
+    mkdir -p "$MATERIALIZED/$DIR/generic"
+    printf '%s\n' '# Skill' '' 'Body.' \
+        >"$MATERIALIZED/$DIR/generic/skill.md"
+    CATEGORIES="generic" CORE="generic" run bash "$SCRIPT"
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"PASS"* ]]
+}
+
+@test "FAIL when core-channel file has frontmatter" {
+    make_rule_files generic "**/*"
+    CATEGORIES="generic" CORE="generic" run bash "$SCRIPT"
+    [ "$status" -eq 1 ]
+    [[ "$output" == *"must be path-less"* ]]
+}
+
+# --- Override tests (V30, mirrors emit-rule) ---
+
+@test "override flips core-channel file to domain" {
+    mkdir -p "$MATERIALIZED/$DIR/generic"
+    printf '%s\n' '---' 'paths:' '  - "**/*"' '---' '' 'RTK body.' \
+        >"$MATERIALIZED/$DIR/generic/rtk.md"
+    printf '%s\n' '# Skill' '' 'Body.' \
+        >"$MATERIALIZED/$DIR/generic/skill.md"
+    CATEGORIES="generic" CORE="generic" \
+        OVERRIDES="generic/rtk.md|domain|" run bash "$SCRIPT"
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"PASS"* ]]
+}
+
+@test "subtree override applies to nested files (V30)" {
+    mkdir -p "$MATERIALIZED/$DIR/test/qemu"
+    printf '%s\n' '---' 'paths:' '  - "tests/integration/**"' '  - "**/*.exp"' '---' '' 'Cleanup.' \
+        >"$MATERIALIZED/$DIR/test/qemu/cleanup.md"
+    CATEGORIES="test" \
+        OVERRIDES="test/qemu||tests/integration/**,**/*.exp" run bash "$SCRIPT"
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"PASS"* ]]
+}
+
+@test "FAIL when subtree override globs missing from file" {
+    mkdir -p "$MATERIALIZED/$DIR/test/qemu"
+    printf '%s\n' '---' 'paths:' '  - "**/*.bats"' '---' '' 'Cleanup.' \
+        >"$MATERIALIZED/$DIR/test/qemu/cleanup.md"
+    CATEGORIES="test" \
+        OVERRIDES="test/qemu||tests/integration/**,**/*.exp" run bash "$SCRIPT"
+    [ "$status" -eq 1 ]
+    [[ "$output" == *'missing glob "tests/integration/**"'* ]]
+}
+
+@test "exact override wins over subtree prefix (V30)" {
+    mkdir -p "$MATERIALIZED/$DIR/test/qemu"
+    printf '%s\n' '---' 'paths:' '  - "**/*.nix"' '---' '' 'mDNS.' \
+        >"$MATERIALIZED/$DIR/test/qemu/mdns.md"
+    CATEGORIES="test" OVERRIDES="$(printf '%s\n%s\n' \
+        'test/qemu||tests/integration/**,**/*.exp' \
+        'test/qemu/mdns.md||**/*.nix')" run bash "$SCRIPT"
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"PASS"* ]]
+}
