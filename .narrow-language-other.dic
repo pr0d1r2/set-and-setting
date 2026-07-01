@@ -146,6 +146,7 @@ assertions
 asserts
 assigned
 assignment
+assignments
 assigns
 assume
 assumed
@@ -2092,6 +2093,7 @@ query
 question
 quite
 quota
+quote
 quoted
 raise
 raised
@@ -2549,6 +2551,7 @@ strings
 strip
 stripped
 stripping
+strips
 structural
 structure
 structured
@@ -2683,6 +2686,7 @@ tight
 tighten
 tightened
 time
+timed
 timeout
 timeouts
 timestamp
