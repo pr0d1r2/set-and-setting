@@ -32,6 +32,14 @@
   DevShell shellHook auto-syncs `packages.set` on entry.
   CLAUDE.md stripped of `@`-ref blocks for skills/concepts/drafts.
 
+- T8: auto-update mechanism for consumer repos (C7). Adds
+  `lib/auto-update.sh` (updates flake input, syncs set + setting,
+  commits flake.lock), `apps.<sys>.auto-update` (runnable via
+  `nix run github:pr0d1r2/set-and-setting#auto-update`), a reusable
+  GitHub Actions workflow (`.github/workflows/auto-update.yml`) that
+  consumers call via `uses:`, and a scaffold consumer workflow
+  (`setting/scaffold/auto-update.yml`) emitted by `mkScaffold`.
+
 ### Added
 
 - T54: caveman-code agent profile -- third agent seam proving

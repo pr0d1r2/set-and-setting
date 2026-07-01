@@ -1,4 +1,5 @@
 aarch
+abc
 abi
 able
 aborts
@@ -690,6 +691,7 @@ describes
 description
 descriptions
 design
+designed
 dest
 destdir
 destination
@@ -1738,9 +1740,11 @@ nixpkgs
 nmodel
 node
 nodes
+nodir
 noexec
 noise
 noisy
+nolock
 non
 nondeterministic
 none
@@ -1805,6 +1809,7 @@ opath
 open
 opencode
 opening
+opens
 opensource
 opensourcing
 operate
@@ -2097,6 +2102,7 @@ qim
 quality
 query
 question
+quiet
 quite
 quota
 quote
@@ -2266,6 +2272,7 @@ retired
 retry
 return
 returns
+reusable
 reuse
 rev
 revalidated
@@ -2839,6 +2846,8 @@ utf
 utilize
 val
 valid
+validate
+validates
 validation
 value
 values

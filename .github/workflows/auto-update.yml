@@ -1,0 +1,58 @@
+---
+name: Auto-update set-and-setting
+
+# Reusable workflow for consumer repos (T8/C7). Consumers call this
+# from their own workflow to auto-update their set-and-setting flake
+# input, validate the update, and open a PR with the flake.lock change.
+#
+# Consumer usage:
+#   uses: pr0d1r2/set-and-setting/.github/workflows/auto-update.yml@main
+#   with:
+#     input-name: set-and-setting
+#   secrets:
+#     CACHIX_AUTH_TOKEN: ${{ secrets.CACHIX_AUTH_TOKEN }}
+
+"on":
+  workflow_call:
+    inputs:
+      input-name:
+        description: Flake input name for set-and-setting
+        type: string
+        default: set-and-setting
+    secrets:
+      CACHIX_AUTH_TOKEN:
+        required: false
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: cachix/install-nix-action@v27
+
+      - name: Setup cachix
+        if: ${{ secrets.CACHIX_AUTH_TOKEN != '' }}
+        uses: cachix/cachix-action@v15
+        with:
+          name: pr0d1r2
+          authToken: ${{ secrets.CACHIX_AUTH_TOKEN }}
+
+      - name: Update flake input
+        run: nix flake update ${{ inputs.input-name }}
+
+      - name: Validate updated flake
+        run: nix flake check --no-build
+
+      - name: Create pull request
+        uses: peter-evans/create-pull-request@v6
+        with:
+          commit-message: "chore: update ${{ inputs.input-name }}"
+          title: "chore: update ${{ inputs.input-name }}"
+          branch: auto/set-and-setting-update
+          delete-branch: true
+          labels: auto-merge

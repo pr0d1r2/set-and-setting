@@ -90,8 +90,8 @@ and dogfoods both.
   with `packages.set`. Seed/init scaffold is separate
   (`bin/sync-setting-init`), not in this package.
 - I.sync-target: `sync-set`/`sync-setting` take a target dir arg; default preserves prior behavior.
-- I.apps: `apps.<sys>.{mkSet,mkSetting,mkSetting-init,bootstrap}` --
-  runnable installers for the zero-dependency delivery path (C9).
+- I.apps: `apps.<sys>.{mkSet,mkSetting,mkSetting-init,bootstrap,auto-update}`
+  -- runnable installers for the zero-dependency delivery path (C9).
   `nix run github:pr0d1r2/set-and-setting#mkSet [cats|--all|--all-except
   a b]` materializes skills into `./.claude/rules/set/` at the CWD.
   Emit happens at RUN TIME (the app carries agnostic source + emitter
@@ -99,7 +99,10 @@ and dogfoods both.
   seam are pure runtime flags. `mkSetting` materializes unified config;
   `mkSetting-init` seeds repo-specific starters (skip-if-exists);
   `bootstrap` = mkSet core + mkSetting + mkSetting-init in one. Each
-  supports `--list`/`--help`/`--dry-run`.
+  supports `--list`/`--help`/`--dry-run`. `auto-update` updates
+  flake input, syncs, commits (T8/C7).
+- I.auto-update: `lib/auto-update.sh` + reusable workflow +
+  scaffold. Updates flake lock, validates, syncs, opens PR.
 - I.manifest: `./.claude/rules/set/.mkset.json` -- records installed
   categories + upstream rev + agent. Drives smart re-run (bare `mkSet`
   with a manifest refreshes what's installed), update detection, and
@@ -299,7 +302,7 @@ and dogfoods both.
 | T5  | x | expose mkDriftCheck for setting/ (not just set/)     | I.mkDriftCheck |
 | T6  | x | add tests for mkSet exclude param                    | V8        |
 | T7  | x | switch consumer repos from git+file: to github: URLs | C6        |
-| T8  | . | auto-update mechanism -- flake re-eval triggers sync-set + sync-setting + commit in consumer repos | C7,I.sync-set,I.sync-setting |
+| T8  | x | auto-update mechanism -- flake re-eval triggers sync-set + sync-setting + commit in consumer repos | C7,I.sync-set,I.sync-setting |
 | T9  | . | consumer dependency graph: upstream repos switch git+file: to github: URLs after push | C6 |
 | T10 | x | add `set/drafts/` tree with atomic skill files and bundles | V11,V12,V13 |
 | T11 | x | wire drafts categories into mkSet and flake.nix | I.flake,I.drafts |
