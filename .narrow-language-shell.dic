@@ -1,5 +1,7 @@
+abc
 absent
 across
+actions
 active
 actual
 add
@@ -113,12 +115,14 @@ cats
 cave
 caveman
 chain
+change
 changes
 channel
 channels
 check
 checks
 chmod
+chore
 claude
 clean
 cleanup
@@ -138,6 +142,7 @@ commands
 comment
 comments
 commit
+commits
 comparator
 compares
 compile
@@ -201,6 +206,7 @@ derive
 desc
 description
 design
+designed
 dest
 destdir
 destination
@@ -242,6 +248,7 @@ editorconfig
 effective
 elif
 else
+email
 embedded
 emission
 emit
@@ -370,6 +377,7 @@ hits
 hook
 hop
 hops
+hub
 idempotent
 identical
 iff
@@ -386,6 +394,7 @@ individual
 infrastructure
 inherit
 init
+initial
 injected
 injection
 inline
@@ -433,6 +442,7 @@ lacks
 language
 last
 later
+latest
 layout
 leading
 learn
@@ -449,6 +459,7 @@ limits
 line
 lines
 linguist
+link
 list
 listed
 lists
@@ -463,6 +474,7 @@ loads
 local
 location
 lock
+locked
 logic
 longest
 look
@@ -502,6 +514,7 @@ merges
 merging
 meta
 mimic
+minimal
 minimum
 mirrored
 mirrors
@@ -536,6 +549,9 @@ next
 nix
 nixfmt
 nixos
+nodes
+nodir
+nolock
 non
 nondeterministic
 none
@@ -641,6 +657,7 @@ pyproject
 python
 qemu
 query
+quiet
 quoted
 rather
 raw
@@ -661,6 +678,7 @@ recursively
 ref
 reference
 referenced
+references
 refers
 refresh
 refreshes
@@ -684,6 +702,8 @@ replaces
 reply
 repo
 report
+repos
+repository
 requested
 require
 required
@@ -695,6 +715,7 @@ rest
 restore
 rests
 return
+reusable
 rev
 root
 rule
@@ -857,6 +878,7 @@ unresolved
 unset
 update
 updates
+updating
 upstream
 url
 usage
