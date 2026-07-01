@@ -45,7 +45,7 @@ and dogfoods both.
 
 ## §I Interfaces
 
-- I.flake: `flake.nix` -- main entry. Exposes `sets`, `drafts`, `settings`, `lib.mkSet`, `lib.mkSetting`, `lib.mkDriftCheck`, `lib.mkMaterializeCheck`, `packages.set`, `packages.setting`, `checks`.
+- I.flake: `flake.nix` -- main entry. Exposes `sets`, `drafts`, `settings`, `lib.mkSet`, `lib.mkSetting`, `lib.mkDriftCheck`, `lib.mkDepGraphCheck`, `lib.mkMaterializeCheck`, `packages.set`, `packages.setting`, `checks`.
 - I.mkSet: `set/lib/mk-set.nix` -- the skill-set emitter and single
   source of truth for skills. Mirrors agnostic `set/skills/` markdown 1:1
   into `<dir>/set/` as **path-scoped rules**: each source file copied
@@ -66,6 +66,12 @@ and dogfoods both.
   `bin/sync-setting-init` (scaffold, skips files that already exist).
 - I.mkDriftCheck: `lib/mk-drift-check.nix` -- compares synced set files against built derivation. Args: `pkgs`, `skillSet`, `projectRoot`, `setPath`. Fails with exit 1 on drift.
 - I.mkSettingDriftCheck: `lib/mk-setting-drift-check.nix` -- compares synced dotfiles against mkSetting output. Args: `pkgs`, `settingSet`, `projectRoot`. Fails with exit 1 on drift.
+- I.mkDepGraphCheck: `lib/mk-dep-graph-check.nix` -- validates that a
+  consumer's `flake.lock` dependency graph uses only `github:` URLs (C6).
+  Fails with exit 1 if any input uses `git+file:`, `path:`, or other
+  non-github types. Args: `pkgs`, `projectRoot`. Shell logic in
+  `lib/dep-graph-check.sh` (nix/modularity). Consumer wiring is one
+  line in their `checks` output.
 - I.mkMaterializeCheck: `lib/mk-materialize-check.nix` -- deterministic
   consumer-side test for skill materialization. Runs mkSet for the
   requested categories (core implied), then asserts the output layout
@@ -303,7 +309,7 @@ and dogfoods both.
 | T6  | x | add tests for mkSet exclude param                    | V8        |
 | T7  | x | switch consumer repos from git+file: to github: URLs | C6        |
 | T8  | x | auto-update mechanism -- flake re-eval triggers sync-set + sync-setting + commit in consumer repos | C7,I.sync-set,I.sync-setting |
-| T9  | . | consumer dependency graph: upstream repos switch git+file: to github: URLs after push | C6 |
+| T9  | x | consumer dependency graph: upstream repos switch git+file: to github: URLs after push | C6,I.mkDepGraphCheck |
 | T10 | x | add `set/drafts/` tree with atomic skill files and bundles | V11,V12,V13 |
 | T11 | x | wire drafts categories into mkSet and flake.nix | I.flake,I.drafts |
 | T12 | . | add mkSet check: drafts categories build without error | V1,V11 |

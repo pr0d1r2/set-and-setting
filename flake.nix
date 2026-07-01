@@ -382,6 +382,7 @@
         mkDriftCheck = import ./lib/mk-drift-check.nix;
         mkSettingDriftCheck = import ./lib/mk-setting-drift-check.nix;
         mkMaterializeCheck = import ./lib/mk-materialize-check.nix { inherit (nixpkgs) lib; };
+        mkDepGraphCheck = import ./lib/mk-dep-graph-check.nix;
       };
 
       packages = forAllSystems (pkgs: {
@@ -922,6 +923,12 @@
             echo PASS
             touch $out
           '';
+
+        # dep-graph -- T9/C6: every flake input in flake.lock uses github:
+        dep-graph = import ./lib/mk-dep-graph-check.nix {
+          inherit pkgs;
+          projectRoot = ./.;
+        };
 
         default = pkgs.runCommand "set-and-setting-checks" { } ''
           touch $out

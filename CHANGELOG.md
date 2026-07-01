@@ -189,6 +189,13 @@
 
 ### Tests
 
+- Add `lib.mkDepGraphCheck` (T9/C6): reusable consumer-side nix check
+  that validates a `flake.lock` dependency graph uses only `github:` URLs.
+  Fails with exit 1 and guidance if any input uses `git+file:`, `path:`,
+  or other non-github types. Shell logic in `lib/dep-graph-check.sh`,
+  bats coverage in `tests/dep-graph-check.bats` (7 test cases). Wired as
+  `checks.dep-graph` in `flake.nix` (dogfood). Consumers wire one line
+  in their `checks` output.
 - Add `agents-md-compile` + `agents-md` checks (T48/V29): fixture-based
   fidelity check (recursion, fence/code-span skipping, HTML-comment
   stripping, hop limit) plus an end-to-end build that compiles the real
