@@ -22,6 +22,9 @@ in
   exclude ? [ ],
   # Per-agent seam. Default: Claude (from agents.nix).
   agent ? { },
+  # Source tree root. Default: set/skills/. Override to include drafts
+  # (e.g. a merged tree with set/drafts/ as a drafts/ subdirectory).
+  skillsDir ? ../skills,
 }:
 
 let
@@ -41,7 +44,7 @@ let
 in
 pkgs.runCommand "agent-set"
   {
-    SKILLS_DIR = ../skills;
+    SKILLS_DIR = skillsDir;
     CONCEPTS_DIR = ../concepts;
     CONCEPTS = if concepts then "1" else "0";
     DIR = ag.dir;
