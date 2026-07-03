@@ -1,14 +1,16 @@
 #!/usr/bin/env bash
 # assemble-lefthook.sh -- assemble lefthook.yml from integration fragments.
-# Merges remotes + pre-commit + pre-push sections from all fragment files
-# into a single lefthook.yml. Fragment order is deterministic.
+# Merges remotes + pre-commit + pre-push sections from selected fragment
+# files into a single lefthook.yml. Fragment order is deterministic.
 # Env in: FRAGMENTS_DIR, out
+#   FRAGMENTS (optional): space-separated fragment names to include.
+#     Defaults to all: "base nix shell ascii markdown yaml".
 # shellcheck disable=SC2154
 set -euo pipefail
 
 mkdir -p "$out"
 
-ordered="base nix shell ascii markdown yaml"
+ordered="${FRAGMENTS:-base nix shell ascii markdown yaml}"
 
 {
     printf '%s\n' '---'

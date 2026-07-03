@@ -100,6 +100,17 @@
 
 ### Fixed
 
+- B10: explicitly disable cachix in all CI jobs (`cachix-cache: ""`);
+  B8 fix was incomplete because the action defaults `cachix-cache` to
+  `"pr0d1r2"`, so the problematic cachix-action still ran.
+- B8: disable cachix in CI -- `cachix-action@ad2ddac` pinned in
+  `nix-lefthook-ci-action` targets Node.js 20 but GitHub runners now
+  force Node.js 24; un-awaited async calls cause exit code 1. Removed
+  `cachix-cache` and `cachix-auth-token` from all CI jobs. Re-enable
+  when upstream updates its cachix-action pin.
+- B7: fix CI git index.lock contention -- move `GIT_OPTIONAL_LOCKS=0`
+  from ci devShell `shellHook` to a top-level `mkShell` attribute so
+  it persists when `nix develop --command` skips shellHook.
 - B6: bump `.md` file-size-check limit from 32768 to 40960 so SPEC.md
   passes; add `flake-check-timeout` and `flake-eval-timeout` to
   `build-linux` job.

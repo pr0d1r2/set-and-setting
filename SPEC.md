@@ -62,8 +62,17 @@ and dogfoods both.
   `.narrow-language-*.dic`, `.nix-embedded-shell-allowlist`; (2)
   materialized -- unified configs always synced & gitignored:
   `.markdownlint.yml`, `.yamllint.yml`, `.claude/` commands/allowances.
+  The app (`app-mk-setting.sh`) also assembles a content-aware
+  `lefthook.yml` at runtime from detected repo content (V40).
   Args: `pkgs` + per-output toggles. `bin/sync-setting` (materialize),
   `bin/sync-setting-init` (scaffold, skips files that already exist).
+- I.detectFragments: `setting/lib/detect-fragments.sh` -- content-aware
+  lefthook fragment detector (V40). Examines tracked files via
+  `git ls-files` and determines which integration fragments
+  (`setting/integrations/lefthook/*.yml`) apply: `base`+`ascii` always,
+  `nix` if `*.nix`, `shell` if `*.sh`/`*.bash`, `markdown` if `*.md`,
+  `yaml` if `*.yml`/`*.yaml`. Bare repos (no tracked files) default to
+  all fragments. Output: deterministic space-separated fragment list.
 - I.mkDriftCheck: `lib/mk-drift-check.nix` -- compares synced set files against built derivation. Args: `pkgs`, `skillSet`, `projectRoot`, `setPath`. Fails with exit 1 on drift.
 - I.mkSettingDriftCheck: `lib/mk-setting-drift-check.nix` -- compares synced dotfiles against mkSetting output. Args: `pkgs`, `settingSet`, `projectRoot`. Fails with exit 1 on drift.
 - I.mkDepGraphCheck: `lib/mk-dep-graph-check.nix` -- validates that a
@@ -296,6 +305,19 @@ and dogfoods both.
   of the rule files. mkSet for the opencode profile emits a compiled
   `AGENTS.md` (from `set.md`, via the V29 compiler) + an `opencode.json`
   whose `instructions` list only the always-on file.
+- V40: Content-aware lefthook.yml construction. `mkSetting` and
+  `mkScaffold` apps assemble `lefthook.yml` at runtime from detected repo
+  content (I.detectFragments): `detect-fragments.sh` examines tracked
+  files via `git ls-files`, selects applicable integration fragments
+  (`base`+`ascii` always; `nix`/`shell`/`markdown`/`yaml` conditional on
+  file types), and `assemble-lefthook.sh` merges them into a single
+  `lefthook.yml`. Bare repos default to all fragments. The nix derivation
+  (`mk-scaffold.nix`) still pre-builds an all-fragment reference for CI
+  checks; the apps override at runtime for content-awareness.
+  Idempotent: same tracked files → same fragments → same output → no
+  diff. Convergent: adding a new file type (e.g. `*.sh`) causes the next
+  `mkSetting` run to add the matching checks. `lefthook-local.yml`
+  overrides preserved (never touched).
 
 ## §T Tasks
 
@@ -356,6 +378,7 @@ and dogfoods both.
 | T51 | x | opencode profile + agnosticism proof -- build the same sources for opencode (AGENTS.md + opencode.json); ties T31. Always-on stays universal-only (V38) | V21,V23,V38,T31 |
 | T52 | . | README -- document the multi-channel model + three delivery paths; keep the one-command WOW | I.apps,C9 |
 | T53 | x | smart auto-materialization (`I.applicability`) -- boolean facet-grained filter over `git ls-files` (`paths` AND `content`, vendored/generated excluded) + facet->core backfill + per-skill manifest evidence; `--auto` default for the `nix run` path, `--all`/explicit/`--pin`/`--exclude` override; scored mode deferred. Needs T41 | V34,V35,V36,V37,I.applicability,I.manifest,I.apps |
+| T55 | x | content-aware lefthook.yml construction -- `detect-fragments.sh` examines `git ls-files` for file types; `assemble-lefthook.sh` accepts `FRAGMENTS` param; both `mkSetting` and `mkScaffold` apps detect+assemble at runtime; idempotent+convergent; bats coverage for detection, parameterized assembly, and content-aware app behavior | V40,I.detectFragments,I.mkSetting |
 
 ## §B Bugs
 
@@ -367,3 +390,7 @@ and dogfoods both.
 | B5 | 2026-06-29 | V19/V21 framed opencode `opencode.json` `instructions` globs as the *conditional* (channel-b) mechanism, mirroring Claude path-rules. opencode docs: `instructions` are paths/globs to files that are ALWAYS loaded and combined with `AGENTS.md` -- there is no per-open-file conditional load, and opencode ignores per-file `paths:`/`globs:` frontmatter. So the emitted opencode rule frontmatter is inert and putting domains in `instructions` would bloat every turn. | corrected V19; added V39 (opencode loading model). T51 emits a compiled `AGENTS.md` (universal core only, V38) + an `opencode.json` whose `instructions` list only the always-on file; opencode domains reach the agent via `SKILL.md` + Read-on-demand. Verified vs opencode.ai/docs (rules, config). |
 | B3 | 2026-06-26 | rules-only (B2 fix) over-corrected: `.claude/rules` is Claude-proprietary (reduces agnosticism, C2/V23), and `@`-import is Claude-only (opencode/Codex/AGENTS.md spec have no `@` -- opencode uses `opencode.json` instructions globs or Read-on-demand). So a single mechanism can't be both reliable-on-Claude and portable. | fixed: best-of-both multi-channel (V17-V21): per-agent profile + sidecar meta + `SKILL.md` (portable) + Claude rules (reliable) + `@`->`AGENTS.md` compiler (portable always-on) + dedup; gated by the mechanism test suite (T50). Verified vs opencode/Codex docs. |
 | B6 | 2026-07-03 | `build-linux` CI failed: (1) `SPEC.md` (33181 bytes) exceeded the `.md` file-size-check limit of 32768 bytes in `file_size_limits.yml`; (2) `build-linux` job lacked `flake-check-timeout` and `flake-eval-timeout` params, so the CI action's nix check step printed "fails" and exited 1. | fixed: bumped `.md` limit to 40960 in `file_size_limits.yml`; added `flake-check-timeout: "600"` and `flake-eval-timeout: "120"` to `build-linux` in `ci.yml` (matching `build-darwin`). |
+| B7 | 2026-07-03 | `build-linux` CI failed with `fatal: Unable to create .git/index.lock: File exists` -- parallel lefthook hooks fought over git's index lock. Root cause: the `ci` devShell set `GIT_OPTIONAL_LOCKS=0` in `shellHook`, but the CI action uses `nix develop --command` which does NOT run shellHook. Without `GIT_OPTIONAL_LOCKS=0`, read-only git operations (file-list resolution for parallel hooks) take optional locks and collide. | fixed: moved `GIT_OPTIONAL_LOCKS` from `shellHook` to a top-level `mkShell` attribute (`GIT_OPTIONAL_LOCKS = "0"`), which persists in `--command` mode. |
+| B8 | 2026-07-03 | `build-linux` CI failed: `cachix/cachix-action@ad2ddac` pinned inside `nix-lefthook-ci-action@ce9a118b` targets Node.js 20, but GitHub runners forced Node.js 24. The old cachix-action has un-awaited `setup()`/`upload()` calls; on Node.js 24, unhandled promise rejections exit with code 1. All hooks and checks pass locally. Upstream `nix-lefthook-ci-action` has no newer version with a fixed cachix-action pin. | fixed: removed `cachix-cache` and `cachix-auth-token` from all CI jobs in `ci.yml`; cachix is a caching layer, not a test -- all hooks and checks run identically without it. Re-enable when upstream `nix-lefthook-ci-action` updates its cachix-action pin to one targeting Node.js 24. |
+| B9 | 2026-07-03 | `build-linux-arm` CI failed: job lacked `flake-check-timeout` and `flake-eval-timeout` params (same root cause as B6, missed for this job). Without these params the CI action's nix check step prints "fails" and exits 1. QEMU-emulated aarch64-linux checks are even slower than native, making timeouts essential. | fixed: added `flake-check-timeout: "600"` and `flake-eval-timeout: "120"` to `build-linux-arm` in `ci.yml` (matching `build-linux` and `build-darwin`). |
+| B10 | 2026-07-03 | `build-linux` CI failed: B8 fix was incomplete -- removing `cachix-cache` and `cachix-auth-token` params from `ci.yml` did not disable cachix because `nix-lefthook-ci-action@ce9a118b` defaults `cachix-cache` to `"pr0d1r2"`. The problematic `cachix/cachix-action@ad2ddac` (Node.js 20 targeting, fails on Node.js 24 runners) still ran on every CI job. All hooks and checks pass locally. | fixed: added explicit `cachix-cache: ""` to all three CI jobs (`build-linux`, `build-darwin`, `build-linux-arm`) to override the action default and fully disable the cachix step. |

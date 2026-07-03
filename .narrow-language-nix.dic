@@ -138,6 +138,7 @@ derivation
 derived
 derives
 description
+detect
 deterministic
 dev
 develop

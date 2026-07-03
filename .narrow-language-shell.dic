@@ -6,7 +6,9 @@ active
 actual
 add
 added
+adding
 additional
+adds
 afile
 after
 against
@@ -33,6 +35,7 @@ appears
 applicability
 applicable
 applies
+apply
 apps
 are
 arg
@@ -58,6 +61,7 @@ auto
 automatic
 available
 avoids
+aware
 awk
 back
 backfill
@@ -65,6 +69,7 @@ backprop
 backtick
 bare
 base
+based
 bash
 bats
 because
@@ -95,6 +100,7 @@ build
 builders
 builds
 bundle
+bundled
 burns
 but
 cachix
@@ -160,6 +166,8 @@ configs
 confirm
 confirmed
 considers
+constructed
+constructs
 consumer
 contain
 contained
@@ -176,6 +184,7 @@ copy
 core
 corefile
 correct
+count
 coverage
 covers
 create
@@ -187,6 +196,7 @@ custom
 cut
 cutting
 dangerously
+data
 decide
 decided
 declare
@@ -211,8 +221,10 @@ designed
 dest
 destdir
 destination
+detect
 detected
 detects
+determine
 determinism
 deterministic
 dev
@@ -276,6 +288,7 @@ even
 every
 evidence
 exact
+examines
 example
 examples
 exceeded
@@ -295,6 +308,7 @@ expansion
 expected
 explicit
 export
+extension
 extglob
 extra
 extracted
@@ -345,6 +359,7 @@ gate
 gated
 generated
 generic
+gets
 git
 gitattributes
 github
@@ -516,6 +531,7 @@ mechanism
 mechprobe
 merges
 merging
+message
 meta
 mimic
 minimal
@@ -632,6 +648,7 @@ per
 permissions
 perms
 pipefail
+plain
 plants
 portable
 positional
@@ -658,6 +675,7 @@ produces
 profile
 project
 prompt
+properly
 proves
 provided
 pruned
@@ -724,7 +742,9 @@ resolved
 resolves
 rest
 restore
+restricts
 rests
+result
 return
 reusable
 rev
@@ -767,6 +787,7 @@ semicolon
 send
 separate
 separated
+separately
 sequence
 serial
 set
@@ -860,6 +881,7 @@ those
 through
 time
 timing
+title
 toggle
 token
 tokens
@@ -878,6 +900,7 @@ true
 trusting
 twice
 type
+types
 under
 unified
 unique
