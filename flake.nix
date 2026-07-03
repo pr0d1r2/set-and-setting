@@ -394,6 +394,7 @@
       devShells = forAllSystems (pkgs: {
         ci = pkgs.mkShell {
           GIT_OPTIONAL_LOCKS = "0";
+          NIX_CONFIG = "experimental-features = nix-command flakes";
           packages = (lefthookWrappersFor pkgs) ++ [
             pkgs.coreutils
             pkgs.git
