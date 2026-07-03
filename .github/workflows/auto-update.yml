@@ -35,8 +35,17 @@ jobs:
 
       - uses: cachix/install-nix-action@v27
 
+      - name: Check cachix token
+        id: cachix-check
+        run: |
+          if [ -n "$CACHIX_TOKEN" ]; then
+            echo "available=true" >> "$GITHUB_OUTPUT"
+          fi
+        env:
+          CACHIX_TOKEN: ${{ secrets.CACHIX_AUTH_TOKEN }}
+
       - name: Setup cachix
-        if: ${{ secrets.CACHIX_AUTH_TOKEN != '' }}
+        if: steps.cachix-check.outputs.available == 'true'
         uses: cachix/cachix-action@v15
         with:
           name: pr0d1r2
