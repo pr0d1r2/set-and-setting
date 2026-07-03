@@ -47,6 +47,7 @@ adjusted
 admins
 advertise
 advocating
+affect
 affects
 affinity
 after
@@ -554,6 +555,7 @@ create
 created
 creates
 creating
+creation
 creative
 credential
 credentials
@@ -665,6 +667,7 @@ developer
 developers
 development
 device
+devs
 diagnose
 diagram
 dic
@@ -692,6 +695,7 @@ directory
 direnv
 dirs
 disable
+disabled
 disagree
 disclosure
 discoverable
@@ -773,6 +777,7 @@ efi
 eio
 either
 eliminates
+eliminating
 else
 email
 embed
@@ -847,6 +852,7 @@ examines
 example
 examples
 exceeded
+exceeding
 exceeds
 except
 exception
@@ -875,6 +881,7 @@ expectations
 expected
 expensive
 experience
+experimental
 explainable
 explaining
 explanations
@@ -1078,6 +1085,8 @@ gotcha
 gotchas
 grade
 graduate
+graduated
+graduation
 grained
 grammars
 grant
@@ -1087,10 +1096,12 @@ graphic
 green
 grep
 greps
+grew
 group
 grouped
 groups
 grub
+guaranteed
 guarantees
 guard
 guardrails
@@ -1269,6 +1280,7 @@ instance
 instant
 instead
 instructions
+insufficient
 integer
 integration
 integrations
@@ -1384,6 +1396,7 @@ level
 levels
 lexical
 lib
+libgit
 libraries
 library
 libs
@@ -1570,6 +1583,7 @@ mount
 mounts
 move
 moved
+moves
 much
 multi
 multiple
@@ -1957,6 +1971,7 @@ question
 quite
 quota
 quote
+race
 raise
 raised
 raising
@@ -2126,6 +2141,7 @@ reviews
 rework
 reworked
 rewrite
+rewriting
 right
 risk
 risks
@@ -2215,6 +2231,8 @@ separated
 separately
 sequence
 sequences
+sequential
+sequentially
 serial
 serialization
 serializes
@@ -2424,6 +2442,7 @@ support
 supported
 supporting
 supports
+suppresses
 surface
 surfaced
 surfaces
@@ -2518,6 +2537,7 @@ timed
 timeout
 timeouts
 timestamp
+timing
 title
 today
 together
@@ -2616,6 +2636,7 @@ universal
 unix
 unknown
 unless
+unlike
 unnecessary
 unreachable
 unrelated
@@ -2655,6 +2676,7 @@ usually
 utf
 utilize
 valid
+validate
 validates
 validation
 value

@@ -955,6 +955,92 @@
           projectRoot = ./.;
         };
 
+        # T13: graduation mechanism -- merge a draft into an existing
+        # stable category. Validates graduated files appear as domain
+        # rules with correct globs, and existing skills are preserved.
+        graduate-draft =
+          let
+            graduatedSkills = pkgs.runCommand "graduated-skills-nix" { } ''
+              cp -r ${./set/skills} $out
+              chmod -R u+w $out
+              cp -r ${./set/drafts/nix}/* $out/nix/
+            '';
+            graduated = import ./set/lib/mk-set.nix { inherit (nixpkgs) lib; } {
+              inherit pkgs;
+              skillsDir = graduatedSkills;
+              categories = [ "nix" ];
+              concepts = false;
+            };
+          in
+          pkgs.runCommand "graduate-draft-check" { } ''
+            setdir="${graduated}/.claude/rules/set"
+
+            # Graduated files appear as domain rules
+            [ -f "$setdir/nix/composability.md" ] \
+              || { echo "FAIL: graduated composability.md missing"; exit 1; }
+            [ -f "$setdir/nix/underlay.md" ] \
+              || { echo "FAIL: graduated underlay.md missing"; exit 1; }
+
+            # Carry the nix domain globs (V19)
+            grep -q '^paths:' "$setdir/nix/composability.md" \
+              || { echo "FAIL: composability.md missing paths"; exit 1; }
+            grep -qF '"**/*.nix"' "$setdir/nix/composability.md" \
+              || { echo "FAIL: composability.md missing nix glob"; exit 1; }
+
+            # Existing stable nix skills preserved
+            [ -f "$setdir/nix/flake.md" ] \
+              || { echo "FAIL: existing flake.md missing"; exit 1; }
+            [ -f "$setdir/nix/develop.md" ] \
+              || { echo "FAIL: existing develop.md missing"; exit 1; }
+
+            echo PASS
+            touch $out
+          '';
+
+        # T13: graduation @-ref update -- validates that bundle files
+        # referencing @set/drafts/<cat>/ are rewritten to @set/<cat>/
+        # after graduation, and all files are present.
+        graduate-draft-refs =
+          let
+            graduatedSkills =
+              pkgs.runCommand "graduated-skills-ops"
+                {
+                  nativeBuildInputs = [
+                    pkgs.findutils
+                    pkgs.gnused
+                  ];
+                }
+                ''
+                  cp -r ${./set/skills} $out
+                  chmod -R u+w $out
+                  cp -r ${./set/drafts/ops} $out/ops
+                  chmod -R u+w $out/ops
+                  find $out/ops -name '*.md' -exec \
+                    sed -i 's|@set/drafts/ops/|@set/ops/|g' {} \;
+                '';
+          in
+          pkgs.runCommand "graduate-draft-refs-check" { } ''
+            # @-refs updated in bundle file
+            grep -q '@set/ops/slash.md' "${graduatedSkills}/ops/ops.md" \
+              || { echo "FAIL: ops.md @-ref not updated"; exit 1; }
+            grep -q '@set/ops/destructive.md' "${graduatedSkills}/ops/ops.md" \
+              || { echo "FAIL: ops.md destructive @-ref not updated"; exit 1; }
+            if grep -q '@set/drafts/' "${graduatedSkills}/ops/ops.md"; then
+              echo "FAIL: ops.md still has drafts/ @-ref"; exit 1
+            fi
+
+            # All files present in graduated tree
+            [ -f "${graduatedSkills}/ops/ops.md" ] \
+              || { echo "FAIL: ops.md missing"; exit 1; }
+            [ -f "${graduatedSkills}/ops/slash.md" ] \
+              || { echo "FAIL: slash.md missing"; exit 1; }
+            [ -f "${graduatedSkills}/ops/destructive.md" ] \
+              || { echo "FAIL: destructive.md missing"; exit 1; }
+
+            echo PASS
+            touch $out
+          '';
+
         default = pkgs.runCommand "set-and-setting-checks" { } ''
           touch $out
         '';
@@ -1084,6 +1170,20 @@
             ];
             text = builtins.readFile ./lib/auto-update.sh;
           };
+
+          graduateApp = pkgs.writeShellApplication {
+            name = "graduate";
+            runtimeInputs = [
+              pkgs.coreutils
+              pkgs.findutils
+              pkgs.gnugrep
+              pkgs.gnused
+            ];
+            text = ''
+              export ALL_CATEGORIES="${lib.concatStringsSep " " cats.all}"
+            ''
+            + builtins.readFile ./lib/graduate-draft.sh;
+          };
         in
         {
           mkSet = {
@@ -1109,6 +1209,10 @@
           "auto-update" = {
             type = "app";
             program = "${autoUpdateApp}/bin/auto-update";
+          };
+          graduate = {
+            type = "app";
+            program = "${graduateApp}/bin/graduate";
           };
         }
       );

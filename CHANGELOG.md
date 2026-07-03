@@ -42,6 +42,12 @@
 
 ### Added
 
+- T13: graduate-draft mechanism (`apps.graduate`, `lib/graduate-draft.sh`).
+  Moves draft skill categories from `set/drafts/<cat>/` to
+  `set/skills/<cat>/`, updating `@`-refs from `@set/drafts/<cat>/` to
+  `@set/<cat>/`. Handles both merge (into existing category) and new
+  category creation (reports required nix config changes). Nix checks
+  validate merge graduation and `@`-ref rewriting.
 - T54: caveman-code agent profile -- third agent seam proving
   agnosticism (V23). Caveman-code is a Claude Code superset using
   `.cave/` paths, `CAVE.md`+`@` always-on, `paths` conditional,

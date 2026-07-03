@@ -54,6 +54,7 @@ assertion
 assertions
 asserts
 attr
+attrset
 audit
 auth
 authoring
@@ -251,6 +252,8 @@ dogfood
 domain
 domains
 done
+draft
+drafts
 drift
 drop
 dupe
@@ -345,6 +348,7 @@ folder
 for
 force
 format
+formatting
 found
 four
 fragment
@@ -368,6 +372,9 @@ given
 glob
 globs
 globstar
+graduate
+graduated
+graduating
 graph
 green
 grep
@@ -506,6 +513,7 @@ main
 majority
 make
 manifest
+manual
 map
 mapentries
 mapfile
@@ -529,6 +537,7 @@ mdlint
 means
 mechanism
 mechprobe
+merge
 merges
 merging
 message
@@ -552,6 +561,8 @@ model
 modularity
 more
 most
+move
+moves
 multi
 multiple
 must
@@ -560,6 +571,7 @@ names
 namespace
 narrow
 nconcept
+needed
 needs
 nested
 never
@@ -606,9 +618,11 @@ open
 opencode
 opening
 opensource
+ops
 opt
 option
 optional
+optionally
 options
 orchestrate
 orchestrates
@@ -631,7 +645,6 @@ owned
 owner
 package
 packages
-parallel
 parent
 parse
 part
@@ -650,6 +663,7 @@ perms
 pipefail
 plain
 plants
+points
 portable
 positional
 post
@@ -663,6 +677,7 @@ preserve
 preserved
 preserves
 prevents
+preview
 print
 printf
 prints
@@ -720,6 +735,7 @@ reliably
 relname
 relpath
 relpaths
+remaining
 remains
 remote
 remotes
@@ -731,6 +747,7 @@ replaces
 reply
 repo
 report
+reports
 repos
 repository
 requested
@@ -818,6 +835,7 @@ skip
 skipped
 skipping
 skips
+slashed
 smart
 snippet
 some
@@ -831,6 +849,7 @@ spawn
 spec
 specific
 srcdir
+stable
 staged
 stale
 standalone
