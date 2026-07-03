@@ -100,6 +100,9 @@
 
 ### Fixed
 
+- B6: bump `.md` file-size-check limit from 32768 to 40960 so SPEC.md
+  passes; add `flake-check-timeout` and `flake-eval-timeout` to
+  `build-linux` job.
 - B4: `sync-set` and `app-mk-set` no longer fail with `Permission denied`
   on re-sync. Both `cp -r` the emitted tree from `/nix/store` (read-only),
   which carried 555/444 perms to the target; the next clean-replace `rm`

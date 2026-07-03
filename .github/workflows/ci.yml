@@ -56,6 +56,8 @@ jobs:
             LEFTHOOK_SHFMT_TIMEOUT=300
             LEFTHOOK_BATS_UNIT_TIMEOUT=300
           keep-home: "true"
+          flake-check-timeout: "600"
+          flake-eval-timeout: "120"
 
   build-darwin:
     needs: build-linux
