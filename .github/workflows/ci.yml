@@ -28,6 +28,7 @@ jobs:
           skip-build: "true"
           cachix-cache: ""
           extra-env: >-
+            GIT_OPTIONAL_LOCKS=0
             LEFTHOOK_EXCLUDE=changelog-touched
             LEFTHOOK_TRAILING_WHITESPACE_TIMEOUT=300
             LEFTHOOK_GIT_CONFLICT_MARKERS_TIMEOUT=300
@@ -67,6 +68,7 @@ jobs:
           skip-build: "true"
           cachix-cache: ""
           extra-env: >-
+            GIT_OPTIONAL_LOCKS=0
             LEFTHOOK_EXCLUDE=changelog-touched
             LEFTHOOK_TRAILING_WHITESPACE_TIMEOUT=300
             LEFTHOOK_GIT_CONFLICT_MARKERS_TIMEOUT=300
@@ -107,6 +109,7 @@ jobs:
           skip-build: "true"
           cachix-cache: ""
           extra-env: >-
+            GIT_OPTIONAL_LOCKS=0
             LEFTHOOK_EXCLUDE=changelog-touched
             LEFTHOOK_TRAILING_WHITESPACE_TIMEOUT=300
             LEFTHOOK_GIT_CONFLICT_MARKERS_TIMEOUT=300

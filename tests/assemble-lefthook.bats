@@ -12,7 +12,7 @@ write_remote() {
 
 write_commands() {
     printf '\n%s\n' "$1:"
-    printf '%s\n' "  parallel: true" "  commands:" \
+    printf '%s\n' "  commands:" \
         "    $2:" "      glob: \"$3\"" \
         "      run: lefthook-$2 {$4}"
 }
@@ -81,10 +81,9 @@ teardown() {
     [[ "$last_remote" == *"hook-yaml"* ]]
 }
 
-@test "has pre-commit section with parallel and commands" {
+@test "has pre-commit section with commands" {
     bash "$SCRIPT"
     grep -q '^pre-commit:' "$out/lefthook.yml"
-    grep -q '  parallel: true' "$out/lefthook.yml"
     grep -q '  commands:' "$out/lefthook.yml"
 }
 

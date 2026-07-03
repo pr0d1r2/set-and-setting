@@ -394,6 +394,7 @@
       devShells = forAllSystems (pkgs: {
         ci = pkgs.mkShell {
           GIT_OPTIONAL_LOCKS = "0";
+          NIX_CONFIG = "experimental-features = nix-command flakes";
           packages = (lefthookWrappersFor pkgs) ++ [
             pkgs.coreutils
             pkgs.git
@@ -428,6 +429,30 @@
           inherit pkgs;
           categories = [ "generic" ];
         };
+
+        # T12/V11: drafts categories build without error.
+        # Drafts live at set/drafts/ (V11), outside set/skills/ (the default
+        # SKILLS_DIR). Merge both trees so the emitter finds drafts/ content.
+        mkSet-drafts =
+          let
+            mergedSkills = pkgs.runCommand "merged-skills-with-drafts" { } ''
+              cp -r ${./set/skills} $out
+              chmod -R u+w $out
+              cp -r ${./set/drafts} $out/drafts
+            '';
+          in
+          import ./set/lib/mk-set.nix { inherit (nixpkgs) lib; } {
+            inherit pkgs;
+            skillsDir = mergedSkills;
+            categories = [
+              "drafts/skill"
+              "drafts/agent"
+              "drafts/nix"
+              "drafts/ops"
+              "drafts/context"
+            ];
+            concepts = false;
+          };
 
         # meta-resolve -- V30: the sidecar map resolves each source path to
         # { channel, paths, keywords, always } via category fallback <-

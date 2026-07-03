@@ -114,3 +114,21 @@ teardown() {
     [ -f "$out/$DIR/extra.md" ]
     [ -f "$out/$DIR/extra/a.md" ]
 }
+
+@test "drafts categories with slashed paths build without error (T12/V11)" {
+    mkdir -p "$SKILLS_DIR/drafts/skill"
+    printf '# Format\n\nFormatting draft.\n' >"$SKILLS_DIR/drafts/skill/format.md"
+    export CATEGORIES="drafts/skill"
+    export GLOBS_MAP=""
+    run bash "$SCRIPT"
+    [ "$status" -eq 0 ]
+    [ -f "$out/$DIR/drafts/skill/format.md" ]
+    grep -q 'Formatting draft.' "$out/$DIR/drafts/skill/format.md"
+}
+
+@test "drafts category with no source files does not error (T12/V11)" {
+    export CATEGORIES="drafts/nonexistent"
+    export GLOBS_MAP=""
+    run bash "$SCRIPT"
+    [ "$status" -eq 0 ]
+}

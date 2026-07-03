@@ -6,14 +6,12 @@ remotes:
       - lefthook-remote.yml
 
 pre-commit:
-  parallel: true
   commands:
     yamllint:
       glob: "*.{yml,yaml}"
       run: timeout ${LEFTHOOK_YAMLLINT_TIMEOUT:-30} lefthook-yamllint {staged_files}
 
 pre-push:
-  parallel: true
   commands:
     yamllint:
       glob: "*.{yml,yaml}"
