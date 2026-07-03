@@ -100,6 +100,9 @@
 
 ### Fixed
 
+- B10: explicitly disable cachix in all CI jobs (`cachix-cache: ""`);
+  B8 fix was incomplete because the action defaults `cachix-cache` to
+  `"pr0d1r2"`, so the problematic cachix-action still ran.
 - B8: disable cachix in CI -- `cachix-action@ad2ddac` pinned in
   `nix-lefthook-ci-action` targets Node.js 20 but GitHub runners now
   force Node.js 24; un-awaited async calls cause exit code 1. Removed
