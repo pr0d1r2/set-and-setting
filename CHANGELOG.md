@@ -100,6 +100,11 @@
 
 ### Fixed
 
+- B8: disable cachix in CI -- `cachix-action@ad2ddac` pinned in
+  `nix-lefthook-ci-action` targets Node.js 20 but GitHub runners now
+  force Node.js 24; un-awaited async calls cause exit code 1. Removed
+  `cachix-cache` and `cachix-auth-token` from all CI jobs. Re-enable
+  when upstream updates its cachix-action pin.
 - B7: fix CI git index.lock contention -- move `GIT_OPTIONAL_LOCKS=0`
   from ci devShell `shellHook` to a top-level `mkShell` attribute so
   it persists when `nix develop --command` skips shellHook.

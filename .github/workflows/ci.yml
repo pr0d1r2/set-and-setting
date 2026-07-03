@@ -8,7 +8,7 @@ on:
     branches: [main]
 
 # Linux gates the expensive jobs (darwin runner + aarch64 QEMU).
-# nix-lefthook-ci-action installs nix + cachix, then runs lefthook
+# nix-lefthook-ci-action installs nix, then runs lefthook
 # pre-commit + pre-push --all-files in the `ci` devShell. skip-build is
 # set because this repo has no packages.default; the nix-flake-check
 # hook runs `nix flake check`. changelog-touched is a commit-gate hook
@@ -26,8 +26,6 @@ jobs:
       - uses: pr0d1r2/nix-lefthook-ci-action@ce9a118b05e90e186dba48a82067adeed185f7d4
         with:
           skip-build: "true"
-          cachix-cache: pr0d1r2
-          cachix-auth-token: ${{ github.event_name == 'push' && secrets.CACHIX_AUTH_TOKEN || '' }}
           extra-env: >-
             LEFTHOOK_EXCLUDE=changelog-touched
             LEFTHOOK_TRAILING_WHITESPACE_TIMEOUT=300
@@ -66,8 +64,6 @@ jobs:
       - uses: pr0d1r2/nix-lefthook-ci-action@ce9a118b05e90e186dba48a82067adeed185f7d4
         with:
           skip-build: "true"
-          cachix-cache: pr0d1r2
-          cachix-auth-token: ${{ github.event_name == 'push' && secrets.CACHIX_AUTH_TOKEN || '' }}
           extra-env: >-
             LEFTHOOK_EXCLUDE=changelog-touched
             LEFTHOOK_TRAILING_WHITESPACE_TIMEOUT=300
@@ -107,8 +103,6 @@ jobs:
         with:
           extra-platforms: aarch64-linux
           skip-build: "true"
-          cachix-cache: pr0d1r2
-          cachix-auth-token: ${{ github.event_name == 'push' && secrets.CACHIX_AUTH_TOKEN || '' }}
           extra-env: >-
             LEFTHOOK_EXCLUDE=changelog-touched
             LEFTHOOK_TRAILING_WHITESPACE_TIMEOUT=300
