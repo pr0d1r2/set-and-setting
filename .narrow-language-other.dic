@@ -13,6 +13,7 @@ acc
 acceleration
 accept
 acceptable
+accepts
 access
 according
 accumulated
@@ -141,6 +142,7 @@ aspects
 assemble
 assembled
 assembles
+assembly
 assert
 assertion
 assertions
@@ -439,7 +441,6 @@ comments
 commit
 commits
 committed
-committer
 committing
 common
 commonly
@@ -524,6 +525,7 @@ console
 consolidate
 constraint
 constraints
+construction
 consume
 consumed
 consumer
@@ -533,6 +535,7 @@ contained
 containing
 contains
 content
+contention
 contents
 context
 contexts
@@ -554,6 +557,7 @@ convenience
 convention
 conventional
 conventions
+convergent
 conversation
 conveying
 cookies
@@ -704,8 +708,10 @@ details
 detect
 detected
 detection
+detector
 detects
 determinate
+determines
 determinism
 deterministic
 deterministically
@@ -1084,6 +1090,7 @@ formatter
 formatters
 formatting
 forwarding
+fought
 found
 four
 fpat
@@ -1148,7 +1155,6 @@ glob
 globally
 globs
 globstar
-gmail
 gnu
 gnugrep
 gnused
@@ -1583,7 +1589,6 @@ manylinux
 map
 mapentries
 mapfile
-marcin
 mark
 markdown
 markdownlint
@@ -1691,6 +1696,7 @@ mostly
 mount
 mounts
 move
+moved
 much
 multi
 multiple
@@ -1767,7 +1773,6 @@ noting
 notloaded
 noun
 now
-nowicki
 nrule
 ntest
 null
@@ -1888,6 +1893,7 @@ parallel
 parallelization
 param
 parameter
+parameterized
 parametrize
 parametrized
 params

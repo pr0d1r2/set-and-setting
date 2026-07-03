@@ -11,6 +11,7 @@ abstraction
 acceleration
 accept
 acceptable
+accepts
 access
 according
 accumulated
@@ -126,6 +127,8 @@ aspect
 aspects
 assemble
 assembled
+assembles
+assembly
 assert
 assertion
 assertions
@@ -485,6 +488,7 @@ console
 consolidate
 constraint
 constraints
+construction
 consume
 consumed
 consumer
@@ -494,6 +498,7 @@ contained
 containing
 contains
 content
+contention
 contents
 context
 contexts
@@ -513,6 +518,7 @@ convenience
 convention
 conventional
 conventions
+convergent
 conversation
 conveying
 cookies
@@ -642,9 +648,12 @@ destructive
 detailed
 details
 detect
+detected
 detection
+detector
 detects
 determinate
+determines
 deterministic
 deterministically
 dev
@@ -991,6 +1000,7 @@ formatter
 formatters
 formatting
 forwarding
+fought
 found
 four
 fpat
@@ -1415,6 +1425,7 @@ locate
 location
 lock
 locked
+locks
 log
 logic
 login
@@ -1550,6 +1561,7 @@ mostly
 mount
 mounts
 move
+moved
 much
 multi
 multiple
@@ -1720,6 +1732,7 @@ parallel
 parallelization
 param
 parameter
+parameterized
 parametrize
 parametrized
 params

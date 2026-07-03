@@ -100,6 +100,9 @@
 
 ### Fixed
 
+- B7: fix CI git index.lock contention -- move `GIT_OPTIONAL_LOCKS=0`
+  from ci devShell `shellHook` to a top-level `mkShell` attribute so
+  it persists when `nix develop --command` skips shellHook.
 - B6: bump `.md` file-size-check limit from 32768 to 40960 so SPEC.md
   passes; add `flake-check-timeout` and `flake-eval-timeout` to
   `build-linux` job.

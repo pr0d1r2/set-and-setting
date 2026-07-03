@@ -393,6 +393,7 @@
 
       devShells = forAllSystems (pkgs: {
         ci = pkgs.mkShell {
+          GIT_OPTIONAL_LOCKS = "0";
           packages = (lefthookWrappersFor pkgs) ++ [
             pkgs.coreutils
             pkgs.git
@@ -402,7 +403,6 @@
           ];
           shellHook = ''
             export HOME="''${HOME:-/tmp/ci-home}"
-            export GIT_OPTIONAL_LOCKS=0
             mkdir -p "$HOME"
           '';
         };
