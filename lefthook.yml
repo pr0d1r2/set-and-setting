@@ -114,7 +114,6 @@ remotes:
       - lefthook-remote.yml
 
 pre-commit:
-  parallel: true
   commands:
     ascii-only:
       glob: "*.{nix,yml,json}"
@@ -150,7 +149,6 @@ pre-commit:
         - "Gemfile"
 
 pre-push:
-  parallel: true
   commands:
     ascii-only:
       glob: "*.{nix,yml,json}"

@@ -26,7 +26,6 @@ ordered="${FRAGMENTS:-base nix shell ascii markdown yaml}"
         if grep -q '^pre-commit:' "$FRAGMENTS_DIR/$name.yml"; then
             if [ "$has_precommit" -eq 0 ]; then
                 printf '\n%s\n' 'pre-commit:'
-                printf '%s\n' '  parallel: true'
                 printf '%s\n' '  commands:'
                 has_precommit=1
             fi
@@ -40,7 +39,6 @@ ordered="${FRAGMENTS:-base nix shell ascii markdown yaml}"
         if grep -q '^pre-push:' "$FRAGMENTS_DIR/$name.yml"; then
             if [ "$has_prepush" -eq 0 ]; then
                 printf '\n%s\n' 'pre-push:'
-                printf '%s\n' '  parallel: true'
                 printf '%s\n' '  commands:'
                 has_prepush=1
             fi

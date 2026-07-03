@@ -10,7 +10,6 @@ remotes:
       - lefthook-remote.yml
 
 pre-commit:
-  parallel: true
   commands:
     markdownlint:
       glob: "*.md"
@@ -22,7 +21,6 @@ pre-commit:
       run: timeout ${LEFTHOOK_MARKDOWNLINT_AGENTIC_TIMEOUT:-30} lefthook-markdownlint-agentic {staged_files}
 
 pre-push:
-  parallel: true
   commands:
     markdownlint:
       glob: "*.md"
