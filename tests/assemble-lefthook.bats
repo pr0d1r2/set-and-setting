@@ -135,3 +135,41 @@ teardown() {
     grep -q 'ascii-only:' "$out/lefthook.yml"
     grep -q 'yamllint:' "$out/lefthook.yml"
 }
+
+@test "FRAGMENTS restricts included fragments" {
+    FRAGMENTS="base markdown" bash "$SCRIPT"
+    grep -q 'hook-a' "$out/lefthook.yml"
+    grep -q 'hook-md' "$out/lefthook.yml"
+    run ! grep -q 'hook-nix' "$out/lefthook.yml"
+    run ! grep -q 'hook-shell' "$out/lefthook.yml"
+    run ! grep -q 'hook-ascii' "$out/lefthook.yml"
+    run ! grep -q 'hook-yaml' "$out/lefthook.yml"
+}
+
+@test "FRAGMENTS=base produces remotes-only output" {
+    FRAGMENTS="base" bash "$SCRIPT"
+    grep -q 'hook-a' "$out/lefthook.yml"
+    run ! grep -q '^pre-commit:' "$out/lefthook.yml"
+    run ! grep -q '^pre-push:' "$out/lefthook.yml"
+}
+
+@test "FRAGMENTS=base+ascii includes ascii commands" {
+    FRAGMENTS="base ascii" bash "$SCRIPT"
+    grep -q 'hook-a' "$out/lefthook.yml"
+    grep -q 'hook-ascii' "$out/lefthook.yml"
+    grep -q 'ascii-check:' "$out/lefthook.yml"
+    run ! grep -q 'hook-nix' "$out/lefthook.yml"
+}
+
+@test "FRAGMENTS with real fragments -- nix only" {
+    local real_dir
+    real_dir="$(cd "$BATS_TEST_DIRNAME/.." && pwd)/setting/integrations/lefthook"
+    FRAGMENTS_DIR="$real_dir"
+    export FRAGMENTS_DIR
+    FRAGMENTS="base nix ascii" bash "$SCRIPT"
+    grep -q 'nix-lefthook-trailing-whitespace' "$out/lefthook.yml"
+    grep -q 'nix-lefthook-nixfmt' "$out/lefthook.yml"
+    run ! grep -q 'nix-lefthook-shellcheck' "$out/lefthook.yml"
+    run ! grep -q 'nix-lefthook-markdownlint' "$out/lefthook.yml"
+    run ! grep -q 'nix-lefthook-yamllint' "$out/lefthook.yml"
+}

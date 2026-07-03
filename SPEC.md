@@ -62,8 +62,17 @@ and dogfoods both.
   `.narrow-language-*.dic`, `.nix-embedded-shell-allowlist`; (2)
   materialized -- unified configs always synced & gitignored:
   `.markdownlint.yml`, `.yamllint.yml`, `.claude/` commands/allowances.
+  The app (`app-mk-setting.sh`) also assembles a content-aware
+  `lefthook.yml` at runtime from detected repo content (V40).
   Args: `pkgs` + per-output toggles. `bin/sync-setting` (materialize),
   `bin/sync-setting-init` (scaffold, skips files that already exist).
+- I.detectFragments: `setting/lib/detect-fragments.sh` -- content-aware
+  lefthook fragment detector (V40). Examines tracked files via
+  `git ls-files` and determines which integration fragments
+  (`setting/integrations/lefthook/*.yml`) apply: `base`+`ascii` always,
+  `nix` if `*.nix`, `shell` if `*.sh`/`*.bash`, `markdown` if `*.md`,
+  `yaml` if `*.yml`/`*.yaml`. Bare repos (no tracked files) default to
+  all fragments. Output: deterministic space-separated fragment list.
 - I.mkDriftCheck: `lib/mk-drift-check.nix` -- compares synced set files against built derivation. Args: `pkgs`, `skillSet`, `projectRoot`, `setPath`. Fails with exit 1 on drift.
 - I.mkSettingDriftCheck: `lib/mk-setting-drift-check.nix` -- compares synced dotfiles against mkSetting output. Args: `pkgs`, `settingSet`, `projectRoot`. Fails with exit 1 on drift.
 - I.mkDepGraphCheck: `lib/mk-dep-graph-check.nix` -- validates that a
@@ -296,6 +305,19 @@ and dogfoods both.
   of the rule files. mkSet for the opencode profile emits a compiled
   `AGENTS.md` (from `set.md`, via the V29 compiler) + an `opencode.json`
   whose `instructions` list only the always-on file.
+- V40: Content-aware lefthook.yml construction. `mkSetting` and
+  `mkScaffold` apps assemble `lefthook.yml` at runtime from detected repo
+  content (I.detectFragments): `detect-fragments.sh` examines tracked
+  files via `git ls-files`, selects applicable integration fragments
+  (`base`+`ascii` always; `nix`/`shell`/`markdown`/`yaml` conditional on
+  file types), and `assemble-lefthook.sh` merges them into a single
+  `lefthook.yml`. Bare repos default to all fragments. The nix derivation
+  (`mk-scaffold.nix`) still pre-builds an all-fragment reference for CI
+  checks; the apps override at runtime for content-awareness.
+  Idempotent: same tracked files → same fragments → same output → no
+  diff. Convergent: adding a new file type (e.g. `*.sh`) causes the next
+  `mkSetting` run to add the matching checks. `lefthook-local.yml`
+  overrides preserved (never touched).
 
 ## §T Tasks
 
@@ -356,6 +378,7 @@ and dogfoods both.
 | T51 | x | opencode profile + agnosticism proof -- build the same sources for opencode (AGENTS.md + opencode.json); ties T31. Always-on stays universal-only (V38) | V21,V23,V38,T31 |
 | T52 | . | README -- document the multi-channel model + three delivery paths; keep the one-command WOW | I.apps,C9 |
 | T53 | x | smart auto-materialization (`I.applicability`) -- boolean facet-grained filter over `git ls-files` (`paths` AND `content`, vendored/generated excluded) + facet->core backfill + per-skill manifest evidence; `--auto` default for the `nix run` path, `--all`/explicit/`--pin`/`--exclude` override; scored mode deferred. Needs T41 | V34,V35,V36,V37,I.applicability,I.manifest,I.apps |
+| T55 | x | content-aware lefthook.yml construction -- `detect-fragments.sh` examines `git ls-files` for file types; `assemble-lefthook.sh` accepts `FRAGMENTS` param; both `mkSetting` and `mkScaffold` apps detect+assemble at runtime; idempotent+convergent; bats coverage for detection, parameterized assembly, and content-aware app behavior | V40,I.detectFragments,I.mkSetting |
 
 ## §B Bugs
 

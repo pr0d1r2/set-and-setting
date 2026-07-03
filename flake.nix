@@ -993,9 +993,15 @@
             runtimeInputs = [
               pkgs.coreutils
               pkgs.findutils
+              pkgs.gawk
+              pkgs.git
+              pkgs.gnugrep
             ];
             text = ''
               export SETTING_SRC="${mkSettingFull.configFiles}"
+              export FRAGMENTS_DIR="${./setting/integrations/lefthook}"
+              export ASSEMBLE_SCRIPT="${./setting/lib/assemble-lefthook.sh}"
+              export DETECT_SCRIPT="${./setting/lib/detect-fragments.sh}"
             ''
             + builtins.readFile ./setting/lib/app-mk-setting.sh;
           };
@@ -1018,9 +1024,15 @@
             runtimeInputs = [
               pkgs.coreutils
               pkgs.findutils
+              pkgs.gawk
+              pkgs.git
+              pkgs.gnugrep
             ];
             text = ''
               export SCAFFOLD_SRC="${mkScaffoldBundle}"
+              export FRAGMENTS_DIR="${./setting/integrations/lefthook}"
+              export ASSEMBLE_SCRIPT="${./setting/lib/assemble-lefthook.sh}"
+              export DETECT_SCRIPT="${./setting/lib/detect-fragments.sh}"
             ''
             + builtins.readFile ./setting/lib/app-mk-scaffold.sh;
           };
