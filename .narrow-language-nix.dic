@@ -132,6 +132,8 @@ deep
 default
 define
 delimiter
+dep
+dependency
 derivation
 derived
 derives
@@ -206,6 +208,7 @@ extra
 facet
 facets
 fail
+fails
 fall
 fallback
 false
@@ -258,6 +261,7 @@ globs
 gnu
 gnugrep
 gnused
+graph
 grep
 greps
 had
@@ -616,6 +620,7 @@ true
 trusted
 truth
 type
+types
 typos
 unchanged
 under
@@ -637,6 +642,7 @@ used
 user
 uses
 valid
+validates
 value
 verbatim
 via

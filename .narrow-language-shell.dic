@@ -200,6 +200,7 @@ delim
 delimiter
 demand
 demo
+dep
 depth
 derivation
 derive
@@ -265,6 +266,7 @@ enter
 entries
 entry
 env
+eof
 equivalent
 error
 esac
@@ -351,6 +353,7 @@ given
 glob
 globs
 globstar
+graph
 green
 grep
 greps
@@ -402,6 +405,7 @@ inlined
 inlines
 inlining
 input
+inputs
 insensitive
 inside
 install
@@ -520,6 +524,7 @@ mirrored
 mirrors
 misassigns
 missing
+mixed
 mkdir
 mkscaffold
 mkset
@@ -549,12 +554,14 @@ next
 nix
 nixfmt
 nixos
+nixpkgs
 nodes
 nodir
 nolock
 non
 nondeterministic
 none
+nonexistent
 nope
 normal
 not
@@ -583,6 +590,7 @@ open
 opencode
 opening
 opensource
+opt
 option
 optional
 options
@@ -591,6 +599,7 @@ orchestrates
 order
 ordered
 orig
+original
 other
 otherwise
 out
@@ -603,6 +612,7 @@ overwrites
 overwriting
 own
 owned
+owner
 package
 packages
 parallel
@@ -653,6 +663,7 @@ provided
 pruned
 prunes
 push
+pushing
 pyproject
 python
 qemu
@@ -825,6 +836,7 @@ supports
 surface
 surrounding
 survives
+switch
 symlink
 symlinked
 synced
@@ -881,12 +893,14 @@ updates
 updating
 upstream
 url
+urls
 usage
 use
 user
 uses
 usr
 val
+validates
 value
 values
 variant
