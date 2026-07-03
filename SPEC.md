@@ -334,7 +334,7 @@ and dogfoods both.
 | T9  | x | consumer dependency graph: upstream repos switch git+file: to github: URLs after push | C6,I.mkDepGraphCheck |
 | T10 | x | add `set/drafts/` tree with atomic skill files and bundles | V11,V12,V13 |
 | T11 | x | wire drafts categories into mkSet and flake.nix | I.flake,I.drafts |
-| T12 | . | add mkSet check: drafts categories build without error | V1,V11 |
+| T12 | x | add mkSet check: drafts categories build without error | V1,V11 |
 | T13 | . | graduate draft to stable: move `drafts/X` → `skills/X` when mature | V11 |
 | T14 | . | skill linting CI: enforce format, size budget, `@` ref resolution | V12,V13 |
 | T15 | x | CLAUDE.md wire drafts via `@` refs (dogfood) | V10,V11 |

@@ -429,6 +429,19 @@
           categories = [ "generic" ];
         };
 
+        # T12/V11: drafts categories build without error
+        mkSet-drafts = import ./set/lib/mk-set.nix { inherit (nixpkgs) lib; } {
+          inherit pkgs;
+          categories = [
+            "drafts/skill"
+            "drafts/agent"
+            "drafts/nix"
+            "drafts/ops"
+            "drafts/context"
+          ];
+          concepts = false;
+        };
+
         # meta-resolve -- V30: the sidecar map resolves each source path to
         # { channel, paths, keywords, always } via category fallback <-
         # subtree entry <- exact-file override (most specific wins).
