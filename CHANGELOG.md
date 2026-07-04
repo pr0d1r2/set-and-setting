@@ -4,6 +4,8 @@
 
 ### Changed
 
+- CI: bump `.md` file-size limit from 40960 to 49152 (B14); add missing
+  dictionary words for T56-T58 task descriptions.
 - Add the `@`->AGENTS.md compiler (T48/V29, `lib/agents-md-compile`):
   resolves a Claude `@`-manifest (the mkSet `set.md`) recursively into an
   inline, self-contained AGENTS.md so non-Claude agents get the same
