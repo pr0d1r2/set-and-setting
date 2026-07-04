@@ -105,7 +105,7 @@ and dogfoods both.
   with `packages.set`. Seed/init scaffold is separate
   (`bin/sync-setting-init`), not in this package.
 - I.sync-target: `sync-set`/`sync-setting` take a target dir arg; default preserves prior behavior.
-- I.apps: `apps.<sys>.{mkSet,mkSetting,mkSetting-init,bootstrap,auto-update,graduate}`
+- I.apps: `apps.<sys>.{mkSet,mkSetting,mkSetting-init,bootstrap,auto-update,graduate,branch-protection}`
   -- runnable installers for the zero-dependency delivery path (C9).
   `nix run github:pr0d1r2/set-and-setting#mkSet [cats|--all|--all-except
   a b]` materializes skills into `./.claude/rules/set/` at the CWD.
@@ -127,6 +127,11 @@ and dogfoods both.
   `--dry-run`, `--list`, `--help`. Nix checks validate merge graduation
   (graduated files appear as domain rules with correct globs) and
   `@`-ref rewriting (no `drafts/` prefix survives).
+- I.branch-protection: `lib/branch-protection.sh` + `apps.branch-protection`
+  -- enables GitHub branch protection requiring PRs via `gh api`.
+  Configures required status checks, disables force pushes and
+  deletions. Supports `--repo`, `--branch`, `--status-checks`,
+  `--dry-run`, `--help`. Requires `gh auth login`.
 - I.manifest: `./.claude/rules/set/.mkset.json` -- records installed
   categories + upstream rev + agent. Drives smart re-run (bare `mkSet`
   with a manifest refreshes what's installed), update detection, and
@@ -350,7 +355,7 @@ and dogfoods both.
 | T16 | x | generalize hardware concepts into composable templates | V14,V15 |
 | T17 | x | audit git history for secrets and PII before opensourcing | V16 |
 | T18 | x | create public GitHub repo and push | C6 |
-| T19 | . | enable main branch protection requiring PRs | C5 |
+| T19 | x | enable main branch protection requiring PRs (#66) | C5 |
 | T20 | . | set up cachix cache for nix builds | V1 |
 | T21 | . | set up GitHub Actions CI (nix flake check, all platforms) | V1,C3 |
 | T22 | . | update hallucinogen: git+file: to github: set-and-setting | C6,T7 |
@@ -410,3 +415,4 @@ and dogfoods both.
 | B12 | 2026-07-03 | `build-linux` CI failed: B11 fix was insufficient -- `GIT_OPTIONAL_LOCKS=0` only suppresses optional index refreshes. Parallel lefthook hooks invoke tools (nix, gitleaks) that take mandatory git index locks via libgit2 or internal git calls; `GIT_OPTIONAL_LOCKS` does not affect these. With `parallel: true`, concurrent hooks still collide on `.git/index.lock` on CI runners where I/O timing makes the race more likely. | fixed: removed `parallel: true` from `assemble-lefthook.sh`, all integration fragments, and the tracked `lefthook.yml`. Hooks now run sequentially, eliminating index lock contention. No checks disabled -- same hooks, same files, sequential execution. Local devs can re-enable via `lefthook-local.yml`. |
 | B13 | 2026-07-03 | `build-linux` CI failed: two independent causes. (1) `nix-flake-check` hook runs `nix flake check` inside `nix develop .#ci --ignore-environment`, but the `ci` devShell lacked `NIX_CONFIG` for `nix-command flakes` experimental features. The default devShell set this in `shellHook`, which does not run under `--command` mode. Result: bare `error: experimental Nix feature 'nix-command' is disabled`. (2) `flake.nix` grew to 45107 bytes, exceeding the 45056-byte `.nix` file-size limit in `file_size_limits.yml`. | fixed: added `NIX_CONFIG = "experimental-features = nix-command flakes"` as a `mkShell` attribute on the `ci` devShell (persists to `--command` mode unlike `shellHook`); bumped `.nix` file-size limit from 45056 to 49152 in `file_size_limits.yml`. |
 | B14 | 2026-07-04 | `build-linux` CI failed: two independent causes. (1) T56-T58 granularization commit grew `SPEC.md` to 41436 bytes, exceeding the 40960-byte `.md` file-size limit in `file_size_limits.yml`. (2) New words in the T56-T58 task descriptions (`enforcing`, `granularized`, `parsing`, `shippable`, `validating`) were not in `.narrow-language-markdown.dic`. | fixed: bumped `.md` limit from 40960 to 49152 in `file_size_limits.yml`; added the 5 words to `.narrow-language-markdown.dic`. |
+| B15 | 2026-07-04 | `build-linux` CI failed: `branch-protection.sh` (T19) uses `jq` but the `ci` devShell did not include `pkgs.jq`. Under `nix develop --ignore-environment` (which the CI action uses), only packages explicitly listed in the devShell are available. `jq` was reachable in the default devShell (via transitive deps) but absent in the stripped CI environment, causing all 7 `--dry-run` tests to fail with exit 127 (command not found). All tests passed locally in the default devShell. | fixed: added `pkgs.jq` to the `ci` devShell `packages` list in `flake.nix`. |
