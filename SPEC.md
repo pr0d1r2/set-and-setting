@@ -349,7 +349,7 @@ and dogfoods both.
 | T15 | x | CLAUDE.md wire drafts via `@` refs (dogfood) | V10,V11 |
 | T16 | x | generalize hardware concepts into composable templates | V14,V15 |
 | T17 | x | audit git history for secrets and PII before opensourcing | V16 |
-| T18 | . | create public GitHub repo and push | C6 |
+| T18 | x | create public GitHub repo and push | C6 |
 | T19 | . | enable main branch protection requiring PRs | C5 |
 | T20 | . | set up cachix cache for nix builds | V1 |
 | T21 | . | set up GitHub Actions CI (nix flake check, all platforms) | V1,C3 |
