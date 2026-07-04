@@ -805,6 +805,7 @@ enforce
 enforced
 enforcement
 enforces
+enforcing
 engine
 english
 enhance
@@ -1091,6 +1092,8 @@ grained
 grammars
 grant
 granularity
+granularization
+granularized
 graph
 graphic
 green
@@ -1762,6 +1765,7 @@ params
 parent
 parse
 parseable
+parsing
 part
 partial
 participant
@@ -2264,6 +2268,7 @@ shellcheck
 shells
 shields
 ship
+shippable
 shipped
 ships
 short
@@ -2678,6 +2683,7 @@ utilize
 valid
 validate
 validates
+validating
 validation
 value
 values
