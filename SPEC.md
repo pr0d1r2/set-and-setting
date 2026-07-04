@@ -345,7 +345,7 @@ and dogfoods both.
 | T11 | x | wire drafts categories into mkSet and flake.nix | I.flake,I.drafts |
 | T12 | x | add mkSet check: drafts categories build without error | V1,V11 |
 | T13 | x | graduate draft to stable: move `drafts/X` → `skills/X` when mature | V11,I.graduate |
-| T14 | . | skill linting CI: enforce format, size budget, `@` ref resolution | V12,V13 |
+| T14 | ~ | skill linting CI: enforce format, size budget, `@` ref resolution -- SUPERSEDED by T56-T58 (granularized into independently-shippable checks) | V12,V13,T56,T57,T58 |
 | T15 | x | CLAUDE.md wire drafts via `@` refs (dogfood) | V10,V11 |
 | T16 | x | generalize hardware concepts into composable templates | V14,V15 |
 | T17 | x | audit git history for secrets and PII before opensourcing | V16 |
@@ -388,6 +388,9 @@ and dogfoods both.
 | T52 | . | README -- document the multi-channel model + three delivery paths; keep the one-command WOW | I.apps,C9 |
 | T53 | x | smart auto-materialization (`I.applicability`) -- boolean facet-grained filter over `git ls-files` (`paths` AND `content`, vendored/generated excluded) + facet->core backfill + per-skill manifest evidence; `--auto` default for the `nix run` path, `--all`/explicit/`--pin`/`--exclude` override; scored mode deferred. Needs T41 | V34,V35,V36,V37,I.applicability,I.manifest,I.apps |
 | T55 | x | content-aware lefthook.yml construction -- `detect-fragments.sh` examines `git ls-files` for file types; `assemble-lefthook.sh` accepts `FRAGMENTS` param; both `mkSetting` and `mkScaffold` apps detect+assemble at runtime; idempotent+convergent; bats coverage for detection, parameterized assembly, and content-aware app behavior | V40,I.detectFragments,I.mkSetting |
+| T56 | . | skill extension lint -- nix check + lefthook hook enforcing V6/V13: only `*.md` files in `set/skills/` and `set/drafts/`. Pure `find` + exit-on-non-md. No content parsing. Bats coverage | V6,V13,T14 |
+| T57 | . | skill size budget lint -- nix check + lefthook hook enforcing per-file size limit on individual skill/draft markdown. Single `wc -c` / `find -size` check. Independent of format or structure checks. Bats coverage | V6,V7,T14 |
+| T58 | . | `@` ref resolution lint -- nix check validating all `@`-references in `set/` files resolve to existing source paths; also enforces V12 (bundle own-content limited to heading + purpose + `@` refs). Grep + path resolution. Bats coverage | V12,T14 |
 
 ## §B Bugs
 
