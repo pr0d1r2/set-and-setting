@@ -47,6 +47,10 @@
 
 ### Added
 
+- T19: branch protection script (`lib/branch-protection.sh`) and nix app
+  (`apps.branch-protection`) to enable GitHub main branch protection
+  requiring PRs via `gh api`. Supports `--repo`, `--branch`,
+  `--status-checks`, `--dry-run`. Bats test coverage.
 - T13: graduate-draft mechanism (`apps.graduate`, `lib/graduate-draft.sh`).
   Moves draft skill categories from `set/drafts/<cat>/` to
   `set/skills/<cat>/`, updating `@`-refs from `@set/drafts/<cat>/` to

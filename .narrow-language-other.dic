@@ -120,7 +120,9 @@ applicable
 application
 applies
 apply
+applying
 appropriate
+approving
 apps
 apt
 arch
@@ -128,6 +130,7 @@ architecture
 architectures
 are
 arg
+argjson
 args
 argument
 arguments
@@ -175,6 +178,7 @@ audit
 auditable
 audited
 auth
+authenticated
 author
 authored
 authoring
@@ -504,6 +508,9 @@ configs
 configuration
 configurations
 configure
+configured
+configures
+configuring
 confirm
 confirmation
 confirmed
@@ -760,7 +767,9 @@ dirs
 dirty
 disable
 disabled
+disables
 disagree
+disallows
 disclosure
 discoverable
 discovered
@@ -1411,6 +1420,7 @@ into
 introduce
 introducing
 introductions
+invalid
 invariant
 invariants
 investigating
@@ -1788,6 +1798,7 @@ nondeterministic
 none
 nonexistent
 nope
+noremote
 normal
 north
 not
@@ -1954,6 +1965,7 @@ pathless
 paths
 pattern
 patterns
+payload
 pcie
 pendrive
 people
@@ -2373,6 +2385,7 @@ sandbox
 sandboxed
 sane
 sas
+satisfied
 satisfy
 save
 saved
@@ -2562,6 +2575,7 @@ specific
 specifically
 specification
 specifics
+specified
 specify
 specs
 speculative

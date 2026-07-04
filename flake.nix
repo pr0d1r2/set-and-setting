@@ -1184,6 +1184,18 @@
             ''
             + builtins.readFile ./lib/graduate-draft.sh;
           };
+
+          branchProtectionApp = pkgs.writeShellApplication {
+            name = "branch-protection";
+            runtimeInputs = [
+              pkgs.git
+              pkgs.gh
+              pkgs.jq
+              pkgs.gnused
+              pkgs.gnugrep
+            ];
+            text = builtins.readFile ./lib/branch-protection.sh;
+          };
         in
         {
           mkSet = {
@@ -1213,6 +1225,10 @@
           graduate = {
             type = "app";
             program = "${graduateApp}/bin/graduate";
+          };
+          "branch-protection" = {
+            type = "app";
+            program = "${branchProtectionApp}/bin/branch-protection";
           };
         }
       );

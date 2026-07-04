@@ -105,7 +105,7 @@ and dogfoods both.
   with `packages.set`. Seed/init scaffold is separate
   (`bin/sync-setting-init`), not in this package.
 - I.sync-target: `sync-set`/`sync-setting` take a target dir arg; default preserves prior behavior.
-- I.apps: `apps.<sys>.{mkSet,mkSetting,mkSetting-init,bootstrap,auto-update,graduate}`
+- I.apps: `apps.<sys>.{mkSet,mkSetting,mkSetting-init,bootstrap,auto-update,graduate,branch-protection}`
   -- runnable installers for the zero-dependency delivery path (C9).
   `nix run github:pr0d1r2/set-and-setting#mkSet [cats|--all|--all-except
   a b]` materializes skills into `./.claude/rules/set/` at the CWD.
@@ -127,6 +127,11 @@ and dogfoods both.
   `--dry-run`, `--list`, `--help`. Nix checks validate merge graduation
   (graduated files appear as domain rules with correct globs) and
   `@`-ref rewriting (no `drafts/` prefix survives).
+- I.branch-protection: `lib/branch-protection.sh` + `apps.branch-protection`
+  -- enables GitHub branch protection requiring PRs via `gh api`.
+  Configures required status checks, disables force pushes and
+  deletions. Supports `--repo`, `--branch`, `--status-checks`,
+  `--dry-run`, `--help`. Requires `gh auth login`.
 - I.manifest: `./.claude/rules/set/.mkset.json` -- records installed
   categories + upstream rev + agent. Drives smart re-run (bare `mkSet`
   with a manifest refreshes what's installed), update detection, and
@@ -350,7 +355,7 @@ and dogfoods both.
 | T16 | x | generalize hardware concepts into composable templates | V14,V15 |
 | T17 | x | audit git history for secrets and PII before opensourcing | V16 |
 | T18 | x | create public GitHub repo and push | C6 |
-| T19 | . | enable main branch protection requiring PRs | C5 |
+| T19 | x | enable main branch protection requiring PRs (#66) | C5 |
 | T20 | . | set up cachix cache for nix builds | V1 |
 | T21 | . | set up GitHub Actions CI (nix flake check, all platforms) | V1,C3 |
 | T22 | . | update hallucinogen: git+file: to github: set-and-setting | C6,T7 |

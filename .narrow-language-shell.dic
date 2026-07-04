@@ -1,5 +1,6 @@
 abc
 absent
+accept
 across
 actions
 active
@@ -9,6 +10,7 @@ added
 adding
 additional
 adds
+admins
 afile
 after
 against
@@ -17,6 +19,7 @@ agents
 agentskills
 agnostic
 all
+allow
 allowed
 alpha
 already
@@ -29,16 +32,21 @@ and
 any
 aone
 apfs
+api
 app
 appear
 appears
 applicability
 applicable
+application
 applies
 apply
+applying
+approving
 apps
 are
 arg
+argjson
 args
 argument
 artifact
@@ -57,6 +65,7 @@ attr
 attrset
 audit
 auth
+authenticated
 authoring
 auto
 automatic
@@ -94,6 +103,7 @@ bootstrap
 both
 box
 branch
+branches
 break
 broad
 btwo
@@ -133,6 +143,7 @@ chore
 claude
 clean
 cleanup
+cli
 close
 code
 collapse
@@ -164,6 +175,10 @@ cond
 conditional
 config
 configs
+configure
+configured
+configures
+configuring
 confirm
 confirmed
 considers
@@ -176,6 +191,7 @@ containing
 contains
 content
 context
+contexts
 continue
 contract
 contradicts
@@ -197,6 +213,7 @@ custom
 cut
 cutting
 dangerously
+darwin
 data
 decide
 decided
@@ -206,6 +223,7 @@ deep
 default
 defaults
 delete
+deletions
 deliberately
 delim
 delimiter
@@ -229,6 +247,7 @@ determine
 determinism
 deterministic
 dev
+develop
 dic
 dics
 diff
@@ -242,6 +261,7 @@ directory
 dirname
 dirs
 disable
+disallows
 discovers
 dispatch
 distinct
@@ -276,6 +296,7 @@ empty
 enable
 enabled
 end
+enforce
 engine
 enter
 entries
@@ -363,6 +384,7 @@ gate
 gated
 generated
 generic
+get
 gets
 git
 gitattributes
@@ -444,6 +466,7 @@ integrations
 intentional
 internal
 into
+invalid
 invoc
 invocable
 invocation
@@ -486,6 +509,7 @@ line
 lines
 linguist
 link
+linux
 list
 listed
 lists
@@ -502,6 +526,7 @@ location
 lock
 locked
 logic
+login
 longest
 look
 looks
@@ -542,6 +567,7 @@ merges
 merging
 message
 meta
+method
 mimic
 minimal
 minimum
@@ -591,6 +617,7 @@ nondeterministic
 none
 nonexistent
 nope
+noremote
 normal
 not
 note
@@ -629,6 +656,7 @@ orchestrates
 order
 ordered
 orig
+origin
 original
 other
 otherwise
@@ -657,6 +685,7 @@ path
 pathless
 paths
 pattern
+payload
 per
 permissions
 perms
@@ -691,12 +720,17 @@ profile
 project
 prompt
 properly
+protect
+protection
 proves
 provided
 pruned
 prunes
+pull
 push
+pushes
 pushing
+put
 pyproject
 python
 qemu
@@ -750,21 +784,26 @@ report
 reports
 repos
 repository
+request
 requested
 require
 required
 requires
+requiring
 resolve
 resolved
 resolves
 rest
 restore
+restrictions
 restricts
 rests
 result
 return
 reusable
 rev
+review
+reviews
 root
 rule
 rules
@@ -848,6 +887,7 @@ spans
 spawn
 spec
 specific
+specified
 srcdir
 stable
 staged
@@ -862,6 +902,7 @@ stderr
 stdio
 stdout
 store
+strict
 strip
 stripped
 stripping
