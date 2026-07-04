@@ -115,6 +115,8 @@
 
 ### Fixed
 
+- B16: override `bats-unit` in `lefthook.yml` to run sequentially,
+  fixing QEMU aarch64 CI failures from parallel bats execution.
 - B15: add `pkgs.jq` to the `ci` devShell -- `branch-protection.sh`
   uses `jq` but it was absent under `--ignore-environment`, causing 7
   `--dry-run` test failures on CI.
