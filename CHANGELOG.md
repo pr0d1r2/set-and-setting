@@ -4,6 +4,9 @@
 
 ### Changed
 
+- T18: mark public GitHub repo creation complete -- repo live at
+  `github:pr0d1r2/set-and-setting` (public, MIT, C6 satisfied).
+
 - CI: bump `.md` file-size limit from 40960 to 49152 (B14); add missing
   dictionary words for T56-T58 task descriptions.
 - Add the `@`->AGENTS.md compiler (T48/V29, `lib/agents-md-compile`):
