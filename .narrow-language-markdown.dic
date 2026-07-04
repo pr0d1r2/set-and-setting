@@ -357,6 +357,7 @@ cla
 claim
 claims
 clarity
+class
 classify
 claude
 clause
@@ -542,6 +543,7 @@ correction
 correctly
 corresponding
 corroborate
+corrupting
 could
 count
 counterpart
@@ -980,6 +982,7 @@ fits
 fix
 fixed
 fixes
+fixing
 fixture
 fixtures
 flag
@@ -1567,6 +1570,7 @@ mistakes
 mit
 mkdir
 mkset
+mmap
 mode
 model
 models
@@ -1659,6 +1663,7 @@ noting
 notloaded
 noun
 now
+nproc
 null
 number
 numbered
@@ -1738,6 +1743,7 @@ overridden
 override
 overrides
 overriding
+overrode
 overwrite
 overwrites
 own
@@ -1757,6 +1763,7 @@ paradigm
 paragraph
 paragraphs
 parallel
+parallelism
 parallelization
 param
 parameter
@@ -2469,6 +2476,7 @@ symptom
 synced
 synonyms
 syntax
+syscall
 syscalls
 system
 systemctl
@@ -2651,6 +2659,7 @@ unnecessary
 unreachable
 unrelated
 unreleased
+unreliable
 unrequested
 unresolvable
 unsafe
