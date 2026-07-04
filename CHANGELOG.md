@@ -115,6 +115,9 @@
 
 ### Fixed
 
+- B15: add `pkgs.jq` to the `ci` devShell -- `branch-protection.sh`
+  uses `jq` but it was absent under `--ignore-environment`, causing 7
+  `--dry-run` test failures on CI.
 - B10: explicitly disable cachix in all CI jobs (`cachix-cache: ""`);
   B8 fix was incomplete because the action defaults `cachix-cache` to
   `"pr0d1r2"`, so the problematic cachix-action still ran.

@@ -398,6 +398,7 @@
           packages = (lefthookWrappersFor pkgs) ++ [
             pkgs.coreutils
             pkgs.git
+            pkgs.jq
             pkgs.nix
             pkgs.bats
             nix-lefthook.packages.${pkgs.stdenv.hostPlatform.system}.default
