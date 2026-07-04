@@ -26,6 +26,7 @@ and
 answer
 any
 app
+appear
 appears
 applicability
 application
@@ -69,6 +70,7 @@ cachix
 capability
 carrier
 carries
+carry
 cat
 categories
 category
@@ -82,6 +84,7 @@ check
 checked
 checker
 checks
+chmod
 ckia
 claude
 clbody
@@ -98,6 +101,7 @@ compile
 compiled
 compiler
 component
+composability
 compose
 concat
 concept
@@ -138,6 +142,7 @@ derivation
 derived
 derives
 description
+destructive
 detect
 deterministic
 dev
@@ -157,6 +162,7 @@ dispatch
 documentation
 domain
 domains
+draft
 drafts
 drift
 drive
@@ -181,6 +187,7 @@ entries
 entry
 enumerated
 environment
+error
 escape
 eval
 even
@@ -192,6 +199,7 @@ exact
 exclude
 excluded
 exdir
+exec
 executable
 execute
 exist
@@ -224,6 +232,8 @@ files
 filesystem
 filter
 final
+find
+finds
 findutils
 first
 fixture
@@ -262,6 +272,9 @@ globs
 gnu
 gnugrep
 gnused
+graduate
+graduated
+graduation
 graph
 grep
 greps
@@ -284,6 +297,7 @@ ifs
 image
 import
 imported
+include
 includes
 incubating
 independent
@@ -351,6 +365,7 @@ list
 listing
 lists
 literal
+live
 lives
 load
 loaded
@@ -377,6 +392,7 @@ materialized
 mechanism
 mechanisms
 merge
+merged
 meta
 metadata
 mindset
@@ -430,6 +446,7 @@ out
 outname
 output
 outputs
+outside
 override
 overrides
 owned
@@ -482,6 +499,7 @@ rec
 recursive
 recursively
 ref
+referencing
 refines
 refs
 regardless
@@ -502,6 +520,7 @@ resolves
 returns
 reusable
 rev
+rewritten
 root
 rule
 rules
@@ -555,6 +574,7 @@ skill
 skillmd
 skills
 skip
+slash
 smart
 sort
 source
@@ -563,6 +583,7 @@ specific
 specifically
 spelling
 split
+stable
 standards
 starts
 statix
@@ -576,6 +597,7 @@ strip
 structure
 style
 sub
+subdirectory
 sublist
 substituters
 subtree
@@ -617,6 +639,7 @@ touch
 touched
 trailing
 tree
+trees
 true
 trusted
 truth
@@ -625,6 +648,7 @@ types
 typos
 unchanged
 under
+underlay
 unexpected
 unicode
 unique
@@ -636,6 +660,7 @@ unresolved
 unsigned
 unspecified
 update
+updated
 url
 urls
 use
@@ -657,6 +682,7 @@ wins
 wires
 with
 within
+without
 workflow
 workflows
 working

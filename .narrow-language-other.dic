@@ -597,6 +597,7 @@ create
 created
 creates
 creating
+creation
 creative
 credential
 credentials
@@ -727,6 +728,7 @@ developer
 developers
 development
 device
+devs
 diagnose
 diagram
 dic
@@ -757,6 +759,7 @@ dirname
 dirs
 dirty
 disable
+disabled
 disagree
 disclosure
 discoverable
@@ -845,6 +848,7 @@ either
 elem
 elif
 eliminates
+eliminating
 else
 email
 embed
@@ -924,6 +928,7 @@ examines
 example
 examples
 exceeded
+exceeding
 exceeds
 except
 exception
@@ -1045,6 +1050,7 @@ find
 findargs
 finding
 findings
+finds
 findutils
 finish
 finite
@@ -1172,6 +1178,9 @@ gotcha
 gotchas
 grade
 graduate
+graduated
+graduating
+graduation
 grained
 grammars
 grant
@@ -1181,11 +1190,13 @@ graphic
 green
 grep
 greps
+grew
 group
 grouped
 groups
 grub
 gtop
+guaranteed
 guarantees
 guard
 guardrails
@@ -1374,6 +1385,7 @@ instant
 instead
 instruction
 instructions
+insufficient
 int
 integer
 integration
@@ -1502,6 +1514,7 @@ level
 levels
 lexical
 lib
+libgit
 libiconv
 libraries
 library
@@ -1640,6 +1653,7 @@ mechprobe
 mega
 memory
 merge
+merged
 merges
 merging
 mermaid
@@ -1706,6 +1720,7 @@ mount
 mounts
 move
 moved
+moves
 much
 multi
 multiple
@@ -1845,6 +1860,7 @@ opt
 optimized
 option
 optional
+optionally
 options
 opts
 orchestrate
@@ -2134,6 +2150,7 @@ quite
 quota
 quote
 quoted
+race
 raise
 raised
 raising
@@ -2239,6 +2256,7 @@ relpaths
 rely
 relying
 remain
+remaining
 remains
 remember
 remote
@@ -2317,6 +2335,8 @@ reviews
 rework
 reworked
 rewrite
+rewriting
+rewritten
 right
 risk
 risks
@@ -2410,6 +2430,8 @@ separated
 separately
 sequence
 sequences
+sequential
+sequentially
 serial
 serialization
 serialized
@@ -2501,6 +2523,7 @@ skipped
 skipping
 skips
 slash
+slashed
 slirp
 slow
 slower
@@ -2606,6 +2629,7 @@ styles
 sub
 subdir
 subdirectories
+subdirectory
 subgraph
 sublist
 subsequent
@@ -2637,6 +2661,7 @@ support
 supported
 supporting
 supports
+suppresses
 surface
 surfaced
 surfaces
@@ -2836,6 +2861,7 @@ universal
 unix
 unknown
 unless
+unlike
 unnecessary
 unreachable
 unrelated

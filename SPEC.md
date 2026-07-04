@@ -105,7 +105,7 @@ and dogfoods both.
   with `packages.set`. Seed/init scaffold is separate
   (`bin/sync-setting-init`), not in this package.
 - I.sync-target: `sync-set`/`sync-setting` take a target dir arg; default preserves prior behavior.
-- I.apps: `apps.<sys>.{mkSet,mkSetting,mkSetting-init,bootstrap,auto-update}`
+- I.apps: `apps.<sys>.{mkSet,mkSetting,mkSetting-init,bootstrap,auto-update,graduate}`
   -- runnable installers for the zero-dependency delivery path (C9).
   `nix run github:pr0d1r2/set-and-setting#mkSet [cats|--all|--all-except
   a b]` materializes skills into `./.claude/rules/set/` at the CWD.
@@ -118,6 +118,15 @@ and dogfoods both.
   flake input, syncs, commits (T8/C7).
 - I.auto-update: `lib/auto-update.sh` + reusable workflow +
   scaffold. Updates flake lock, validates, syncs, opens PR.
+- I.graduate: `lib/graduate-draft.sh` + `apps.graduate` -- developer
+  tool to graduate draft skills to stable. Moves
+  `set/drafts/<cat>/` files into `set/skills/<cat>/`, updates `@`-refs
+  from `@set/drafts/<cat>/` to `@set/<cat>/`, removes the draft
+  directory. Handles both merge (into existing category) and new
+  category creation (reports required nix config changes). Supports
+  `--dry-run`, `--list`, `--help`. Nix checks validate merge graduation
+  (graduated files appear as domain rules with correct globs) and
+  `@`-ref rewriting (no `drafts/` prefix survives).
 - I.manifest: `./.claude/rules/set/.mkset.json` -- records installed
   categories + upstream rev + agent. Drives smart re-run (bare `mkSet`
   with a manifest refreshes what's installed), update detection, and
@@ -335,7 +344,7 @@ and dogfoods both.
 | T10 | x | add `set/drafts/` tree with atomic skill files and bundles | V11,V12,V13 |
 | T11 | x | wire drafts categories into mkSet and flake.nix | I.flake,I.drafts |
 | T12 | x | add mkSet check: drafts categories build without error | V1,V11 |
-| T13 | . | graduate draft to stable: move `drafts/X` → `skills/X` when mature | V11 |
+| T13 | x | graduate draft to stable: move `drafts/X` → `skills/X` when mature | V11,I.graduate |
 | T14 | . | skill linting CI: enforce format, size budget, `@` ref resolution | V12,V13 |
 | T15 | x | CLAUDE.md wire drafts via `@` refs (dogfood) | V10,V11 |
 | T16 | x | generalize hardware concepts into composable templates | V14,V15 |
