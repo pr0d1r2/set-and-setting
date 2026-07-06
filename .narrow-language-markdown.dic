@@ -124,6 +124,7 @@ arrive
 artifact
 artifacts
 ascii
+asciinema
 aspect
 aspects
 assemble
@@ -744,6 +745,7 @@ draft
 drafts
 drain
 drift
+drive
 driven
 drives
 drop
@@ -992,6 +994,7 @@ flags
 flake
 flakes
 flat
+fleet
 flips
 flow
 flows
@@ -1141,6 +1144,7 @@ hardening
 harder
 hardware
 harmful
+harness
 has
 hash
 hashes
@@ -1259,6 +1263,7 @@ infrastructure
 ingest
 inherit
 inheritance
+inherited
 inherits
 init
 initial
@@ -1370,6 +1375,7 @@ label
 lacked
 lacks
 land
+lands
 lang
 language
 languages
@@ -1387,6 +1393,7 @@ leading
 leaf
 leakage
 leaked
+lean
 least
 leave
 leaves
@@ -1937,6 +1944,7 @@ prompts
 prone
 proof
 propagate
+propagates
 propagation
 proper
 properties
@@ -2132,6 +2140,7 @@ restate
 restrict
 restriction
 restrictions
+restructure
 rests
 result
 results
@@ -2265,6 +2274,7 @@ sets
 setsid
 setting
 settings
+settle
 setup
 setuptools
 sha
@@ -2331,6 +2341,7 @@ skipped
 skipping
 skips
 slash
+slice
 slirp
 slow
 slower
@@ -2372,6 +2383,8 @@ splitting
 spread
 stable
 stack
+stacked
+stacks
 stage
 staged
 stages

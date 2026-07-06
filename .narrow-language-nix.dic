@@ -148,6 +148,7 @@ detect
 deterministic
 dev
 develop
+devshells
 dic
 dics
 dictionaries
@@ -212,6 +213,7 @@ expectations
 expected
 experimental
 export
+exposes
 expression
 exskill
 extra
@@ -375,7 +377,6 @@ loads
 local
 location
 lock
-locks
 logic
 loose
 main
@@ -384,6 +385,7 @@ manifest
 map
 markdown
 markdownlint
+marker
 markers
 matched
 matches
@@ -586,6 +588,7 @@ specifically
 spelling
 split
 stable
+stacked
 standards
 starts
 statix

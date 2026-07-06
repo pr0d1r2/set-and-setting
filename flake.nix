@@ -383,6 +383,7 @@
         mkSettingDriftCheck = import ./lib/mk-setting-drift-check.nix;
         mkMaterializeCheck = import ./lib/mk-materialize-check.nix { inherit (nixpkgs) lib; };
         mkDepGraphCheck = import ./lib/mk-dep-graph-check.nix;
+        mkDevShells = import ./setting/lib/mk-dev-shells.nix;
       };
 
       packages = forAllSystems (pkgs: {
@@ -391,39 +392,27 @@
           (import ./setting/lib/mk-setting.nix { inherit (nixpkgs) lib; } { inherit pkgs; }).materialized;
       });
 
-      devShells = forAllSystems (pkgs: {
-        ci = pkgs.mkShell {
-          GIT_OPTIONAL_LOCKS = "0";
-          NIX_CONFIG = "experimental-features = nix-command flakes";
-          packages = (lefthookWrappersFor pkgs) ++ [
+      devShells = forAllSystems (
+        pkgs:
+        let
+          sys = pkgs.stdenv.hostPlatform.system;
+        in
+        import ./setting/lib/mk-dev-shells.nix {
+          inherit pkgs;
+          basePackages = (lefthookWrappersFor pkgs) ++ [
             pkgs.coreutils
             pkgs.git
             pkgs.jq
             pkgs.nix
-            pkgs.bats
-            nix-lefthook.packages.${pkgs.stdenv.hostPlatform.system}.default
-          ];
-          shellHook = ''
-            export HOME="''${HOME:-/tmp/ci-home}"
-            mkdir -p "$HOME"
-          '';
-        };
-        default = pkgs.mkShell {
-          packages = (lefthookWrappersFor pkgs) ++ [
-            pkgs.coreutils
-            pkgs.git
-            pkgs.nix
             pkgs.gh
             pkgs.bats
-            nix-lefthook.packages.${pkgs.stdenv.hostPlatform.system}.default
+            nix-lefthook.packages.${sys}.default
           ];
-          shellHook = ''
-            export NIX_CONFIG="experimental-features = nix-command flakes"
-            [ -f .git/hooks/pre-commit ] || lefthook install
-            ${self.packages.${pkgs.stdenv.hostPlatform.system}.set}/bin/sync-set .
+          agenticShellHook = ''
+            ${self.packages.${sys}.set}/bin/sync-set .
           '';
-        };
-      });
+        }
+      );
 
       checks = forAllSystems (pkgs: {
         mkSet-generic = import ./set/lib/mk-set.nix { inherit (nixpkgs) lib; } {
@@ -724,6 +713,50 @@
             touch $out
           '';
 
+        # T59: mkDevShells emits stacked default + agentic shells
+        mkDevShells-check =
+          let
+            shells = import ./setting/lib/mk-dev-shells.nix {
+              inherit pkgs;
+              basePackages = [ pkgs.coreutils ];
+              agenticPackages = [ pkgs.git ];
+              agenticShellHook = ''
+                echo agentic-marker
+              '';
+            };
+            ok =
+              # both shells exist and carry NIX_CONFIG
+              assert shells.default.NIX_CONFIG == "experimental-features = nix-command flakes";
+              assert shells.agentic.NIX_CONFIG == "experimental-features = nix-command flakes";
+              # agentic inherits base packages via inputsFrom (nativeBuildInputs
+              # includes coreutils from default + git from agenticPackages)
+              assert builtins.length shells.agentic.nativeBuildInputs >= 2;
+              true;
+          in
+          pkgs.runCommand "mk-dev-shells-check" { inherit ok; } ''
+            echo PASS
+            touch $out
+          '';
+
+        # T59: mkSetting passthru exposes mkDevShells
+        mkSetting-devShells =
+          let
+            mkSetting = import ./setting/lib/mk-setting.nix { inherit (nixpkgs) lib; };
+            full = mkSetting { inherit pkgs; };
+            shells = full.mkDevShells {
+              inherit pkgs;
+              basePackages = [ pkgs.coreutils ];
+            };
+          in
+          pkgs.runCommand "mk-setting-devshells-check" { } ''
+            [ -n "${shells.default}" ] \
+              || { echo "FAIL: mkSetting.mkDevShells default missing"; exit 1; }
+            [ -n "${shells.agentic}" ] \
+              || { echo "FAIL: mkSetting.mkDevShells agentic missing"; exit 1; }
+            echo PASS
+            touch $out
+          '';
+
         agent-seam-opencode =
           let
             mkSet = import ./set/lib/mk-set.nix { inherit (nixpkgs) lib; };
@@ -914,6 +947,20 @@
               || { echo "FAIL: flake.nix missing devShells"; exit 1; }
             grep -q 'lefthookWrappersFor' "${scaffold}/flake.nix" \
               || { echo "FAIL: flake.nix missing lefthookWrappersFor"; exit 1; }
+
+            # T59: stacked shells -- default + agentic, no ci
+            grep -q 'agentic' "${scaffold}/flake.nix" \
+              || { echo "FAIL: flake.nix missing agentic shell"; exit 1; }
+            grep -q 'inputsFrom' "${scaffold}/flake.nix" \
+              || { echo "FAIL: flake.nix missing inputsFrom (stacked shell)"; exit 1; }
+            if grep -qE '^\s+ci\s*=' "${scaffold}/flake.nix"; then
+              echo "FAIL: scaffold still has ci devShell"; exit 1
+            fi
+
+            # T59/B17: scaffold ci.yml must specify devshell: "default"
+            # (the CI action defaults to "ci" which no longer exists)
+            grep -q 'devshell:.*"default"' "${scaffold}/.github/workflows/ci.yml" \
+              || { echo "FAIL: ci.yml missing devshell: default (B17)"; exit 1; }
 
             # lefthook.yml has remotes from all fragments
             grep -q 'nix-lefthook-trailing-whitespace' "${scaffold}/lefthook.yml" \

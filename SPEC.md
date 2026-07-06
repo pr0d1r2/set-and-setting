@@ -45,7 +45,7 @@ and dogfoods both.
 
 ## §I Interfaces
 
-- I.flake: `flake.nix` -- main entry. Exposes `sets`, `drafts`, `settings`, `lib.mkSet`, `lib.mkSetting`, `lib.mkDriftCheck`, `lib.mkDepGraphCheck`, `lib.mkMaterializeCheck`, `packages.set`, `packages.setting`, `checks`.
+- I.flake: `flake.nix` -- main entry. Exposes `sets`, `drafts`, `settings`, `lib.mkSet`, `lib.mkSetting`, `lib.mkDriftCheck`, `lib.mkDepGraphCheck`, `lib.mkMaterializeCheck`, `lib.mkDevShells`, `packages.set`, `packages.setting`, `checks`.
 - I.mkSet: `set/lib/mk-set.nix` -- the skill-set emitter and single
   source of truth for skills. Mirrors agnostic `set/skills/` markdown 1:1
   into `<dir>/set/` as **path-scoped rules**: each source file copied
@@ -91,6 +91,15 @@ and dogfoods both.
   `categories`, `exclude ? []`, `agent ? {}`. Shell logic in
   `lib/materialize-check.sh` (nix/modularity). Consumer wiring is one
   line in their `checks` output.
+- I.mkDevShells: `setting/lib/mk-dev-shells.nix` -- stacked devShell
+  emitter (T59). Args: `pkgs`, `basePackages`, optional
+  `agenticPackages`, `defaultShellHook`, `agenticShellHook`. Returns
+  `{ default, agentic }` where `agentic` stacks on `default` via
+  `inputsFrom` (packages inherited, no duplication). Both shells get
+  `NIX_CONFIG` and lefthook install. `default` = CI + non-LLM full
+  tooling; `agentic` = default + LLM. Emitted from mkSetting
+  (passthru) so refresh propagates via `nix flake update` (C7). Also
+  exposed as `lib.mkDevShells`.
 - I.sync-set: CLI script in mkSet output. Copies skills+concepts+set.md to consumer repo target dir.
 - I.sync-setting: CLI script in mkSetting output. Copies dotfiles to consumer repo root.
 - I.sets: Attrset of raw paths to each skill category dir.
@@ -337,7 +346,7 @@ and dogfoods both.
 
 | id  | s | description                                          | cites     |
 |-----|---|------------------------------------------------------|-----------|
-| T59 | . | devShells STACK: `agentic` = `default` + LLM (claude/asciinema/harness) via `inputsFrom=[default]` (⊥ duplicate the package list); rename `dev`→`agentic`; drop `ci = default` alias (CI uses `default`). Emit from mkSetting so refresh propagates. #69 slice 1 | I.mkSetting,I.flake |
+| T59 | x | devShells STACK: `agentic` = `default` + LLM (claude/asciinema/harness) via `inputsFrom=[default]` (⊥ duplicate the package list); rename `dev`→`agentic`; drop `ci = default` alias (CI uses `default`). Emit from mkSetting so refresh propagates. #69 slice 1 | I.mkSetting,I.mkDevShells,I.flake |
 | T60 | . | drift-check: enforce `agentic.packages ⊇ default.packages`, shells named `default`/`agentic` only, no lean-`ci`, CI ⊥ `skip-lefthook: true`. Extend mk-setting-drift-check.nix. #69 slice 2 | I.mkSetting,I.mkDriftCheck |
 | T61 | . | document the stacked-shell model + invariant in the linting skill: `default` = CI + non-LLM full tooling ⊂ `agentic` = default + LLM; CI runs the same gate as local hooks. #69 slice 3 | I.mkSetting |
 | T62 | . | HUMAN-GATED — ⊥ AUTO-DRIVE/MERGE (fleet-wide BREAKING): CI template runs the lint gate — `skip-lefthook: false` (or `nix develop -c lefthook run pre-commit --all-files`) in `default`, then build+test. A human lands this deliberately AFTER T59-T61 settle; tracks #69 | I.mkSetting |
@@ -421,3 +430,4 @@ and dogfoods both.
 | B14 | 2026-07-04 | `build-linux` CI failed: two independent causes. (1) T56-T58 granularization commit grew `SPEC.md` to 41436 bytes, exceeding the 40960-byte `.md` file-size limit in `file_size_limits.yml`. (2) New words in the T56-T58 task descriptions (`enforcing`, `granularized`, `parsing`, `shippable`, `validating`) were not in `.narrow-language-markdown.dic`. | fixed: bumped `.md` limit from 40960 to 49152 in `file_size_limits.yml`; added the 5 words to `.narrow-language-markdown.dic`. |
 | B15 | 2026-07-04 | `build-linux` CI failed: `branch-protection.sh` (T19) uses `jq` but the `ci` devShell did not include `pkgs.jq`. Under `nix develop --ignore-environment` (which the CI action uses), only packages explicitly listed in the devShell are available. `jq` was reachable in the default devShell (via transitive deps) but absent in the stripped CI environment, causing all 7 `--dry-run` tests to fail with exit 127 (command not found). All tests passed locally in the default devShell. | fixed: added `pkgs.jq` to the `ci` devShell `packages` list in `flake.nix`. |
 | B16 | 2026-07-04 | `build-linux-arm` CI failed: `lefthook-bats-unit` wrapper runs `bats --jobs "$(nproc)"`, executing multiple `.bats` files in parallel. On CI runners `nproc` returns 2-4+, causing concurrent git processes under QEMU aarch64 binfmt_misc emulation. QEMU's syscall emulation (brk/mmap) is unreliable under parallelism, corrupting test results. Same class as B12 (parallel execution + QEMU contention). Tests pass locally where `nproc` returns 1 (sequential). | fixed: overrode `bats-unit` command in tracked `lefthook.yml` (both pre-commit and pre-push) to run `bats` directly without `--jobs`, making test execution sequential. Same hooks, same files, no tests disabled. |
+| B17 | 2026-07-06 | `build-linux` CI failed: T59 dropped the `ci = default` devShell alias from `flake.nix`, but `nix-lefthook-ci-action` defaults its `devshell` input to `"ci"`. Without an explicit override, all three CI jobs tried `nix develop .#ci` which no longer exists: `error: flake does not provide attribute 'devShells.x86_64-linux.ci'`. | fixed: added `devshell: "default"` to all three CI jobs (`build-linux`, `build-darwin`, `build-linux-arm`) in `ci.yml`, matching the T59 stacked-shell model where `default` = CI + non-LLM tooling. |
