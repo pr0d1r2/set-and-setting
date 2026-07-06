@@ -139,3 +139,21 @@ jobs:
           keep-home: "true"
           flake-check-timeout: "600"
           flake-eval-timeout: "120"
+
+  # Push nix build outputs to cachix on main-branch merges. Uses
+  # cachix/cachix-action directly (not the broken embedded cachix inside
+  # nix-lefthook-ci-action, B8/B10). The post-build hook pushes all
+  # outputs automatically. Requires CACHIX_AUTH_TOKEN repo secret.
+  cache-push:
+    needs: [build-linux, build-darwin, build-linux-arm]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: cachix/install-nix-action@v27
+      - uses: cachix/cachix-action@v15
+        with:
+          name: pr0d1r2
+          authToken: '${{ secrets.CACHIX_AUTH_TOKEN }}'
+      - run: nix build .#packages.x86_64-linux.set
+      - run: nix build .#packages.x86_64-linux.setting

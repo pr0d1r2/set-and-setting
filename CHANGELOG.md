@@ -490,6 +490,15 @@
 
 ### Infrastructure
 
+- T20: set up cachix cache for nix builds. Add a `cache-push` CI job
+  that builds `packages.x86_64-linux.set` and
+  `packages.x86_64-linux.setting` and pushes to the `pr0d1r2` cachix
+  cache on main-branch merges. Uses `cachix/install-nix-action` +
+  `cachix/cachix-action` directly, bypassing the broken embedded cachix
+  inside `nix-lefthook-ci-action` (B8/B10). Runs after all three
+  platform checks pass. Requires `CACHIX_AUTH_TOKEN` repo secret. The
+  flake `nixConfig` already declares the cache substituter and public
+  key so consumers pull from cache without manual setup.
 - Extract `mkSet`'s embedded build shell into `set/lib/mk-set.sh`,
   `emit-skill.sh`, and `sync-set.sh` (parametrized via env, no functions);
   `mk-set.nix` drops out of the nix-no-embedded-shell allowlist. Covered
