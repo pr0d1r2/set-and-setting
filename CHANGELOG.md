@@ -4,6 +4,12 @@
 
 ### Changed
 
+- T59: devShells STACK -- restructure to `default` (CI + non-LLM
+  tooling) + `agentic` (default + LLM via `inputsFrom`). Drop `ci`
+  devShell; CI uses `default`. Add `setting/lib/mk-dev-shells.nix`
+  emitter exposed as `lib.mkDevShells` and `mkSetting` passthru for
+  refresh propagation. Update scaffold template, `.envrc`, SPEC.
+
 - T18: mark public GitHub repo creation complete -- repo live at
   `github:pr0d1r2/set-and-setting` (public, MIT, C6 satisfied).
 

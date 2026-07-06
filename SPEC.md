@@ -45,7 +45,7 @@ and dogfoods both.
 
 ## §I Interfaces
 
-- I.flake: `flake.nix` -- main entry. Exposes `sets`, `drafts`, `settings`, `lib.mkSet`, `lib.mkSetting`, `lib.mkDriftCheck`, `lib.mkDepGraphCheck`, `lib.mkMaterializeCheck`, `packages.set`, `packages.setting`, `checks`.
+- I.flake: `flake.nix` -- main entry. Exposes `sets`, `drafts`, `settings`, `lib.mkSet`, `lib.mkSetting`, `lib.mkDriftCheck`, `lib.mkDepGraphCheck`, `lib.mkMaterializeCheck`, `lib.mkDevShells`, `packages.set`, `packages.setting`, `checks`.
 - I.mkSet: `set/lib/mk-set.nix` -- the skill-set emitter and single
   source of truth for skills. Mirrors agnostic `set/skills/` markdown 1:1
   into `<dir>/set/` as **path-scoped rules**: each source file copied
@@ -91,6 +91,15 @@ and dogfoods both.
   `categories`, `exclude ? []`, `agent ? {}`. Shell logic in
   `lib/materialize-check.sh` (nix/modularity). Consumer wiring is one
   line in their `checks` output.
+- I.mkDevShells: `setting/lib/mk-dev-shells.nix` -- stacked devShell
+  emitter (T59). Args: `pkgs`, `basePackages`, optional
+  `agenticPackages`, `defaultShellHook`, `agenticShellHook`. Returns
+  `{ default, agentic }` where `agentic` stacks on `default` via
+  `inputsFrom` (packages inherited, no duplication). Both shells get
+  `NIX_CONFIG` and lefthook install. `default` = CI + non-LLM full
+  tooling; `agentic` = default + LLM. Emitted from mkSetting
+  (passthru) so refresh propagates via `nix flake update` (C7). Also
+  exposed as `lib.mkDevShells`.
 - I.sync-set: CLI script in mkSet output. Copies skills+concepts+set.md to consumer repo target dir.
 - I.sync-setting: CLI script in mkSetting output. Copies dotfiles to consumer repo root.
 - I.sets: Attrset of raw paths to each skill category dir.
@@ -337,7 +346,7 @@ and dogfoods both.
 
 | id  | s | description                                          | cites     |
 |-----|---|------------------------------------------------------|-----------|
-| T59 | . | devShells STACK: `agentic` = `default` + LLM (claude/asciinema/harness) via `inputsFrom=[default]` (⊥ duplicate the package list); rename `dev`→`agentic`; drop `ci = default` alias (CI uses `default`). Emit from mkSetting so refresh propagates. #69 slice 1 | I.mkSetting,I.flake |
+| T59 | x | devShells STACK: `agentic` = `default` + LLM (claude/asciinema/harness) via `inputsFrom=[default]` (⊥ duplicate the package list); rename `dev`→`agentic`; drop `ci = default` alias (CI uses `default`). Emit from mkSetting so refresh propagates. #69 slice 1 | I.mkSetting,I.mkDevShells,I.flake |
 | T60 | . | drift-check: enforce `agentic.packages ⊇ default.packages`, shells named `default`/`agentic` only, no lean-`ci`, CI ⊥ `skip-lefthook: true`. Extend mk-setting-drift-check.nix. #69 slice 2 | I.mkSetting,I.mkDriftCheck |
 | T61 | . | document the stacked-shell model + invariant in the linting skill: `default` = CI + non-LLM full tooling ⊂ `agentic` = default + LLM; CI runs the same gate as local hooks. #69 slice 3 | I.mkSetting |
 | T62 | . | HUMAN-GATED — ⊥ AUTO-DRIVE/MERGE (fleet-wide BREAKING): CI template runs the lint gate — `skip-lefthook: false` (or `nix develop -c lefthook run pre-commit --all-files`) in `default`, then build+test. A human lands this deliberately AFTER T59-T61 settle; tracks #69 | I.mkSetting |

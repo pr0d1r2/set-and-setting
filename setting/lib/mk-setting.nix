@@ -97,5 +97,6 @@ pkgs.symlinkJoin {
     };
     configFiles = materializedBundle;
     seed = seedBundle;
+    mkDevShells = import ./mk-dev-shells.nix;
   };
 }

@@ -241,38 +241,36 @@
         ];
     in
     {
-      devShells = forAllSystems (pkgs: {
-        ci = pkgs.mkShell {
-          packages =
-            (lefthookWrappersFor pkgs)
-            ++ [
-              pkgs.coreutils
-              pkgs.git
-              pkgs.nix
-              nix-lefthook.packages.${pkgs.stdenv.hostPlatform.system}.default
-            ];
-          shellHook = ''
-            export HOME="''${HOME:-/tmp/ci-home}"
-            export GIT_OPTIONAL_LOCKS=0
-            mkdir -p "$HOME"
-          '';
-        };
-        default = pkgs.mkShell {
-          packages =
-            (lefthookWrappersFor pkgs)
-            ++ [
-              pkgs.coreutils
-              pkgs.git
-              pkgs.nix
-              pkgs.gh
-              nix-lefthook.packages.${pkgs.stdenv.hostPlatform.system}.default
-            ];
-          shellHook = ''
-            export NIX_CONFIG="experimental-features = nix-command flakes"
+      devShells = forAllSystems (
+        pkgs:
+        let
+          sys = pkgs.stdenv.hostPlatform.system;
+          baseShellHook = ''
             [ -f .git/hooks/pre-commit ] || lefthook install
           '';
-        };
-      });
+          defaultShell = pkgs.mkShell {
+            NIX_CONFIG = "experimental-features = nix-command flakes";
+            packages =
+              (lefthookWrappersFor pkgs)
+              ++ [
+                pkgs.coreutils
+                pkgs.git
+                pkgs.nix
+                pkgs.gh
+                nix-lefthook.packages.${sys}.default
+              ];
+            shellHook = baseShellHook;
+          };
+        in
+        {
+          default = defaultShell;
+          agentic = pkgs.mkShell {
+            inputsFrom = [ defaultShell ];
+            NIX_CONFIG = "experimental-features = nix-command flakes";
+            shellHook = baseShellHook;
+          };
+        }
+      );
 
       checks = forAllSystems (pkgs: {
         default = pkgs.runCommand "checks" { } "touch $out";

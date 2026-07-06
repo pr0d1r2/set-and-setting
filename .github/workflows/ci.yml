@@ -9,9 +9,11 @@ on:
 
 # Linux gates the expensive jobs (darwin runner + aarch64 QEMU).
 # nix-lefthook-ci-action installs nix, then runs lefthook
-# pre-commit + pre-push --all-files in the `ci` devShell. skip-build is
-# set because this repo has no packages.default; the nix-flake-check
-# hook runs `nix flake check`. changelog-touched is a commit-gate hook
+# pre-commit + pre-push --all-files in the `default` devShell (T59:
+# stacked shells -- `default` = CI + non-LLM tooling, `agentic` =
+# default + LLM; CI uses `default`). skip-build is set because this
+# repo has no packages.default; the nix-flake-check hook runs
+# `nix flake check`. changelog-touched is a commit-gate hook
 # (meaningless on --all-files) so it is excluded from the CI run.
 #
 # Timeout env vars are passed via extra-env, NOT the workflow env block,
