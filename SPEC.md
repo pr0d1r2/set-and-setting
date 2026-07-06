@@ -357,7 +357,7 @@ and dogfoods both.
 | T18 | x | create public GitHub repo and push | C6 |
 | T19 | x | enable main branch protection requiring PRs (#66) | C5 |
 | T20 | x | set up cachix cache for nix builds | V1 |
-| T21 | . | set up GitHub Actions CI (nix flake check, all platforms) | V1,C3 |
+| T21 | x | set up GitHub Actions CI (nix flake check, all platforms) | V1,C3 |
 | T22 | . | update hallucinogen: git+file: to github: set-and-setting | C6,T7 |
 | T23 | . | update CHANGELOG.md for opensourcing | C5 |
 | T24 | . | rename propagation: mechanism for consumers to detect upstream skill renames and update synced copies | C7,I.sync-set |
