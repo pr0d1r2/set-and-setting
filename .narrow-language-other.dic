@@ -216,6 +216,7 @@ bare
 base
 based
 baseline
+basename
 bases
 bash
 basic
@@ -697,6 +698,7 @@ dependency
 dependent
 depending
 depends
+deploy
 deployable
 deploying
 deployment
@@ -740,6 +742,7 @@ developers
 development
 device
 devs
+devshell
 devshells
 diagnose
 diagram
@@ -940,6 +943,7 @@ evidence
 evolve
 evolved
 exact
+exactly
 examines
 example
 examples
@@ -996,6 +1000,7 @@ expression
 exskill
 ext
 extend
+extended
 extends
 extension
 extensions
@@ -1192,6 +1197,7 @@ gnugrep
 gnused
 goal
 goes
+got
 gotcha
 gotchas
 grade
@@ -2140,6 +2146,7 @@ prototype
 prove
 proven
 proves
+provide
 provided
 provides
 proving
@@ -2720,6 +2727,7 @@ symptom
 synced
 synonyms
 syntax
+synthetic
 syscall
 syscalls
 system
@@ -2787,6 +2795,7 @@ three
 threshold
 throat
 through
+throw
 thus
 tied
 tier
@@ -2842,6 +2851,7 @@ treat
 treating
 tree
 trees
+tried
 trigger
 triggered
 triggers
@@ -2905,6 +2915,7 @@ unknown
 unless
 unlike
 unnecessary
+unquoted
 unreachable
 unrelated
 unreleased

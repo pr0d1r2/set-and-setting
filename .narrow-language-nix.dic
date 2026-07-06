@@ -39,8 +39,10 @@ assemble
 assembled
 assert
 assertion
+assertions
 asserts
 assignment
+attr
 attrs
 auto
 avahi
@@ -135,6 +137,7 @@ deadnix
 dedup
 deep
 default
+defaults
 define
 delimiter
 dep
@@ -148,6 +151,7 @@ detect
 deterministic
 dev
 develop
+devshell
 devshells
 dic
 dics
@@ -184,6 +188,7 @@ emitter
 empty
 enable
 end
+enforces
 engine
 entries
 entry
@@ -198,6 +203,7 @@ everything
 everywhere
 evidence
 exact
+exactly
 exclude
 excluded
 exdir
@@ -216,9 +222,12 @@ export
 exposes
 expression
 exskill
+extended
+extends
 extra
 facet
 facets
+facing
 fail
 fails
 fall
@@ -275,6 +284,7 @@ globs
 gnu
 gnugrep
 gnused
+got
 graduate
 graduated
 graduation
@@ -323,13 +333,16 @@ instructions
 integration
 integrations
 interchange
+interface
 into
+invariant
 invocable
 invocation
 invoke
 invoked
 iso
 its
+jobs
 join
 json
 just
@@ -378,6 +391,7 @@ local
 location
 lock
 logic
+longer
 loose
 main
 manager
@@ -415,6 +429,8 @@ most
 multi
 must
 name
+named
+names
 narrow
 native
 neither
@@ -429,6 +445,7 @@ nixpkgs
 non
 none
 not
+null
 ocagents
 ocbody
 ocjson
@@ -456,6 +473,7 @@ owned
 package
 packages
 parallel
+param
 parse
 partial
 parts
@@ -490,6 +508,7 @@ prose
 protect
 protection
 proves
+provided
 proxy
 public
 push
@@ -559,6 +578,7 @@ setdir
 sets
 setting
 settings
+setup
 shape
 shared
 shares
@@ -585,6 +605,7 @@ source
 sources
 specific
 specifically
+specify
 spelling
 split
 stable
@@ -595,6 +616,7 @@ statix
 stay
 stays
 stdenv
+steps
 still
 string
 strings
@@ -615,6 +637,7 @@ survives
 symlink
 synced
 syntax
+synthetic
 system
 systems
 tab
@@ -633,6 +656,7 @@ they
 this
 though
 three
+throw
 tighten
 time
 token

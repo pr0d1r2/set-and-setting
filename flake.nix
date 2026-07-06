@@ -738,6 +738,71 @@
             touch $out
           '';
 
+        # T60: stacked-shell drift check -- shells named default/agentic
+        # only, agentic >= default, CI != skip-lefthook
+        devshells-drift-check =
+          let
+            sys = pkgs.stdenv.hostPlatform.system;
+            shells = self.devShells.${sys};
+            names = builtins.attrNames shells;
+            ok =
+              assert
+                names == [
+                  "agentic"
+                  "default"
+                ]
+                || builtins.throw "devShells: expected 'default'+'agentic', got: ${builtins.concatStringsSep " " names}";
+              assert
+                builtins.all (p: builtins.elem p shells.agentic.nativeBuildInputs) shells.default.nativeBuildInputs
+                || builtins.throw "agentic.packages must be a superset of default.packages";
+              true;
+          in
+          pkgs.runCommand "devshells-drift-check"
+            {
+              nativeBuildInputs = [ pkgs.gnugrep ];
+              ACTUAL = "${./.}";
+              CHECK_CI_SKIP_LEFTHOOK = "1";
+              inherit ok;
+            }
+            ''
+              bash ${./lib/devshells-drift-check.sh}
+              touch $out
+            '';
+
+        # T60: consumer-facing mkSettingDriftCheck with devShells param --
+        # validates that the extended interface works (nix assertions +
+        # CI skip-lefthook check) against a synthetic consumer setup
+        mkSettingDriftCheck-devShells =
+          let
+            syntheticSetting = pkgs.runCommand "synthetic-setting" { } ''
+              mkdir -p $out
+              echo "extends: default" > $out/.markdownlint.yml
+            '';
+            syntheticProject = pkgs.runCommand "synthetic-project" { } ''
+                    mkdir -p $out/.github/workflows
+                    echo "extends: default" > $out/.markdownlint.yml
+                    cat > $out/.github/workflows/ci.yml <<'YAML'
+              jobs:
+                build:
+                  steps:
+                    - uses: nix-lefthook-ci-action
+                      with:
+                        devshell: "default"
+              YAML
+            '';
+            shells = import ./setting/lib/mk-dev-shells.nix {
+              inherit pkgs;
+              basePackages = [ pkgs.coreutils ];
+              agenticPackages = [ pkgs.git ];
+            };
+          in
+          import ./lib/mk-setting-drift-check.nix {
+            inherit pkgs;
+            settingSet = syntheticSetting;
+            projectRoot = syntheticProject;
+            devShells = shells;
+          };
+
         # T59: mkSetting passthru exposes mkDevShells
         mkSetting-devShells =
           let
