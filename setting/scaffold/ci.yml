@@ -8,7 +8,9 @@ name: CI
     branches: [main]
 
 # Linux gates the expensive jobs (darwin runner + aarch64 QEMU).
-# Requires CACHIX_AUTH_TOKEN repo secret for caching.
+# The embedded cachix inside nix-lefthook-ci-action@ce9a118b targets
+# Node.js 20 and fails on Node.js 24 runners (B8/B10); disable it
+# with cachix-cache: "" and set up cachix separately if needed.
 
 jobs:
   build-linux:
@@ -17,9 +19,12 @@ jobs:
       - uses: pr0d1r2/nix-lefthook-ci-action@ce9a118b05e90e186dba48a82067adeed185f7d4
         with:
           skip-build: "true"
-          cachix-cache: pr0d1r2
-          cachix-auth-token: ${{ secrets.CACHIX_AUTH_TOKEN }}
+          cachix-cache: ""
+          extra-env: >-
+            GIT_OPTIONAL_LOCKS=0
           keep-home: "true"
+          flake-check-timeout: "600"
+          flake-eval-timeout: "120"
 
   build-darwin:
     needs: build-linux
@@ -28,8 +33,9 @@ jobs:
       - uses: pr0d1r2/nix-lefthook-ci-action@ce9a118b05e90e186dba48a82067adeed185f7d4
         with:
           skip-build: "true"
-          cachix-cache: pr0d1r2
-          cachix-auth-token: ${{ secrets.CACHIX_AUTH_TOKEN }}
+          cachix-cache: ""
+          extra-env: >-
+            GIT_OPTIONAL_LOCKS=0
           keep-home: "true"
           flake-check-timeout: "600"
           flake-eval-timeout: "120"
@@ -42,6 +48,9 @@ jobs:
         with:
           extra-platforms: aarch64-linux
           skip-build: "true"
-          cachix-cache: pr0d1r2
-          cachix-auth-token: ${{ secrets.CACHIX_AUTH_TOKEN }}
+          cachix-cache: ""
+          extra-env: >-
+            GIT_OPTIONAL_LOCKS=0
           keep-home: "true"
+          flake-check-timeout: "600"
+          flake-eval-timeout: "120"
