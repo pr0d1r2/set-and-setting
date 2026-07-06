@@ -957,6 +957,11 @@
               echo "FAIL: scaffold still has ci devShell"; exit 1
             fi
 
+            # T59/B17: scaffold ci.yml must specify devshell: "default"
+            # (the CI action defaults to "ci" which no longer exists)
+            grep -q 'devshell:.*"default"' "${scaffold}/.github/workflows/ci.yml" \
+              || { echo "FAIL: ci.yml missing devshell: default (B17)"; exit 1; }
+
             # lefthook.yml has remotes from all fragments
             grep -q 'nix-lefthook-trailing-whitespace' "${scaffold}/lefthook.yml" \
               || { echo "FAIL: lefthook.yml missing base remote"; exit 1; }
