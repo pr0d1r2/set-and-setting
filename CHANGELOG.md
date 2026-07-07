@@ -2,6 +2,15 @@
 
 ## Unreleased
 
+- T33: downstream wiring -- consumer scaffold (`component-flake.txt`)
+  wires `set-and-setting` flake input with `mkDevShells`, `packages.set`/
+  `packages.setting`, sync hooks, and `mkDepGraphCheck`. CI template
+  (`ci.yml`) adds a sync pre-step that builds `packages.setting` and
+  runs `sync-setting` before hooks (V22 gitignored configs). Add
+  `examples/home-manager.nix` home-manager module for global skill
+  installation via `home.file` + activation script. Nix checks validate
+  scaffold wiring and home-manager syntax.
+
 - T31: agnosticism proof -- add `materialize-check-opencode` nix check
   proving the consumer-facing `mkMaterializeCheck` API works with the
   opencode agent (`globs` field, `.opencode/rules/set` dir). Add bats

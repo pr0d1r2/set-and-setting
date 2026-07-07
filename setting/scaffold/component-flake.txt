@@ -10,6 +10,8 @@
     nixpkgs-lock.url = "github:pr0d1r2/nixpkgs-lock";
     nixpkgs.follows = "nixpkgs-lock/nixpkgs";
 
+    set-and-setting.url = "github:pr0d1r2/set-and-setting";
+
     nix-lefthook = {
       url = "github:pr0d1r2/nix-lefthook";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -103,7 +105,9 @@
 
   outputs =
     {
+      self,
       nixpkgs,
+      set-and-setting,
       nix-lefthook,
       nix-lefthook-ascii-only-src,
       nix-lefthook-deadnix-src,
@@ -241,38 +245,42 @@
         ];
     in
     {
+      packages = forAllSystems (pkgs: {
+        set = set-and-setting.lib.mkSet { inherit pkgs; };
+        setting = (set-and-setting.lib.mkSetting { inherit pkgs; }).materialized;
+      });
+
       devShells = forAllSystems (
         pkgs:
         let
           sys = pkgs.stdenv.hostPlatform.system;
-          baseShellHook = ''
-            [ -f .git/hooks/pre-commit ] || lefthook install
-          '';
-          defaultShell = pkgs.mkShell {
-            NIX_CONFIG = "experimental-features = nix-command flakes";
-            packages =
-              (lefthookWrappersFor pkgs)
-              ++ [
-                pkgs.coreutils
-                pkgs.git
-                pkgs.nix
-                pkgs.gh
-                nix-lefthook.packages.${sys}.default
-              ];
-            shellHook = baseShellHook;
-          };
         in
-        {
-          default = defaultShell;
-          agentic = pkgs.mkShell {
-            inputsFrom = [ defaultShell ];
-            NIX_CONFIG = "experimental-features = nix-command flakes";
-            shellHook = baseShellHook;
-          };
+        set-and-setting.lib.mkDevShells {
+          inherit pkgs;
+          basePackages =
+            (lefthookWrappersFor pkgs)
+            ++ [
+              pkgs.coreutils
+              pkgs.git
+              pkgs.nix
+              pkgs.gh
+              nix-lefthook.packages.${sys}.default
+            ];
+          defaultShellHook = ''
+            ${self.packages.${sys}.setting}/bin/sync-setting .
+          '';
+          agenticShellHook = ''
+            ${self.packages.${sys}.setting}/bin/sync-setting .
+            ${self.packages.${sys}.set}/bin/sync-set .
+          '';
         }
       );
 
       checks = forAllSystems (pkgs: {
+        dep-graph = set-and-setting.lib.mkDepGraphCheck {
+          inherit pkgs;
+          projectRoot = ./.;
+        };
         default = pkgs.runCommand "checks" { } "touch $out";
       });
     };

@@ -4,6 +4,7 @@ absent
 acc
 across
 action
+activation
 actual
 actually
 add
@@ -36,6 +37,7 @@ apps
 architecture
 are
 arg
+args
 ascii
 assemble
 assembled
@@ -53,7 +55,9 @@ base
 bash
 bats
 beats
+before
 behavioral
+below
 between
 beyond
 bin
@@ -61,6 +65,7 @@ body
 bool
 bootstrap
 both
+boundary
 bounding
 branch
 broad
@@ -115,6 +120,8 @@ cond
 conditional
 config
 configs
+configuration
+configurations
 conflict
 consumed
 consumer
@@ -134,6 +141,7 @@ cumulative
 cvbody
 cvset
 cvskill
+dag
 darwin
 data
 deadnix
@@ -207,6 +215,8 @@ everywhere
 evidence
 exact
 exactly
+example
+examples
 exclude
 excluded
 exdir
@@ -270,6 +280,7 @@ from
 frontmatter
 full
 fully
+function
 functions
 gap
 gawk
@@ -283,6 +294,7 @@ github
 gitignore
 gitleaks
 glob
+globally
 globs
 gnu
 gnugrep
@@ -428,6 +440,8 @@ mkset
 mksetting
 model
 modularity
+module
+modules
 more
 most
 multi
@@ -480,6 +494,7 @@ packages
 parallel
 param
 parse
+parsed
 partial
 parts
 pass
@@ -614,6 +629,7 @@ smart
 sort
 source
 sources
+special
 specific
 specifically
 specify
@@ -628,6 +644,7 @@ statix
 stay
 stays
 stdenv
+step
 steps
 still
 string
@@ -648,6 +665,7 @@ surface
 survives
 symlink
 synced
+syntactically
 syntax
 synthetic
 system
@@ -705,6 +723,7 @@ updated
 upstream
 url
 urls
+usage
 use
 used
 user
@@ -722,6 +741,7 @@ while
 whitespace
 wins
 wires
+wiring
 with
 within
 without
@@ -737,3 +757,4 @@ writing
 wrong
 yaml
 yamllint
+your

@@ -37,6 +37,7 @@ added
 adding
 addition
 additional
+additionally
 additive
 address
 addressed
@@ -355,7 +356,6 @@ checkout
 checks
 children
 chmod
-chore
 churn
 cites
 cla
@@ -1091,6 +1091,7 @@ given
 gives
 glance
 glob
+global
 globally
 globs
 gnu
@@ -1292,6 +1293,7 @@ inside
 inspect
 inspection
 install
+installation
 installed
 installer
 installers
@@ -2658,7 +2660,6 @@ unblocks
 uncertainty
 unchanged
 uncomment
-uncommitted
 unconditional
 unconditionally
 uncovered
@@ -2693,6 +2694,7 @@ unsigned
 unsure
 until
 untouched
+untracked
 untrusted
 unwelcome
 update
@@ -2817,6 +2819,7 @@ workflow
 workflows
 working
 works
+workspace
 workstations
 worth
 would

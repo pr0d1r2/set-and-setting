@@ -80,32 +80,106 @@ Pin the version in your flake and sync after each update.
 ```nix
 {
   inputs.set-and-setting.url = "github:pr0d1r2/set-and-setting";
+
+  outputs = { self, nixpkgs, set-and-setting, ... }:
+    let forAllSystems = ...; in
+    {
+      packages = forAllSystems (pkgs: {
+        set = set-and-setting.lib.mkSet { inherit pkgs; };
+        setting = (set-and-setting.lib.mkSetting { inherit pkgs; }).materialized;
+      });
+
+      devShells = forAllSystems (pkgs:
+        let sys = pkgs.stdenv.hostPlatform.system; in
+        set-and-setting.lib.mkDevShells {
+          inherit pkgs;
+          basePackages = [ ... ];
+          defaultShellHook = ''
+            ${self.packages.${sys}.setting}/bin/sync-setting .
+          '';
+          agenticShellHook = ''
+            ${self.packages.${sys}.setting}/bin/sync-setting .
+            ${self.packages.${sys}.set}/bin/sync-set .
+          '';
+        }
+      );
+
+      checks = forAllSystems (pkgs: {
+        dep-graph = set-and-setting.lib.mkDepGraphCheck {
+          inherit pkgs;
+          projectRoot = ./.;
+        };
+      });
+    };
 }
 ```
 
-```bash
-nix flake lock --update-input set-and-setting
-nix build .#agent-set && result/bin/sync-set .claude/skills/set
-nix build .#agent-setting && result/bin/sync-setting
-git add .claude/skills/set && git commit -m "chore: sync skills"
+The `defaultShellHook` syncs materialized configs so lefthook hooks
+find them. The `agenticShellHook` additionally syncs skills for the
+AI agent. Stacked shells (T59): `default` = CI + non-LLM tooling,
+`agentic` = default + LLM.
+
+See `setting/scaffold/component-flake.txt` for a complete consumer
+flake template (scaffolded by `mkScaffold`).
+
+#### CI sync pre-step
+
+Materialized configs (`.markdownlint.yml`, `.yamllint.yml`) are
+gitignored. CI must sync them before hooks run:
+
+```yaml
+steps:
+  - uses: actions/checkout@v4
+  - uses: cachix/install-nix-action@v27
+  - name: Sync materialized configs
+    run: |
+      setting_pkg="$(nix build .#setting --print-out-paths --no-link)"
+      "$setting_pkg/bin/sync-setting" .
+  - uses: pr0d1r2/nix-lefthook-ci-action@ce9a118b
+    with:
+      devshell: "default"
 ```
 
-Use `lib.mkDriftCheck` in CI to catch uncommitted drift.
+The sync step builds the pinned `packages.setting` and copies configs
+into the workspace. The CI action re-checks-out tracked files but
+preserves untracked (gitignored) files, so synced configs survive.
+
+See `setting/scaffold/ci.yml` for the complete CI template.
+
+#### Auto-update
+
+Set up daily auto-updates with the reusable workflow:
+
+```yaml
+uses: pr0d1r2/set-and-setting/.github/workflows/auto-update.yml@main
+```
+
+See `setting/scaffold/auto-update.yml` for the complete template.
 
 ### Path 3 -- home-manager (user-level)
 
 Install skills globally so every repo inherits them.
 
 ```nix
+{ inputs, pkgs, ... }:
+let
+  system = pkgs.stdenv.hostPlatform.system;
+  skillSet = inputs.set-and-setting.packages.${system}.set;
+in
 {
-  home.file.".claude/skills/set".source =
-    inputs.set-and-setting.packages.${system}.set;
+  home.file.".claude/rules/set" = {
+    source = "${skillSet}/.claude/rules/set";
+    recursive = true;
+  };
+  home.file.".claude/rules/set.md".source =
+    "${skillSet}/.claude/rules/set.md";
 }
 ```
 
-This writes the full skill tree into `~/.claude/skills/set/`. No
-per-repo sync needed -- Claude Code reads skills from both the repo
-and the home directory.
+This writes the skill rules into `~/.claude/rules/set/`. No per-repo
+sync needed -- Claude Code reads rules from both the repo and the
+home directory. See `examples/home-manager.nix` for a complete
+home-manager module with setting sync.
 
 ## Architecture
 
