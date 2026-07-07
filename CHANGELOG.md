@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+## 1.0.0 -- 2026-07-07
+
+Public open-source release under MIT license (C5). Repo live at
+`github:pr0d1r2/set-and-setting`.
+
 ### Changed
 
 - T22: mark hallucinogen consumer updated from `git+file:` to `github:`
