@@ -40,6 +40,7 @@ added
 adding
 addition
 additional
+additionally
 additive
 address
 addressed
@@ -1198,6 +1199,7 @@ given
 gives
 glance
 glob
+global
 globally
 globs
 globstar
@@ -1412,6 +1414,7 @@ inside
 inspect
 inspection
 install
+installation
 installed
 installer
 installers
@@ -1972,6 +1975,7 @@ params
 parent
 parse
 parseable
+parsed
 parsing
 part
 partial
@@ -2610,6 +2614,7 @@ span
 spans
 spawn
 spec
+special
 specific
 specifically
 specification
@@ -2741,6 +2746,7 @@ symmetry
 symptom
 synced
 synonyms
+syntactically
 syntax
 synthetic
 syscall
@@ -2906,7 +2912,6 @@ unblocks
 uncertainty
 unchanged
 uncomment
-uncommitted
 unconditional
 unconditionally
 uncovered
@@ -2945,6 +2950,7 @@ unspecified
 unsure
 until
 untouched
+untracked
 untrusted
 unwelcome
 update
@@ -3072,6 +3078,7 @@ workflow
 workflows
 working
 works
+workspace
 workstations
 worth
 would

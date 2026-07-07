@@ -1026,11 +1026,11 @@
             grep -q 'lefthookWrappersFor' "${scaffold}/flake.nix" \
               || { echo "FAIL: flake.nix missing lefthookWrappersFor"; exit 1; }
 
-            # T59: stacked shells -- default + agentic, no ci
+            # T59: stacked shells via mkDevShells -- default + agentic, no ci
             grep -q 'agentic' "${scaffold}/flake.nix" \
               || { echo "FAIL: flake.nix missing agentic shell"; exit 1; }
-            grep -q 'inputsFrom' "${scaffold}/flake.nix" \
-              || { echo "FAIL: flake.nix missing inputsFrom (stacked shell)"; exit 1; }
+            grep -q 'mkDevShells' "${scaffold}/flake.nix" \
+              || { echo "FAIL: flake.nix missing mkDevShells (stacked shell)"; exit 1; }
             if grep -qE '^\s+ci\s*=' "${scaffold}/flake.nix"; then
               echo "FAIL: scaffold still has ci devShell"; exit 1
             fi
@@ -1070,6 +1070,30 @@
             fi
             grep -q 'github:' "${scaffold}/flake.nix" \
               || { echo "FAIL: scaffold flake.nix has no github: URLs"; exit 1; }
+
+            # T33: consumer wiring -- set-and-setting input + packages
+            grep -q 'set-and-setting' "${scaffold}/flake.nix" \
+              || { echo "FAIL: scaffold flake.nix missing set-and-setting input (T33)"; exit 1; }
+            grep -q 'packages' "${scaffold}/flake.nix" \
+              || { echo "FAIL: scaffold flake.nix missing packages output (T33)"; exit 1; }
+            grep -q 'mkDepGraphCheck' "${scaffold}/flake.nix" \
+              || { echo "FAIL: scaffold flake.nix missing dep-graph check (T33)"; exit 1; }
+
+            # T33: consumer wiring -- sync hooks in devShell
+            grep -q 'sync-setting' "${scaffold}/flake.nix" \
+              || { echo "FAIL: scaffold flake.nix missing sync-setting hook (T33)"; exit 1; }
+            grep -q 'sync-set' "${scaffold}/flake.nix" \
+              || { echo "FAIL: scaffold flake.nix missing sync-set hook (T33)"; exit 1; }
+
+            # T33: CI sync pre-step -- materialized configs synced before hooks
+            grep -q 'Sync materialized configs' "${scaffold}/.github/workflows/ci.yml" \
+              || { echo "FAIL: ci.yml missing sync pre-step (T33)"; exit 1; }
+            grep -q 'sync-setting' "${scaffold}/.github/workflows/ci.yml" \
+              || { echo "FAIL: ci.yml missing sync-setting in pre-step (T33)"; exit 1; }
+            grep -q 'nix build' "${scaffold}/.github/workflows/ci.yml" \
+              || { echo "FAIL: ci.yml missing nix build in pre-step (T33)"; exit 1; }
+            grep -q 'install-nix-action' "${scaffold}/.github/workflows/ci.yml" \
+              || { echo "FAIL: ci.yml missing install-nix-action for pre-step (T33)"; exit 1; }
 
             echo PASS
             touch $out
@@ -1166,6 +1190,34 @@
             echo PASS
             touch $out
           '';
+
+        # T33: home-manager example -- validates the example file is
+        # syntactically valid nix and contains the expected wiring.
+        home-manager-example =
+          let
+            parsed = import ./examples/home-manager.nix;
+            ok =
+              assert builtins.isFunction parsed;
+              true;
+          in
+          pkgs.runCommand "home-manager-example-check"
+            {
+              nativeBuildInputs = [ pkgs.gnugrep ];
+              inherit ok;
+            }
+            ''
+              example="${./examples/home-manager.nix}"
+              grep -q 'home.file' "$example" \
+                || { echo "FAIL: home-manager.nix missing home.file"; exit 1; }
+              grep -q 'rules/set' "$example" \
+                || { echo "FAIL: home-manager.nix missing rules/set path"; exit 1; }
+              grep -q 'set-and-setting' "$example" \
+                || { echo "FAIL: home-manager.nix missing set-and-setting ref"; exit 1; }
+              grep -q 'sync-setting' "$example" \
+                || { echo "FAIL: home-manager.nix missing sync-setting"; exit 1; }
+              echo PASS
+              touch $out
+            '';
 
         default = pkgs.runCommand "set-and-setting-checks" { } ''
           touch $out
