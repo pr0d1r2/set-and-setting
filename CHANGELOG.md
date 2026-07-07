@@ -4,6 +4,9 @@
 
 ### Changed
 
+- T22: mark hallucinogen consumer updated from `git+file:` to `github:`
+  for its set-and-setting flake input (C6/T7).
+
 - T61: document the stacked-shell model in the linting skill -- add
   stacked devShells section (`default` = CI + non-LLM full tooling,
   `agentic` = default + LLM via stacking), CI same-gate invariant,
