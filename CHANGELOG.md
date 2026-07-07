@@ -4,6 +4,11 @@
 
 ### Changed
 
+- T61: document the stacked-shell model in the linting skill -- add
+  stacked devShells section (`default` = CI + non-LLM full tooling,
+  `agentic` = default + LLM via stacking), CI same-gate invariant,
+  and update linter addition steps for the stacked model.
+
 - T60: devShells drift-check -- extend `mkSettingDriftCheck` with
   optional `devShells` parameter enforcing stacked-shell invariants:
   shells named `default`/`agentic` only, `agentic.packages` superset
