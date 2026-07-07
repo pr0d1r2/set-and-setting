@@ -117,7 +117,7 @@ Public open-source release under MIT license (C5). Repo live at
   (V25), and excluded files are absent. Expectations self-derive from
   `categories.nix` so consumers never restate the globs map. Shell
   logic in `lib/materialize-check.sh`, bats coverage in
-  `tests/materialize-check.bats` (11 test cases). Wired as
+  `tests/materialize-check.bats` (15 test cases). Wired as
   `checks.materialize-check` and `checks.materialize-check-exclude`
   in `flake.nix`.
 
