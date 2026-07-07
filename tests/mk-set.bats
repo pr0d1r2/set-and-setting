@@ -132,3 +132,37 @@ teardown() {
     run bash "$SCRIPT"
     [ "$status" -eq 0 ]
 }
+
+# --- T31/V23: opencode agnosticism proof ---
+
+@test "opencode seam emits to .opencode dir with globs (T31/V23)" {
+    export DIR=".opencode/rules/set"
+    export COND_FIELD="globs"
+    export CATEGORIES="demo"
+    export GLOBS_MAP="demo=**/*.nix,flake.lock"
+    run bash "$SCRIPT"
+    [ "$status" -eq 0 ]
+    [ -f "$out/.opencode/rules/set/demo.md" ]
+    [ -f "$out/.opencode/rules/set/demo/sub.md" ]
+    grep -q 'globs:' "$out/.opencode/rules/set/demo.md"
+    grep -q '"**/*.nix"' "$out/.opencode/rules/set/demo.md"
+    run ! grep -q 'paths:' "$out/.opencode/rules/set/demo.md"
+}
+
+@test "opencode same body as claude (T31/V23)" {
+    export CATEGORIES="demo"
+    export GLOBS_MAP="demo=**/*.nix,flake.lock"
+    run bash "$SCRIPT"
+    [ "$status" -eq 0 ]
+    claude_body="$(sed '1,/^---$/d' "$out/$DIR/demo.md")"
+
+    out2="$(mktemp -d)"
+    export out="$out2"
+    export DIR=".opencode/rules/set"
+    export COND_FIELD="globs"
+    run bash "$SCRIPT"
+    [ "$status" -eq 0 ]
+    opencode_body="$(sed '1,/^---$/d' "$out2/.opencode/rules/set/demo.md")"
+    [ "$claude_body" = "$opencode_body" ]
+    rm -rf "$out2"
+}
