@@ -1,6 +1,8 @@
 abc
+about
 absent
 accept
+accumulate
 across
 action
 actions
@@ -12,6 +14,8 @@ adding
 additional
 adds
 admins
+advisory
+affecting
 afile
 after
 against
@@ -70,6 +74,7 @@ authenticated
 authoring
 auto
 automatic
+automatically
 available
 avoids
 aware
@@ -118,6 +123,7 @@ burns
 but
 caching
 cachix
+caller
 callers
 calls
 can
@@ -188,6 +194,7 @@ considers
 constructed
 constructs
 consumer
+consumers
 contain
 contained
 containing
@@ -244,6 +251,7 @@ designed
 dest
 destdir
 destination
+destroys
 detect
 detected
 detects
@@ -285,6 +293,7 @@ drift
 drop
 dupe
 duplicated
+during
 each
 echo
 editorconfig
@@ -340,8 +349,10 @@ expected
 explicit
 export
 extension
+external
 extglob
 extra
+extract
 extracted
 facet
 fail
@@ -354,6 +365,7 @@ fence
 fenced
 fidelity
 field
+fields
 file
 filenames
 files
@@ -401,6 +413,7 @@ given
 glob
 globs
 globstar
+graceful
 graduate
 graduated
 graduating
@@ -413,6 +426,7 @@ guidance
 half
 handles
 happen
+harden
 hardening
 harness
 has
@@ -426,6 +440,8 @@ helper
 here
 hermetic
 hint
+history
+hit
 hits
 hook
 hop
@@ -491,6 +507,7 @@ keep
 keeps
 kept
 key
+keys
 keywords
 known
 kwentries
@@ -635,9 +652,11 @@ notice
 notloaded
 now
 nrule
+nsecurity
 ntest
 null
 observable
+occurrence
 ochannel
 oglobs
 old
@@ -727,6 +746,8 @@ produces
 profile
 project
 prompt
+propagate
+propagation
 properly
 protect
 protection
@@ -765,11 +786,13 @@ ref
 reference
 referenced
 references
+referencing
 refers
 refresh
 refreshes
 refreshing
 refs
+regardless
 regression
 rel
 relative
@@ -784,6 +807,9 @@ remotes
 remove
 removed
 removes
+rename
+renamed
+renames
 replace
 replaces
 reply
@@ -812,6 +838,8 @@ reusable
 rev
 review
 reviews
+rjson
+rmap
 root
 rule
 rules
@@ -820,11 +848,14 @@ runnable
 running
 runs
 same
+save
+saved
 scaffold
 scaffolded
 scaffolding
 scaffolds
 scan
+scanning
 scans
 schema
 scoped
@@ -854,6 +885,7 @@ separated
 separately
 sequence
 serial
+serialized
 set
 setbase
 setroot
@@ -864,6 +896,8 @@ shape
 shell
 shellcheck
 shift
+ship
+ships
 shopt
 should
 show
@@ -872,6 +906,7 @@ sibling
 signal
 signalled
 signals
+silently
 simulate
 single
 size
@@ -882,6 +917,7 @@ skip
 skipped
 skipping
 skips
+slash
 slashed
 smart
 snippet
@@ -912,6 +948,7 @@ stdout
 steps
 store
 strict
+string
 strip
 stripped
 stripping
@@ -982,6 +1019,7 @@ unresolvable
 unresolved
 unset
 update
+updated
 updates
 updating
 upstream
@@ -1010,6 +1048,8 @@ vote
 voted
 votes
 voting
+warning
+warnings
 was
 were
 what

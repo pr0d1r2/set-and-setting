@@ -114,6 +114,7 @@ conditional
 config
 configs
 conflict
+consumed
 consumer
 consumers
 contained
@@ -299,6 +300,7 @@ head
 here
 high
 hint
+historical
 holds
 home
 hook
@@ -451,6 +453,7 @@ ocbody
 ocjson
 ocset
 ocskill
+old
 omit
 omits
 one
@@ -503,6 +506,7 @@ program
 project
 prompt
 proof
+propagate
 propagates
 prose
 protect
@@ -522,6 +526,7 @@ rec
 recursive
 recursively
 ref
+references
 referencing
 refines
 refs
@@ -534,8 +539,12 @@ rely
 remote
 remotes
 remove
+rename
+renamed
+renames
 replaces
 repo
+repos
 requested
 resolve
 resolved
@@ -610,6 +619,7 @@ spelling
 split
 stable
 stacked
+stale
 standards
 starts
 statix
@@ -690,6 +700,7 @@ unsigned
 unspecified
 update
 updated
+upstream
 url
 urls
 use

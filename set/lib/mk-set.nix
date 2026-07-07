@@ -12,6 +12,7 @@ let
   cats = import ./categories.nix;
   agents = import ./agents.nix;
   meta = import ../meta.nix { inherit lib; };
+  renames = import ../renames.nix { inherit lib; };
 in
 
 {
@@ -63,10 +64,12 @@ pkgs.runCommand "agent-set"
     ALWAYSON_IMPORT = ag.alwaysOn.import;
     ALWAYSON_FILE = ag.alwaysOn.file;
     CONDITIONAL_MECHANISM = ag.conditional.mechanism;
+    RENAMES_MAP = renames.serialized;
     COMPILER = ../../lib/agents-md-compile.sh;
     EMIT = ./emit-skill.sh;
     EMIT_RULE = ./emit-rule.sh;
     EMIT_SKILLMD = ./emit-skillmd.sh;
+    RENAME_PROPAGATE = ./rename-propagate.sh;
     SYNC_SRC = ./sync-set.sh;
   }
   ''

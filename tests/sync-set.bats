@@ -127,3 +127,27 @@ teardown() {
     [ ! -e "$TARGET/.cave/rules/set/stale" ]
     [ -f "$TARGET/.cave/rules/set/demo/sub.md" ]
 }
+
+@test "rename propagation reports renames during sync (T24)" {
+    # Set up a rename map in the source derivation
+    printf 'demo/sub.md|demo/new-sub.md\n' >"$SRC/.claude/rules/set/.mkset-renames"
+    mkdir -p "$SRC/bin"
+    cp "$BATS_TEST_DIRNAME/../set/lib/rename-propagate.sh" "$SRC/bin/rename-propagate"
+    chmod +x "$SRC/bin/rename-propagate"
+    # Set up an old manifest in the target referencing the old path
+    mkdir -p "$TARGET/.claude/rules/set"
+    printf '{"categories":["demo"],"rev":"old","agent":"claude","applicability":{"demo/sub.md":"core"}}\n' \
+        >"$TARGET/.claude/rules/set/.mkset.json"
+    run bash "$SRC/bin/sync-set" "$TARGET"
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"demo/sub.md -> demo/new-sub.md"* ]]
+    [[ "$output" == *"synced set"* ]]
+}
+
+@test "sync succeeds without rename propagation files (T24)" {
+    # Source has no .mkset-renames -- graceful no-op
+    run bash "$SRC/bin/sync-set" "$TARGET"
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"synced set"* ]]
+    [ -f "$TARGET/.claude/rules/set/demo/sub.md" ]
+}

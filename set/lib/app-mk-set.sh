@@ -258,8 +258,16 @@ if [ "$dry_run" -eq 1 ]; then
     exit 0
 fi
 
+# Save old manifest for rename propagation (T24/C7) before the
+# clean-replace destroys it.
+old_manifest=""
+if [ -f "$MANIFEST" ]; then
+    old_manifest="$(mktemp)"
+    cp "$MANIFEST" "$old_manifest"
+fi
+
 out="$(mktemp -d)"
-trap 'rm -rf "$out"' EXIT
+trap 'rm -rf "$out" ${old_manifest:+"$old_manifest"}' EXIT
 
 export out
 export SKILLS_DIR CONCEPTS_DIR
@@ -288,6 +296,12 @@ if [ -n "${COMPILER_SCRIPT:-}" ]; then
     export CONDITIONAL_MECHANISM="${agent_conditional_mechanism:-}"
     export COMPILER="$COMPILER_SCRIPT"
 fi
+# Rename propagation (T24/C7): pass the propagation script and rename
+# map to mk-set.sh so the derivation ships them for sync-set.
+if [ -n "${RENAME_PROPAGATE_SCRIPT:-}" ]; then
+    export RENAME_PROPAGATE="$RENAME_PROPAGATE_SCRIPT"
+fi
+export RENAMES_MAP="${RENAMES_MAP:-}"
 
 bash "$MK_SET_SCRIPT"
 
@@ -339,13 +353,25 @@ if [ "$mode" = "auto" ]; then
     done <<<"$applicability_evidence"
 fi
 
-if [ -n "$app_json" ]; then
-    printf '{"categories":[%s],"rev":"%s","agent":"%s","applicability":{%s}}\n' \
-        "$cats_json" "$rev" "$agent_name" "$app_json" >"$MANIFEST"
-else
-    printf '{"categories":[%s],"rev":"%s","agent":"%s"}\n' \
-        "$cats_json" "$rev" "$agent_name" >"$MANIFEST"
+# Rename propagation (T24/C7): detect stale references after install.
+renames_json=""
+if [ -n "${RENAMES_MAP:-}" ]; then
+    renames_out="$(mktemp)"
+    RENAMES_MAP="$RENAMES_MAP" \
+        OLD_MANIFEST="${old_manifest:-/dev/null}" \
+        TARGET_DIR="." \
+        AGENT_DIR="$agent_dir" \
+        RENAMES_OUT="$renames_out" \
+        bash "$RENAME_PROPAGATE_SCRIPT" || true
+    renames_json="$(cat "$renames_out" 2>/dev/null || true)"
+    rm -f "$renames_out"
 fi
+
+# Build the manifest JSON with optional fields (V37 audit).
+manifest_body="\"categories\":[$cats_json],\"rev\":\"$rev\",\"agent\":\"$agent_name\""
+[ -n "$app_json" ] && manifest_body="$manifest_body,\"applicability\":{$app_json}"
+[ -n "$renames_json" ] && manifest_body="$manifest_body,\"renames\":{$renames_json}"
+printf '{%s}\n' "$manifest_body" >"$MANIFEST"
 
 if [ "$mode" = "remove" ]; then
     echo "Removed: ${remove_cats[*]}"

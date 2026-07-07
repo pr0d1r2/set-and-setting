@@ -105,5 +105,16 @@ if [ "${CONDITIONAL_MECHANISM:-}" = "opencode.json-instructions" ]; then
 fi
 
 mkdir -p "$out/bin"
+
+# Rename propagation data (T24/C7): ship the rename map and propagation
+# script so sync-set can detect stale references in consumers.
+if [ -n "${RENAMES_MAP:-}" ]; then
+    printf '%s\n' "$RENAMES_MAP" >"$setroot/.mkset-renames"
+fi
+if [ -n "${RENAME_PROPAGATE:-}" ]; then
+    cp "$RENAME_PROPAGATE" "$out/bin/rename-propagate"
+    chmod +x "$out/bin/rename-propagate"
+fi
+
 cp "$SYNC_SRC" "$out/bin/sync-set"
 chmod +x "$out/bin/sync-set"

@@ -1166,6 +1166,7 @@
           cats = import ./set/lib/categories.nix;
           agents = import ./set/lib/agents.nix;
           meta = import ./set/meta.nix { inherit lib; };
+          renames = import ./set/renames.nix { inherit lib; };
           globsMap = lib.concatStringsSep ";" (
             lib.mapAttrsToList (c: globs: "${c}=${lib.concatStringsSep "," globs}") cats.globs
           );
@@ -1207,6 +1208,8 @@
               export AGENT_SEAMS="${agentSeams}"
               export KEYWORDS_MAP="${keywordsMap}"
               export COMPILER_SCRIPT="${./lib/agents-md-compile.sh}"
+              export RENAME_PROPAGATE_SCRIPT="${./set/lib/rename-propagate.sh}"
+              export RENAMES_MAP=${lib.escapeShellArg renames.serialized}
               export MKSET_REV="${self.rev or self.dirtyRev or "unknown"}"
             ''
             + builtins.readFile ./set/lib/app-mk-set.sh;

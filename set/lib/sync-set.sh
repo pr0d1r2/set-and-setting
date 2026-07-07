@@ -19,6 +19,15 @@ for d in "$src"/.*; do
 done
 
 if [ -n "$set_parent" ]; then
+    # Save old manifest for rename propagation (T24/C7) before the
+    # clean-replace destroys it.
+    old_manifest=""
+    manifest_path="$target/$set_parent/rules/set/.mkset.json"
+    if [ -f "$manifest_path" ]; then
+        old_manifest="$(mktemp)"
+        cp "$manifest_path" "$old_manifest"
+    fi
+
     # Prior sync copied from /nix/store (read-only); restore the write bit
     # so the clean-replace rm can delete the tree (V26).
     [ -e "$target/$set_parent/rules/set" ] &&
@@ -33,5 +42,18 @@ if [ -n "$set_parent" ]; then
     rm -f "$target/$set_parent/rules/set.md"
     [ -f "$src/$set_parent/rules/set.md" ] &&
         cp "$src/$set_parent/rules/set.md" "$target/$set_parent/rules/set.md"
+
+    # Rename propagation (T24/C7): detect stale references after sync.
+    renames_file="$target/$set_parent/rules/set/.mkset-renames"
+    propagate_script="$src/bin/rename-propagate"
+    if [ -f "$renames_file" ] && [ -f "$propagate_script" ]; then
+        RENAMES_MAP="$(cat "$renames_file")" \
+        OLD_MANIFEST="${old_manifest:-/dev/null}" \
+        TARGET_DIR="$target" \
+        AGENT_DIR="$set_parent/rules/set" \
+        RENAMES_OUT=/dev/null \
+            bash "$propagate_script" || true
+    fi
+    [ -n "$old_manifest" ] && rm -f "$old_manifest"
 fi
 echo "synced set -> $target"

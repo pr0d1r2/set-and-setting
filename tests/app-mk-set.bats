@@ -39,6 +39,8 @@ setup() {
     export GLOBS_MAP="nix=**/*.nix,flake.lock;generic=**/*;git=**/*;security=**/*"
     export CHANNEL_OVERRIDES=""
     export AGENT_SEAMS="claude=.claude/rules/set,paths,.claude/skills,1,@,CLAUDE.md,path-rules;opencode=.opencode/rules/set,globs,.,0,inline,AGENTS.md,opencode.json-instructions"
+    export RENAME_PROPAGATE_SCRIPT="$BATS_TEST_DIRNAME/../set/lib/rename-propagate.sh"
+    export RENAMES_MAP=""
 }
 
 teardown() {
@@ -243,4 +245,30 @@ teardown() {
     run bash -c "cd '$TARGET' && bash '$SCRIPT' --remove"
     [ "$status" -eq 1 ]
     [[ "$output" == *"--remove requires at least one category"* ]]
+}
+
+@test "rename propagation reports renames on update (T24)" {
+    run bash -c "cd '$TARGET' && bash '$SCRIPT' nix"
+    [ "$status" -eq 0 ]
+    # Simulate a rename: the old manifest references nix (installed category)
+    export RENAMES_MAP='nix/flake.md|nix/nix-flake.md'
+    run bash -c "cd '$TARGET' && bash '$SCRIPT'"
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"nix/flake.md -> nix/nix-flake.md"* ]]
+}
+
+@test "manifest includes renames field when renames present (T24)" {
+    export RENAMES_MAP='nix/flake.md|nix/nix-flake.md'
+    run bash -c "cd '$TARGET' && bash '$SCRIPT' nix"
+    [ "$status" -eq 0 ]
+    [ -f "$TARGET/.claude/rules/set/.mkset.json" ]
+    grep -q '"renames"' "$TARGET/.claude/rules/set/.mkset.json"
+    grep -q '"nix/flake.md":"nix/nix-flake.md"' "$TARGET/.claude/rules/set/.mkset.json"
+}
+
+@test "manifest omits renames field when no renames (T24)" {
+    run bash -c "cd '$TARGET' && bash '$SCRIPT' nix"
+    [ "$status" -eq 0 ]
+    [ -f "$TARGET/.claude/rules/set/.mkset.json" ]
+    run ! grep -q '"renames"' "$TARGET/.claude/rules/set/.mkset.json"
 }

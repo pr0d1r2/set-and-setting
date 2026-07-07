@@ -1,10 +1,10 @@
 ---
 default: 8192
 extensions:
-  bats: 10240
+  bats: 12288
   dic: 32768
   lock: 262144
   md: 49152
   nix: 57344
-  sh: 12288
+  sh: 16384
   txt: 10240
