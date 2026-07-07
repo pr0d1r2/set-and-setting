@@ -82,3 +82,24 @@ teardown() {
     run grep -c '"\*\*/\*"' "$DESTDIR/out.md"
     [ "$output" = "1" ]
 }
+
+# --- T31/V23: opencode agnosticism proof (COND_FIELD=globs) ---
+
+@test "opencode: domain emits globs frontmatter (T31/V23)" {
+    SRC="$SRCDIR/demo.md" REL="nix/demo.md" DEST="$DESTDIR/demo.md" \
+        CAT_CHANNEL=domain CAT_GLOBS="**/*.nix flake.lock" OVERRIDES="" \
+        COND_FIELD=globs run bash "$SCRIPT"
+    run cat "$DESTDIR/demo.md"
+    [[ "$output" == *"globs:"* ]]
+    [[ "$output" == *'"**/*.nix"'* ]]
+    [[ "$output" != *"paths:"* ]]
+    [[ "$output" == *"Body line."* ]]
+}
+
+@test "opencode: core emits path-less rule same as claude (T31/V23)" {
+    SRC="$SRCDIR/demo.md" REL="generic/demo.md" DEST="$DESTDIR/demo.md" \
+        CAT_CHANNEL=core CAT_GLOBS="**/*" OVERRIDES="" \
+        COND_FIELD=globs run bash "$SCRIPT"
+    run head -1 "$DESTDIR/demo.md"
+    [ "$output" = "# Demo" ]
+}

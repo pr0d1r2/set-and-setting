@@ -1,4 +1,5 @@
 #!/usr/bin/env bats
+# shellcheck disable=SC2030,SC2031
 
 # Unit tests for lib/materialize-check.sh -- the materialization
 # assertion engine. Verifies path-scoped rules layout (V17/V18/V19),
@@ -174,6 +175,41 @@ make_core_rule() {
     CATEGORIES="test" OVERRIDES="$(printf '%s\n%s\n' \
         'test/qemu||tests/integration/**,**/*.exp' \
         'test/qemu/mdns.md||**/*.nix')" run bash "$SCRIPT"
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"PASS"* ]]
+}
+
+# --- T31/V23: opencode agnosticism proof (COND_FIELD=globs) ---
+
+@test "opencode: PASS when rules use globs field (T31/V23)" {
+    export DIR=".opencode/rules/set"
+    export COND_FIELD="globs"
+    mkdir -p "$MATERIALIZED/$DIR/nix"
+    printf '%s\n' '---' 'globs:' '  - "**/*.nix"' '  - "flake.lock"' '---' '' 'Nix.' \
+        >"$MATERIALIZED/$DIR/nix/flake.md"
+    CATEGORIES="nix" run bash "$SCRIPT"
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"PASS"* ]]
+}
+
+@test "opencode: FAIL when rules wrongly use paths instead of globs (T31/V23)" {
+    export DIR=".opencode/rules/set"
+    export COND_FIELD="globs"
+    mkdir -p "$MATERIALIZED/$DIR/nix"
+    printf '%s\n' '---' 'paths:' '  - "**/*.nix"' '---' '' 'Nix.' \
+        >"$MATERIALIZED/$DIR/nix/flake.md"
+    CATEGORIES="nix" run bash "$SCRIPT"
+    [ "$status" -eq 1 ]
+    [[ "$output" == *"missing globs"* ]]
+}
+
+@test "opencode: core-channel files are path-less same as claude (T31/V23)" {
+    export DIR=".opencode/rules/set"
+    export COND_FIELD="globs"
+    mkdir -p "$MATERIALIZED/$DIR/generic"
+    printf '%s\n' '# Skill' '' 'Body.' \
+        >"$MATERIALIZED/$DIR/generic/skill.md"
+    CATEGORIES="generic" CORE="generic" run bash "$SCRIPT"
     [ "$status" -eq 0 ]
     [[ "$output" == *"PASS"* ]]
 }

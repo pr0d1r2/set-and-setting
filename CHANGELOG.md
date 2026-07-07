@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+- T31: agnosticism proof -- add `materialize-check-opencode` nix check
+  proving the consumer-facing `mkMaterializeCheck` API works with the
+  opencode agent (`globs` field, `.opencode/rules/set` dir). Add bats
+  tests across emit-rule, mk-set, and materialize-check proving the
+  shell infrastructure is field-agnostic (V23).
+
 - T24: rename propagation -- upstream rename map (`set/renames.nix`),
   detection script (`rename-propagate.sh`), wired into both `sync-set`
   and `app-mk-set` paths. Consumers get advisory warnings when upstream

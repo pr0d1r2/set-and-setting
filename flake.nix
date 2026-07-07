@@ -990,6 +990,19 @@
           exclude = [ "rtk.md" ];
         };
 
+        # T31/V23: materialize-check with opencode agent -- proves the
+        # consumer-facing mkMaterializeCheck API works agent-agnostically
+        # (globs field, .opencode/rules/set dir).
+        materialize-check-opencode =
+          let
+            agents = import ./set/lib/agents.nix;
+          in
+          import ./lib/mk-materialize-check.nix { inherit (nixpkgs) lib; } {
+            inherit pkgs;
+            categories = [ "nix" ];
+            agent = agents.opencode;
+          };
+
         compose-scaffold =
           let
             scaffold = import ./setting/lib/mk-scaffold.nix { inherit pkgs; };

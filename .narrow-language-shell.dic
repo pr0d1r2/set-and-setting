@@ -23,6 +23,7 @@ agent
 agents
 agentskills
 agnostic
+agnosticism
 all
 allow
 allowed
@@ -746,6 +747,7 @@ produces
 profile
 project
 prompt
+proof
 propagate
 propagation
 properly
@@ -1074,6 +1076,7 @@ writer
 writes
 writing
 written
+wrongly
 yaml
 yamllint
 your
