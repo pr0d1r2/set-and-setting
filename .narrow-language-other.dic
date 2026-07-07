@@ -16,6 +16,7 @@ acceptable
 accepts
 access
 according
+accumulate
 accumulated
 accumulates
 accurate
@@ -49,6 +50,7 @@ adjust
 adjusted
 admins
 advertise
+advisory
 advocating
 affect
 affecting
@@ -119,6 +121,7 @@ apple
 applicability
 applicable
 application
+applied
 applies
 apply
 applying
@@ -327,6 +330,7 @@ caching
 cachix
 cadence
 call
+caller
 callers
 calling
 calls
@@ -722,6 +726,7 @@ dest
 destdir
 destination
 destroy
+destroys
 destructive
 detailed
 details
@@ -1203,6 +1208,7 @@ goes
 got
 gotcha
 gotchas
+graceful
 grade
 graduate
 graduated
@@ -1285,6 +1291,7 @@ hides
 high
 higher
 hint
+historical
 history
 hit
 hits
@@ -1834,6 +1841,7 @@ noun
 now
 nproc
 nrule
+nsecurity
 ntest
 null
 number
@@ -2382,6 +2390,8 @@ rewritten
 right
 risk
 risks
+rjson
+rmap
 road
 role
 roles
@@ -3013,6 +3023,8 @@ wall
 want
 warm
 warms
+warning
+warnings
 wart
 was
 wasteful

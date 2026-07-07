@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+- T24: rename propagation -- upstream rename map (`set/renames.nix`),
+  detection script (`rename-propagate.sh`), wired into both `sync-set`
+  and `app-mk-set` paths. Consumers get advisory warnings when upstream
+  renames affect their installed skills or `@`-references. Manifest
+  records applied renames for audit (C7/I.sync-set).
+
 ## 1.0.0 -- 2026-07-07
 
 Public open-source release under MIT license (C5). Repo live at
