@@ -509,6 +509,25 @@
               assert cv.conditional.field == "paths";
               assert cv.skill.dir == ".cave/skills";
               assert cv.skill.disableModelInvocation;
+              # T34 extension agents (cursor, codex, gemini-cli, copilot, amp)
+              assert agents.cursor.alwaysOn.file == "AGENTS.md";
+              assert agents.cursor.alwaysOn.import == "inline";
+              assert agents.cursor.conditional.dir == ".cursor/rules/set";
+              assert agents.cursor.conditional.field == "globs";
+              assert agents.cursor.conditional.mechanism == "cursor-rules";
+              assert !agents.cursor.skill.disableModelInvocation;
+              assert agents.codex.alwaysOn.import == "inline";
+              assert agents.codex.conditional.dir == ".codex/rules/set";
+              assert agents.codex.conditional.field == "globs";
+              assert agents.gemini-cli.alwaysOn.import == "inline";
+              assert agents.gemini-cli.conditional.dir == ".gemini/rules/set";
+              assert agents.gemini-cli.conditional.field == "globs";
+              assert agents.copilot.alwaysOn.import == "inline";
+              assert agents.copilot.conditional.dir == ".copilot/rules/set";
+              assert agents.copilot.conditional.field == "globs";
+              assert agents.amp.alwaysOn.import == "inline";
+              assert agents.amp.conditional.dir == ".amp/rules/set";
+              assert agents.amp.conditional.field == "globs";
               # back-compat seam derives from conditional (single source)
               assert c.dir == c.conditional.dir;
               assert c.condField == c.conditional.field;
@@ -516,6 +535,16 @@
               assert o.condField == o.conditional.field;
               assert cv.dir == cv.conditional.dir;
               assert cv.condField == cv.conditional.field;
+              assert agents.cursor.dir == agents.cursor.conditional.dir;
+              assert agents.cursor.condField == agents.cursor.conditional.field;
+              assert agents.codex.dir == agents.codex.conditional.dir;
+              assert agents.codex.condField == agents.codex.conditional.field;
+              assert agents.gemini-cli.dir == agents.gemini-cli.conditional.dir;
+              assert agents.gemini-cli.condField == agents.gemini-cli.conditional.field;
+              assert agents.copilot.dir == agents.copilot.conditional.dir;
+              assert agents.copilot.condField == agents.copilot.conditional.field;
+              assert agents.amp.dir == agents.amp.conditional.dir;
+              assert agents.amp.condField == agents.amp.conditional.field;
               true;
           in
           pkgs.runCommand "agent-profiles-check" { inherit ok; } ''
@@ -965,6 +994,118 @@
               || { echo "FAIL: caveman set.md manifest missing"; exit 1; }
             grep -q '^@set/generic/skill.md$' "${caveman}/.cave/rules/set.md" \
               || { echo "FAIL: caveman set.md missing core ref"; exit 1; }
+
+            echo PASS
+            touch $out
+          '';
+
+        # T34: extension agent seams (cursor, codex, gemini-cli, copilot,
+        # amp). All use inline import (compiled AGENTS.md, no @-import).
+        # Proves V23/C2 agent-agnostic across 8 total seams.
+        agent-seam-extensions =
+          let
+            mkSet = import ./set/lib/mk-set.nix { inherit (nixpkgs) lib; };
+            agents = import ./set/lib/agents.nix;
+            claude = mkSet { inherit pkgs; };
+            cursor = mkSet {
+              inherit pkgs;
+              agent = agents.cursor;
+            };
+            codex = mkSet {
+              inherit pkgs;
+              agent = agents.codex;
+            };
+            gemini = mkSet {
+              inherit pkgs;
+              agent = agents.gemini-cli;
+            };
+            copilot = mkSet {
+              inherit pkgs;
+              agent = agents.copilot;
+            };
+            amp = mkSet {
+              inherit pkgs;
+              agent = agents.amp;
+            };
+          in
+          pkgs.runCommand "agent-seam-extensions-check" { } ''
+            clset="${claude}/.claude/rules/set"
+
+            # --- cursor (globs/.cursor/rules, V23/T34) ---
+            cuset="${cursor}/.cursor/rules/set"
+            grep -q '^globs:' "$cuset/nix/flake.md" \
+              || { echo "FAIL: cursor nix missing globs"; exit 1; }
+            if grep -q '^globs:' "$cuset/generic/skill.md"; then
+              echo "FAIL: cursor core generic must be path-less"; exit 1
+            fi
+            cubody="$(sed '1,/^---$/d' "$cuset/nix/flake.md")"
+            clbody="$(sed '1,/^---$/d' "$clset/nix/flake.md")"
+            [ "$cubody" = "$clbody" ] \
+              || { echo "FAIL: cursor nix body differs from claude"; exit 1; }
+            [ "$(cat "$clset/generic/skill.md")" = "$(cat "$cuset/generic/skill.md")" ] \
+              || { echo "FAIL: cursor generic body differs"; exit 1; }
+            [ -f "${cursor}/AGENTS.md" ] \
+              || { echo "FAIL: cursor AGENTS.md missing (inline)"; exit 1; }
+            if [ -e "${cursor}/opencode.json" ]; then
+              echo "FAIL: cursor must not emit opencode.json"; exit 1
+            fi
+            cuskill="${cursor}/set-nix/SKILL.md"
+            [ -f "$cuskill" ] || { echo "FAIL: cursor SKILL.md missing"; exit 1; }
+            if grep -q 'disable-model-invocation' "$cuskill"; then
+              echo "FAIL: cursor SKILL.md must not disable invocation"; exit 1
+            fi
+
+            # --- codex (.codex/rules, V23/T34) ---
+            cdset="${codex}/.codex/rules/set"
+            grep -q '^globs:' "$cdset/nix/flake.md" \
+              || { echo "FAIL: codex nix missing globs"; exit 1; }
+            cdbody="$(sed '1,/^---$/d' "$cdset/nix/flake.md")"
+            [ "$cdbody" = "$clbody" ] \
+              || { echo "FAIL: codex nix body differs from claude"; exit 1; }
+            [ -f "${codex}/AGENTS.md" ] \
+              || { echo "FAIL: codex AGENTS.md missing (inline)"; exit 1; }
+            if [ -e "${codex}/opencode.json" ]; then
+              echo "FAIL: codex must not emit opencode.json"; exit 1
+            fi
+
+            # --- gemini-cli (.gemini/rules, V23/T34) ---
+            gmset="${gemini}/.gemini/rules/set"
+            grep -q '^globs:' "$gmset/nix/flake.md" \
+              || { echo "FAIL: gemini nix missing globs"; exit 1; }
+            gmbody="$(sed '1,/^---$/d' "$gmset/nix/flake.md")"
+            [ "$gmbody" = "$clbody" ] \
+              || { echo "FAIL: gemini nix body differs from claude"; exit 1; }
+            [ -f "${gemini}/AGENTS.md" ] \
+              || { echo "FAIL: gemini AGENTS.md missing (inline)"; exit 1; }
+            if [ -e "${gemini}/opencode.json" ]; then
+              echo "FAIL: gemini must not emit opencode.json"; exit 1
+            fi
+
+            # --- copilot (.copilot/rules, V23/T34) ---
+            cpset="${copilot}/.copilot/rules/set"
+            grep -q '^globs:' "$cpset/nix/flake.md" \
+              || { echo "FAIL: copilot nix missing globs"; exit 1; }
+            cpbody="$(sed '1,/^---$/d' "$cpset/nix/flake.md")"
+            [ "$cpbody" = "$clbody" ] \
+              || { echo "FAIL: copilot nix body differs from claude"; exit 1; }
+            [ -f "${copilot}/AGENTS.md" ] \
+              || { echo "FAIL: copilot AGENTS.md missing (inline)"; exit 1; }
+            if [ -e "${copilot}/opencode.json" ]; then
+              echo "FAIL: copilot must not emit opencode.json"; exit 1
+            fi
+
+            # --- amp (.amp/rules, V23/T34) ---
+            amset="${amp}/.amp/rules/set"
+            grep -q '^globs:' "$amset/nix/flake.md" \
+              || { echo "FAIL: amp nix missing globs"; exit 1; }
+            ambody="$(sed '1,/^---$/d' "$amset/nix/flake.md")"
+            [ "$ambody" = "$clbody" ] \
+              || { echo "FAIL: amp nix body differs from claude"; exit 1; }
+            [ -f "${amp}/AGENTS.md" ] \
+              || { echo "FAIL: amp AGENTS.md missing (inline)"; exit 1; }
+            if [ -e "${amp}/opencode.json" ]; then
+              echo "FAIL: amp must not emit opencode.json"; exit 1
+            fi
 
             echo PASS
             touch $out

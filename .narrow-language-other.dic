@@ -98,8 +98,10 @@ always
 alwayson
 ambiguity
 ambiguous
+ambody
 amd
 amp
+amset
 aname
 anatomy
 and
@@ -369,6 +371,8 @@ cave
 caveat
 cavekit
 caveman
+cdbody
+cdset
 chain
 change
 changed
@@ -610,6 +614,8 @@ cover
 coverage
 covered
 covers
+cpbody
+cpset
 cpu
 crashes
 create
@@ -624,10 +630,13 @@ critical
 cron
 cross
 cthree
+cubody
 cumulative
 curated
 current
 cursor
+cuset
+cuskill
 custom
 customization
 cut
@@ -1010,6 +1019,7 @@ exskill
 ext
 extend
 extended
+extending
 extends
 extension
 extensions
@@ -1203,6 +1213,8 @@ global
 globally
 globs
 globstar
+gmbody
+gmset
 gnu
 gnugrep
 gnused
@@ -2398,6 +2410,7 @@ risks
 rjson
 rmap
 road
+robust
 role
 roles
 rolled

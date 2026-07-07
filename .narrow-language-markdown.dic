@@ -912,6 +912,7 @@ expr
 expression
 ext
 extend
+extending
 extends
 extension
 extensions
@@ -2180,6 +2181,7 @@ right
 risk
 risks
 road
+robust
 role
 roles
 rolled
