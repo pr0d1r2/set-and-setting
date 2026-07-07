@@ -4,6 +4,13 @@
 
 ### Changed
 
+- T60: devShells drift-check -- extend `mkSettingDriftCheck` with
+  optional `devShells` parameter enforcing stacked-shell invariants:
+  shells named `default`/`agentic` only, `agentic.packages` superset
+  of `default.packages`, CI must not set `skip-lefthook: true`. Nix
+  assertions fire at eval time; CI check via `devshells-drift-check.sh`
+  at build time. Dogfood check in `flake.nix`. Bats coverage (8 tests).
+
 - T59: devShells STACK -- restructure to `default` (CI + non-LLM
   tooling) + `agentic` (default + LLM via `inputsFrom`). Drop `ci`
   devShell; CI uses `default`. Add `setting/lib/mk-dev-shells.nix`

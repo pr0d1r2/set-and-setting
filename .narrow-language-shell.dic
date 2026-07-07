@@ -2,6 +2,7 @@ abc
 absent
 accept
 across
+action
 actions
 active
 actual
@@ -80,6 +81,7 @@ backtick
 bare
 base
 based
+basename
 bash
 bats
 because
@@ -231,6 +233,7 @@ delimiter
 demand
 demo
 dep
+deploy
 depth
 derivation
 derive
@@ -249,6 +252,8 @@ determinism
 deterministic
 dev
 develop
+devshell
+devshells
 dic
 dics
 diff
@@ -262,6 +267,7 @@ directory
 dirname
 dirs
 disable
+disabled
 disallows
 discovers
 dispatch
@@ -467,6 +473,7 @@ intentional
 internal
 into
 invalid
+invariant
 invoc
 invocable
 invocation
@@ -478,6 +485,7 @@ isolated
 isolates
 its
 itself
+jobs
 json
 keep
 keeps
@@ -901,6 +909,7 @@ stays
 stderr
 stdio
 stdout
+steps
 store
 strict
 strip
@@ -968,6 +977,7 @@ unit
 universal
 unknown
 unless
+unquoted
 unresolvable
 unresolved
 unset

@@ -74,7 +74,14 @@ and dogfoods both.
   `yaml` if `*.yml`/`*.yaml`. Bare repos (no tracked files) default to
   all fragments. Output: deterministic space-separated fragment list.
 - I.mkDriftCheck: `lib/mk-drift-check.nix` -- compares synced set files against built derivation. Args: `pkgs`, `skillSet`, `projectRoot`, `setPath`. Fails with exit 1 on drift.
-- I.mkSettingDriftCheck: `lib/mk-setting-drift-check.nix` -- compares synced dotfiles against mkSetting output. Args: `pkgs`, `settingSet`, `projectRoot`. Fails with exit 1 on drift.
+- I.mkSettingDriftCheck: `lib/mk-setting-drift-check.nix` -- compares synced
+  dotfiles against mkSetting output. When `devShells` is provided, also
+  enforces the stacked-shell invariant (T60): shells named `default`/
+  `agentic` only, `agentic.packages ⊇ default.packages`, CI must not set
+  `skip-lefthook: true`. Nix-level assertions (names, superset) fire at
+  eval time; CI check runs at build time via `devshells-drift-check.sh`.
+  Args: `pkgs`, `settingSet`, `projectRoot`, `devShells ? null`. Fails
+  with exit 1 on drift.
 - I.mkDepGraphCheck: `lib/mk-dep-graph-check.nix` -- validates that a
   consumer's `flake.lock` dependency graph uses only `github:` URLs (C6).
   Fails with exit 1 if any input uses `git+file:`, `path:`, or other
@@ -347,7 +354,7 @@ and dogfoods both.
 | id  | s | description                                          | cites     |
 |-----|---|------------------------------------------------------|-----------|
 | T59 | x | devShells STACK: `agentic` = `default` + LLM (claude/asciinema/harness) via `inputsFrom=[default]` (⊥ duplicate the package list); rename `dev`→`agentic`; drop `ci = default` alias (CI uses `default`). Emit from mkSetting so refresh propagates. #69 slice 1 | I.mkSetting,I.mkDevShells,I.flake |
-| T60 | . | drift-check: enforce `agentic.packages ⊇ default.packages`, shells named `default`/`agentic` only, no lean-`ci`, CI ⊥ `skip-lefthook: true`. Extend mk-setting-drift-check.nix. #69 slice 2 | I.mkSetting,I.mkDriftCheck |
+| T60 | x | drift-check: enforce `agentic.packages ⊇ default.packages`, shells named `default`/`agentic` only, no lean-`ci`, CI ⊥ `skip-lefthook: true`. Extend mk-setting-drift-check.nix. #69 slice 2 | I.mkSetting,I.mkDriftCheck |
 | T61 | . | document the stacked-shell model + invariant in the linting skill: `default` = CI + non-LLM full tooling ⊂ `agentic` = default + LLM; CI runs the same gate as local hooks. #69 slice 3 | I.mkSetting |
 | T62 | . | HUMAN-GATED — ⊥ AUTO-DRIVE/MERGE (fleet-wide BREAKING): CI template runs the lint gate — `skip-lefthook: false` (or `nix develop -c lefthook run pre-commit --all-files`) in `default`, then build+test. A human lands this deliberately AFTER T59-T61 settle; tracks #69 | I.mkSetting |
 | T1  | ~ | CLAUDE.md wires own set/ skills via direct @ refs -- superseded by T30 dogfood (emit to .claude/rules/set) | V10,I.self-wire,T30 |
