@@ -379,7 +379,7 @@ and dogfoods both.
 | T20 | x | set up cachix cache for nix builds | V1 |
 | T21 | x | set up GitHub Actions CI (nix flake check, all platforms) | V1,C3 |
 | T22 | x | update hallucinogen: git+file: to github: set-and-setting | C6,T7 |
-| T23 | . | update CHANGELOG.md for opensourcing | C5 |
+| T23 | x | update CHANGELOG.md for opensourcing | C5 |
 | T24 | . | rename propagation: mechanism for consumers to detect upstream skill renames and update synced copies | C7,I.sync-set |
 | T25 | x | evolve `mkSet` into the emitter -- group `set/skills/<category>` into one Agent-Skills folder per category; derive name/description; `bin/sync-set` target-arg; fold loose top-level `<topic>.md` (cli.md) into its category | I.mkSet,V19 |
 | T26 | x | `packages.<sys>.set` = mkSet build over all stable categories + concepts | I.set-package |
