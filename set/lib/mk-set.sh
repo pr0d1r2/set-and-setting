@@ -106,6 +106,14 @@ fi
 
 mkdir -p "$out/bin"
 
+# Ship the @->AGENTS.md compiler so sync-set can compile set.md into an
+# inline AGENTS.md at sync time (T44/V29). Consumers get cross-agent
+# support automatically regardless of which agent profile built the set.
+if [ -n "${COMPILER:-}" ]; then
+    cp "$COMPILER" "$out/bin/agents-md-compile"
+    chmod +x "$out/bin/agents-md-compile"
+fi
+
 # Rename propagation data (T24/C7): ship the rename map and propagation
 # script so sync-set can detect stale references in consumers.
 if [ -n "${RENAMES_MAP:-}" ]; then
