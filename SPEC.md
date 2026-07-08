@@ -353,6 +353,10 @@ and dogfoods both.
 
 | id  | s | description                                          | cites     |
 |-----|---|------------------------------------------------------|-----------|
+| T63 | . | `@`-ref matcher -- pure shell scanner that emits ONLY real `@`-references from a markdown file: leading-token `@set/...`, `@concepts/...`, or relative `@<category>/<file>.md`. SKIPS code spans/fences + block HTML comments (V29 parse rules) and non-ref `@` tokens (email `@example.com`, git SHAs `@fbeb9d9`, prose `@include`/`@main`/`@v4`/`@privileged`/`@system-service`). No repo-wide gate; bats over fixtures. The false-positive filter that blocked T58 | V12,V29,T58 |
+| T64 | . | ref-resolution nix check -- consume the T63 matcher; resolve each real ref to an existing path under `set/` (`@set/...` from the repo root; relative `@<cat>/<file>.md` against its own dir; drafts vs skills). Exit 1 ONLY on a truly-missing target. Wire `checks.set-ref-resolution`. Green: T63 skips false matches, existing refs resolve. Bats coverage | I.flake,V12,T58,T63 |
+| T65 | . | V12 bundle own-content enforcement -- independent grep check: bundle files (compose via `@`) limit own content to heading + purpose statement + `@` refs. Runs separate from resolution (T64); ships on its own. Bats coverage | V12,T58 |
+| T66 | . | lefthook wiring -- add the T64 ref-resolution + T65 V12 checks as a content-aware lefthook fragment gate (only when `set/*.md` tracked, per I.detectFragments). Bats for the assembled hook | I.detectFragments,V40,T64,T65 |
 | T59 | x | devShells STACK: `agentic` = `default` + LLM (claude/asciinema/harness) via `inputsFrom=[default]` (⊥ duplicate the package list); rename `dev`→`agentic`; drop `ci = default` alias (CI uses `default`). Emit from mkSetting so refresh propagates. #69 slice 1 | I.mkSetting,I.mkDevShells,I.flake |
 | T60 | x | drift-check: enforce `agentic.packages ⊇ default.packages`, shells named `default`/`agentic` only, no lean-`ci`, CI ⊥ `skip-lefthook: true`. Extend mk-setting-drift-check.nix. #69 slice 2 | I.mkSetting,I.mkDriftCheck |
 | T61 | x | document the stacked-shell model + invariant in the linting skill: `default` = CI + non-LLM full tooling ⊂ `agentic` = default + LLM; CI runs the same gate as local hooks. #69 slice 3 | I.mkSetting |
@@ -415,7 +419,7 @@ and dogfoods both.
 | T55 | x | content-aware lefthook.yml construction -- `detect-fragments.sh` examines `git ls-files` for file types; `assemble-lefthook.sh` accepts `FRAGMENTS` param; both `mkSetting` and `mkScaffold` apps detect+assemble at runtime; idempotent+convergent; bats coverage for detection, parameterized assembly, and content-aware app behavior | V40,I.detectFragments,I.mkSetting |
 | T56 | . | skill extension lint -- nix check + lefthook hook enforcing V6/V13: only `*.md` files in `set/skills/` and `set/drafts/`. Pure `find` + exit-on-non-md. No content parsing. Bats coverage | V6,V13,T14 |
 | T57 | . | skill size budget lint -- nix check + lefthook hook enforcing per-file size limit on individual skill/draft markdown. Single `wc -c` / `find -size` check. Independent of format or structure checks. Bats coverage | V6,V7,T14 |
-| T58 | . | `@` ref resolution lint -- nix check validating all `@`-references in `set/` files resolve to existing source paths; also enforces V12 (bundle own-content limited to heading + purpose + `@` refs). Grep + path resolution. Bats coverage | V12,T14 |
+| T58 | ~ | `@` ref resolution lint -- nix check validating all `@`-references in `set/` files resolve to existing source paths; also enforces V12 -- SUPERSEDED by T63-T66 (a plain grep flags real non-ref `@` tokens -- git SHAs, email addresses, prose `@main`/`@include` -- and relative refs, so it never goes green; granularized into matcher -> resolution -> V12 -> hook) | V12,T14,T63,T64,T65,T66 |
 
 ## §B Bugs
 
