@@ -16,8 +16,10 @@ nix run github:pr0d1r2/set-and-setting#mkSet
 ```
 
 That is it. One command materializes curated AI coding skills into
-`.claude/skills/set/` in your current directory. The only prerequisite
-is nix with flakes enabled.
+`.claude/rules/set/` in your current directory. The only prerequisite
+is nix with flakes enabled. Skills load through three channels
+(always-on core, conditional domains, portable `SKILL.md`) so each
+agent gets the right content at the right time.
 
 Core categories (`generic` + `git`) install by default. Add more:
 
@@ -29,6 +31,13 @@ Install everything:
 
 ```bash
 nix run github:pr0d1r2/set-and-setting#mkSet -- --all
+```
+
+Smart mode detects your repo's file types and installs only relevant
+skills:
+
+```bash
+nix run github:pr0d1r2/set-and-setting#mkSet -- --auto
 ```
 
 Want unified configs (`.markdownlint.yml`, `.yamllint.yml`) and repo
@@ -43,8 +52,37 @@ Run with `--help`, `--list`, or `--dry-run` on any installer to see
 what it does before writing files.
 
 Re-running `mkSet` with no arguments refreshes whatever was previously
-installed (tracked in `.claude/skills/set/.mkset.json`). When upstream
+installed (tracked in `.claude/rules/set/.mkset.json`). When upstream
 changes, the installer detects the update and shows a notice.
+
+## Multi-channel load model
+
+Skills load through three channels per agent, each with a distinct
+purpose and loading mechanism:
+
+| Channel | What loads | When | Claude mechanism | Other agents |
+| ------- | ---------- | ---- | ---------------- | ------------ |
+| Always-on core | Universal skills (`generic`, `git`) | Every turn | `CLAUDE.md` `@`-manifest | Compiled `AGENTS.md` (inline) |
+| Conditional domains | Domain skills (nix, security, ...) | On matching file | `.claude/rules/` path-scoped rules | Agent-specific rules dir |
+| Portable `SKILL.md` | All skills (cross-agent) | Model-invoked | Deduped via `disable-model-invocation` | Root `SKILL.md` |
+
+The always-on channel keeps initial context minimal (only universal
+content). Domains load only when relevant -- on Claude, a `paths:`
+frontmatter glob triggers loading when a matching file is read. The
+portable `SKILL.md` provides cross-agent reach and `/`-invocability.
+
+A sidecar meta map (`set/meta.nix`) declares each skill's channel,
+path globs, and keywords -- the source markdown stays agent-agnostic.
+
+### Smart materialization
+
+With `--auto`, mkSet installs only skills
+whose meta signals match the repo: `paths` globs match tracked file
+types and `content` grep confirms the feature is actually used.
+Facets that match force-pull their topic core. The manifest
+(`.mkset.json`) records per-skill evidence for audit and smart
+re-eval. `--all`, explicit categories, `--pin`, and `--exclude`
+override.
 
 ## Three delivery paths
 
@@ -64,14 +102,16 @@ nix run github:pr0d1r2/set-and-setting#mkScaffold
 
 | App | What it does |
 | --- | ------------ |
-| `mkSet` | Materialize skills into `.claude/skills/set/` |
+| `mkSet` | Materialize skills into `.claude/rules/set/` (3-channel layout) |
 | `mkSetting` | Materialize unified configs (always overwrites) |
 | `mkSetting-init` | Scaffold repo starters (skips files that exist) |
 | `mkScaffold` | Scaffold flake.nix, lefthook.yml, CI workflow (skips files that exist) |
 | `bootstrap` | All four in one command |
 
 Skills are emitted at run time -- the installer carries agnostic
-source and emitter scripts, not a pre-built per-agent tree.
+source and emitter scripts, not a pre-built per-agent tree. The
+`--agent` flag selects a target agent (default: Claude); all 8
+supported agents share the same emitter.
 
 ### Path 2 -- flake input (pinned, drift-checked)
 
@@ -186,12 +226,15 @@ home-manager module with setting sync.
 ```mermaid
 graph LR
     subgraph "set-and-setting"
-        S["set/skills/ (16 categories)"] --> mkSet[lib.mkSet]
+        S["set/skills/ (17 categories)"] --> mkSet[lib.mkSet]
+        M[set/meta.nix] --> mkSet
         C[set/concepts/] --> mkSet
         E[setting/standards/] --> mkSetting[lib.mkSetting]
     end
 
-    mkSet --> D1["packages.set (skills + rules)"]
+    mkSet --> A["always-on core (CLAUDE.md / AGENTS.md)"]
+    mkSet --> B["conditional domains (.claude/rules/set/)"]
+    mkSet --> K["portable SKILL.md (cross-agent)"]
     mkSetting --> D2["packages.setting (configs + scaffolds)"]
 ```
 
@@ -227,11 +270,11 @@ sequenceDiagram
 
 ### `sets`
 
-Attrset of raw paths to each of 16 skill category directories:
+Attrset of raw paths to each of 17 skill category directories:
 
-`generic` `architecture` `ci` `cli` `git` `gnu` `just` `language`
-`lefthook` `nix` `nixos` `opensource` `product` `security` `test`
-`update`
+`generic` `architecture` `ci` `cli` `git` `gnu` `integration` `just`
+`language` `lefthook` `nix` `nixos` `opensource` `product` `security`
+`test` `update`
 
 ### `drafts`
 
@@ -248,10 +291,10 @@ Attrset of raw paths to each standard directory:
 
 ### `lib.mkSet`
 
-Builds a skill-set derivation from selected categories. Emits the
-Agent-Skills open-standard layout: one `SKILL.md` per category with
-derived `name`/`description` frontmatter, plus raw facet files linked
-from the body.
+Builds a skill-set derivation from selected categories. Emits a
+multi-channel layout: each source file in `set/skills/` becomes one
+rule file copied verbatim with its category `paths:` prepended.
+Channel assignment comes from `set/meta.nix`, not the source markdown.
 
 ```nix
 lib.mkSet {
@@ -262,13 +305,18 @@ lib.mkSet {
 }
 ```
 
-Output layout:
+Output layout (Claude default):
 
-- `.claude/skills/set/<category>/SKILL.md` -- domain skills
-  (conditional-load `paths` field matching category globs)
-- `.claude/skills/set/<category>/<facet>.md` -- raw facet files
-- `.claude/rules/<category>.md` -- cross-cutting skills (always-on)
-- `.claude/rules/concepts-<name>.md` -- concept files
+- `.claude/rules/set/<category>.md` -- topic core (verbatim + `paths:`)
+- `.claude/rules/set/<category>/<facet>.md` -- facet files
+  (verbatim + `paths:`)
+- `.claude/rules/set/set.md` -- always-on `@`-manifest (core
+  categories); compiled to `AGENTS.md` for non-Claude agents
+- `.claude/skills/set-<category>/SKILL.md` -- portable skill
+  (deduped on Claude via `disable-model-invocation: true`)
+- `.claude/rules/set/concepts-<name>.md` -- concept files
+- `.claude/rules/set/.mkset.json` -- install manifest (categories,
+  upstream rev, per-skill applicability evidence)
 - `bin/sync-set` -- copies emitted tree to a target directory
 
 ### `lib.mkSetting`
@@ -326,12 +374,28 @@ lib.mkDriftCheck {
 ## Agent-agnostic design
 
 Skills in `set/` and standards in `setting/` contain no vendor-specific
-content. The only agent-specific surface is a `{ dir, condField,
-alwaysOnFile }` seam defaulting to Claude. The same agnostic sources
-build for any agent given its seam values.
+content. The only agent-specific surface is a per-agent **profile**
+(`set/lib/agents.nix`) carrying each agent's channel mechanisms:
+always-on file and import syntax, conditional-load directory and field,
+portable skill format and location.
 
-Any AI coding agent (Claude, Codex, Gemini CLI, Copilot, Amp, etc.)
-can consume the output. See SPEC.md for the agnosticism proof targets.
+Eight agent profiles prove agnosticism across two import families
+(`@`-import and inline):
+
+| Agent | Always-on | Conditional dir | Import |
+| ----- | --------- | --------------- | ------ |
+| Claude | `CLAUDE.md` | `.claude/rules/set/` | `@` |
+| caveman-code | `CAVE.md` | `.cave/rules/set/` | `@` |
+| opencode | `AGENTS.md` | `.opencode/rules/set/` | inline |
+| Cursor | `AGENTS.md` | `.cursor/rules/set/` | inline |
+| Codex | `AGENTS.md` | `.codex/rules/set/` | inline |
+| Gemini CLI | `AGENTS.md` | `.gemini/rules/set/` | inline |
+| Copilot | `AGENTS.md` | `.copilot/rules/set/` | inline |
+| Amp | `AGENTS.md` | `.amp/rules/set/` | inline |
+
+Adding a new agent is one profile entry -- the emitter, installer, and
+home-manager path all work unchanged. See SPEC.md for invariants and
+the mechanism test suite (V31/V32).
 
 ## License
 
