@@ -10,7 +10,7 @@ set -euo pipefail
 
 mkdir -p "$out"
 
-ordered="${FRAGMENTS:-base nix shell ascii markdown yaml}"
+ordered="${FRAGMENTS:-base nix shell ascii markdown yaml set}"
 
 {
     printf '%s\n' '---'

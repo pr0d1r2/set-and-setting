@@ -1,0 +1,18 @@
+---
+pre-commit:
+  commands:
+    set-ref-resolution:
+      glob: "set/**/*.md"
+      run: SET_ROOT=set REF_MATCH=lib/ref-match.sh bash lib/ref-resolve-check.sh
+    set-bundle-content:
+      glob: "set/**/*.md"
+      run: SET_ROOT=set REF_MATCH=lib/ref-match.sh bash lib/bundle-content-check.sh
+
+pre-push:
+  commands:
+    set-ref-resolution:
+      glob: "set/**/*.md"
+      run: SET_ROOT=set REF_MATCH=lib/ref-match.sh bash lib/ref-resolve-check.sh
+    set-bundle-content:
+      glob: "set/**/*.md"
+      run: SET_ROOT=set REF_MATCH=lib/ref-match.sh bash lib/bundle-content-check.sh

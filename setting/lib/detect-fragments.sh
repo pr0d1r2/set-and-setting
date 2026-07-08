@@ -14,7 +14,7 @@ else
 fi
 
 if [ -z "$tracked" ]; then
-    echo "base nix shell ascii markdown yaml"
+    echo "base nix shell ascii markdown yaml set"
     exit 0
 fi
 
@@ -36,6 +36,10 @@ fi
 
 if printf '%s\n' "$tracked" | grep -qE '\.(yml|yaml)$'; then
     result="$result yaml"
+fi
+
+if printf '%s\n' "$tracked" | grep -qE '^set/.*\.md$'; then
+    result="$result set"
 fi
 
 echo "$result"

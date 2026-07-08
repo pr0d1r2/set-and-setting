@@ -2,6 +2,14 @@
 
 ## Unreleased
 
+- T66: lefthook wiring -- new `setting/integrations/lefthook/set.yml`
+  fragment gates the T64 ref-resolution and T65 V12 bundle-content checks
+  on `set/*.md` tracked files (content-aware, per I.detectFragments/V40).
+  `detect-fragments.sh` detects `set/*.md` via `git ls-files`;
+  `assemble-lefthook.sh` default includes `set`. Both checks run as
+  pre-commit and pre-push commands with `glob: "set/**/*.md"`. 9 new bats
+  tests across detect-fragments and assemble-lefthook suites.
+
 - T65: V12 bundle own-content enforcement -- `lib/bundle-content-check.sh`
   plus `lib/mk-bundle-content-check.nix`, an independent grep check that
   consumes the T63 matcher to detect bundle files (those composing via

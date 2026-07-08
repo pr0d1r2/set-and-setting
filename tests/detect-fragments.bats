@@ -22,7 +22,7 @@ teardown() {
 @test "empty repo defaults to all fragments" {
     run bash "$SCRIPT"
     [ "$status" -eq 0 ]
-    [ "$output" = "base nix shell ascii markdown yaml" ]
+    [ "$output" = "base nix shell ascii markdown yaml set" ]
 }
 
 @test "nix-only repo detects nix" {
@@ -87,10 +87,12 @@ teardown() {
     printf '#!/bin/bash\n' >test.sh
     printf '# Title\n' >README.md
     printf 'key: value\n' >config.yml
-    git add test.nix test.sh README.md config.yml
+    mkdir -p set/skills
+    printf '# Skill\n' >set/skills/test.md
+    git add test.nix test.sh README.md config.yml set/skills/test.md
     run bash "$SCRIPT"
     [ "$status" -eq 0 ]
-    [ "$output" = "base nix shell ascii markdown yaml" ]
+    [ "$output" = "base nix shell ascii markdown yaml set" ]
 }
 
 @test "fragment order is deterministic" {
@@ -98,10 +100,12 @@ teardown() {
     printf 'key: value\n' >config.yml
     printf '# Title\n' >README.md
     printf '#!/bin/bash\n' >test.sh
-    git add config.yml README.md test.sh test.nix
+    mkdir -p set/skills
+    printf '# Skill\n' >set/skills/test.md
+    git add config.yml README.md test.sh test.nix set/skills/test.md
     run bash "$SCRIPT"
     [ "$status" -eq 0 ]
-    [ "$output" = "base nix shell ascii markdown yaml" ]
+    [ "$output" = "base nix shell ascii markdown yaml set" ]
 }
 
 @test "base and ascii always present" {
@@ -116,6 +120,41 @@ teardown() {
     mkdir -p src/lib
     printf '' >src/lib/build.nix
     git add src/lib/build.nix
+    run bash "$SCRIPT"
+    [ "$status" -eq 0 ]
+    [ "$output" = "base nix ascii" ]
+}
+
+@test "set/*.md tracked detects set fragment" {
+    mkdir -p set/skills
+    printf '# Skill\n' >set/skills/test.md
+    git add set/skills/test.md
+    run bash "$SCRIPT"
+    [ "$status" -eq 0 ]
+    [ "$output" = "base ascii markdown set" ]
+}
+
+@test "set/*.md in subdirectory detected" {
+    mkdir -p set/skills/nix
+    printf '# Nix skill\n' >set/skills/nix/flake.md
+    git add set/skills/nix/flake.md
+    run bash "$SCRIPT"
+    [ "$status" -eq 0 ]
+    [ "$output" = "base ascii markdown set" ]
+}
+
+@test "non-set markdown does not trigger set fragment" {
+    printf '# Title\n' >README.md
+    git add README.md
+    run bash "$SCRIPT"
+    [ "$status" -eq 0 ]
+    [ "$output" = "base ascii markdown" ]
+}
+
+@test "set non-md file does not trigger set fragment" {
+    mkdir -p set/lib
+    printf 'data\n' >set/lib/build.nix
+    git add set/lib/build.nix
     run bash "$SCRIPT"
     [ "$status" -eq 0 ]
     [ "$output" = "base nix ascii" ]
