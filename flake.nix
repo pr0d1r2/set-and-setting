@@ -1253,6 +1253,13 @@
           setRoot = ./set;
         };
 
+        # set-skill-size -- T57: per-file size limit on individual
+        # skill/draft markdown. Single wc -c check.
+        set-skill-size = import ./lib/mk-skill-size-check.nix {
+          inherit pkgs;
+          setRoot = ./set;
+        };
+
         # set-ref-resolution -- T64/V12/V29: every real @-reference in the
         # set/ tree (per the T63 matcher) resolves to an existing source
         # path. Exit 1 only on a truly-missing target.

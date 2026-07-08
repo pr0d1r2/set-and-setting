@@ -4,6 +4,9 @@ pre-commit:
     set-skill-extension:
       glob: "set/{skills,drafts}/**"
       run: SET_ROOT=set bash lib/skill-extension-check.sh
+    set-skill-size:
+      glob: "set/{skills,drafts}/**/*.md"
+      run: SET_ROOT=set bash lib/skill-size-check.sh
     set-ref-resolution:
       glob: "set/**/*.md"
       run: SET_ROOT=set REF_MATCH=lib/ref-match.sh bash lib/ref-resolve-check.sh
@@ -16,6 +19,9 @@ pre-push:
     set-skill-extension:
       glob: "set/{skills,drafts}/**"
       run: SET_ROOT=set bash lib/skill-extension-check.sh
+    set-skill-size:
+      glob: "set/{skills,drafts}/**/*.md"
+      run: SET_ROOT=set bash lib/skill-size-check.sh
     set-ref-resolution:
       glob: "set/**/*.md"
       run: SET_ROOT=set REF_MATCH=lib/ref-match.sh bash lib/ref-resolve-check.sh

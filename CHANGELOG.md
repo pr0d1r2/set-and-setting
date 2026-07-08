@@ -2,6 +2,14 @@
 
 ## Unreleased
 
+- T57: skill size budget lint -- `lib/skill-size-check.sh` plus
+  `lib/mk-skill-size-check.nix`, enforcing per-file size limit (4096
+  bytes) on individual skill/draft markdown. Single `wc -c` check.
+  Wired as `checks.set-skill-size` in `flake.nix` and as
+  `set-skill-size` hook in `setting/integrations/lefthook/set.yml`
+  (pre-commit + pre-push, glob `set/{skills,drafts}/**/*.md`).
+  Configurable via `SKILL_SIZE_LIMIT` env var. 16 bats tests.
+
 - T56: skill extension lint -- `lib/skill-extension-check.sh` plus
   `lib/mk-skill-extension-check.nix`, enforcing V6/V13: only `*.md`
   files in `set/skills/` and `set/drafts/`. Pure `find` +
