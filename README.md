@@ -76,7 +76,7 @@ path globs, and keywords -- the source markdown stays agent-agnostic.
 
 ### Smart materialization
 
-With `--auto` (default for `nix run`), mkSet installs only skills
+With `--auto`, mkSet installs only skills
 whose meta signals match the repo: `paths` globs match tracked file
 types and `content` grep confirms the feature is actually used.
 Facets that match force-pull their topic core. The manifest
