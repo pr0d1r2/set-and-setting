@@ -2,6 +2,15 @@
 
 ## Unreleased
 
+- T63: `@`-ref matcher -- `lib/ref-match.sh`, a pure-shell scanner that
+  emits ONLY real `@`-references from a markdown file (leading-token
+  `@set/...` / `@concepts/...` or relative `@<category>/<file>.md`). Skips
+  code spans/fences and block HTML comments (V29 parse rules) plus non-ref
+  `@` tokens (email `@example.com`, git SHAs `@fbeb9d9`, prose
+  `@include`/`@main`/`@v4`/`@privileged`/`@system-service`). The
+  false-positive filter that unblocked T58; consumed by the T64
+  ref-resolution check. 26 new bats tests over fixtures.
+
 - T34: additional agent seams -- add Cursor, Codex, Gemini CLI, Copilot,
   and Amp profiles to `agents.nix`, extending the agnosticism proof from
   3 to 8 seams (V23). All extension agents use inline import (compiled
