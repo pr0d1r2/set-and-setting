@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+- T34: additional agent seams -- add Cursor, Codex, Gemini CLI, Copilot,
+  and Amp profiles to `agents.nix`, extending the agnosticism proof from
+  3 to 8 seams (V23). All extension agents use inline import (compiled
+  `AGENTS.md`) and `globs`-based conditional rules. Nix `agent-seam-
+  extensions` check proves body-identical emission across all agents. 27
+  new bats tests.
+
 - T33: downstream wiring -- consumer scaffold (`component-flake.txt`)
   wires `set-and-setting` flake input with `mkDevShells`, `packages.set`/
   `packages.setting`, sync hooks, and `mkDepGraphCheck`. CI template

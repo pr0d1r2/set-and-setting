@@ -38,7 +38,7 @@ setup() {
     export CORE_CATEGORIES="generic git"
     export GLOBS_MAP="nix=**/*.nix,flake.lock;generic=**/*;git=**/*;security=**/*"
     export CHANNEL_OVERRIDES=""
-    export AGENT_SEAMS="claude=.claude/rules/set,paths,.claude/skills,1,@,CLAUDE.md,path-rules;opencode=.opencode/rules/set,globs,.,0,inline,AGENTS.md,opencode.json-instructions;caveman-code=.cave/rules/set,paths,.cave/skills,1,@,CAVE.md,path-rules"
+    export AGENT_SEAMS="claude=.claude/rules/set,paths,.claude/skills,1,@,CLAUDE.md,path-rules;opencode=.opencode/rules/set,globs,.,0,inline,AGENTS.md,opencode.json-instructions;caveman-code=.cave/rules/set,paths,.cave/skills,1,@,CAVE.md,path-rules;cursor=.cursor/rules/set,globs,.,0,inline,AGENTS.md,cursor-rules;codex=.codex/rules/set,globs,.,0,inline,AGENTS.md,none;gemini-cli=.gemini/rules/set,globs,.,0,inline,AGENTS.md,none;copilot=.copilot/rules/set,globs,.,0,inline,AGENTS.md,none;amp=.amp/rules/set,globs,.,0,inline,AGENTS.md,none"
     export EMIT_SKILLMD_SCRIPT="$BATS_TEST_DIRNAME/../set/lib/emit-skillmd.sh"
     export KEYWORDS_MAP="generic=generic;git=git;nix=nix;security=security"
     export COMPILER_SCRIPT="$BATS_TEST_DIRNAME/../lib/agents-md-compile.sh"
@@ -203,4 +203,209 @@ teardown() {
     [ "$status" -eq 0 ]
     [ -f "$TARGET/.cave/rules/set/concepts-user.md" ]
     [ ! -d "$TARGET/.claude" ]
+}
+
+# --- T34 extension agents: cursor, codex, gemini-cli, copilot, amp ---
+
+@test "--agent cursor emits to .cursor paths" {
+    run bash -c "cd '$TARGET' && bash '$SCRIPT' --agent cursor nix"
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"Installed categories: generic git nix"* ]]
+    [ -f "$TARGET/.cursor/rules/set/generic/skill.md" ]
+    [ -f "$TARGET/.cursor/rules/set/nix/flake.md" ]
+    [ ! -d "$TARGET/.claude" ]
+}
+
+@test "--agent cursor uses globs in frontmatter" {
+    run bash -c "cd '$TARGET' && bash '$SCRIPT' --agent cursor nix"
+    [ "$status" -eq 0 ]
+    grep -q '^globs:' "$TARGET/.cursor/rules/set/nix/flake.md"
+    run ! grep -q '^paths:' "$TARGET/.cursor/rules/set/nix/flake.md"
+}
+
+@test "--agent cursor manifest records cursor" {
+    run bash -c "cd '$TARGET' && bash '$SCRIPT' --agent cursor nix"
+    [ "$status" -eq 0 ]
+    [ -f "$TARGET/.cursor/rules/set/.mkset.json" ]
+    grep -q '"agent":"cursor"' "$TARGET/.cursor/rules/set/.mkset.json"
+}
+
+@test "--agent cursor dry-run shows cursor target" {
+    run bash -c "cd '$TARGET' && bash '$SCRIPT' --agent cursor --dry-run"
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"Agent: cursor"* ]]
+    [[ "$output" == *"Target: ./.cursor/rules/set/"* ]]
+}
+
+@test "--agent cursor same body as claude (V23)" {
+    run bash -c "cd '$TARGET' && bash '$SCRIPT' nix"
+    [ "$status" -eq 0 ]
+    claude_body="$(sed '1,/^---$/d' "$TARGET/.claude/rules/set/nix/flake.md")"
+    run bash -c "cd '$TARGET' && bash '$SCRIPT' --agent cursor nix"
+    [ "$status" -eq 0 ]
+    cursor_body="$(sed '1,/^---$/d' "$TARGET/.cursor/rules/set/nix/flake.md")"
+    [ "$claude_body" = "$cursor_body" ]
+}
+
+@test "--agent cursor emits AGENTS.md" {
+    run bash -c "cd '$TARGET' && bash '$SCRIPT' --agent cursor nix"
+    [ "$status" -eq 0 ]
+    [ -f "$TARGET/AGENTS.md" ]
+    grep -q 'Generic skill' "$TARGET/AGENTS.md"
+}
+
+@test "--agent cursor does not emit opencode.json" {
+    run bash -c "cd '$TARGET' && bash '$SCRIPT' --agent cursor nix"
+    [ "$status" -eq 0 ]
+    [ ! -f "$TARGET/opencode.json" ]
+}
+
+@test "--agent codex emits to .codex paths" {
+    run bash -c "cd '$TARGET' && bash '$SCRIPT' --agent codex nix"
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"Installed categories: generic git nix"* ]]
+    [ -f "$TARGET/.codex/rules/set/generic/skill.md" ]
+    [ -f "$TARGET/.codex/rules/set/nix/flake.md" ]
+    [ ! -d "$TARGET/.claude" ]
+}
+
+@test "--agent codex uses globs in frontmatter" {
+    run bash -c "cd '$TARGET' && bash '$SCRIPT' --agent codex nix"
+    [ "$status" -eq 0 ]
+    grep -q '^globs:' "$TARGET/.codex/rules/set/nix/flake.md"
+    run ! grep -q '^paths:' "$TARGET/.codex/rules/set/nix/flake.md"
+}
+
+@test "--agent codex manifest records codex" {
+    run bash -c "cd '$TARGET' && bash '$SCRIPT' --agent codex nix"
+    [ "$status" -eq 0 ]
+    [ -f "$TARGET/.codex/rules/set/.mkset.json" ]
+    grep -q '"agent":"codex"' "$TARGET/.codex/rules/set/.mkset.json"
+}
+
+@test "--agent codex same body as claude (V23)" {
+    run bash -c "cd '$TARGET' && bash '$SCRIPT' nix"
+    [ "$status" -eq 0 ]
+    claude_body="$(sed '1,/^---$/d' "$TARGET/.claude/rules/set/nix/flake.md")"
+    run bash -c "cd '$TARGET' && bash '$SCRIPT' --agent codex nix"
+    [ "$status" -eq 0 ]
+    codex_body="$(sed '1,/^---$/d' "$TARGET/.codex/rules/set/nix/flake.md")"
+    [ "$claude_body" = "$codex_body" ]
+}
+
+@test "--agent codex emits AGENTS.md" {
+    run bash -c "cd '$TARGET' && bash '$SCRIPT' --agent codex nix"
+    [ "$status" -eq 0 ]
+    [ -f "$TARGET/AGENTS.md" ]
+}
+
+@test "--agent codex does not emit opencode.json" {
+    run bash -c "cd '$TARGET' && bash '$SCRIPT' --agent codex nix"
+    [ "$status" -eq 0 ]
+    [ ! -f "$TARGET/opencode.json" ]
+}
+
+@test "--agent gemini-cli emits to .gemini paths" {
+    run bash -c "cd '$TARGET' && bash '$SCRIPT' --agent gemini-cli nix"
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"Installed categories: generic git nix"* ]]
+    [ -f "$TARGET/.gemini/rules/set/generic/skill.md" ]
+    [ -f "$TARGET/.gemini/rules/set/nix/flake.md" ]
+    [ ! -d "$TARGET/.claude" ]
+}
+
+@test "--agent gemini-cli uses globs in frontmatter" {
+    run bash -c "cd '$TARGET' && bash '$SCRIPT' --agent gemini-cli nix"
+    [ "$status" -eq 0 ]
+    grep -q '^globs:' "$TARGET/.gemini/rules/set/nix/flake.md"
+}
+
+@test "--agent gemini-cli manifest records gemini-cli" {
+    run bash -c "cd '$TARGET' && bash '$SCRIPT' --agent gemini-cli nix"
+    [ "$status" -eq 0 ]
+    grep -q '"agent":"gemini-cli"' "$TARGET/.gemini/rules/set/.mkset.json"
+}
+
+@test "--agent gemini-cli same body as claude (V23)" {
+    run bash -c "cd '$TARGET' && bash '$SCRIPT' nix"
+    [ "$status" -eq 0 ]
+    claude_body="$(sed '1,/^---$/d' "$TARGET/.claude/rules/set/nix/flake.md")"
+    run bash -c "cd '$TARGET' && bash '$SCRIPT' --agent gemini-cli nix"
+    [ "$status" -eq 0 ]
+    gemini_body="$(sed '1,/^---$/d' "$TARGET/.gemini/rules/set/nix/flake.md")"
+    [ "$claude_body" = "$gemini_body" ]
+}
+
+@test "--agent copilot emits to .copilot paths" {
+    run bash -c "cd '$TARGET' && bash '$SCRIPT' --agent copilot nix"
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"Installed categories: generic git nix"* ]]
+    [ -f "$TARGET/.copilot/rules/set/generic/skill.md" ]
+    [ -f "$TARGET/.copilot/rules/set/nix/flake.md" ]
+    [ ! -d "$TARGET/.claude" ]
+}
+
+@test "--agent copilot uses globs in frontmatter" {
+    run bash -c "cd '$TARGET' && bash '$SCRIPT' --agent copilot nix"
+    [ "$status" -eq 0 ]
+    grep -q '^globs:' "$TARGET/.copilot/rules/set/nix/flake.md"
+}
+
+@test "--agent copilot manifest records copilot" {
+    run bash -c "cd '$TARGET' && bash '$SCRIPT' --agent copilot nix"
+    [ "$status" -eq 0 ]
+    grep -q '"agent":"copilot"' "$TARGET/.copilot/rules/set/.mkset.json"
+}
+
+@test "--agent copilot same body as claude (V23)" {
+    run bash -c "cd '$TARGET' && bash '$SCRIPT' nix"
+    [ "$status" -eq 0 ]
+    claude_body="$(sed '1,/^---$/d' "$TARGET/.claude/rules/set/nix/flake.md")"
+    run bash -c "cd '$TARGET' && bash '$SCRIPT' --agent copilot nix"
+    [ "$status" -eq 0 ]
+    copilot_body="$(sed '1,/^---$/d' "$TARGET/.copilot/rules/set/nix/flake.md")"
+    [ "$claude_body" = "$copilot_body" ]
+}
+
+@test "--agent amp emits to .amp paths" {
+    run bash -c "cd '$TARGET' && bash '$SCRIPT' --agent amp nix"
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"Installed categories: generic git nix"* ]]
+    [ -f "$TARGET/.amp/rules/set/generic/skill.md" ]
+    [ -f "$TARGET/.amp/rules/set/nix/flake.md" ]
+    [ ! -d "$TARGET/.claude" ]
+}
+
+@test "--agent amp uses globs in frontmatter" {
+    run bash -c "cd '$TARGET' && bash '$SCRIPT' --agent amp nix"
+    [ "$status" -eq 0 ]
+    grep -q '^globs:' "$TARGET/.amp/rules/set/nix/flake.md"
+}
+
+@test "--agent amp manifest records amp" {
+    run bash -c "cd '$TARGET' && bash '$SCRIPT' --agent amp nix"
+    [ "$status" -eq 0 ]
+    grep -q '"agent":"amp"' "$TARGET/.amp/rules/set/.mkset.json"
+}
+
+@test "--agent amp same body as claude (V23)" {
+    run bash -c "cd '$TARGET' && bash '$SCRIPT' nix"
+    [ "$status" -eq 0 ]
+    claude_body="$(sed '1,/^---$/d' "$TARGET/.claude/rules/set/nix/flake.md")"
+    run bash -c "cd '$TARGET' && bash '$SCRIPT' --agent amp nix"
+    [ "$status" -eq 0 ]
+    amp_body="$(sed '1,/^---$/d' "$TARGET/.amp/rules/set/nix/flake.md")"
+    [ "$claude_body" = "$amp_body" ]
+}
+
+@test "--agent amp emits AGENTS.md" {
+    run bash -c "cd '$TARGET' && bash '$SCRIPT' --agent amp nix"
+    [ "$status" -eq 0 ]
+    [ -f "$TARGET/AGENTS.md" ]
+}
+
+@test "--agent amp does not emit opencode.json" {
+    run bash -c "cd '$TARGET' && bash '$SCRIPT' --agent amp nix"
+    [ "$status" -eq 0 ]
+    [ ! -f "$TARGET/opencode.json" ]
 }

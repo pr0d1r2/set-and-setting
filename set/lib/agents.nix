@@ -80,4 +80,107 @@
     inherit (conditional) dir;
     condField = conditional.field;
   };
+
+  # T34 extension agents -- additional seams proving C2 agent-agnostic.
+  # All use inline import (compiled AGENTS.md); none have @-import.
+
+  cursor = rec {
+    alwaysOn = {
+      file = "AGENTS.md";
+      import = "inline";
+    };
+    conditional = {
+      dir = ".cursor/rules/set";
+      field = "globs";
+      mechanism = "cursor-rules";
+    };
+    skill = {
+      dir = ".";
+      file = "SKILL.md";
+      disableModelInvocation = false;
+    };
+
+    inherit (conditional) dir;
+    condField = conditional.field;
+  };
+
+  codex = rec {
+    alwaysOn = {
+      file = "AGENTS.md";
+      import = "inline";
+    };
+    conditional = {
+      dir = ".codex/rules/set";
+      field = "globs";
+      mechanism = "none";
+    };
+    skill = {
+      dir = ".";
+      file = "SKILL.md";
+      disableModelInvocation = false;
+    };
+
+    inherit (conditional) dir;
+    condField = conditional.field;
+  };
+
+  gemini-cli = rec {
+    alwaysOn = {
+      file = "AGENTS.md";
+      import = "inline";
+    };
+    conditional = {
+      dir = ".gemini/rules/set";
+      field = "globs";
+      mechanism = "none";
+    };
+    skill = {
+      dir = ".";
+      file = "SKILL.md";
+      disableModelInvocation = false;
+    };
+
+    inherit (conditional) dir;
+    condField = conditional.field;
+  };
+
+  copilot = rec {
+    alwaysOn = {
+      file = "AGENTS.md";
+      import = "inline";
+    };
+    conditional = {
+      dir = ".copilot/rules/set";
+      field = "globs";
+      mechanism = "none";
+    };
+    skill = {
+      dir = ".";
+      file = "SKILL.md";
+      disableModelInvocation = false;
+    };
+
+    inherit (conditional) dir;
+    condField = conditional.field;
+  };
+
+  amp = rec {
+    alwaysOn = {
+      file = "AGENTS.md";
+      import = "inline";
+    };
+    conditional = {
+      dir = ".amp/rules/set";
+      field = "globs";
+      mechanism = "none";
+    };
+    skill = {
+      dir = ".";
+      file = "SKILL.md";
+      disableModelInvocation = false;
+    };
+
+    inherit (conditional) dir;
+    condField = conditional.field;
+  };
 }

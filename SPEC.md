@@ -236,7 +236,7 @@ and dogfoods both.
   materialized (unified configs -- `.markdownlint.yml`, `.yamllint.yml`,
   `.claude/` commands/allowances -- always synced & gitignored). Only
   truly unified, non-repo-specific config is materialized.
-- V23: Agnosticism is proven by 3 agent seams building the same sources -- Claude (default), opencode, and caveman-code. A single seam may hide baked assumptions. Other agents (Cursor, Codex, Gemini CLI, Copilot, Amp, ...) are a future extension list, not required now.
+- V23: Agnosticism is proven by 8 agent seams building the same sources -- Claude (default), opencode, caveman-code, Cursor, Codex, Gemini CLI, Copilot, and Amp. A single seam may hide baked assumptions; 8 seams across two families (@-import and inline) make it robust.
 - V24: Loading is via path-specific rules (deterministic on matching-file
   read), not the model-invoked SKILL.md catalog. No skill-listing budget
   to dilute, so granularity is free: mirror the source `<topic>.md` +
@@ -389,7 +389,7 @@ and dogfoods both.
 | T30 | x | dogfood -- emit set into gitignored `.claude/rules/set/` + always-on, auto-sync on devShell entry; drop CLAUDE.md `@`-ref block | V10,I.self-wire |
 | T31 | x | agnosticism proof -- the opencode seam (`AGENTS.md` always-on; opencode skill dir + conditional field) builds the same sources as Claude | V23 |
 | T33 | x | downstream wiring -- consumer repos + `nix-home-manager-claude-code` example + CI sync pre-step (materialized configs synced before hooks run) | C6,C7,V22 |
-| T34 | . | future: additional agent seams (Cursor `globs`/`.cursor/rules`, Codex, Gemini CLI, Copilot, Amp, ...) -- extension list, not built now | V23,C2 |
+| T34 | x | additional agent seams: Cursor (`globs`/`.cursor/rules`), Codex (`.codex/rules`), Gemini CLI (`.gemini/rules`), Copilot (`.copilot/rules`), Amp (`.amp/rules`) -- profiles, nix checks, bats tests | V23,C2 |
 | T54 | x | caveman-code profile + agnosticism proof -- Claude Code superset using `.cave/` paths, `CAVE.md`+`@`, `paths` conditional, same dedup; third agent seam; bats + nix checks | V21,V23,I.agentProfile |
 | T32 | x | repo-wide `lefthook --all-files` green: cleared markdownlint, editorconfig, ascii, nixfmt, nix-no-embedded-shell debt + narrow-language baseline-freeze; CI now runs the full lefthook suite via nix-lefthook-ci-action (only commit-gate `changelog-touched` excluded) | C3,V6,B1 |
 | T35 | x | refactor mkSet emission to facets-as-linked-files -- `<cat>/SKILL.md` (frontmatter + body that markdown-links raw cloned facets) instead of concatenation; clean-replace per category | I.mkSet,V24,V25,V26 |

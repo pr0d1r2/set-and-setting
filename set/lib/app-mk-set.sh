@@ -49,6 +49,11 @@ while [ $# -gt 0 ]; do
             echo "  mkSet --agent opencode         # emit for opencode agent"
             echo "  mkSet --agent opencode --all   # all categories for opencode"
             echo "  mkSet --agent caveman-code     # emit for caveman-code agent"
+            echo "  mkSet --agent cursor           # emit for Cursor agent"
+            echo "  mkSet --agent codex            # emit for Codex agent"
+            echo "  mkSet --agent gemini-cli       # emit for Gemini CLI agent"
+            echo "  mkSet --agent copilot          # emit for GitHub Copilot agent"
+            echo "  mkSet --agent amp              # emit for Amp agent"
             exit 0
             ;;
         --list)

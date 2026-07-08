@@ -9,6 +9,7 @@ actual
 actually
 add
 adding
+additional
 affect
 affecting
 after
@@ -24,6 +25,9 @@ allowlist
 also
 always
 alwayson
+ambody
+amp
+amset
 and
 answer
 any
@@ -87,6 +91,8 @@ category
 cats
 cave
 caveman
+cdbody
+cdset
 changelog
 channel
 char
@@ -101,6 +107,7 @@ clbody
 cli
 clset
 code
+codex
 collapses
 command
 commit
@@ -131,13 +138,20 @@ contains
 content
 context
 copied
+copilot
 core
 coreutils
 correct
 counterparts
 coverage
+cpbody
+cpset
 cross
+cubody
 cumulative
+cursor
+cuset
+cuskill
 cvbody
 cvset
 cvskill
@@ -237,6 +251,8 @@ expression
 exskill
 extended
 extends
+extension
+extensions
 extra
 facet
 facets
@@ -284,6 +300,7 @@ function
 functions
 gap
 gawk
+gemini
 gen
 generic
 get
@@ -296,6 +313,8 @@ gitleaks
 glob
 globally
 globs
+gmbody
+gmset
 gnu
 gnugrep
 gnused
@@ -310,6 +329,7 @@ had
 happens
 hardening
 has
+have
 head
 here
 high
@@ -530,6 +550,7 @@ protect
 protection
 proves
 provided
+proving
 proxy
 public
 push
@@ -694,6 +715,7 @@ too
 top
 topic
 torito
+total
 touch
 touched
 trailing
