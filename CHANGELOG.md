@@ -5,6 +5,10 @@
 - B20: bump `.md` file-size limit from 49152 to 57344 in
   `file_size_limits.yml` -- `SPEC.md` grew past the prior limit.
 
+- B19: make cachix push best-effort -- `continue-on-error: true` on the
+  `cachix/cachix-action@v15` step in `cache-push` CI job so auth
+  failures (403 Forbidden) don't fail CI after all checks pass.
+
 - T57: skill size budget lint -- `lib/skill-size-check.sh` plus
   `lib/mk-skill-size-check.nix`, enforcing per-file size limit (4096
   bytes) on individual skill/draft markdown. Single `wc -c` check.
