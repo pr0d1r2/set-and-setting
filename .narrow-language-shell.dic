@@ -2,6 +2,7 @@ abc
 about
 absent
 accept
+accepted
 accumulate
 across
 action
@@ -34,6 +35,7 @@ altered
 always
 alwayson
 amp
+analog
 aname
 anatomy
 and
@@ -88,6 +90,7 @@ backfill
 backprop
 backtick
 backticks
+bad
 bare
 base
 based
@@ -133,6 +136,7 @@ caller
 callers
 calls
 can
+cand
 cannot
 carries
 carry
@@ -152,6 +156,7 @@ changes
 channel
 channels
 check
+checked
 checks
 chmod
 chore
@@ -205,6 +210,7 @@ constructs
 consumed
 consumer
 consumers
+consumes
 contact
 contain
 contained
@@ -279,6 +285,7 @@ devshell
 devshells
 dic
 dics
+did
 diff
 different
 differs
@@ -347,6 +354,7 @@ every
 everything
 evidence
 exact
+exactly
 examines
 example
 examples
@@ -380,6 +388,7 @@ failed
 fails
 failure
 false
+fast
 fbeb
 features
 fence
@@ -396,6 +405,7 @@ filter
 filtered
 filtering
 final
+finally
 find
 findargs
 finding
@@ -444,6 +454,7 @@ globbing
 globs
 globstar
 goes
+gone
 graceful
 graduate
 graduated
@@ -454,6 +465,7 @@ grep
 greps
 gtop
 guard
+guards
 guidance
 half
 handles
@@ -563,7 +575,9 @@ leave
 leaves
 lefthook
 len
+lenient
 less
+let
 level
 lib
 like
@@ -581,6 +595,7 @@ lists
 literal
 literals
 live
+lives
 load
 loaded
 loader
@@ -638,6 +653,7 @@ mimic
 minimal
 minimum
 mirrored
+mirroring
 mirrors
 misassigns
 missing
@@ -760,13 +776,17 @@ payload
 per
 permissions
 perms
+pin
 pipefail
 plain
 plants
+plus
+point
 points
 portable
 positional
 positive
+positives
 post
 pre
 precommit
@@ -824,6 +844,7 @@ readlink
 readme
 real
 reason
+reasonable
 reasons
 record
 records
@@ -1021,7 +1042,9 @@ style
 sub
 subdir
 subtree
+subtrees
 succeeds
+success
 suffix
 support
 supporting
@@ -1040,6 +1063,7 @@ tab
 tags
 tail
 target
+targets
 teardown
 test
 tests
@@ -1076,6 +1100,7 @@ trigger
 trim
 trimmed
 true
+truly
 trusting
 twice
 type
@@ -1128,6 +1153,7 @@ was
 were
 what
 when
+where
 whether
 which
 while
@@ -1139,6 +1165,7 @@ with
 without
 word
 words
+work
 workflow
 workflows
 working

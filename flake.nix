@@ -1246,6 +1246,14 @@
           projectRoot = ./.;
         };
 
+        # set-ref-resolution -- T64/V12/V29: every real @-reference in the
+        # set/ tree (per the T63 matcher) resolves to an existing source
+        # path. Exit 1 only on a truly-missing target.
+        set-ref-resolution = import ./lib/mk-ref-resolution-check.nix {
+          inherit pkgs;
+          setRoot = ./set;
+        };
+
         # T13: graduation mechanism -- merge a draft into an existing
         # stable category. Validates graduated files appear as domain
         # rules with correct globs, and existing skills are preserved.
