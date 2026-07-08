@@ -4,13 +4,13 @@
 # files into a single lefthook.yml. Fragment order is deterministic.
 # Env in: FRAGMENTS_DIR, out
 #   FRAGMENTS (optional): space-separated fragment names to include.
-#     Defaults to all: "base nix shell ascii markdown yaml".
+#     Defaults to all: "base nix shell ascii markdown yaml set".
 # shellcheck disable=SC2154
 set -euo pipefail
 
 mkdir -p "$out"
 
-ordered="${FRAGMENTS:-base nix shell ascii markdown yaml}"
+ordered="${FRAGMENTS:-base nix shell ascii markdown yaml set}"
 
 {
     printf '%s\n' '---'

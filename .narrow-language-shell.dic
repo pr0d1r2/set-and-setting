@@ -1093,6 +1093,7 @@ structure
 style
 sub
 subdir
+subdirectory
 subtree
 subtrees
 succeeds
