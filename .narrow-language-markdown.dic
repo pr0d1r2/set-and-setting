@@ -249,6 +249,7 @@ bloat
 block
 blocked
 blocker
+blocking
 blockquotes
 blocks
 blue
@@ -518,6 +519,7 @@ contention
 contents
 context
 contexts
+continue
 continuously
 contract
 contradiction
@@ -662,6 +664,7 @@ describes
 description
 descriptions
 design
+despite
 destroy
 destructive
 detailed
@@ -904,6 +907,7 @@ expected
 expensive
 experience
 experimental
+expired
 explainable
 explaining
 explanations
@@ -1029,6 +1033,7 @@ follows
 foo
 footprint
 for
+forbidden
 force
 forced
 forkpty
@@ -1132,6 +1137,7 @@ grew
 group
 grouped
 groups
+grows
 grub
 guaranteed
 guarantees
@@ -1354,6 +1360,7 @@ isc
 isn
 iso
 isos
+issue
 issues
 items
 iterates
@@ -1889,10 +1896,12 @@ portably
 positional
 positive
 possible
+post
 posture
 powered
 poweroff
 pre
+preceding
 precise
 precision
 prefer
@@ -2174,6 +2183,7 @@ retained
 retarget
 retired
 retry
+returned
 returns
 reusable
 reuse
@@ -2187,6 +2197,7 @@ review
 reviewable
 reviewers
 reviews
+revoked
 rework
 reworked
 rewrite
@@ -2478,6 +2489,7 @@ substituters
 subtask
 subtasks
 subtree
+succeeding
 success
 successful
 such
