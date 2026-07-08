@@ -7,7 +7,8 @@
   runs `bats --jobs "$(nproc)"`) overrode the local sequential `bats`
   command due to lefthook giving remote configs priority over local
   overrides for same-named commands. On QEMU aarch64, parallel bats
-  execution causes race conditions in emulated git operations.
+  execution causes race conditions in emulated git operations. Documented
+  as B18 in SPEC.md.
 
 - T66: lefthook wiring -- new `setting/integrations/lefthook/set.yml`
   fragment gates the T64 ref-resolution and T65 V12 bundle-content checks
