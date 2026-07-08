@@ -215,6 +215,7 @@ background
 backoff
 backprop
 backtick
+backticks
 badge
 badges
 baked
@@ -423,6 +424,7 @@ clone
 cloned
 close
 closed
+closes
 closing
 closure
 closures
@@ -556,6 +558,7 @@ consume
 consumed
 consumer
 consumers
+contact
 contain
 contained
 containing
@@ -885,7 +888,9 @@ elif
 eliminates
 eliminating
 else
+elsewhere
 email
+emails
 embed
 embedded
 embeds
@@ -906,6 +911,7 @@ encode
 encounters
 end
 endings
+ends
 enemy
 enforce
 enforced
@@ -1145,6 +1151,7 @@ formats
 formatter
 formatters
 formatting
+forms
 forwarding
 fought
 found
@@ -1193,6 +1200,7 @@ generate
 generated
 generic
 gensub
+genuine
 genuinely
 get
 gets
@@ -1211,6 +1219,8 @@ glance
 glob
 global
 globally
+globbed
+globbing
 globs
 globstar
 gmbody
@@ -1351,6 +1361,7 @@ ifs
 ignore
 ignored
 ignores
+illustrative
 image
 images
 img
@@ -1527,6 +1538,7 @@ lab
 label
 labels
 lacked
+lacking
 lacks
 land
 lands
@@ -1784,6 +1796,7 @@ must
 mutable
 mutations
 mypackage
+naive
 name
 named
 names
@@ -1972,6 +1985,7 @@ pad
 padding
 pain
 pair
+paired
 paradigm
 paragraph
 paragraphs
@@ -2191,6 +2205,7 @@ published
 pull
 pulled
 pulls
+punctuation
 punishable
 pure
 purpose
@@ -2380,6 +2395,7 @@ restructure
 rests
 result
 results
+resume
 retain
 retained
 retarget
@@ -2411,6 +2427,7 @@ rjson
 rmap
 road
 robust
+robustness
 role
 roles
 rolled
@@ -2451,6 +2468,7 @@ scaffolding
 scaffolds
 scale
 scan
+scanned
 scanner
 scanning
 scans
@@ -2838,6 +2856,7 @@ ties
 tight
 tighten
 tightened
+tilde
 time
 timed
 timeout
@@ -2849,6 +2868,7 @@ today
 together
 toggle
 toggles
+tok
 token
 tokens
 toml
@@ -2921,6 +2941,7 @@ uname
 unauthenticated
 unavailable
 unblock
+unblocked
 unblocks
 uncertainty
 unchanged
