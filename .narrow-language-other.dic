@@ -280,6 +280,8 @@ bloat
 block
 blocked
 blocker
+blockquote
+blockquotes
 blocks
 blue
 bodies
@@ -319,6 +321,8 @@ builds
 built
 builtins
 bulk
+bullet
+bullets
 bump
 bumped
 bumping
@@ -410,6 +414,7 @@ claim
 claims
 clarity
 class
+classification
 classify
 claude
 clause
@@ -845,6 +850,7 @@ downstream
 draft
 drafts
 drain
+dressed
 drift
 drive
 driven
@@ -1105,6 +1111,7 @@ finding
 findings
 finds
 findutils
+fine
 finish
 finite
 fire
@@ -1158,6 +1165,7 @@ formats
 formatter
 formatters
 formatting
+formed
 forms
 forwarding
 fought
@@ -1348,6 +1356,7 @@ hostname
 hostnames
 hosts
 hours
+house
 how
 hub
 human
@@ -1504,6 +1513,7 @@ isolated
 isolates
 isos
 issues
+item
 items
 iterates
 iterating
@@ -1604,6 +1614,7 @@ life
 lightweight
 like
 likely
+likewise
 limit
 limited
 limits
@@ -1767,6 +1778,7 @@ miss
 missed
 missing
 mistake
+mistaken
 mistakes
 mit
 mixed
@@ -1903,6 +1915,7 @@ ocjson
 ocset
 ocskill
 off
+offending
 offenses
 offload
 offset
@@ -2417,6 +2430,7 @@ return
 returns
 reusable
 reuse
+reuses
 rev
 revalidated
 reveal
@@ -2448,6 +2462,7 @@ rot
 rough
 route
 row
+rows
 rule
 rules
 run
@@ -2611,6 +2626,7 @@ simply
 simulate
 since
 single
+singular
 sits
 sitter
 six
@@ -2842,6 +2858,7 @@ them
 theme
 then
 there
+therefore
 thermal
 these
 they
@@ -2915,6 +2932,7 @@ translations
 trap
 traveler
 treat
+treated
 treating
 tree
 trees
@@ -3089,6 +3107,7 @@ way
 ways
 weaken
 welcoming
+well
 went
 were
 what
@@ -3150,6 +3169,7 @@ yaml
 yamllint
 yes
 yet
+yields
 you
 your
 zero

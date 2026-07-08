@@ -50,6 +50,7 @@ assertion
 assertions
 asserts
 assignment
+atomics
 attr
 attrs
 auto
@@ -61,10 +62,12 @@ bats
 beats
 before
 behavioral
+belongs
 below
 between
 beyond
 bin
+blockquotes
 body
 bool
 bootstrap
@@ -78,6 +81,7 @@ builds
 built
 builtins
 bundle
+bundles
 but
 byte
 cachix
@@ -120,6 +124,8 @@ compiler
 component
 composability
 compose
+composed
+composes
 concat
 concept
 concepts
@@ -214,6 +220,7 @@ emitter
 empty
 enable
 end
+enforcement
 enforces
 engine
 entries
@@ -266,6 +273,7 @@ false
 feature
 features
 feeds
+fenced
 field
 fields
 file
@@ -279,6 +287,7 @@ finds
 findutils
 first
 fixture
+flags
 flake
 flakes
 flattened
@@ -333,6 +342,8 @@ hardening
 has
 have
 head
+heading
+headings
 here
 high
 hint
@@ -411,6 +422,7 @@ lib
 libiconv
 like
 limit
+limited
 limits
 line
 lint
@@ -512,6 +524,7 @@ outputs
 outside
 override
 overrides
+own
 owned
 package
 packages
@@ -557,6 +570,7 @@ provided
 proving
 proxy
 public
+purpose
 push
 python
 qemu
@@ -638,6 +652,7 @@ shares
 shell
 shellcheck
 shells
+ships
 should
 sibling
 side
@@ -665,8 +680,10 @@ split
 stable
 stacked
 stale
+standalone
 standards
 starts
+statement
 statix
 stay
 stays
@@ -677,6 +694,7 @@ still
 string
 strings
 strip
+structural
 structure
 style
 sub
@@ -698,6 +716,7 @@ synthetic
 system
 systems
 tab
+tables
 target
 terms
 test

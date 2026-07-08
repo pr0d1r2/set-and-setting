@@ -72,6 +72,8 @@ assert
 assertion
 assertions
 asserts
+atomic
+atomics
 attr
 attrset
 audit
@@ -100,14 +102,18 @@ bats
 because
 before
 behaviour
+belongs
 below
 beta
 between
 bin
 binary
 bit
+blank
 blind
 block
+blockquote
+blockquotes
 blocks
 bodies
 body
@@ -122,11 +128,16 @@ branches
 break
 broad
 btwo
+budget
 build
 builders
+building
 builds
+bullet
+bullets
 bundle
 bundled
+bundles
 burns
 but
 caching
@@ -138,6 +149,7 @@ calls
 can
 cand
 cannot
+capabilities
 carries
 carry
 carrying
@@ -160,6 +172,7 @@ checked
 checks
 chmod
 chore
+classification
 claude
 clean
 cleanup
@@ -191,6 +204,9 @@ compiled
 compiler
 complete
 compliance
+compose
+composed
+composes
 compute
 concept
 concepts
@@ -222,6 +238,8 @@ contexts
 continue
 contract
 contradicts
+convention
+conventions
 copied
 copies
 copilot
@@ -265,6 +283,7 @@ depth
 derivation
 derive
 desc
+describe
 description
 design
 designed
@@ -274,6 +293,7 @@ destination
 destroys
 detect
 detected
+detection
 detects
 determinate
 determine
@@ -281,6 +301,7 @@ determinism
 deterministic
 dev
 develop
+development
 devshell
 devshells
 dic
@@ -309,8 +330,10 @@ dogfood
 domain
 domains
 done
+double
 draft
 drafts
+dressed
 drift
 drop
 dupe
@@ -338,6 +361,8 @@ enabled
 end
 ends
 enforce
+enforcement
+enforces
 engine
 enter
 entries
@@ -409,10 +434,13 @@ finally
 find
 findargs
 finding
+finds
+fine
 first
 fix
 fixture
 flag
+flagged
 flags
 flake
 flip
@@ -424,6 +452,7 @@ force
 form
 format
 formatting
+formed
 forms
 found
 four
@@ -479,6 +508,7 @@ hassig
 have
 head
 heading
+headings
 headless
 help
 helper
@@ -491,6 +521,7 @@ hits
 hook
 hop
 hops
+house
 hub
 idempotent
 identical
@@ -506,6 +537,7 @@ included
 includes
 including
 inconclusive
+independent
 individual
 info
 infrastructure
@@ -547,6 +579,8 @@ invoking
 iso
 isolated
 isolates
+item
+items
 its
 itself
 jobs
@@ -581,7 +615,9 @@ let
 level
 lib
 like
+likewise
 limit
+limited
 limits
 line
 lines
@@ -614,6 +650,7 @@ loops
 loose
 lost
 mac
+machine
 main
 majority
 make
@@ -657,6 +694,7 @@ mirroring
 mirrors
 misassigns
 missing
+mistaken
 mixed
 mkdir
 mkscaffold
@@ -714,9 +752,11 @@ nrule
 nsecurity
 ntest
 null
+number
 observable
 occurrence
 ochannel
+offending
 oglobs
 old
 oldrev
@@ -731,6 +771,7 @@ open
 opencode
 opening
 opensource
+operations
 ops
 opt
 option
@@ -811,6 +852,7 @@ process
 produces
 profile
 project
+projects
 prompt
 proof
 propagate
@@ -825,6 +867,7 @@ pruned
 prunes
 pull
 punctuation
+purpose
 push
 pushes
 pushing
@@ -907,13 +950,17 @@ result
 resume
 return
 reusable
+reuses
 rev
 review
 reviews
 rjson
 rmap
 robustness
+roles
 root
+row
+rows
 rule
 rules
 run
@@ -987,7 +1034,9 @@ signalled
 signals
 silently
 simulate
+since
 single
+singular
 size
 skill
 skillmd
@@ -1023,11 +1072,13 @@ starter
 starting
 starts
 state
+statement
 status
 stays
 stderr
 stdio
 stdout
+step
 steps
 still
 stop
@@ -1037,6 +1088,7 @@ string
 strip
 stripped
 stripping
+structural
 structure
 style
 sub
@@ -1046,6 +1098,7 @@ subtrees
 succeeds
 success
 suffix
+summary
 support
 supporting
 supports
@@ -1060,19 +1113,26 @@ system
 systemd
 systems
 tab
+table
+tables
 tags
 tail
 target
 targets
 teardown
+template
+templates
 test
+testing
 tests
 text
 than
 that
 the
+their
 them
 then
+therefore
 these
 they
 this
@@ -1094,6 +1154,7 @@ touch
 tracked
 trailing
 trap
+treated
 tree
 trees
 trigger
@@ -1103,6 +1164,7 @@ true
 truly
 trusting
 twice
+two
 type
 types
 unblocked
@@ -1135,6 +1197,7 @@ value
 values
 variant
 vars
+vendor
 vendored
 verbatim
 verdict
@@ -1142,6 +1205,7 @@ verifies
 verify
 version
 via
+violation
 visible
 vote
 voted
@@ -1150,6 +1214,7 @@ voting
 warning
 warnings
 was
+well
 were
 what
 when
@@ -1162,6 +1227,7 @@ whole
 whose
 wins
 with
+within
 without
 word
 words
@@ -1181,5 +1247,6 @@ written
 wrongly
 yaml
 yamllint
+yields
 your
 zero
