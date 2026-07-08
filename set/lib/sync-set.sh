@@ -43,6 +43,51 @@ if [ -n "$set_parent" ]; then
     [ -f "$src/$set_parent/rules/set.md" ] &&
         cp "$src/$set_parent/rules/set.md" "$target/$set_parent/rules/set.md"
 
+    # Portable SKILL.md channel (V20/T44): discover and sync set-* skill
+    # dirs from the derivation. The skill dir varies by agent profile;
+    # discover it from the build output.
+    skill_src=""
+    while IFS= read -r skillmd; do
+        catdir="$(dirname "$skillmd")"
+        skill_src="$(dirname "$catdir")"
+        break
+    done < <(find "$src" -name 'SKILL.md' -path '*/set-*/SKILL.md' 2>/dev/null | sort | head -1)
+
+    if [ -n "$skill_src" ]; then
+        skill_rel="${skill_src#"$src"}"
+        skill_rel="${skill_rel#/}"
+        [ -z "$skill_rel" ] && skill_rel="."
+        skill_dest="$target/$skill_rel"
+
+        # Clean-replace set-* skill dirs (V26-analogous)
+        if [ -d "$skill_dest" ]; then
+            for d in "$skill_dest"/set-*; do
+                [ -d "$d" ] || continue
+                chmod -R u+w "$d" 2>/dev/null || true
+                rm -rf "$d"
+            done
+        fi
+
+        mkdir -p "$skill_dest"
+        for d in "$skill_src"/set-*; do
+            [ -d "$d" ] || continue
+            cp -r "$d" "$skill_dest/"
+            chmod -R u+w "$skill_dest/${d##*/}"
+        done
+    fi
+
+    # Always-on AGENTS.md compilation (T44/V29): compile set.md into an
+    # inline AGENTS.md so non-Claude agents (opencode, cursor, etc.)
+    # auto-discover it at the repo root.
+    compiler="$src/bin/agents-md-compile"
+    manifest_file="$target/$set_parent/rules/set.md"
+    if [ -f "$compiler" ] && [ -f "$manifest_file" ]; then
+        INPUT="$manifest_file" \
+            BASE="$(dirname "$manifest_file")" \
+            SELF="$compiler" \
+            bash "$compiler" >"$target/AGENTS.md"
+    fi
+
     # Rename propagation (T24/C7): detect stale references after sync.
     renames_file="$target/$set_parent/rules/set/.mkset-renames"
     propagate_script="$src/bin/rename-propagate"

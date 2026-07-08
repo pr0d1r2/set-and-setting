@@ -36,6 +36,7 @@ always
 alwayson
 amp
 analog
+analogous
 aname
 anatomy
 and
@@ -133,6 +134,7 @@ build
 builders
 building
 builds
+built
 bullet
 bullets
 bundle
@@ -199,9 +201,11 @@ commit
 commits
 comparator
 compares
+compilation
 compile
 compiled
 compiler
+compiles
 complete
 compliance
 compose
@@ -252,6 +256,7 @@ counts
 coverage
 covers
 create
+created
 creates
 cross
 cthree
@@ -320,6 +325,7 @@ dirs
 disable
 disabled
 disallows
+discover
 discovers
 dispatch
 distinct
@@ -372,6 +378,7 @@ eof
 equivalent
 error
 esac
+etc
 euo
 eval
 even
@@ -1197,6 +1204,7 @@ validates
 value
 values
 variant
+varies
 vars
 vendor
 vendored

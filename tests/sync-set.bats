@@ -5,6 +5,7 @@
 # Covers claude, opencode, and caveman-code agent trees (V21/V23).
 
 setup() {
+    bats_require_minimum_version 1.5.0
     SRC="$(mktemp -d)"
     TARGET="$(mktemp -d)"
     SCRIPT="$BATS_TEST_DIRNAME/../set/lib/sync-set.sh"
@@ -150,4 +151,76 @@ teardown() {
     [ "$status" -eq 0 ]
     [[ "$output" == *"synced set"* ]]
     [ -f "$TARGET/.claude/rules/set/demo/sub.md" ]
+}
+
+# --- T44: portable SKILL.md channel (V20) ---
+
+@test "syncs SKILL.md files from .claude/skills (T44/V20)" {
+    mkdir -p "$SRC/.claude/skills/set-demo"
+    printf '%s\n' "---" "name: set-demo" "---" "# demo" >"$SRC/.claude/skills/set-demo/SKILL.md"
+    run bash "$SRC/bin/sync-set" "$TARGET"
+    [ "$status" -eq 0 ]
+    [ -f "$TARGET/.claude/skills/set-demo/SKILL.md" ]
+    grep -q 'name: set-demo' "$TARGET/.claude/skills/set-demo/SKILL.md"
+}
+
+@test "clean-replaces stale SKILL.md dirs on re-sync (T44/V26)" {
+    mkdir -p "$SRC/.claude/skills/set-demo"
+    echo "fresh" >"$SRC/.claude/skills/set-demo/SKILL.md"
+    mkdir -p "$TARGET/.claude/skills/set-stale"
+    echo "stale" >"$TARGET/.claude/skills/set-stale/SKILL.md"
+    run bash "$SRC/bin/sync-set" "$TARGET"
+    [ "$status" -eq 0 ]
+    [ ! -e "$TARGET/.claude/skills/set-stale" ]
+    [ -f "$TARGET/.claude/skills/set-demo/SKILL.md" ]
+}
+
+@test "SKILL.md writable even from read-only source (T44/B4)" {
+    mkdir -p "$SRC/.claude/skills/set-demo"
+    echo "content" >"$SRC/.claude/skills/set-demo/SKILL.md"
+    chmod -R a-w "$SRC/.claude/skills"
+    run bash "$SRC/bin/sync-set" "$TARGET"
+    [ "$status" -eq 0 ]
+    [ -w "$TARGET/.claude/skills/set-demo/SKILL.md" ]
+}
+
+@test "no SKILL.md sync when none in source (T44)" {
+    run bash "$SRC/bin/sync-set" "$TARGET"
+    [ "$status" -eq 0 ]
+    [ ! -d "$TARGET/.claude/skills" ]
+}
+
+# --- T44: AGENTS.md compilation (V29) ---
+
+@test "compiles set.md into AGENTS.md at target root (T44/V29)" {
+    # Create an always-on core rule (no frontmatter)
+    echo "always-on core content" >"$SRC/.claude/rules/set/demo/sub.md"
+    # Create the @-manifest referencing it
+    printf '# Set\n\n@set/demo/sub.md\n' >"$SRC/.claude/rules/set.md"
+    # Ship the compiler
+    cp "$BATS_TEST_DIRNAME/../lib/agents-md-compile.sh" "$SRC/bin/agents-md-compile"
+    chmod +x "$SRC/bin/agents-md-compile"
+    run bash "$SRC/bin/sync-set" "$TARGET"
+    [ "$status" -eq 0 ]
+    [ -f "$TARGET/AGENTS.md" ]
+    grep -q 'always-on core content' "$TARGET/AGENTS.md"
+}
+
+@test "AGENTS.md not created when compiler absent (T44)" {
+    printf '# Set\n\n@set/demo/sub.md\n' >"$SRC/.claude/rules/set.md"
+    run bash "$SRC/bin/sync-set" "$TARGET"
+    [ "$status" -eq 0 ]
+    [ ! -f "$TARGET/AGENTS.md" ]
+}
+
+@test "AGENTS.md overwrites on re-sync (T44/V29)" {
+    echo "always-on" >"$SRC/.claude/rules/set/demo/sub.md"
+    printf '# Set\n\n@set/demo/sub.md\n' >"$SRC/.claude/rules/set.md"
+    cp "$BATS_TEST_DIRNAME/../lib/agents-md-compile.sh" "$SRC/bin/agents-md-compile"
+    chmod +x "$SRC/bin/agents-md-compile"
+    echo "old" >"$TARGET/AGENTS.md"
+    run bash "$SRC/bin/sync-set" "$TARGET"
+    [ "$status" -eq 0 ]
+    grep -q 'always-on' "$TARGET/AGENTS.md"
+    run ! grep -q 'old' "$TARGET/AGENTS.md"
 }

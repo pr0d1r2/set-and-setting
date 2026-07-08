@@ -2,6 +2,14 @@
 
 ## Unreleased
 
+- T44: re-dogfood for multi-channel -- `sync-set.sh` now handles all
+  three channels (V17): discovers and syncs portable SKILL.md files
+  (channel c, V20) with clean-replace semantics, and compiles `set.md`
+  into an inline `AGENTS.md` at the target root (channel a, V29) so
+  non-Claude agents auto-discover it. `mk-set.sh` ships the compiler as
+  `bin/agents-md-compile` in the derivation. `.gitignore` adds
+  `AGENTS.md`; `.envrc` watches the new emitter files. 7 new bats tests.
+
 - B18: fix build-linux-arm CI -- remove `nix-lefthook-bats-unit` remote
   from `lefthook.yml`. The remote's `lefthook-bats-unit` wrapper (which
   runs `bats --jobs "$(nproc)"`) overrode the local sequential `bats`
