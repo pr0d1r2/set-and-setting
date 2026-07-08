@@ -28,6 +28,7 @@ agnosticism
 all
 allow
 allowed
+allows
 alpha
 already
 also
@@ -107,6 +108,7 @@ belongs
 below
 beta
 between
+big
 bin
 binary
 bit
@@ -142,6 +144,8 @@ bundled
 bundles
 burns
 but
+byte
+bytes
 caching
 cachix
 call
@@ -391,6 +395,8 @@ examines
 example
 examples
 exceeded
+exceeding
+exceeds
 except
 exclude
 excluded
@@ -605,6 +611,7 @@ label
 lacking
 lacks
 language
+large
 last
 later
 latest
@@ -801,6 +808,7 @@ outside
 over
 override
 overrides
+oversized
 overwrites
 overwriting
 own
@@ -1059,6 +1067,7 @@ skipping
 skips
 slash
 slashed
+small
 smart
 snippet
 some
