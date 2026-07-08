@@ -146,6 +146,9 @@ pre-commit:
     bats-unit:
       glob: "*.bats"
       run: timeout ${LEFTHOOK_BATS_UNIT_TIMEOUT:-120} bats {staged_files}
+    set-skill-extension:
+      glob: "set/{skills,drafts}/**"
+      run: SET_ROOT=set bash lib/skill-extension-check.sh
     set-ref-resolution:
       glob: "set/**/*.md"
       run: SET_ROOT=set REF_MATCH=lib/ref-match.sh bash lib/ref-resolve-check.sh
@@ -180,6 +183,9 @@ pre-push:
     bats-unit:
       glob: "*.bats"
       run: timeout ${LEFTHOOK_BATS_UNIT_TIMEOUT:-120} bats {push_files}
+    set-skill-extension:
+      glob: "set/{skills,drafts}/**"
+      run: SET_ROOT=set bash lib/skill-extension-check.sh
     set-ref-resolution:
       glob: "set/**/*.md"
       run: SET_ROOT=set REF_MATCH=lib/ref-match.sh bash lib/ref-resolve-check.sh

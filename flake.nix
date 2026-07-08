@@ -1246,6 +1246,13 @@
           projectRoot = ./.;
         };
 
+        # set-skill-extension -- T56/V6/V13: only *.md files in set/skills/
+        # and set/drafts/. Pure find + exit-on-non-md.
+        set-skill-extension = import ./lib/mk-skill-extension-check.nix {
+          inherit pkgs;
+          setRoot = ./set;
+        };
+
         # set-ref-resolution -- T64/V12/V29: every real @-reference in the
         # set/ tree (per the T63 matcher) resolves to an existing source
         # path. Exit 1 only on a truly-missing target.
