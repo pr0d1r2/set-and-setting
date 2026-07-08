@@ -220,6 +220,7 @@ emitter
 empty
 enable
 end
+enforce
 enforcement
 enforces
 engine
@@ -532,6 +533,7 @@ parallel
 param
 parse
 parsed
+parsing
 partial
 parts
 pass
@@ -570,6 +572,7 @@ provided
 proving
 proxy
 public
+pure
 purpose
 push
 python

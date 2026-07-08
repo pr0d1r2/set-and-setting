@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+- T56: skill extension lint -- `lib/skill-extension-check.sh` plus
+  `lib/mk-skill-extension-check.nix`, enforcing V6/V13: only `*.md`
+  files in `set/skills/` and `set/drafts/`. Pure `find` +
+  exit-on-non-md. Wired as `checks.set-skill-extension` in `flake.nix`
+  and as `set-skill-extension` hook in `setting/integrations/lefthook/set.yml`
+  (pre-commit + pre-push, glob `set/{skills,drafts}/**`). 16 bats tests.
+
 - T44: re-dogfood for multi-channel -- `sync-set.sh` now handles all
   three channels (V17): discovers and syncs portable SKILL.md files
   (channel c, V20) with clean-replace semantics, and compiles `set.md`

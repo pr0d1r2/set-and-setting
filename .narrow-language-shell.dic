@@ -750,6 +750,7 @@ noremote
 normal
 not
 note
+notes
 nother
 nothing
 notice
@@ -810,6 +811,7 @@ packages
 paired
 parent
 parse
+parsing
 part
 pass
 passes
@@ -874,6 +876,7 @@ pruned
 prunes
 pull
 punctuation
+pure
 purpose
 push
 pushes
@@ -935,6 +938,7 @@ replaces
 reply
 repo
 report
+reported
 reports
 repos
 repository
@@ -989,6 +993,7 @@ scans
 schema
 scoped
 scored
+scratch
 script
 scripts
 seam
@@ -1100,6 +1105,7 @@ structure
 style
 sub
 subdir
+subdirectories
 subdirectory
 subtree
 subtrees
