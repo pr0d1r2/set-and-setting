@@ -2,6 +2,16 @@
 
 ## Unreleased
 
+- T64: ref-resolution nix check -- `lib/ref-resolve-check.sh` +
+  `lib/mk-ref-resolution-check.nix` consume the T63 matcher and resolve
+  every real `@`-reference in the `set/` tree to an existing source path
+  (`@set/...` from the repo root; relative `@<cat>/<file>.md` against its
+  own dir/parent, plus the `set/`, `skills/`, and `drafts/` bases). Exits
+  1 ONLY on a truly-missing target. Wired as `checks.set-ref-resolution`.
+  Because the matcher already filters non-ref `@` tokens and code-span/
+  comment refs (T63), the check goes green where a naive grep never could
+  (the blocker on T58). 12 new bats tests over fixtures.
+
 - T63: `@`-ref matcher -- `lib/ref-match.sh`, a pure-shell scanner that
   emits ONLY real `@`-references from a markdown file (leading-token
   `@set/...` / `@concepts/...` or relative `@<category>/<file>.md`). Skips

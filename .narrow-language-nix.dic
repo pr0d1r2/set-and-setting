@@ -133,6 +133,7 @@ conflict
 consumed
 consumer
 consumers
+consumes
 contained
 contains
 content
@@ -303,6 +304,7 @@ gawk
 gemini
 gen
 generic
+genuine
 get
 gets
 git
@@ -437,7 +439,9 @@ markdown
 markdownlint
 marker
 markers
+match
 matched
+matcher
 matches
 materialization
 materialize
@@ -564,6 +568,7 @@ rec
 recursive
 recursively
 ref
+reference
 references
 referencing
 refines
@@ -584,6 +589,7 @@ replaces
 repo
 repos
 requested
+resolution
 resolve
 resolved
 resolves
@@ -692,6 +698,7 @@ synthetic
 system
 systems
 tab
+target
 terms
 test
 tests
@@ -722,6 +729,7 @@ trailing
 tree
 trees
 true
+truly
 trusted
 truth
 type
