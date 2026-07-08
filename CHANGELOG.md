@@ -2,6 +2,17 @@
 
 ## Unreleased
 
+- T65: V12 bundle own-content enforcement -- `lib/bundle-content-check.sh`
+  plus `lib/mk-bundle-content-check.nix`, an independent grep check that
+  consumes the T63 matcher to detect bundle files (those composing via
+  `@`) and enforces that each limits its OWN content to a single heading,
+  a purpose statement, and the `@` refs. Structural markdown (fenced code,
+  bullet/ordered lists, tables, blockquotes) and a second heading fail
+  with exit 1; inline code spans and multi-line prose are fine. Ships
+  standalone -- runs separate from ref resolution (T64), so a
+  truly-missing ref target never fails it. Wired as
+  `checks.set-bundle-content`. 18 new bats tests over fixtures.
+
 - T64: ref-resolution nix check -- `lib/ref-resolve-check.sh` +
   `lib/mk-ref-resolution-check.nix` consume the T63 matcher and resolve
   every real `@`-reference in the `set/` tree to an existing source path

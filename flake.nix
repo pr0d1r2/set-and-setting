@@ -1254,6 +1254,15 @@
           setRoot = ./set;
         };
 
+        # set-bundle-content -- T65/V12: each bundle file (composes via @,
+        # per the T63 matcher) limits its own content to one heading + a
+        # purpose statement + the @ refs. Structural markdown fails. Ships
+        # independent of the ref-resolution check.
+        set-bundle-content = import ./lib/mk-bundle-content-check.nix {
+          inherit pkgs;
+          setRoot = ./set;
+        };
+
         # T13: graduation mechanism -- merge a draft into an existing
         # stable category. Validates graduated files appear as domain
         # rules with correct globs, and existing skills are preserved.
