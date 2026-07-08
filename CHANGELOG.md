@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- B20: bump `.md` file-size limit from 49152 to 57344 in
+  `file_size_limits.yml` -- `SPEC.md` grew past the prior limit.
+
 - T57: skill size budget lint -- `lib/skill-size-check.sh` plus
   `lib/mk-skill-size-check.nix`, enforcing per-file size limit (4096
   bytes) on individual skill/draft markdown. Single `wc -c` check.

@@ -283,6 +283,7 @@ bloat
 block
 blocked
 blocker
+blocking
 blockquote
 blockquotes
 blocks
@@ -751,6 +752,7 @@ description
 descriptions
 design
 designed
+despite
 dest
 destdir
 destination
@@ -1024,6 +1026,7 @@ expected
 expensive
 experience
 experimental
+expired
 explainable
 explaining
 explanations
@@ -1162,6 +1165,7 @@ follows
 foo
 footprint
 for
+forbidden
 force
 forced
 forkpty
@@ -1278,6 +1282,7 @@ grew
 group
 grouped
 groups
+grows
 grub
 gtop
 guaranteed
@@ -1520,6 +1525,7 @@ iso
 isolated
 isolates
 isos
+issue
 issues
 item
 items
@@ -2130,6 +2136,7 @@ posture
 powered
 poweroff
 pre
+preceding
 precise
 precision
 precommit
@@ -2438,6 +2445,7 @@ retarget
 retired
 retry
 return
+returned
 returns
 reusable
 reuse
@@ -2452,6 +2460,7 @@ review
 reviewable
 reviewers
 reviews
+revoked
 rework
 reworked
 rewrite
@@ -2777,6 +2786,7 @@ subtask
 subtasks
 subtree
 subtrees
+succeeding
 succeeds
 success
 successful
