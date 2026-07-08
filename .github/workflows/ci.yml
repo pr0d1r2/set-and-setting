@@ -149,6 +149,8 @@ jobs:
   # cachix/cachix-action directly (not the broken embedded cachix inside
   # nix-lefthook-ci-action, B8/B10). The post-build hook pushes all
   # outputs automatically. Requires CACHIX_AUTH_TOKEN repo secret.
+  # Best-effort: cache push failures must not fail CI (all checks
+  # already passed in the preceding jobs).
   cache-push:
     needs: [build-linux, build-darwin, build-linux-arm]
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
@@ -157,6 +159,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: cachix/install-nix-action@v27
       - uses: cachix/cachix-action@v15
+        continue-on-error: true
         with:
           name: pr0d1r2
           authToken: '${{ secrets.CACHIX_AUTH_TOKEN }}'
