@@ -216,6 +216,30 @@
           runtimeInputs = [ pkgs.editorconfig-checker ];
         };
 
+      # #99 (part of #93): the nix linters tier's pinned wrappers, each built
+      # from its own pinned flake input. Shared, like nixfmtWrapperFor, by the
+      # devShell wrapper list and the hermetic `checks.<sys>.<tool>` derivation
+      # so both resolve the exact same pinned lint logic (no runtime git_url).
+      statixWrapperFor =
+        pkgs:
+        wrap pkgs "lefthook-statix" nix-lefthook-statix-src {
+          runtimeInputs = [ pkgs.statix ];
+        };
+      deadnixWrapperFor =
+        pkgs:
+        wrap pkgs "lefthook-deadnix" nix-lefthook-deadnix-src {
+          runtimeInputs = [ pkgs.deadnix ];
+        };
+      nixNoEmbeddedShellWrapperFor =
+        pkgs:
+        pkgs.writeShellApplication {
+          name = "lefthook-nix-no-embedded-shell";
+          text = ''
+            SCANNER="${nix-lefthook-nix-no-embedded-shell-src}/scan-nix-no-embedded-shell.sh"
+          ''
+          + builtins.readFile "${nix-lefthook-nix-no-embedded-shell-src}/lefthook-nix-no-embedded-shell.sh";
+        };
+
       lefthookWrappersFor =
         pkgs:
         let
@@ -234,9 +258,7 @@
           (w "lefthook-ascii-only" nix-lefthook-ascii-only-src {
             runtimeInputs = [ pkgs.gnugrep ];
           })
-          (w "lefthook-deadnix" nix-lefthook-deadnix-src {
-            runtimeInputs = [ pkgs.deadnix ];
-          })
+          (deadnixWrapperFor pkgs)
           (editorconfigCheckerWrapperFor pkgs)
           (w "lefthook-execute-permissions" nix-lefthook-execute-permissions-src {
             runtimeInputs = [ pkgs.gnugrep ];
@@ -318,22 +340,14 @@
           (w "lefthook-nix-flake-check" nix-lefthook-nix-flake-check-src {
             runtimeInputs = [ pkgs.nix ];
           })
-          (pkgs.writeShellApplication {
-            name = "lefthook-nix-no-embedded-shell";
-            text = ''
-              SCANNER="${nix-lefthook-nix-no-embedded-shell-src}/scan-nix-no-embedded-shell.sh"
-            ''
-            + builtins.readFile "${nix-lefthook-nix-no-embedded-shell-src}/lefthook-nix-no-embedded-shell.sh";
-          })
+          (nixNoEmbeddedShellWrapperFor pkgs)
           (w "lefthook-no-shell-functions" nix-lefthook-no-shell-functions-src { })
           (w "lefthook-shellcheck" nix-lefthook-shellcheck-src {
             runtimeInputs = [ pkgs.shellcheck ];
           })
           (shfmtWrapperFor pkgs)
           (nixfmtWrapperFor pkgs)
-          (w "lefthook-statix" nix-lefthook-statix-src {
-            runtimeInputs = [ pkgs.statix ];
-          })
+          (statixWrapperFor pkgs)
           (trailingWhitespaceWrapperFor pkgs)
           (w "lefthook-unicode-lint" nix-lefthook-unicode-lint-src {
             runtimeInputs = [
@@ -483,6 +497,69 @@
             wrapper = editorconfigCheckerWrapperFor pkgs;
             checkFlag = "";
           };
+
+        # #99 (part of #93): the nix linters tier's convenience helpers, each
+        # closing over set-and-setting's OWN pinned wrapper input (like
+        # mkNixfmtCheck). A consumer's check tracks the upstream tool rev via
+        # `nix flake update set-and-setting` (C7). statix and deadnix gate
+        # `*.nix` files with no check flag (wrappers are read-only checkers).
+        # nix-no-embedded-shell uses a custom derivation (not mkLefthookCheck)
+        # to include the `.nix-embedded-shell-allowlist` in the source filter
+        # and set NIX_NO_EMBEDDED_SHELL_ROOT for correct path matching.
+        # Args: pkgs, src (repo root to lint), name ? "<tool>".
+        mkStatixCheck =
+          {
+            pkgs,
+            src,
+            name ? "statix",
+          }:
+          import ./lib/mk-lefthook-check.nix {
+            inherit pkgs src name;
+            wrapper = statixWrapperFor pkgs;
+            suffices = [ ".nix" ];
+            checkFlag = "";
+          };
+        mkDeadnixCheck =
+          {
+            pkgs,
+            src,
+            name ? "deadnix",
+          }:
+          import ./lib/mk-lefthook-check.nix {
+            inherit pkgs src name;
+            wrapper = deadnixWrapperFor pkgs;
+            suffices = [ ".nix" ];
+            checkFlag = "";
+          };
+        mkNixNoEmbeddedShellCheck =
+          {
+            pkgs,
+            src,
+            name ? "nix-no-embedded-shell",
+          }:
+          let
+            inherit (pkgs) lib;
+            wrapper = nixNoEmbeddedShellWrapperFor pkgs;
+            filteredSrc = lib.sources.cleanSourceWith {
+              inherit src;
+              filter =
+                path: _type:
+                (lib.hasSuffix ".nix" path) || (builtins.baseNameOf path == ".nix-embedded-shell-allowlist");
+            };
+          in
+          pkgs.runCommand "${name}-check" { nativeBuildInputs = [ pkgs.findutils ]; } ''
+            cd ${filteredSrc}
+            export NIX_NO_EMBEDDED_SHELL_ROOT="."
+            mapfile -t matches < <(find . -name '*.nix' -type f | sort)
+            if [ ''${#matches[@]} -eq 0 ]; then
+              echo "${name}: no .nix files, nothing to check"
+              touch $out
+              exit 0
+            fi
+            ${lib.getExe wrapper} "''${matches[@]}"
+            echo "${name}: PASS (''${#matches[@]} files)"
+            touch $out
+          '';
       };
 
       packages = forAllSystems (pkgs: {
@@ -613,6 +690,79 @@
               echo "FAIL: editorconfig-checker accepted a violation"; exit 1
             fi
             echo "PASS: pinned editorconfig-checker rejects a violation"
+            touch $out
+          '';
+
+        # #99 (part of #93): the nix linters tier as PINNED hermetic checks,
+        # each replacing its runtime lefthook `remotes:` git_url. statix and
+        # deadnix gate `*.nix` files; nix-no-embedded-shell scans `*.nix` for
+        # embedded shell inside '' blocks (with allowlist support).
+        # nix-flake-check is a sentinel: the old remote ran `nix flake check`,
+        # which IS the CI mechanism that evaluates all `checks.*` derivations;
+        # a separate derivation would recurse, so its presence documents the
+        # migration. All offline-runnable on a warm cache; a violation fails
+        # `nix flake check`.
+        statix = self.lib.mkStatixCheck {
+          inherit pkgs;
+          src = ./.;
+        };
+        deadnix = self.lib.mkDeadnixCheck {
+          inherit pkgs;
+          src = ./.;
+        };
+        nix-no-embedded-shell = self.lib.mkNixNoEmbeddedShellCheck {
+          inherit pkgs;
+          src = ./.;
+        };
+        nix-flake-check = pkgs.runCommand "nix-flake-check" { } ''
+          echo "nix-flake-check: the old remote ran nix flake check --"
+          echo "which IS this CI mechanism. All individual checks are"
+          echo "pinned derivations; this sentinel documents the migration."
+          touch $out
+        '';
+
+        # #99: prove each pinned nix linter REJECTS a violation (acceptance:
+        # a violation fails the check). Runs the same pinned wrapper path the
+        # framework uses over a known-bad fixture and asserts non-zero.
+        statix-catches-violation =
+          let
+            wrapper = statixWrapperFor pkgs;
+          in
+          pkgs.runCommand "statix-catches-violation" { } ''
+            printf 'let { x = 1; body = x; }\n' > bad.nix
+            if ${pkgs.lib.getExe wrapper} bad.nix; then
+              echo "FAIL: statix accepted undocumented let syntax"; exit 1
+            fi
+            echo "PASS: pinned statix rejects a violation"
+            touch $out
+          '';
+        deadnix-catches-violation =
+          let
+            wrapper = deadnixWrapperFor pkgs;
+          in
+          pkgs.runCommand "deadnix-catches-violation" { } ''
+            printf '{ unused }: 42\n' > bad.nix
+            if ${pkgs.lib.getExe wrapper} bad.nix; then
+              echo "FAIL: deadnix accepted dead code"; exit 1
+            fi
+            echo "PASS: pinned deadnix rejects a violation"
+            touch $out
+          '';
+        nix-no-embedded-shell-catches-violation =
+          let
+            wrapper = nixNoEmbeddedShellWrapperFor pkgs;
+          in
+          pkgs.runCommand "nix-no-embedded-shell-catches-violation" { } ''
+            cat > bad.nix <<'NIXEOF'
+            pkgs.runCommand "test" {} ''''
+              set -euo pipefail
+              echo hello
+            ''''
+            NIXEOF
+            if ${pkgs.lib.getExe wrapper} bad.nix; then
+              echo "FAIL: nix-no-embedded-shell accepted embedded shell"; exit 1
+            fi
+            echo "PASS: pinned nix-no-embedded-shell rejects a violation"
             touch $out
           '';
 
@@ -1377,9 +1527,9 @@
               echo "FAIL: scaffold still has ci devShell"; exit 1
             fi
 
-            # #97/#98: consumers stay whole -- the scaffold flake.nix wires the
-            # pinned formatter checks that replaced the dropped lefthook remotes.
-            for c in mkNixfmtCheck mkShfmtCheck mkTrailingWhitespaceCheck mkMissingFinalNewlineCheck mkEditorconfigCheckerCheck; do
+            # #97/#98/#99: consumers stay whole -- the scaffold flake.nix wires
+            # the pinned checks that replaced the dropped lefthook remotes.
+            for c in mkNixfmtCheck mkShfmtCheck mkTrailingWhitespaceCheck mkMissingFinalNewlineCheck mkEditorconfigCheckerCheck mkStatixCheck mkDeadnixCheck mkNixNoEmbeddedShellCheck; do
               grep -q "$c" "${scaffold}/flake.nix" \
                 || { echo "FAIL: scaffold flake.nix missing $c pinned check"; exit 1; }
             done
@@ -1392,18 +1542,12 @@
             # lefthook.yml has remotes from all fragments
             grep -q 'nix-lefthook-git-conflict-markers' "${scaffold}/lefthook.yml" \
               || { echo "FAIL: lefthook.yml missing base remote"; exit 1; }
-            # #97: nixfmt is now a pinned check, not a remote; assert a
-            # remaining nix remote still composes from the nix fragment.
-            grep -q 'nix-lefthook-statix' "${scaffold}/lefthook.yml" \
-              || { echo "FAIL: lefthook.yml missing nix remote"; exit 1; }
-            if grep -q 'nix-lefthook-nixfmt' "${scaffold}/lefthook.yml"; then
-              echo "FAIL: lefthook.yml still has nixfmt remote (#97)"; exit 1
-            fi
-            # #98: shfmt + the base formatter trio are pinned checks now, not
-            # remotes; none must survive in the assembled scaffold lefthook.yml.
-            for t in shfmt trailing-whitespace missing-final-newline editorconfig-checker; do
+            # #97/#98/#99: nixfmt, formatters, and nix linters are pinned
+            # checks now, not remotes; none must survive in the assembled
+            # scaffold lefthook.yml.
+            for t in nixfmt shfmt trailing-whitespace missing-final-newline editorconfig-checker statix deadnix nix-no-embedded-shell nix-flake-check; do
               if grep -q "nix-lefthook-$t" "${scaffold}/lefthook.yml"; then
-                echo "FAIL: lefthook.yml still has $t remote (#98)"; exit 1
+                echo "FAIL: lefthook.yml still has $t remote (#97/#98/#99)"; exit 1
               fi
             done
             grep -q 'nix-lefthook-shellcheck' "${scaffold}/lefthook.yml" \

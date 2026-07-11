@@ -1,22 +1,5 @@
-# nixfmt is intentionally absent here: it is delivered as a PINNED flake
-# `checks.<sys>.nixfmt` (set-and-setting.lib.mkNixfmtCheck / #97), replacing
-# the runtime `remotes:` git_url with an offline-runnable, cache-warm check.
-# The remaining nix linters follow per #93's strangler-fig decomposition.
+# All nix linters (nixfmt, statix, deadnix, nix-no-embedded-shell,
+# nix-flake-check) are delivered as PINNED flake `checks.<sys>.<tool>`
+# (#97 nixfmt, #99 the rest), replacing their runtime `remotes:` git_urls
+# with offline-runnable, cache-warm checks. No nix remotes remain.
 ---
-remotes:
-  - git_url: https://github.com/pr0d1r2/nix-lefthook-statix
-    ref: main
-    configs:
-      - lefthook-remote.yml
-  - git_url: https://github.com/pr0d1r2/nix-lefthook-deadnix
-    ref: main
-    configs:
-      - lefthook-remote.yml
-  - git_url: https://github.com/pr0d1r2/nix-lefthook-nix-no-embedded-shell
-    ref: main
-    configs:
-      - lefthook-remote.yml
-  - git_url: https://github.com/pr0d1r2/nix-lefthook-nix-flake-check
-    ref: main
-    configs:
-      - lefthook-remote.yml

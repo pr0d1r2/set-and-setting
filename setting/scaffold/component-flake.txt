@@ -214,11 +214,10 @@
           })
           (pkgs.writeShellApplication {
             name = "lefthook-nix-no-embedded-shell";
-            text =
-              ''
-                SCANNER="${nix-lefthook-nix-no-embedded-shell-src}/scan-nix-no-embedded-shell.sh"
-              ''
-              + builtins.readFile "${nix-lefthook-nix-no-embedded-shell-src}/lefthook-nix-no-embedded-shell.sh";
+            text = ''
+              SCANNER="${nix-lefthook-nix-no-embedded-shell-src}/scan-nix-no-embedded-shell.sh"
+            ''
+            + builtins.readFile "${nix-lefthook-nix-no-embedded-shell-src}/lefthook-nix-no-embedded-shell.sh";
           })
           (w "lefthook-nixfmt" nix-lefthook-nixfmt-src {
             runtimeInputs = [ pkgs.nixfmt ];
@@ -257,15 +256,13 @@
         in
         set-and-setting.lib.mkDevShells {
           inherit pkgs;
-          basePackages =
-            (lefthookWrappersFor pkgs)
-            ++ [
-              pkgs.coreutils
-              pkgs.git
-              pkgs.nix
-              pkgs.gh
-              nix-lefthook.packages.${sys}.default
-            ];
+          basePackages = (lefthookWrappersFor pkgs) ++ [
+            pkgs.coreutils
+            pkgs.git
+            pkgs.nix
+            pkgs.gh
+            nix-lefthook.packages.${sys}.default
+          ];
           defaultShellHook = ''
             ${self.packages.${sys}.setting}/bin/sync-setting .
           '';
@@ -303,6 +300,21 @@
           src = ./.;
         };
         editorconfig-checker = set-and-setting.lib.mkEditorconfigCheckerCheck {
+          inherit pkgs;
+          src = ./.;
+        };
+        # #99: nix linters as PINNED flake checks (not runtime lefthook
+        # remotes). Each tracks its upstream tool rev via
+        # `nix flake update set-and-setting`.
+        statix = set-and-setting.lib.mkStatixCheck {
+          inherit pkgs;
+          src = ./.;
+        };
+        deadnix = set-and-setting.lib.mkDeadnixCheck {
+          inherit pkgs;
+          src = ./.;
+        };
+        nix-no-embedded-shell = set-and-setting.lib.mkNixNoEmbeddedShellCheck {
           inherit pkgs;
           src = ./.;
         };
