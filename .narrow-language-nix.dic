@@ -73,6 +73,7 @@ between
 beyond
 bin
 blockquotes
+blocks
 body
 bool
 bootstrap
@@ -110,6 +111,7 @@ char
 check
 checked
 checker
+checkers
 checks
 chmod
 ckia
@@ -171,12 +173,14 @@ cumulative
 cursor
 cuset
 cuskill
+custom
 cvbody
 cvset
 cvskill
 dag
 darwin
 data
+dead
 deadnix
 dedup
 deep
@@ -187,6 +191,7 @@ delimiter
 dep
 dependency
 derivation
+derivations
 derived
 derives
 description
@@ -210,6 +215,7 @@ dirty
 disable
 dispatch
 documentation
+documents
 domain
 domains
 don
@@ -246,7 +252,9 @@ enumerated
 environment
 error
 escape
+euo
 eval
+evaluates
 even
 ever
 every
@@ -324,6 +332,7 @@ for
 force
 format
 formatter
+formatters
 fragment
 fragments
 framework
@@ -335,6 +344,7 @@ fully
 function
 functions
 gap
+gate
 gates
 gawk
 gemini
@@ -371,6 +381,7 @@ have
 head
 heading
 headings
+hello
 helpers
 here
 hermetic
@@ -406,6 +417,7 @@ inlined
 inlines
 input
 inputs
+inside
 install
 installer
 installs
@@ -459,6 +471,8 @@ limits
 line
 lint
 linted
+linter
+linters
 lints
 linux
 list
@@ -503,6 +517,7 @@ merge
 merged
 meta
 metadata
+migration
 mindset
 minimal
 mirrored
@@ -540,6 +555,7 @@ next
 nfi
 nindent
 nix
+nixeof
 nixfmt
 nixos
 nixpkgs
@@ -598,6 +614,7 @@ per
 permissions
 picks
 pinned
+pipefail
 place
 plain
 platform
@@ -606,6 +623,7 @@ pre
 prefix
 prefixes
 prepended
+presence
 present
 preserve
 preserved
@@ -636,11 +654,13 @@ put
 python
 qemu
 qim
+ran
 raw
 read
 real
 rebuild
 rec
+recurse
 recursive
 recursively
 ref
@@ -693,6 +713,7 @@ scaffold
 scaffolding
 scan
 scanner
+scans
 schema
 scoped
 script
@@ -708,7 +729,9 @@ seeds
 select
 selection
 self
+sentinel
 sep
+separate
 separately
 serialized
 set
@@ -781,6 +804,7 @@ such
 suffices
 suffix
 superset
+support
 supported
 surface
 survive
@@ -832,7 +856,6 @@ tracks
 trailing
 tree
 trees
-trio
 true
 truly
 trusted
@@ -843,6 +866,7 @@ typos
 unchanged
 under
 underlay
+undocumented
 unexpected
 unicode
 unique
@@ -855,6 +879,7 @@ unresolved
 unsigned
 unspecified
 untouched
+unused
 update
 updated
 upstream
@@ -891,6 +916,7 @@ workflow
 workflows
 working
 works
+would
 wrap
 wrapper
 wrappers

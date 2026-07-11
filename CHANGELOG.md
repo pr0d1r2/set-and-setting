@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- B21: fix bats tests still asserting `nix-lefthook-statix` presence after
+  T69 removed all nix linter remotes from the nix fragment. Bumped `.nix`
+  file-size limit 81920 -> 90112 (`flake.nix` grew past the old limit).
+
 - T68 (#98, part of #93): checks->pinned formatters tier. Convert shfmt,
   trailing-whitespace, missing-final-newline, and editorconfig-checker
   from runtime lefthook `remotes:` git_urls to PINNED flake

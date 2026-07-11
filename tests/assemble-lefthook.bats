@@ -135,11 +135,12 @@ teardown() {
     bash "$SCRIPT"
     [ -f "$out/lefthook.yml" ]
     grep -q 'nix-lefthook-git-conflict-markers' "$out/lefthook.yml"
-    # #97: nixfmt is a pinned flake check now, not a remote; statix remains.
-    grep -q 'nix-lefthook-statix' "$out/lefthook.yml"
+    # #97: nixfmt is a pinned check; #99: statix/deadnix/nix-no-embedded-shell
+    # are pinned checks too -- no nix remotes remain.
+    run ! grep -q 'nix-lefthook-statix' "$out/lefthook.yml"
     run ! grep -q 'nix-lefthook-nixfmt' "$out/lefthook.yml"
     # #98: shfmt + the base formatter trio are pinned flake checks now, not
-    # remotes; git-conflict-markers / statix / yamllint remain.
+    # remotes; git-conflict-markers / yamllint remain.
     run ! grep -q 'nix-lefthook-shfmt' "$out/lefthook.yml"
     run ! grep -q 'nix-lefthook-trailing-whitespace' "$out/lefthook.yml"
     run ! grep -q 'nix-lefthook-missing-final-newline' "$out/lefthook.yml"
@@ -187,8 +188,9 @@ teardown() {
     export FRAGMENTS_DIR
     FRAGMENTS="base nix ascii" bash "$SCRIPT"
     grep -q 'nix-lefthook-git-conflict-markers' "$out/lefthook.yml"
-    # #97: nixfmt moved to a pinned check; statix still comes from nix fragment.
-    grep -q 'nix-lefthook-statix' "$out/lefthook.yml"
+    # #97: nixfmt is a pinned check; #99: statix/deadnix/nix-no-embedded-shell
+    # are pinned checks too -- no nix remotes remain.
+    run ! grep -q 'nix-lefthook-statix' "$out/lefthook.yml"
     run ! grep -q 'nix-lefthook-nixfmt' "$out/lefthook.yml"
     # #98: base formatter trio moved to pinned checks; git-conflict-markers
     # remains from base.

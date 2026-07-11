@@ -1,5 +1,6 @@
-# #98: trailing-whitespace, missing-final-newline, editorconfig-checker, and
-# shfmt are delivered as PINNED flake `checks.<sys>.<tool>` (part of #93's
+# #98/#99: trailing-whitespace, missing-final-newline, editorconfig-checker,
+# shfmt (#98), statix, deadnix, nix-no-embedded-shell, nix-flake-check (#99)
+# are delivered as PINNED flake `checks.<sys>.<tool>` (part of #93's
 # strangler-fig decomposition), not runtime `remotes:` git_urls.
 ---
 remotes:
@@ -39,18 +40,6 @@ remotes:
     ref: main
     configs:
       - lefthook-remote.yml
-  - git_url: https://github.com/pr0d1r2/nix-lefthook-statix
-    ref: main
-    configs:
-      - lefthook-remote.yml
-  - git_url: https://github.com/pr0d1r2/nix-lefthook-deadnix
-    ref: main
-    configs:
-      - lefthook-remote.yml
-  - git_url: https://github.com/pr0d1r2/nix-lefthook-nix-no-embedded-shell
-    ref: main
-    configs:
-      - lefthook-remote.yml
   - git_url: https://github.com/pr0d1r2/nix-lefthook-shellcheck
     ref: main
     configs:
@@ -64,10 +53,6 @@ remotes:
     configs:
       - lefthook-remote.yml
   - git_url: https://github.com/pr0d1r2/nix-lefthook-nix-flake-eval
-    ref: main
-    configs:
-      - lefthook-remote.yml
-  - git_url: https://github.com/pr0d1r2/nix-lefthook-nix-flake-check
     ref: main
     configs:
       - lefthook-remote.yml
