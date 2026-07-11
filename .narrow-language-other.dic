@@ -13,6 +13,7 @@ acc
 acceleration
 accept
 acceptable
+acceptance
 accepted
 accepts
 access
@@ -604,6 +605,8 @@ conventional
 conventions
 convergent
 conversation
+convert
+converting
 conveying
 cookies
 cooling
@@ -970,6 +973,7 @@ esac
 escape
 especially
 essential
+establishes
 etc
 euo
 eval
@@ -979,6 +983,7 @@ evans
 even
 event
 events
+ever
 every
 everyone
 everything
@@ -1000,6 +1005,7 @@ exclude
 excluded
 excludes
 exdir
+exe
 exec
 executable
 execute
@@ -1188,6 +1194,7 @@ fragment
 fragments
 frame
 framed
+framework
 framing
 free
 freeze
@@ -1338,8 +1345,10 @@ healthcheck
 heavy
 help
 helper
+helpers
 here
 hermetic
+hermetically
 hero
 hidden
 hide
@@ -1586,6 +1595,7 @@ late
 latent
 later
 latest
+latter
 launch
 layer
 layout
@@ -1648,6 +1658,7 @@ linted
 linter
 linters
 linting
+lints
 linux
 list
 listed
@@ -1703,6 +1714,7 @@ make
 makefile
 makes
 making
+malformed
 malicious
 managed
 management
@@ -1788,6 +1800,7 @@ mirroring
 mirrors
 misassigns
 misc
+misindented
 mismatch
 mismatches
 misparsed
@@ -1833,6 +1846,7 @@ multi
 multiple
 must
 mutable
+mutating
 mutations
 mypackage
 naive
@@ -1855,6 +1869,7 @@ navigable
 nconcept
 near
 necessary
+necho
 need
 needed
 needing
@@ -1876,6 +1891,8 @@ newlines
 newrev
 next
 nextfile
+nfi
+nindent
 nix
 nixfmt
 nixos
@@ -1911,6 +1928,7 @@ nproc
 nrule
 nsecurity
 ntest
+ntrailing
 null
 number
 numbered
@@ -2217,6 +2235,7 @@ prompt
 prompts
 prone
 proof
+proofs
 propagate
 propagates
 propagation
@@ -2396,6 +2415,7 @@ rename
 renamed
 renames
 renderer
+repeat
 replace
 replaced
 replaces
@@ -2427,6 +2447,7 @@ resolve
 resolved
 resolver
 resolves
+resolving
 resource
 resources
 rest
@@ -2549,6 +2570,7 @@ seed
 seeds
 seems
 sees
+select
 selectable
 selected
 selection
@@ -2877,6 +2899,7 @@ tests
 text
 tez
 than
+thard
 that
 the
 their
@@ -2968,6 +2991,7 @@ triggered
 triggers
 trim
 trimmed
+trio
 trip
 trips
 true

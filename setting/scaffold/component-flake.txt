@@ -287,6 +287,25 @@
           inherit pkgs;
           src = ./.;
         };
+        # #98: the formatter tier as PINNED flake checks (not runtime lefthook
+        # remotes). Each tracks its upstream tool rev via
+        # `nix flake update set-and-setting`.
+        shfmt = set-and-setting.lib.mkShfmtCheck {
+          inherit pkgs;
+          src = ./.;
+        };
+        trailing-whitespace = set-and-setting.lib.mkTrailingWhitespaceCheck {
+          inherit pkgs;
+          src = ./.;
+        };
+        missing-final-newline = set-and-setting.lib.mkMissingFinalNewlineCheck {
+          inherit pkgs;
+          src = ./.;
+        };
+        editorconfig-checker = set-and-setting.lib.mkEditorconfigCheckerCheck {
+          inherit pkgs;
+          src = ./.;
+        };
         default = pkgs.runCommand "checks" { } "touch $out";
       });
     };

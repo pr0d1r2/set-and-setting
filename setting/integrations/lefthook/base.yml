@@ -1,14 +1,12 @@
+# trailing-whitespace, missing-final-newline, and editorconfig-checker are
+# intentionally absent here: they are delivered as PINNED flake
+# `checks.<sys>.<tool>` (set-and-setting.lib.mk{TrailingWhitespace,
+# MissingFinalNewline,EditorconfigChecker}Check / #98), replacing their runtime
+# `remotes:` git_urls with offline-runnable, cache-warm checks. The remaining
+# base linters follow per #93's strangler-fig decomposition.
 ---
 remotes:
-  - git_url: https://github.com/pr0d1r2/nix-lefthook-trailing-whitespace
-    ref: main
-    configs:
-      - lefthook-remote.yml
   - git_url: https://github.com/pr0d1r2/nix-lefthook-git-conflict-markers
-    ref: main
-    configs:
-      - lefthook-remote.yml
-  - git_url: https://github.com/pr0d1r2/nix-lefthook-missing-final-newline
     ref: main
     configs:
       - lefthook-remote.yml
@@ -25,10 +23,6 @@ remotes:
     configs:
       - lefthook-remote.yml
   - git_url: https://github.com/pr0d1r2/nix-lefthook-typos
-    ref: main
-    configs:
-      - lefthook-remote.yml
-  - git_url: https://github.com/pr0d1r2/nix-lefthook-editorconfig-checker
     ref: main
     configs:
       - lefthook-remote.yml

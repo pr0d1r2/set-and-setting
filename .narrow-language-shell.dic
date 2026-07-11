@@ -175,6 +175,7 @@ channel
 channels
 check
 checked
+checker
 checks
 chmod
 chore
@@ -228,6 +229,7 @@ configures
 configuring
 confirm
 confirmed
+conflict
 considers
 constructed
 constructs
@@ -464,6 +466,7 @@ for
 force
 form
 format
+formatter
 formatting
 formed
 forms
@@ -677,6 +680,7 @@ mark
 markdown
 markdownlint
 marker
+markers
 marks
 match
 matched
@@ -885,6 +889,7 @@ provided
 pruned
 prunes
 pull
+pulls
 punctuation
 pure
 purpose
@@ -933,6 +938,7 @@ reliably
 relname
 relpath
 relpaths
+remain
 remaining
 remains
 remote
@@ -1186,6 +1192,7 @@ trees
 trigger
 trim
 trimmed
+trio
 true
 truly
 trusting

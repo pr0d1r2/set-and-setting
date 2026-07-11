@@ -109,17 +109,24 @@ and dogfoods both.
   exposed as `lib.mkDevShells`.
 - I.mkLefthookCheck: `lib/mk-lefthook-check.nix` -- the checks->pinned
   framework (#97, part of #93). Wraps a PINNED lefthook-* wrapper
-  derivation into a hermetic flake `check`: runs the wrapper `--check`
+  derivation into a hermetic flake `check`: runs the wrapper `checkFlag`
   over the repo's `suffices`-filtered files, resolving lint logic via a
   pinned flake input (the wrapper is built from `nix-lefthook-<tool>-src`),
   NOT a runtime `remotes:` git_url. Strangler-fig seam -- each tier
   replaces one lefthook `remotes:` entry with `checks.<name>`; the pinned
   closure is offline-runnable on a warm cache. Args: `pkgs`, `wrapper`,
-  `src`, `name`, `suffices`. Exposed as `lib.mkLefthookCheck`.
+  `src`, `name`, `suffices ? null` (`null` = every file, for glob-less
+  whole-tree tools), `checkFlag ? "--check"` (`""` for check-only wrappers
+  with no such flag). Exposed as `lib.mkLefthookCheck`.
   `lib.mkNixfmtCheck { pkgs, src, name ? "nixfmt" }` is the nixfmt
   convenience -- closes over set-and-setting's own pinned
   `nix-lefthook-nixfmt-src` so a consumer's `nixfmt` check tracks the
-  upstream nixfmt rev via `nix flake update set-and-setting` (C7).
+  upstream nixfmt rev via `nix flake update set-and-setting` (C7). #98 adds
+  the formatter tier's parallel convenience helpers `lib.mkShfmtCheck`
+  (`*.sh`, `--check`), `lib.mkTrailingWhitespaceCheck`,
+  `lib.mkMissingFinalNewlineCheck`, `lib.mkEditorconfigCheckerCheck` (the
+  latter three glob-less whole-tree, no check flag), each closing over its
+  own pinned `nix-lefthook-<tool>-src`.
 - I.sync-set: CLI script in mkSet output. Copies skills+concepts+set.md to consumer repo target dir.
 - I.sync-setting: CLI script in mkSetting output. Copies dotfiles to consumer repo root.
 - I.sets: Attrset of raw paths to each skill category dir.
@@ -368,10 +375,16 @@ and dogfoods both.
   that entry, one tier at a time, CI green at every step (a partial is
   never red). nixfmt is the pattern proof (#97): `checks.<sys>.nixfmt` +
   the removed `nix-lefthook-nixfmt` remote; `nix flake check` runs it
-  hermetically and a nixfmt violation fails it. Remaining tools stay on
-  `remotes:` until their tier lands; converting a tier = add
-  `checks.<tool>` + drop its `remotes:` entry (fragment + tracked
-  `lefthook.yml`) + point consumers' scaffold at the same pinned check.
+  hermetically and a nixfmt violation fails it. #98 lands the formatter
+  tier the same way -- `checks.<sys>.{shfmt,trailing-whitespace,missing-
+  final-newline,editorconfig-checker}` + their removed `remotes:` entries
+  (shfmt from the shell fragment, the trio from base); each has a
+  `<tool>-catches-violation` proof. Glob-less whole-tree tools lint every
+  file (`suffices = null`) matching their glob-less `remotes:` entry.
+  Remaining tools stay on `remotes:` until their tier lands; converting a
+  tier = add `checks.<tool>` + drop its `remotes:` entry (fragment +
+  tracked `lefthook.yml`) + point consumers' scaffold at the same pinned
+  check.
 
 ## §T Tasks
 
@@ -445,6 +458,7 @@ and dogfoods both.
 | T57 | x | skill size budget lint -- nix check + lefthook hook enforcing per-file size limit on individual skill/draft markdown. Single `wc -c` / `find -size` check. Independent of format or structure checks. Bats coverage | V6,V7,T14 |
 | T58 | ~ | `@` ref resolution lint -- nix check validating all `@`-references in `set/` files resolve to existing source paths; also enforces V12 -- SUPERSEDED by T63-T66 (a plain grep flags real non-ref `@` tokens -- git SHAs, email addresses, prose `@main`/`@include` -- and relative refs, so it never goes green; granularized into matcher -> resolution -> V12 -> hook) | V12,T14,T63,T64,T65,T66 |
 | T67 | x | checks->pinned framework + nixfmt proof (#97, part of #93) -- `lib/mk-lefthook-check.nix` wraps a PINNED lefthook-* wrapper into a hermetic flake `check`; `lib.mkNixfmtCheck` closes over the pinned `nix-lefthook-nixfmt-src`; `checks.<sys>.nixfmt` replaces the `nix-lefthook-nixfmt` lefthook `remotes:` entry (nix fragment + tracked `lefthook.yml`); scaffolded consumers get the same pinned check; `nixfmt-catches-violation` proves a violation fails. Establishes the strangler-fig pattern for the remaining #93 tiers | I.mkLefthookCheck,V41,C6,C7 |
+| T68 | x | checks->pinned formatters tier (#98, part of #93) -- convert shfmt, trailing-whitespace, missing-final-newline, editorconfig-checker to pinned `checks.<sys>.<tool>` via new `lib.mk{Shfmt,TrailingWhitespace,MissingFinalNewline,EditorconfigChecker}Check`; extend `mk-lefthook-check.nix` with `suffices ? null` (whole-tree) + `checkFlag` args; drop the four `remotes:` entries (shell + base fragments, tracked `lefthook.yml`); scaffold wires the same pinned checks; per-tool `-catches-violation` proofs. CI green (a partial is never red, C38) | I.mkLefthookCheck,V41,C6,C7,T67 |
 
 ## §B Bugs
 
