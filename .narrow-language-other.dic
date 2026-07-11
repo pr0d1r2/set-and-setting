@@ -161,6 +161,7 @@ assembled
 assembles
 assembly
 assert
+asserted
 assertion
 assertions
 asserts
@@ -405,6 +406,7 @@ cheat
 check
 checked
 checker
+checkers
 checklist
 checkout
 checks
@@ -679,6 +681,7 @@ database
 date
 dates
 ddac
+dead
 deadnix
 debt
 debugging
@@ -978,6 +981,7 @@ etc
 euo
 eval
 evaluate
+evaluates
 evaluation
 evans
 even
@@ -1343,6 +1347,7 @@ heal
 health
 healthcheck
 heavy
+hello
 help
 helper
 helpers
@@ -1785,6 +1790,7 @@ method
 micro
 microcode
 mid
+migration
 mildest
 mimic
 mindset
@@ -1894,6 +1900,7 @@ nextfile
 nfi
 nindent
 nix
+nixeof
 nixfmt
 nixos
 nixpkgs
@@ -2171,6 +2178,7 @@ prepush
 prereq
 prerequisite
 prerequisites
+presence
 present
 presenting
 preservation
@@ -2586,6 +2594,7 @@ sensible
 sensitive
 sentence
 sentences
+sentinel
 sep
 separate
 separated
@@ -3036,6 +3045,7 @@ underlays
 underlying
 understanding
 undo
+undocumented
 unexpected
 unfamiliar
 unfiltered
@@ -3067,6 +3077,7 @@ until
 untouched
 untracked
 untrusted
+unused
 unwelcome
 update
 updated

@@ -137,8 +137,9 @@ teardown() {
     printf '' >"$TARGET/test.nix"
     git -C "$TARGET" add test.nix
     bash "$SCRIPT"
-    # #97: nixfmt is a pinned check now; statix remains from the nix fragment.
-    grep -q 'nix-lefthook-statix' "$TARGET/lefthook.yml"
+    # #97: nixfmt is a pinned check; #99: statix/deadnix/nix-no-embedded-shell
+    # are pinned checks too -- no nix remotes remain.
+    run ! grep -q 'nix-lefthook-statix' "$TARGET/lefthook.yml"
     run ! grep -q 'nix-lefthook-nixfmt' "$TARGET/lefthook.yml"
     # #98: shfmt + the base formatter trio are pinned checks now;
     # git-conflict-markers remains from base.
@@ -158,8 +159,9 @@ teardown() {
 
 @test "content-aware: empty repo gets all fragments" {
     bash "$SCRIPT"
-    # #97: nixfmt is a pinned check now; statix remains from the nix fragment.
-    grep -q 'nix-lefthook-statix' "$TARGET/lefthook.yml"
+    # #97: nixfmt is a pinned check; #99: statix/deadnix/nix-no-embedded-shell
+    # are pinned checks too -- no nix remotes remain.
+    run ! grep -q 'nix-lefthook-statix' "$TARGET/lefthook.yml"
     run ! grep -q 'nix-lefthook-nixfmt' "$TARGET/lefthook.yml"
     # #98: shfmt + the base formatter trio are pinned checks now, even for a
     # bare repo that pulls all fragments; git-conflict-markers remains.

@@ -136,6 +136,8 @@ assembled
 assembles
 assembly
 assert
+asserted
+asserting
 assertion
 assertions
 asserts
@@ -1024,6 +1026,7 @@ flakes
 flaky
 flat
 fleet
+flipped
 flips
 flow
 flows
@@ -1598,6 +1601,7 @@ method
 micro
 microcode
 mid
+migration
 mildest
 mindset
 minimal
@@ -1926,6 +1930,7 @@ prepended
 prereq
 prerequisite
 prerequisites
+presence
 present
 presenting
 preservation
