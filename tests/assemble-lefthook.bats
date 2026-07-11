@@ -134,19 +134,19 @@ teardown() {
     export FRAGMENTS_DIR
     bash "$SCRIPT"
     [ -f "$out/lefthook.yml" ]
-    grep -q 'nix-lefthook-git-conflict-markers' "$out/lefthook.yml"
-    # #97: nixfmt is a pinned check; #99: statix/deadnix/nix-no-embedded-shell
-    # are pinned checks too -- no nix remotes remain.
+    # #97-#101: all base linters are pinned flake checks now -- no base
+    # remotes remain. markdown/yaml remotes still present.
+    run ! grep -q 'nix-lefthook-git-conflict-markers' "$out/lefthook.yml"
+    run ! grep -q 'nix-lefthook-gitleaks' "$out/lefthook.yml"
+    run ! grep -q 'nix-lefthook-git-no-local-paths' "$out/lefthook.yml"
+    run ! grep -q 'nix-lefthook-execute-permissions' "$out/lefthook.yml"
+    run ! grep -q 'nix-lefthook-file-size-check' "$out/lefthook.yml"
     run ! grep -q 'nix-lefthook-statix' "$out/lefthook.yml"
     run ! grep -q 'nix-lefthook-nixfmt' "$out/lefthook.yml"
-    # #98: shfmt + the base formatter trio are pinned flake checks now, not
-    # remotes; git-conflict-markers / yamllint remain.
     run ! grep -q 'nix-lefthook-shfmt' "$out/lefthook.yml"
     run ! grep -q 'nix-lefthook-trailing-whitespace' "$out/lefthook.yml"
     run ! grep -q 'nix-lefthook-missing-final-newline' "$out/lefthook.yml"
     run ! grep -q 'nix-lefthook-editorconfig-checker' "$out/lefthook.yml"
-    # #100: shellcheck, no-shell-functions, ascii-only, typos are pinned
-    # checks now -- no shell/content remotes remain.
     run ! grep -q 'nix-lefthook-shellcheck' "$out/lefthook.yml"
     run ! grep -q 'nix-lefthook-no-shell-functions' "$out/lefthook.yml"
     run ! grep -q 'nix-lefthook-ascii-only' "$out/lefthook.yml"
@@ -192,17 +192,18 @@ teardown() {
     FRAGMENTS_DIR="$real_dir"
     export FRAGMENTS_DIR
     FRAGMENTS="base nix ascii" bash "$SCRIPT"
-    grep -q 'nix-lefthook-git-conflict-markers' "$out/lefthook.yml"
-    # #97: nixfmt is a pinned check; #99: statix/deadnix/nix-no-embedded-shell
-    # are pinned checks too -- no nix remotes remain.
+    # #97-#101: all base + nix + shell + ascii linters are pinned checks --
+    # no remotes from those fragments remain.
+    run ! grep -q 'nix-lefthook-git-conflict-markers' "$out/lefthook.yml"
+    run ! grep -q 'nix-lefthook-gitleaks' "$out/lefthook.yml"
+    run ! grep -q 'nix-lefthook-git-no-local-paths' "$out/lefthook.yml"
+    run ! grep -q 'nix-lefthook-execute-permissions' "$out/lefthook.yml"
+    run ! grep -q 'nix-lefthook-file-size-check' "$out/lefthook.yml"
     run ! grep -q 'nix-lefthook-statix' "$out/lefthook.yml"
     run ! grep -q 'nix-lefthook-nixfmt' "$out/lefthook.yml"
-    # #98: base formatter trio moved to pinned checks; git-conflict-markers
-    # remains from base.
     run ! grep -q 'nix-lefthook-trailing-whitespace' "$out/lefthook.yml"
     run ! grep -q 'nix-lefthook-missing-final-newline' "$out/lefthook.yml"
     run ! grep -q 'nix-lefthook-editorconfig-checker' "$out/lefthook.yml"
-    # #100: shellcheck, no-shell-functions, ascii-only, typos are pinned.
     run ! grep -q 'nix-lefthook-shellcheck' "$out/lefthook.yml"
     run ! grep -q 'nix-lefthook-no-shell-functions' "$out/lefthook.yml"
     run ! grep -q 'nix-lefthook-ascii-only' "$out/lefthook.yml"

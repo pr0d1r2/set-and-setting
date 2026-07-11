@@ -2,6 +2,24 @@
 
 ## Unreleased
 
+- T71 (#101, part of #93): checks->pinned git/security tier -- FINAL.
+  Convert gitleaks, git-conflict-markers, git-no-local-paths,
+  execute-permissions, and file-size-check from runtime lefthook
+  `remotes:` git_urls to PINNED flake `checks.<sys>.<tool>`. Added
+  convenience helpers `lib.mkGitleaksCheck`, `lib.mkGitConflictMarkersCheck`,
+  `lib.mkGitNoLocalPathsCheck` (custom derivation excluding flake.nix/
+  flake.lock), `lib.mkExecutePermissionsCheck`, and
+  `lib.mkFileSizeCheckCheck`, each closing over its own pinned
+  `nix-lefthook-<tool>-src`. Added `checks.<sys>.{gitleaks,
+  git-conflict-markers,git-no-local-paths,execute-permissions,
+  file-size-check}` plus a `<tool>-catches-violation` proof for each.
+  Dropped the five `remotes:` entries from the `base` fragment and the
+  tracked `lefthook.yml`. The scaffold (`component-flake.txt`) now wires
+  the same pinned checks. Updated bats tests and compose-scaffold check
+  to assert all 18 migrated tools are pinned checks, not remotes. This
+  completes the #93 strangler-fig migration: all lefthook lint tools are
+  now hermetic pinned flake checks (V41).
+
 - T70 (#100, part of #93): checks->pinned shell/content tier. Convert
   shellcheck, no-shell-functions, ascii-only, and typos from runtime
   lefthook `remotes:` git_urls to PINNED flake `checks.<sys>.<tool>`.

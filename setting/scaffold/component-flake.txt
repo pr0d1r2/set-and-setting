@@ -337,6 +337,29 @@
           inherit pkgs;
           src = ./.;
         };
+        # #101: git/security linters as PINNED flake checks (not runtime
+        # lefthook remotes). Each tracks its upstream tool rev via
+        # `nix flake update set-and-setting`.
+        gitleaks = set-and-setting.lib.mkGitleaksCheck {
+          inherit pkgs;
+          src = ./.;
+        };
+        git-conflict-markers = set-and-setting.lib.mkGitConflictMarkersCheck {
+          inherit pkgs;
+          src = ./.;
+        };
+        git-no-local-paths = set-and-setting.lib.mkGitNoLocalPathsCheck {
+          inherit pkgs;
+          src = ./.;
+        };
+        execute-permissions = set-and-setting.lib.mkExecutePermissionsCheck {
+          inherit pkgs;
+          src = ./.;
+        };
+        file-size-check = set-and-setting.lib.mkFileSizeCheckCheck {
+          inherit pkgs;
+          src = ./.;
+        };
         default = pkgs.runCommand "checks" { } "touch $out";
       });
     };

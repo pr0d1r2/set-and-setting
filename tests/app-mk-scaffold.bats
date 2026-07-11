@@ -137,13 +137,15 @@ teardown() {
     printf '' >"$TARGET/test.nix"
     git -C "$TARGET" add test.nix
     bash "$SCRIPT"
-    # #97: nixfmt is a pinned check; #99: statix/deadnix/nix-no-embedded-shell
-    # are pinned checks too -- no nix remotes remain.
+    # #97-#101: all base + nix linters are pinned checks -- no base or nix
+    # remotes remain.
     run ! grep -q 'nix-lefthook-statix' "$TARGET/lefthook.yml"
     run ! grep -q 'nix-lefthook-nixfmt' "$TARGET/lefthook.yml"
-    # #98: shfmt + the base formatter trio are pinned checks now;
-    # git-conflict-markers remains from base.
-    grep -q 'nix-lefthook-git-conflict-markers' "$TARGET/lefthook.yml"
+    run ! grep -q 'nix-lefthook-git-conflict-markers' "$TARGET/lefthook.yml"
+    run ! grep -q 'nix-lefthook-gitleaks' "$TARGET/lefthook.yml"
+    run ! grep -q 'nix-lefthook-git-no-local-paths' "$TARGET/lefthook.yml"
+    run ! grep -q 'nix-lefthook-execute-permissions' "$TARGET/lefthook.yml"
+    run ! grep -q 'nix-lefthook-file-size-check' "$TARGET/lefthook.yml"
     run ! grep -q 'nix-lefthook-trailing-whitespace' "$TARGET/lefthook.yml"
     run ! grep -q 'nix-lefthook-missing-final-newline' "$TARGET/lefthook.yml"
     run ! grep -q 'nix-lefthook-editorconfig-checker' "$TARGET/lefthook.yml"
@@ -159,19 +161,19 @@ teardown() {
 
 @test "content-aware: empty repo gets all fragments" {
     bash "$SCRIPT"
-    # #97: nixfmt is a pinned check; #99: statix/deadnix/nix-no-embedded-shell
-    # are pinned checks too -- no nix remotes remain.
+    # #97-#101: all base + nix + shell + ascii linters are pinned checks --
+    # no base/nix/shell/ascii remotes remain, even for a bare repo.
     run ! grep -q 'nix-lefthook-statix' "$TARGET/lefthook.yml"
     run ! grep -q 'nix-lefthook-nixfmt' "$TARGET/lefthook.yml"
-    # #98: shfmt + the base formatter trio are pinned checks now, even for a
-    # bare repo that pulls all fragments; git-conflict-markers remains.
-    grep -q 'nix-lefthook-git-conflict-markers' "$TARGET/lefthook.yml"
+    run ! grep -q 'nix-lefthook-git-conflict-markers' "$TARGET/lefthook.yml"
+    run ! grep -q 'nix-lefthook-gitleaks' "$TARGET/lefthook.yml"
+    run ! grep -q 'nix-lefthook-git-no-local-paths' "$TARGET/lefthook.yml"
+    run ! grep -q 'nix-lefthook-execute-permissions' "$TARGET/lefthook.yml"
+    run ! grep -q 'nix-lefthook-file-size-check' "$TARGET/lefthook.yml"
     run ! grep -q 'nix-lefthook-shfmt' "$TARGET/lefthook.yml"
     run ! grep -q 'nix-lefthook-trailing-whitespace' "$TARGET/lefthook.yml"
     run ! grep -q 'nix-lefthook-missing-final-newline' "$TARGET/lefthook.yml"
     run ! grep -q 'nix-lefthook-editorconfig-checker' "$TARGET/lefthook.yml"
-    # #100: shellcheck, no-shell-functions, ascii-only, typos are pinned
-    # checks now -- no shell/content remotes remain, even for a bare repo.
     run ! grep -q 'nix-lefthook-shellcheck' "$TARGET/lefthook.yml"
     run ! grep -q 'nix-lefthook-no-shell-functions' "$TARGET/lefthook.yml"
     run ! grep -q 'nix-lefthook-ascii-only' "$TARGET/lefthook.yml"
