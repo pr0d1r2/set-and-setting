@@ -194,6 +194,28 @@
           runtimeInputs = [ pkgs.nixfmt ];
         };
 
+      # #98 (part of #93): the formatter tier's pinned wrappers, each built
+      # from its own pinned flake input. Shared, like nixfmtWrapperFor, by the
+      # devShell wrapper list and the hermetic `checks.<sys>.<tool>` derivation
+      # so both resolve the exact same pinned lint logic (no runtime git_url).
+      shfmtWrapperFor =
+        pkgs:
+        wrap pkgs "lefthook-shfmt" nix-lefthook-shfmt-src {
+          runtimeInputs = [ pkgs.shfmt ];
+        };
+      trailingWhitespaceWrapperFor =
+        pkgs:
+        wrap pkgs "lefthook-trailing-whitespace" nix-lefthook-trailing-whitespace-src {
+          runtimeInputs = [ pkgs.gnugrep ];
+        };
+      missingFinalNewlineWrapperFor =
+        pkgs: wrap pkgs "lefthook-missing-final-newline" nix-lefthook-missing-final-newline-src { };
+      editorconfigCheckerWrapperFor =
+        pkgs:
+        wrap pkgs "lefthook-editorconfig-checker" nix-lefthook-editorconfig-checker-src {
+          runtimeInputs = [ pkgs.editorconfig-checker ];
+        };
+
       lefthookWrappersFor =
         pkgs:
         let
@@ -215,9 +237,7 @@
           (w "lefthook-deadnix" nix-lefthook-deadnix-src {
             runtimeInputs = [ pkgs.deadnix ];
           })
-          (w "lefthook-editorconfig-checker" nix-lefthook-editorconfig-checker-src {
-            runtimeInputs = [ pkgs.editorconfig-checker ];
-          })
+          (editorconfigCheckerWrapperFor pkgs)
           (w "lefthook-execute-permissions" nix-lefthook-execute-permissions-src {
             runtimeInputs = [ pkgs.gnugrep ];
           })
@@ -259,7 +279,7 @@
           (w "lefthook-markdownlint-agentic" nix-lefthook-markdownlint-agentic-src {
             runtimeInputs = [ pkgs.markdownlint-cli ];
           })
-          (w "lefthook-missing-final-newline" nix-lefthook-missing-final-newline-src { })
+          (missingFinalNewlineWrapperFor pkgs)
           (w "lefthook-narrow-language" nix-lefthook-narrow-language-src {
             runtimeInputs = [
               pkgs.coreutils
@@ -309,16 +329,12 @@
           (w "lefthook-shellcheck" nix-lefthook-shellcheck-src {
             runtimeInputs = [ pkgs.shellcheck ];
           })
-          (w "lefthook-shfmt" nix-lefthook-shfmt-src {
-            runtimeInputs = [ pkgs.shfmt ];
-          })
+          (shfmtWrapperFor pkgs)
           (nixfmtWrapperFor pkgs)
           (w "lefthook-statix" nix-lefthook-statix-src {
             runtimeInputs = [ pkgs.statix ];
           })
-          (w "lefthook-trailing-whitespace" nix-lefthook-trailing-whitespace-src {
-            runtimeInputs = [ pkgs.gnugrep ];
-          })
+          (trailingWhitespaceWrapperFor pkgs)
           (w "lefthook-unicode-lint" nix-lefthook-unicode-lint-src {
             runtimeInputs = [
               pkgs.gnugrep
@@ -414,6 +430,59 @@
             wrapper = nixfmtWrapperFor pkgs;
             suffices = [ ".nix" ];
           };
+
+        # #98 (part of #93): the formatter tier's convenience helpers, each
+        # closing over set-and-setting's OWN pinned wrapper input (like
+        # mkNixfmtCheck). A consumer's check tracks the upstream tool rev via
+        # `nix flake update set-and-setting` (C7). shfmt gates `*.sh` in
+        # `--check` mode; the remaining three are glob-less whole-tree tools
+        # (suffices = null, no check flag -- their only mode is read-only),
+        # mirroring their glob-less lefthook `remotes:` entries.
+        # Args: pkgs, src (repo root to lint), name ? "<tool>".
+        mkShfmtCheck =
+          {
+            pkgs,
+            src,
+            name ? "shfmt",
+          }:
+          import ./lib/mk-lefthook-check.nix {
+            inherit pkgs src name;
+            wrapper = shfmtWrapperFor pkgs;
+            suffices = [ ".sh" ];
+          };
+        mkTrailingWhitespaceCheck =
+          {
+            pkgs,
+            src,
+            name ? "trailing-whitespace",
+          }:
+          import ./lib/mk-lefthook-check.nix {
+            inherit pkgs src name;
+            wrapper = trailingWhitespaceWrapperFor pkgs;
+            checkFlag = "";
+          };
+        mkMissingFinalNewlineCheck =
+          {
+            pkgs,
+            src,
+            name ? "missing-final-newline",
+          }:
+          import ./lib/mk-lefthook-check.nix {
+            inherit pkgs src name;
+            wrapper = missingFinalNewlineWrapperFor pkgs;
+            checkFlag = "";
+          };
+        mkEditorconfigCheckerCheck =
+          {
+            pkgs,
+            src,
+            name ? "editorconfig-checker",
+          }:
+          import ./lib/mk-lefthook-check.nix {
+            inherit pkgs src name;
+            wrapper = editorconfigCheckerWrapperFor pkgs;
+            checkFlag = "";
+          };
       };
 
       packages = forAllSystems (pkgs: {
@@ -468,6 +537,82 @@
               echo "FAIL: nixfmt --check accepted a malformed file"; exit 1
             fi
             echo "PASS: pinned nixfmt rejects a violation"
+            touch $out
+          '';
+
+        # #98 (part of #93): the formatter tier as PINNED hermetic checks,
+        # each replacing its runtime lefthook `remotes:` git_url. shfmt gates
+        # `*.sh`; trailing-whitespace / missing-final-newline / editorconfig-
+        # checker are glob-less whole-tree tools (every tracked file), matching
+        # their glob-less `remotes:` entries. All offline-runnable on a warm
+        # cache; a violation fails `nix flake check`.
+        shfmt = self.lib.mkShfmtCheck {
+          inherit pkgs;
+          src = ./.;
+        };
+        trailing-whitespace = self.lib.mkTrailingWhitespaceCheck {
+          inherit pkgs;
+          src = ./.;
+        };
+        missing-final-newline = self.lib.mkMissingFinalNewlineCheck {
+          inherit pkgs;
+          src = ./.;
+        };
+        editorconfig-checker = self.lib.mkEditorconfigCheckerCheck {
+          inherit pkgs;
+          src = ./.;
+        };
+
+        # #98: prove each pinned formatter REJECTS a violation (acceptance:
+        # a violation fails the check). Runs the same pinned wrapper path the
+        # framework uses over a known-bad fixture and asserts non-zero.
+        shfmt-catches-violation =
+          let
+            wrapper = shfmtWrapperFor pkgs;
+          in
+          pkgs.runCommand "shfmt-catches-violation" { } ''
+            printf 'if true; then\necho bad\nfi\n' > bad.sh
+            if ${pkgs.lib.getExe wrapper} --check bad.sh; then
+              echo "FAIL: shfmt --check accepted a misindented file"; exit 1
+            fi
+            echo "PASS: pinned shfmt rejects a violation"
+            touch $out
+          '';
+        trailing-whitespace-catches-violation =
+          let
+            wrapper = trailingWhitespaceWrapperFor pkgs;
+          in
+          pkgs.runCommand "trailing-whitespace-catches-violation" { } ''
+            printf 'clean line\ntrailing   \n' > bad.txt
+            if ${pkgs.lib.getExe wrapper} bad.txt; then
+              echo "FAIL: accepted trailing whitespace"; exit 1
+            fi
+            echo "PASS: pinned trailing-whitespace rejects a violation"
+            touch $out
+          '';
+        missing-final-newline-catches-violation =
+          let
+            wrapper = missingFinalNewlineWrapperFor pkgs;
+          in
+          pkgs.runCommand "missing-final-newline-catches-violation" { } ''
+            printf 'no newline at end' > bad.txt
+            if ${pkgs.lib.getExe wrapper} bad.txt; then
+              echo "FAIL: accepted a missing final newline"; exit 1
+            fi
+            echo "PASS: pinned missing-final-newline rejects a violation"
+            touch $out
+          '';
+        editorconfig-checker-catches-violation =
+          let
+            wrapper = editorconfigCheckerWrapperFor pkgs;
+          in
+          pkgs.runCommand "editorconfig-checker-catches-violation" { } ''
+            printf '[*]\nindent_style = space\nindent_size = 2\n' > .editorconfig
+            printf 'ok:\n\thard tab indent\n' > bad.yml
+            if ${pkgs.lib.getExe wrapper} bad.yml; then
+              echo "FAIL: editorconfig-checker accepted a violation"; exit 1
+            fi
+            echo "PASS: pinned editorconfig-checker rejects a violation"
             touch $out
           '';
 
@@ -1232,13 +1377,20 @@
               echo "FAIL: scaffold still has ci devShell"; exit 1
             fi
 
+            # #97/#98: consumers stay whole -- the scaffold flake.nix wires the
+            # pinned formatter checks that replaced the dropped lefthook remotes.
+            for c in mkNixfmtCheck mkShfmtCheck mkTrailingWhitespaceCheck mkMissingFinalNewlineCheck mkEditorconfigCheckerCheck; do
+              grep -q "$c" "${scaffold}/flake.nix" \
+                || { echo "FAIL: scaffold flake.nix missing $c pinned check"; exit 1; }
+            done
+
             # T59/B17: scaffold ci.yml must specify devshell: "default"
             # (the CI action defaults to "ci" which no longer exists)
             grep -q 'devshell:.*"default"' "${scaffold}/.github/workflows/ci.yml" \
               || { echo "FAIL: ci.yml missing devshell: default (B17)"; exit 1; }
 
             # lefthook.yml has remotes from all fragments
-            grep -q 'nix-lefthook-trailing-whitespace' "${scaffold}/lefthook.yml" \
+            grep -q 'nix-lefthook-git-conflict-markers' "${scaffold}/lefthook.yml" \
               || { echo "FAIL: lefthook.yml missing base remote"; exit 1; }
             # #97: nixfmt is now a pinned check, not a remote; assert a
             # remaining nix remote still composes from the nix fragment.
@@ -1247,6 +1399,13 @@
             if grep -q 'nix-lefthook-nixfmt' "${scaffold}/lefthook.yml"; then
               echo "FAIL: lefthook.yml still has nixfmt remote (#97)"; exit 1
             fi
+            # #98: shfmt + the base formatter trio are pinned checks now, not
+            # remotes; none must survive in the assembled scaffold lefthook.yml.
+            for t in shfmt trailing-whitespace missing-final-newline editorconfig-checker; do
+              if grep -q "nix-lefthook-$t" "${scaffold}/lefthook.yml"; then
+                echo "FAIL: lefthook.yml still has $t remote (#98)"; exit 1
+              fi
+            done
             grep -q 'nix-lefthook-shellcheck' "${scaffold}/lefthook.yml" \
               || { echo "FAIL: lefthook.yml missing shell remote"; exit 1; }
             grep -q '^pre-commit:' "${scaffold}/lefthook.yml" \

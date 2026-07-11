@@ -2,6 +2,27 @@
 
 ## Unreleased
 
+- T68 (#98, part of #93): checks->pinned formatters tier. Convert shfmt,
+  trailing-whitespace, missing-final-newline, and editorconfig-checker
+  from runtime lefthook `remotes:` git_urls to PINNED flake
+  `checks.<sys>.<tool>`. Extended `lib/mk-lefthook-check.nix` with
+  `suffices ? null` (whole-tree tools that lint every file, matching a
+  glob-less `remotes:` entry) and `checkFlag ? "--check"` (`""` for
+  check-only wrappers with no such flag). Added convenience helpers
+  `lib.mkShfmtCheck` (`*.sh`, `--check`), `lib.mkTrailingWhitespaceCheck`,
+  `lib.mkMissingFinalNewlineCheck`, and `lib.mkEditorconfigCheckerCheck`,
+  each closing over its own pinned `nix-lefthook-<tool>-src`. Added
+  `checks.<sys>.{shfmt,trailing-whitespace,missing-final-newline,
+  editorconfig-checker}` plus a `<tool>-catches-violation` proof for
+  each. Dropped the four `remotes:` entries (shfmt from the `shell`
+  fragment; the trio from `base`) and from the tracked `lefthook.yml`;
+  the scaffold (`component-flake.txt`) now wires the same pinned checks
+  so consumers stay whole. Bumped `.nix` file-size limit 73728 -> 81920
+  and `.txt` 10240 -> 12288 (scaffold `component-flake.txt` grew with the
+  new pinned checks). Updated `compose-scaffold` + assemble/scaffold bats
+  to assert the four
+  tools are pinned checks, not remotes. CI green at every step (V41).
+
 - T67 (#97, part of #93): checks->pinned framework + nixfmt proof.
   New `lib/mk-lefthook-check.nix` (exposed as `lib.mkLefthookCheck`)
   wraps a PINNED lefthook-* wrapper derivation into a hermetic flake

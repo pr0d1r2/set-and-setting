@@ -140,7 +140,13 @@ teardown() {
     # #97: nixfmt is a pinned check now; statix remains from the nix fragment.
     grep -q 'nix-lefthook-statix' "$TARGET/lefthook.yml"
     run ! grep -q 'nix-lefthook-nixfmt' "$TARGET/lefthook.yml"
-    grep -q 'nix-lefthook-trailing-whitespace' "$TARGET/lefthook.yml"
+    # #98: shfmt + the base formatter trio are pinned checks now;
+    # git-conflict-markers remains from base.
+    grep -q 'nix-lefthook-git-conflict-markers' "$TARGET/lefthook.yml"
+    run ! grep -q 'nix-lefthook-trailing-whitespace' "$TARGET/lefthook.yml"
+    run ! grep -q 'nix-lefthook-missing-final-newline' "$TARGET/lefthook.yml"
+    run ! grep -q 'nix-lefthook-editorconfig-checker' "$TARGET/lefthook.yml"
+    run ! grep -q 'nix-lefthook-shfmt' "$TARGET/lefthook.yml"
 }
 
 @test "content-aware: nix-only repo excludes shell checks" {
@@ -155,6 +161,13 @@ teardown() {
     # #97: nixfmt is a pinned check now; statix remains from the nix fragment.
     grep -q 'nix-lefthook-statix' "$TARGET/lefthook.yml"
     run ! grep -q 'nix-lefthook-nixfmt' "$TARGET/lefthook.yml"
+    # #98: shfmt + the base formatter trio are pinned checks now, even for a
+    # bare repo that pulls all fragments; git-conflict-markers remains.
+    grep -q 'nix-lefthook-git-conflict-markers' "$TARGET/lefthook.yml"
+    run ! grep -q 'nix-lefthook-shfmt' "$TARGET/lefthook.yml"
+    run ! grep -q 'nix-lefthook-trailing-whitespace' "$TARGET/lefthook.yml"
+    run ! grep -q 'nix-lefthook-missing-final-newline' "$TARGET/lefthook.yml"
+    run ! grep -q 'nix-lefthook-editorconfig-checker' "$TARGET/lefthook.yml"
     grep -q 'nix-lefthook-shellcheck' "$TARGET/lefthook.yml"
     grep -q 'nix-lefthook-markdownlint' "$TARGET/lefthook.yml"
     grep -q 'nix-lefthook-yamllint' "$TARGET/lefthook.yml"
