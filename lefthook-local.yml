@@ -17,8 +17,6 @@ pre-commit:
       timeout: 300s
     markdownlint-agentic:
       timeout: 300s
-    shellcheck:
-      timeout: 300s
 
 pre-push:
   commands:

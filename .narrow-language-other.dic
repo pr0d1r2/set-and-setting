@@ -162,6 +162,7 @@ assembles
 assembly
 assert
 asserted
+asserting
 assertion
 assertions
 asserts
@@ -315,6 +316,7 @@ bridges
 briefly
 broad
 broken
+brown
 btwo
 budget
 bug
@@ -1193,6 +1195,7 @@ forwarding
 fought
 found
 four
+fox
 fpat
 fragment
 fragments
@@ -1210,6 +1213,7 @@ frontmatter
 frozen
 full
 fully
+func
 function
 functionalities
 functionality
@@ -1813,6 +1817,8 @@ misparsed
 miss
 missed
 missing
+misspelled
+misspelling
 mistake
 mistaken
 mistakes
@@ -2296,6 +2302,7 @@ qim
 quality
 query
 question
+quick
 quiet
 quite
 quota
@@ -3039,6 +3046,7 @@ uncomment
 unconditional
 unconditionally
 uncovered
+undefined
 under
 underlay
 underlays
@@ -3113,6 +3121,7 @@ value
 values
 vanish
 var
+variable
 variables
 variant
 variants

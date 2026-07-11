@@ -170,7 +170,12 @@ teardown() {
     run ! grep -q 'nix-lefthook-trailing-whitespace' "$TARGET/lefthook.yml"
     run ! grep -q 'nix-lefthook-missing-final-newline' "$TARGET/lefthook.yml"
     run ! grep -q 'nix-lefthook-editorconfig-checker' "$TARGET/lefthook.yml"
-    grep -q 'nix-lefthook-shellcheck' "$TARGET/lefthook.yml"
+    # #100: shellcheck, no-shell-functions, ascii-only, typos are pinned
+    # checks now -- no shell/content remotes remain, even for a bare repo.
+    run ! grep -q 'nix-lefthook-shellcheck' "$TARGET/lefthook.yml"
+    run ! grep -q 'nix-lefthook-no-shell-functions' "$TARGET/lefthook.yml"
+    run ! grep -q 'nix-lefthook-ascii-only' "$TARGET/lefthook.yml"
+    run ! grep -q 'nix-lefthook-typos' "$TARGET/lefthook.yml"
     grep -q 'nix-lefthook-markdownlint' "$TARGET/lefthook.yml"
     grep -q 'nix-lefthook-yamllint' "$TARGET/lefthook.yml"
 }

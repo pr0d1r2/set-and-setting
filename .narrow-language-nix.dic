@@ -82,6 +82,7 @@ boundary
 bounding
 branch
 broad
+brown
 build
 builds
 built
@@ -187,6 +188,7 @@ deep
 default
 defaults
 define
+definition
 delimiter
 dep
 dependency
@@ -216,6 +218,7 @@ disable
 dispatch
 documentation
 documents
+does
 domain
 domains
 don
@@ -333,6 +336,7 @@ force
 format
 formatter
 formatters
+fox
 fragment
 fragments
 framework
@@ -341,6 +345,7 @@ from
 frontmatter
 full
 fully
+func
 function
 functions
 gap
@@ -526,6 +531,8 @@ mirrors
 misassigns
 misindented
 missing
+misspelled
+misspelling
 mkdir
 mkscaffold
 mkset
@@ -654,6 +661,7 @@ put
 python
 qemu
 qim
+quick
 ran
 raw
 read
@@ -713,6 +721,7 @@ scaffold
 scaffolding
 scan
 scanner
+scanning
 scans
 schema
 scoped
@@ -864,6 +873,7 @@ type
 types
 typos
 unchanged
+undefined
 under
 underlay
 undocumented
@@ -874,6 +884,7 @@ unit
 universal
 unknown
 unless
+unquoted
 unrelated
 unresolved
 unsigned
@@ -894,6 +905,8 @@ usually
 valid
 validates
 value
+var
+variable
 verbatim
 via
 violation
@@ -912,6 +925,7 @@ wiring
 with
 within
 without
+word
 workflow
 workflows
 working

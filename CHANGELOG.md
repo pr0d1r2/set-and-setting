@@ -2,6 +2,22 @@
 
 ## Unreleased
 
+- T70 (#100, part of #93): checks->pinned shell/content tier. Convert
+  shellcheck, no-shell-functions, ascii-only, and typos from runtime
+  lefthook `remotes:` git_urls to PINNED flake `checks.<sys>.<tool>`.
+  Added convenience helpers `lib.mkShellcheckCheck` (`*.sh`),
+  `lib.mkNoShellFunctionsCheck` (`*.sh`),
+  `lib.mkAsciiOnlyCheck` (`*.{nix,yml,json}`), and `lib.mkTyposCheck`
+  (whole-tree), each closing over its own pinned `nix-lefthook-<tool>-src`.
+  Added `checks.<sys>.{shellcheck,no-shell-functions,ascii-only,typos}`
+  plus a `<tool>-catches-violation` proof for each. Dropped the four
+  `remotes:` entries (shellcheck and no-shell-functions from the `shell`
+  fragment; ascii-only from `ascii`; typos from `base`) and from the
+  tracked `lefthook.yml`; removed ascii-only commands (pinned check runs
+  on all matching files). The scaffold (`component-flake.txt`) now wires
+  the same pinned checks. Updated bats tests to assert the four tools are
+  pinned checks, not remotes. CI green at every step (V41).
+
 - B21: fix bats tests still asserting `nix-lefthook-statix` presence after
   T69 removed all nix linter remotes from the nix fragment. Bumped `.nix`
   file-size limit 81920 -> 90112 (`flake.nix` grew past the old limit).
