@@ -104,16 +104,17 @@ teardown() {
     run ! grep -q 'nix-lefthook-shellcheck' "$TARGET/lefthook.yml"
 }
 
-@test "content-aware: adding shell files adds shell checks on re-run" {
+@test "content-aware: adding shell files does not add pinned shell checks" {
     printf '' >"$TARGET/test.nix"
     git -C "$TARGET" add test.nix
     bash "$SCRIPT"
     run ! grep -q 'nix-lefthook-shellcheck' "$TARGET/lefthook.yml"
 
+    # #100: shellcheck is now a pinned flake check, not a lefthook remote.
     printf '#!/bin/bash\n' >"$TARGET/test.sh"
     git -C "$TARGET" add test.sh
     bash "$SCRIPT"
-    grep -q 'nix-lefthook-shellcheck' "$TARGET/lefthook.yml"
+    run ! grep -q 'nix-lefthook-shellcheck' "$TARGET/lefthook.yml"
 }
 
 @test "output message includes detected fragments" {

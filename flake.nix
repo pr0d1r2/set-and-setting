@@ -216,6 +216,29 @@
           runtimeInputs = [ pkgs.editorconfig-checker ];
         };
 
+      # #100 (part of #93): the shell/content tier's pinned wrappers, each
+      # built from its own pinned flake input. Shared, like nixfmtWrapperFor,
+      # by the devShell wrapper list and the hermetic `checks.<sys>.<tool>`
+      # derivation so both resolve the exact same pinned lint logic (no
+      # runtime git_url).
+      shellcheckWrapperFor =
+        pkgs:
+        wrap pkgs "lefthook-shellcheck" nix-lefthook-shellcheck-src {
+          runtimeInputs = [ pkgs.shellcheck ];
+        };
+      noShellFunctionsWrapperFor =
+        pkgs: wrap pkgs "lefthook-no-shell-functions" nix-lefthook-no-shell-functions-src { };
+      asciiOnlyWrapperFor =
+        pkgs:
+        wrap pkgs "lefthook-ascii-only" nix-lefthook-ascii-only-src {
+          runtimeInputs = [ pkgs.gnugrep ];
+        };
+      typosWrapperFor =
+        pkgs:
+        wrap pkgs "lefthook-typos" nix-lefthook-typos-src {
+          runtimeInputs = [ pkgs.typos ];
+        };
+
       # #99 (part of #93): the nix linters tier's pinned wrappers, each built
       # from its own pinned flake input. Shared, like nixfmtWrapperFor, by the
       # devShell wrapper list and the hermetic `checks.<sys>.<tool>` derivation
@@ -498,6 +521,67 @@
             checkFlag = "";
           };
 
+        # #100 (part of #93): the shell/content tier's convenience helpers,
+        # each closing over set-and-setting's OWN pinned wrapper input (like
+        # mkNixfmtCheck). A consumer's check tracks the upstream tool rev via
+        # `nix flake update set-and-setting` (C7). shellcheck and
+        # no-shell-functions gate `*.sh` files with no check flag (wrappers
+        # are read-only checkers). ascii-only gates `*.nix`, `*.yml`, `*.json`
+        # with no check flag. typos is a glob-less whole-tree tool
+        # (suffices = null, no check flag).
+        # Args: pkgs, src (repo root to lint), name ? "<tool>".
+        mkShellcheckCheck =
+          {
+            pkgs,
+            src,
+            name ? "shellcheck",
+          }:
+          import ./lib/mk-lefthook-check.nix {
+            inherit pkgs src name;
+            wrapper = shellcheckWrapperFor pkgs;
+            suffices = [ ".sh" ];
+            checkFlag = "";
+          };
+        mkNoShellFunctionsCheck =
+          {
+            pkgs,
+            src,
+            name ? "no-shell-functions",
+          }:
+          import ./lib/mk-lefthook-check.nix {
+            inherit pkgs src name;
+            wrapper = noShellFunctionsWrapperFor pkgs;
+            suffices = [ ".sh" ];
+            checkFlag = "";
+          };
+        mkAsciiOnlyCheck =
+          {
+            pkgs,
+            src,
+            name ? "ascii-only",
+          }:
+          import ./lib/mk-lefthook-check.nix {
+            inherit pkgs src name;
+            wrapper = asciiOnlyWrapperFor pkgs;
+            suffices = [
+              ".nix"
+              ".yml"
+              ".json"
+            ];
+            checkFlag = "";
+          };
+        mkTyposCheck =
+          {
+            pkgs,
+            src,
+            name ? "typos",
+          }:
+          import ./lib/mk-lefthook-check.nix {
+            inherit pkgs src name;
+            wrapper = typosWrapperFor pkgs;
+            checkFlag = "";
+          };
+
         # #99 (part of #93): the nix linters tier's convenience helpers, each
         # closing over set-and-setting's OWN pinned wrapper input (like
         # mkNixfmtCheck). A consumer's check tracks the upstream tool rev via
@@ -690,6 +774,87 @@
               echo "FAIL: editorconfig-checker accepted a violation"; exit 1
             fi
             echo "PASS: pinned editorconfig-checker rejects a violation"
+            touch $out
+          '';
+
+        # #100 (part of #93): the shell/content tier as PINNED hermetic checks,
+        # each replacing its runtime lefthook `remotes:` git_url. shellcheck
+        # and no-shell-functions gate `*.sh` files; ascii-only gates
+        # `*.{nix,yml,json}`; typos is a glob-less whole-tree tool (every
+        # file). All offline-runnable on a warm cache; a violation fails
+        # `nix flake check`.
+        shellcheck = self.lib.mkShellcheckCheck {
+          inherit pkgs;
+          src = ./.;
+        };
+        no-shell-functions = self.lib.mkNoShellFunctionsCheck {
+          inherit pkgs;
+          src = ./.;
+        };
+        ascii-only = self.lib.mkAsciiOnlyCheck {
+          inherit pkgs;
+          src = ./.;
+        };
+        typos = self.lib.mkTyposCheck {
+          inherit pkgs;
+          src = ./.;
+        };
+
+        # #100: prove each pinned shell/content check REJECTS a violation
+        # (acceptance: a violation fails the check). Runs the same pinned
+        # wrapper path the framework uses over a known-bad fixture and asserts
+        # non-zero.
+        shellcheck-catches-violation =
+          let
+            wrapper = shellcheckWrapperFor pkgs;
+          in
+          pkgs.runCommand "shellcheck-catches-violation" { } ''
+            printf '#!/bin/bash\necho $UNDEFINED_VAR\n' > bad.sh
+            if ${pkgs.lib.getExe wrapper} bad.sh; then
+              echo "FAIL: shellcheck accepted an unquoted variable"; exit 1
+            fi
+            echo "PASS: pinned shellcheck rejects a violation"
+            touch $out
+          '';
+        no-shell-functions-catches-violation =
+          let
+            wrapper = noShellFunctionsWrapperFor pkgs;
+          in
+          pkgs.runCommand "no-shell-functions-catches-violation" { } ''
+            printf '#!/bin/bash\nmy_func() { echo hi; }\n' > bad.sh
+            if ${pkgs.lib.getExe wrapper} bad.sh; then
+              echo "FAIL: no-shell-functions accepted a function definition"; exit 1
+            fi
+            echo "PASS: pinned no-shell-functions rejects a violation"
+            touch $out
+          '';
+        ascii-only-catches-violation =
+          let
+            wrapper = asciiOnlyWrapperFor pkgs;
+          in
+          pkgs.runCommand "ascii-only-catches-violation" { } ''
+            printf '{ key = "%b"; }\n' '\xc3\xa9' > bad.nix
+            if ${pkgs.lib.getExe wrapper} bad.nix; then
+              echo "FAIL: ascii-only accepted non-ASCII content"; exit 1
+            fi
+            echo "PASS: pinned ascii-only rejects a violation"
+            touch $out
+          '';
+        typos-catches-violation =
+          let
+            wrapper = typosWrapperFor pkgs;
+            # Build the misspelled word outside the nix source so typos
+            # scanning flake.nix does not flag this fixture.
+            fixture = pkgs.runCommand "typos-fixture" { } ''
+              printf 'The %b quick brown fox\n' '\x74\x65\x68' > $out
+            '';
+          in
+          pkgs.runCommand "typos-catches-violation" { } ''
+            cp ${fixture} bad.txt
+            if ${pkgs.lib.getExe wrapper} bad.txt; then
+              echo "FAIL: typos accepted a misspelling"; exit 1
+            fi
+            echo "PASS: pinned typos rejects a violation"
             touch $out
           '';
 
@@ -1527,9 +1692,9 @@
               echo "FAIL: scaffold still has ci devShell"; exit 1
             fi
 
-            # #97/#98/#99: consumers stay whole -- the scaffold flake.nix wires
-            # the pinned checks that replaced the dropped lefthook remotes.
-            for c in mkNixfmtCheck mkShfmtCheck mkTrailingWhitespaceCheck mkMissingFinalNewlineCheck mkEditorconfigCheckerCheck mkStatixCheck mkDeadnixCheck mkNixNoEmbeddedShellCheck; do
+            # #97/#98/#99/#100: consumers stay whole -- the scaffold flake.nix
+            # wires the pinned checks that replaced the dropped lefthook remotes.
+            for c in mkNixfmtCheck mkShfmtCheck mkTrailingWhitespaceCheck mkMissingFinalNewlineCheck mkEditorconfigCheckerCheck mkStatixCheck mkDeadnixCheck mkNixNoEmbeddedShellCheck mkShellcheckCheck mkNoShellFunctionsCheck mkAsciiOnlyCheck mkTyposCheck; do
               grep -q "$c" "${scaffold}/flake.nix" \
                 || { echo "FAIL: scaffold flake.nix missing $c pinned check"; exit 1; }
             done
@@ -1542,16 +1707,14 @@
             # lefthook.yml has remotes from all fragments
             grep -q 'nix-lefthook-git-conflict-markers' "${scaffold}/lefthook.yml" \
               || { echo "FAIL: lefthook.yml missing base remote"; exit 1; }
-            # #97/#98/#99: nixfmt, formatters, and nix linters are pinned
-            # checks now, not remotes; none must survive in the assembled
-            # scaffold lefthook.yml.
-            for t in nixfmt shfmt trailing-whitespace missing-final-newline editorconfig-checker statix deadnix nix-no-embedded-shell nix-flake-check; do
+            # #97/#98/#99/#100: nixfmt, formatters, nix linters, and
+            # shell/content checks are pinned checks now, not remotes; none
+            # must survive in the assembled scaffold lefthook.yml.
+            for t in nixfmt shfmt trailing-whitespace missing-final-newline editorconfig-checker statix deadnix nix-no-embedded-shell nix-flake-check shellcheck no-shell-functions ascii-only typos; do
               if grep -q "nix-lefthook-$t" "${scaffold}/lefthook.yml"; then
-                echo "FAIL: lefthook.yml still has $t remote (#97/#98/#99)"; exit 1
+                echo "FAIL: lefthook.yml still has $t remote (#97/#98/#99/#100)"; exit 1
               fi
             done
-            grep -q 'nix-lefthook-shellcheck' "${scaffold}/lefthook.yml" \
-              || { echo "FAIL: lefthook.yml missing shell remote"; exit 1; }
             grep -q '^pre-commit:' "${scaffold}/lefthook.yml" \
               || { echo "FAIL: lefthook.yml missing pre-commit"; exit 1; }
             grep -q '^pre-push:' "${scaffold}/lefthook.yml" \

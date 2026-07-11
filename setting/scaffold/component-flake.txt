@@ -318,6 +318,25 @@
           inherit pkgs;
           src = ./.;
         };
+        # #100: shell/content linters as PINNED flake checks (not runtime
+        # lefthook remotes). Each tracks its upstream tool rev via
+        # `nix flake update set-and-setting`.
+        shellcheck = set-and-setting.lib.mkShellcheckCheck {
+          inherit pkgs;
+          src = ./.;
+        };
+        no-shell-functions = set-and-setting.lib.mkNoShellFunctionsCheck {
+          inherit pkgs;
+          src = ./.;
+        };
+        ascii-only = set-and-setting.lib.mkAsciiOnlyCheck {
+          inherit pkgs;
+          src = ./.;
+        };
+        typos = set-and-setting.lib.mkTyposCheck {
+          inherit pkgs;
+          src = ./.;
+        };
         default = pkgs.runCommand "checks" { } "touch $out";
       });
     };

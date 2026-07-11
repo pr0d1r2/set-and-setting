@@ -126,7 +126,13 @@ and dogfoods both.
   (`*.sh`, `--check`), `lib.mkTrailingWhitespaceCheck`,
   `lib.mkMissingFinalNewlineCheck`, `lib.mkEditorconfigCheckerCheck` (the
   latter three glob-less whole-tree, no check flag), each closing over its
-  own pinned `nix-lefthook-<tool>-src`.
+  own pinned `nix-lefthook-<tool>-src`. #99 adds the nix linters tier's
+  helpers `lib.mkStatixCheck`, `lib.mkDeadnixCheck` (`*.nix`, no check
+  flag), `lib.mkNixNoEmbeddedShellCheck` (custom derivation with
+  allowlist). #100 adds the shell/content tier's helpers
+  `lib.mkShellcheckCheck`, `lib.mkNoShellFunctionsCheck` (`*.sh`, no check
+  flag), `lib.mkAsciiOnlyCheck` (`*.{nix,yml,json}`, no check flag),
+  `lib.mkTyposCheck` (glob-less whole-tree, no check flag).
 - I.sync-set: CLI script in mkSet output. Copies skills+concepts+set.md to consumer repo target dir.
 - I.sync-setting: CLI script in mkSetting output. Copies dotfiles to consumer repo root.
 - I.sets: Attrset of raw paths to each skill category dir.
@@ -381,10 +387,17 @@ and dogfoods both.
   (shfmt from the shell fragment, the trio from base); each has a
   `<tool>-catches-violation` proof. Glob-less whole-tree tools lint every
   file (`suffices = null`) matching their glob-less `remotes:` entry.
-  Remaining tools stay on `remotes:` until their tier lands; converting a
-  tier = add `checks.<tool>` + drop its `remotes:` entry (fragment +
-  tracked `lefthook.yml`) + point consumers' scaffold at the same pinned
-  check.
+  #99 lands the nix linters tier --
+  `checks.<sys>.{statix,deadnix,nix-no-embedded-shell}` + their removed
+  `remotes:` entries (nix fragment); `nix-flake-check` is a sentinel (it
+  IS `nix flake check`). #100 lands the shell/content tier --
+  `checks.<sys>.{shellcheck,no-shell-functions,ascii-only,typos}` + their
+  removed `remotes:` entries (shell + ascii + base fragments); ascii-only
+  gates `*.{nix,yml,json}`, typos is glob-less whole-tree. Each tier has
+  per-tool `<tool>-catches-violation` proofs. Remaining tools stay on
+  `remotes:` until their tier lands; converting a tier = add
+  `checks.<tool>` + drop its `remotes:` entry (fragment + tracked
+  `lefthook.yml`) + point consumers' scaffold at the same pinned check.
 
 ## §T Tasks
 
@@ -459,6 +472,8 @@ and dogfoods both.
 | T58 | ~ | `@` ref resolution lint -- nix check validating all `@`-references in `set/` files resolve to existing source paths; also enforces V12 -- SUPERSEDED by T63-T66 (a plain grep flags real non-ref `@` tokens -- git SHAs, email addresses, prose `@main`/`@include` -- and relative refs, so it never goes green; granularized into matcher -> resolution -> V12 -> hook) | V12,T14,T63,T64,T65,T66 |
 | T67 | x | checks->pinned framework + nixfmt proof (#97, part of #93) -- `lib/mk-lefthook-check.nix` wraps a PINNED lefthook-* wrapper into a hermetic flake `check`; `lib.mkNixfmtCheck` closes over the pinned `nix-lefthook-nixfmt-src`; `checks.<sys>.nixfmt` replaces the `nix-lefthook-nixfmt` lefthook `remotes:` entry (nix fragment + tracked `lefthook.yml`); scaffolded consumers get the same pinned check; `nixfmt-catches-violation` proves a violation fails. Establishes the strangler-fig pattern for the remaining #93 tiers | I.mkLefthookCheck,V41,C6,C7 |
 | T68 | x | checks->pinned formatters tier (#98, part of #93) -- convert shfmt, trailing-whitespace, missing-final-newline, editorconfig-checker to pinned `checks.<sys>.<tool>` via new `lib.mk{Shfmt,TrailingWhitespace,MissingFinalNewline,EditorconfigChecker}Check`; extend `mk-lefthook-check.nix` with `suffices ? null` (whole-tree) + `checkFlag` args; drop the four `remotes:` entries (shell + base fragments, tracked `lefthook.yml`); scaffold wires the same pinned checks; per-tool `-catches-violation` proofs. CI green (a partial is never red, C38) | I.mkLefthookCheck,V41,C6,C7,T67 |
+| T69 | x | checks->pinned nix linters tier (#99, part of #93) -- convert statix, deadnix, nix-no-embedded-shell, nix-flake-check to pinned `checks.<sys>.<tool>` via `lib.mk{Statix,Deadnix,NixNoEmbeddedShell}Check`; drop the four `remotes:` entries (nix fragment + tracked `lefthook.yml`); scaffold wires the same pinned checks; per-tool `-catches-violation` proofs | I.mkLefthookCheck,V41,C6,C7,T67 |
+| T70 | x | checks->pinned shell/content tier (#100, part of #93) -- convert shellcheck, no-shell-functions, ascii-only, typos to pinned `checks.<sys>.<tool>` via `lib.mk{Shellcheck,NoShellFunctions,AsciiOnly,Typos}Check`; drop the four `remotes:` entries (shell + ascii + base fragments, tracked `lefthook.yml`); remove ascii-only commands from lefthook.yml (pinned check runs on all matching files); scaffold wires the same pinned checks; per-tool `-catches-violation` proofs | I.mkLefthookCheck,V41,C6,C7,T67 |
 
 ## §B Bugs
 

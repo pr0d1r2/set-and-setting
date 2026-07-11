@@ -1,6 +1,7 @@
-# #98/#99: trailing-whitespace, missing-final-newline, editorconfig-checker,
-# shfmt (#98), statix, deadnix, nix-no-embedded-shell, nix-flake-check (#99)
-# are delivered as PINNED flake `checks.<sys>.<tool>` (part of #93's
+# #98/#99/#100: trailing-whitespace, missing-final-newline,
+# editorconfig-checker, shfmt (#98), statix, deadnix, nix-no-embedded-shell,
+# nix-flake-check (#99), shellcheck, no-shell-functions, ascii-only, typos
+# (#100) are delivered as PINNED flake `checks.<sys>.<tool>` (part of #93's
 # strangler-fig decomposition), not runtime `remotes:` git_urls.
 ---
 remotes:
@@ -16,10 +17,6 @@ remotes:
     ref: main
     configs:
       - lefthook-remote.yml
-  - git_url: https://github.com/pr0d1r2/nix-lefthook-ascii-only
-    ref: main
-    configs:
-      - lefthook-remote.yml
   - git_url: https://github.com/pr0d1r2/nix-lefthook-file-size-check
     ref: main
     configs:
@@ -32,19 +29,7 @@ remotes:
     ref: main
     configs:
       - lefthook-remote.yml
-  - git_url: https://github.com/pr0d1r2/nix-lefthook-typos
-    ref: main
-    configs:
-      - lefthook-remote.yml
   - git_url: https://github.com/pr0d1r2/nix-lefthook-markdownlint
-    ref: main
-    configs:
-      - lefthook-remote.yml
-  - git_url: https://github.com/pr0d1r2/nix-lefthook-shellcheck
-    ref: main
-    configs:
-      - lefthook-remote.yml
-  - git_url: https://github.com/pr0d1r2/nix-lefthook-no-shell-functions
     ref: main
     configs:
       - lefthook-remote.yml
@@ -79,9 +64,6 @@ remotes:
 
 pre-commit:
   commands:
-    ascii-only:
-      glob: "*.{nix,yml,json}"
-      run: timeout ${LEFTHOOK_ASCII_ONLY_TIMEOUT:-30} lefthook-ascii-only {staged_files}
     markdownlint:
       glob: "*.md"
       exclude: "^(\\.claude/skills/)"
@@ -129,9 +111,6 @@ pre-commit:
 
 pre-push:
   commands:
-    ascii-only:
-      glob: "*.{nix,yml,json}"
-      run: timeout ${LEFTHOOK_ASCII_ONLY_TIMEOUT:-30} lefthook-ascii-only {push_files}
     markdownlint:
       glob: "*.md"
       exclude: "^(\\.claude/skills/)"
