@@ -126,7 +126,13 @@ and dogfoods both.
   (`*.sh`, `--check`), `lib.mkTrailingWhitespaceCheck`,
   `lib.mkMissingFinalNewlineCheck`, `lib.mkEditorconfigCheckerCheck` (the
   latter three glob-less whole-tree, no check flag), each closing over its
-  own pinned `nix-lefthook-<tool>-src`.
+  own pinned `nix-lefthook-<tool>-src`. #99 adds the nix linters tier's
+  helpers `lib.mkStatixCheck`, `lib.mkDeadnixCheck` (`*.nix`, no check
+  flag), `lib.mkNixNoEmbeddedShellCheck` (custom derivation with
+  allowlist). #100 adds the shell/content tier's helpers
+  `lib.mkShellcheckCheck`, `lib.mkNoShellFunctionsCheck` (`*.sh`, no check
+  flag), `lib.mkAsciiOnlyCheck` (`*.{nix,yml,json}`, no check flag),
+  `lib.mkTyposCheck` (glob-less whole-tree, no check flag).
 - I.sync-set: CLI script in mkSet output. Copies skills+concepts+set.md to consumer repo target dir.
 - I.sync-setting: CLI script in mkSetting output. Copies dotfiles to consumer repo root.
 - I.sets: Attrset of raw paths to each skill category dir.
@@ -381,10 +387,17 @@ and dogfoods both.
   (shfmt from the shell fragment, the trio from base); each has a
   `<tool>-catches-violation` proof. Glob-less whole-tree tools lint every
   file (`suffices = null`) matching their glob-less `remotes:` entry.
-  Remaining tools stay on `remotes:` until their tier lands; converting a
-  tier = add `checks.<tool>` + drop its `remotes:` entry (fragment +
-  tracked `lefthook.yml`) + point consumers' scaffold at the same pinned
-  check.
+  #99 lands the nix linters tier --
+  `checks.<sys>.{statix,deadnix,nix-no-embedded-shell}` + their removed
+  `remotes:` entries (nix fragment); `nix-flake-check` is a sentinel (it
+  IS `nix flake check`). #100 lands the shell/content tier --
+  `checks.<sys>.{shellcheck,no-shell-functions,ascii-only,typos}` + their
+  removed `remotes:` entries (shell + ascii + base fragments); ascii-only
+  gates `*.{nix,yml,json}`, typos is glob-less whole-tree. Each tier has
+  per-tool `<tool>-catches-violation` proofs. Remaining tools stay on
+  `remotes:` until their tier lands; converting a tier = add
+  `checks.<tool>` + drop its `remotes:` entry (fragment + tracked
+  `lefthook.yml`) + point consumers' scaffold at the same pinned check.
 
 ## §T Tasks
 

@@ -1692,9 +1692,9 @@
               echo "FAIL: scaffold still has ci devShell"; exit 1
             fi
 
-            # #97/#98/#99: consumers stay whole -- the scaffold flake.nix wires
-            # the pinned checks that replaced the dropped lefthook remotes.
-            for c in mkNixfmtCheck mkShfmtCheck mkTrailingWhitespaceCheck mkMissingFinalNewlineCheck mkEditorconfigCheckerCheck mkStatixCheck mkDeadnixCheck mkNixNoEmbeddedShellCheck; do
+            # #97/#98/#99/#100: consumers stay whole -- the scaffold flake.nix
+            # wires the pinned checks that replaced the dropped lefthook remotes.
+            for c in mkNixfmtCheck mkShfmtCheck mkTrailingWhitespaceCheck mkMissingFinalNewlineCheck mkEditorconfigCheckerCheck mkStatixCheck mkDeadnixCheck mkNixNoEmbeddedShellCheck mkShellcheckCheck mkNoShellFunctionsCheck mkAsciiOnlyCheck mkTyposCheck; do
               grep -q "$c" "${scaffold}/flake.nix" \
                 || { echo "FAIL: scaffold flake.nix missing $c pinned check"; exit 1; }
             done
