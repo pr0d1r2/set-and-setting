@@ -403,6 +403,7 @@ except
 exclude
 excluded
 excludes
+execute
 exist
 existing
 exists
@@ -466,7 +467,6 @@ for
 force
 form
 format
-formatter
 formatting
 formed
 forms
@@ -492,6 +492,7 @@ git
 gitattributes
 github
 gitignore
+gitleaks
 given
 glob
 globbed
@@ -641,6 +642,7 @@ lines
 linguist
 link
 lint
+linters
 linux
 list
 listed
@@ -726,7 +728,6 @@ modularity
 more
 most
 move
-moved
 moves
 multi
 multiple
@@ -889,7 +890,6 @@ provided
 pruned
 prunes
 pull
-pulls
 punctuation
 pure
 purpose
@@ -1193,7 +1193,6 @@ trees
 trigger
 trim
 trimmed
-trio
 true
 truly
 trusting

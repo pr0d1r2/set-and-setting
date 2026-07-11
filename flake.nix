@@ -263,6 +263,55 @@
           + builtins.readFile "${nix-lefthook-nix-no-embedded-shell-src}/lefthook-nix-no-embedded-shell.sh";
         };
 
+      # #101 (part of #93): the git/security tier's pinned wrappers, each
+      # built from its own pinned flake input. Shared, like nixfmtWrapperFor,
+      # by the devShell wrapper list and the hermetic `checks.<sys>.<tool>`
+      # derivation so both resolve the exact same pinned lint logic (no
+      # runtime git_url).
+      gitleaksWrapperFor =
+        pkgs:
+        wrap pkgs "lefthook-gitleaks" nix-lefthook-gitleaks-src {
+          runtimeInputs = [
+            pkgs.gitleaks
+            pkgs.coreutils
+          ];
+        };
+      gitConflictMarkersWrapperFor =
+        pkgs:
+        wrap pkgs "lefthook-git-conflict-markers" nix-lefthook-git-conflict-markers-src {
+          runtimeInputs = [ pkgs.gnugrep ];
+        };
+      gitNoLocalPathsWrapperFor =
+        pkgs:
+        wrap pkgs "lefthook-git-no-local-paths" nix-lefthook-git-no-local-paths-src {
+          runtimeInputs = [ pkgs.gnugrep ];
+        };
+      executePermissionsWrapperFor =
+        pkgs:
+        wrap pkgs "lefthook-execute-permissions" nix-lefthook-execute-permissions-src {
+          runtimeInputs = [ pkgs.gnugrep ];
+        };
+      fileSizeCheckWrapperFor =
+        pkgs:
+        let
+          get-file-size-limit = pkgs.writeShellApplication {
+            name = "get-file-size-limit";
+            text = builtins.readFile "${nix-lefthook-file-size-check-src}/get-file-size-limit.sh";
+            runtimeInputs = [
+              pkgs.gawk
+              pkgs.gnugrep
+            ];
+          };
+        in
+        wrap pkgs "lefthook-file-size-check" nix-lefthook-file-size-check-src {
+          runtimeInputs = [
+            get-file-size-limit
+            pkgs.gawk
+            pkgs.gnugrep
+            pkgs.coreutils
+          ];
+        };
+
       lefthookWrappersFor =
         pkgs:
         let
@@ -283,41 +332,11 @@
           })
           (deadnixWrapperFor pkgs)
           (editorconfigCheckerWrapperFor pkgs)
-          (w "lefthook-execute-permissions" nix-lefthook-execute-permissions-src {
-            runtimeInputs = [ pkgs.gnugrep ];
-          })
-          (
-            let
-              get-file-size-limit = pkgs.writeShellApplication {
-                name = "get-file-size-limit";
-                text = builtins.readFile "${nix-lefthook-file-size-check-src}/get-file-size-limit.sh";
-                runtimeInputs = [
-                  pkgs.gawk
-                  pkgs.gnugrep
-                ];
-              };
-            in
-            w "lefthook-file-size-check" nix-lefthook-file-size-check-src {
-              runtimeInputs = [
-                get-file-size-limit
-                pkgs.gawk
-                pkgs.gnugrep
-                pkgs.coreutils
-              ];
-            }
-          )
-          (w "lefthook-git-conflict-markers" nix-lefthook-git-conflict-markers-src {
-            runtimeInputs = [ pkgs.gnugrep ];
-          })
-          (w "lefthook-git-no-local-paths" nix-lefthook-git-no-local-paths-src {
-            runtimeInputs = [ pkgs.gnugrep ];
-          })
-          (w "lefthook-gitleaks" nix-lefthook-gitleaks-src {
-            runtimeInputs = [
-              pkgs.gitleaks
-              pkgs.coreutils
-            ];
-          })
+          (executePermissionsWrapperFor pkgs)
+          (fileSizeCheckWrapperFor pkgs)
+          (gitConflictMarkersWrapperFor pkgs)
+          (gitNoLocalPathsWrapperFor pkgs)
+          (gitleaksWrapperFor pkgs)
           (w "lefthook-markdownlint" nix-lefthook-markdownlint-src {
             runtimeInputs = [ pkgs.markdownlint-cli ];
           })
@@ -644,6 +663,91 @@
             echo "${name}: PASS (''${#matches[@]} files)"
             touch $out
           '';
+
+        # #101 (part of #93): the git/security tier's convenience helpers,
+        # each closing over set-and-setting's OWN pinned wrapper input (like
+        # mkNixfmtCheck). A consumer's check tracks the upstream tool rev via
+        # `nix flake update set-and-setting` (C7). gitleaks, git-conflict-
+        # markers, execute-permissions, and file-size-check are glob-less
+        # whole-tree tools (suffices = null, no check flag). git-no-local-
+        # paths uses a custom derivation to exclude flake.nix and flake.lock
+        # (which legitimately contain local path references).
+        # Args: pkgs, src (repo root to lint), name ? "<tool>".
+        mkGitleaksCheck =
+          {
+            pkgs,
+            src,
+            name ? "gitleaks",
+          }:
+          import ./lib/mk-lefthook-check.nix {
+            inherit pkgs src name;
+            wrapper = gitleaksWrapperFor pkgs;
+            checkFlag = "";
+          };
+        mkGitConflictMarkersCheck =
+          {
+            pkgs,
+            src,
+            name ? "git-conflict-markers",
+          }:
+          import ./lib/mk-lefthook-check.nix {
+            inherit pkgs src name;
+            wrapper = gitConflictMarkersWrapperFor pkgs;
+            checkFlag = "";
+          };
+        mkGitNoLocalPathsCheck =
+          {
+            pkgs,
+            src,
+            name ? "git-no-local-paths",
+          }:
+          let
+            inherit (pkgs) lib;
+            wrapper = gitNoLocalPathsWrapperFor pkgs;
+            filteredSrc = lib.sources.cleanSourceWith {
+              inherit src;
+              filter =
+                path: _type:
+                let
+                  base = builtins.baseNameOf path;
+                in
+                base != "flake.nix" && base != "flake.lock";
+            };
+          in
+          pkgs.runCommand "${name}-check" { nativeBuildInputs = [ pkgs.findutils ]; } ''
+            cd ${filteredSrc}
+            mapfile -t matches < <(find . -type f | sort)
+            if [ ''${#matches[@]} -eq 0 ]; then
+              echo "${name}: no matching files, nothing to check"
+              touch $out
+              exit 0
+            fi
+            ${lib.getExe wrapper} "''${matches[@]}"
+            echo "${name}: PASS (''${#matches[@]} files)"
+            touch $out
+          '';
+        mkExecutePermissionsCheck =
+          {
+            pkgs,
+            src,
+            name ? "execute-permissions",
+          }:
+          import ./lib/mk-lefthook-check.nix {
+            inherit pkgs src name;
+            wrapper = executePermissionsWrapperFor pkgs;
+            checkFlag = "";
+          };
+        mkFileSizeCheckCheck =
+          {
+            pkgs,
+            src,
+            name ? "file-size-check",
+          }:
+          import ./lib/mk-lefthook-check.nix {
+            inherit pkgs src name;
+            wrapper = fileSizeCheckWrapperFor pkgs;
+            checkFlag = "";
+          };
       };
 
       packages = forAllSystems (pkgs: {
@@ -928,6 +1032,114 @@
               echo "FAIL: nix-no-embedded-shell accepted embedded shell"; exit 1
             fi
             echo "PASS: pinned nix-no-embedded-shell rejects a violation"
+            touch $out
+          '';
+
+        # #101 (part of #93): the git/security tier as PINNED hermetic
+        # checks, each replacing its runtime lefthook `remotes:` git_url.
+        # gitleaks, git-conflict-markers, execute-permissions, and
+        # file-size-check are glob-less whole-tree tools (every file).
+        # git-no-local-paths excludes flake.nix and flake.lock (which
+        # legitimately contain local path references). All offline-runnable
+        # on a warm cache; a violation fails `nix flake check`.
+        gitleaks = self.lib.mkGitleaksCheck {
+          inherit pkgs;
+          src = ./.;
+        };
+        git-conflict-markers = self.lib.mkGitConflictMarkersCheck {
+          inherit pkgs;
+          src = ./.;
+        };
+        git-no-local-paths = self.lib.mkGitNoLocalPathsCheck {
+          inherit pkgs;
+          src = ./.;
+        };
+        execute-permissions = self.lib.mkExecutePermissionsCheck {
+          inherit pkgs;
+          src = ./.;
+        };
+        file-size-check = self.lib.mkFileSizeCheckCheck {
+          inherit pkgs;
+          src = ./.;
+        };
+
+        # #101: prove each pinned git/security check REJECTS a violation
+        # (acceptance: a violation fails the check). Runs the same pinned
+        # wrapper path the framework uses over a known-bad fixture and
+        # asserts non-zero.
+        gitleaks-catches-violation =
+          let
+            wrapper = gitleaksWrapperFor pkgs;
+            # Build an RSA private key fixture outside the nix source so
+            # gitleaks scanning flake.nix does not flag it. Key markers
+            # and body are hex-encoded to avoid detection in this file.
+            fixture = pkgs.runCommand "gitleaks-fixture" { } ''
+              {
+                printf '%b\n' '\x2d\x2d\x2d\x2d\x2dBEGIN RSA PRIVATE KEY\x2d\x2d\x2d\x2d\x2d'
+                printf '%s\n' 'MIIEowIBAAKCAQEA2Z3qX2BTLS4eMJTM59MZ1IUk2VBrpEHxb4L6I3gINJi2A'
+                printf '%s\n' 'nBQJiENxUwpzEsGFgNUQZsLCNGfuB5wDNeF9N7MwwJgPLCYh3U8bqGNzrFnBR'
+                printf '%s\n' 'yv75OfkKFqPGFEkPPQQBJUfSE6Hf8aOBbAqJBKm9dUthHq6CsDGbMBEZMTBVg'
+                printf '%b\n' '\x2d\x2d\x2d\x2d\x2dEND RSA PRIVATE KEY\x2d\x2d\x2d\x2d\x2d'
+              } > $out
+            '';
+          in
+          pkgs.runCommand "gitleaks-catches-violation" { } ''
+            cp ${fixture} bad.txt
+            if ${pkgs.lib.getExe wrapper} bad.txt; then
+              echo "FAIL: gitleaks accepted a secret"; exit 1
+            fi
+            echo "PASS: pinned gitleaks rejects a violation"
+            touch $out
+          '';
+        git-conflict-markers-catches-violation =
+          let
+            wrapper = gitConflictMarkersWrapperFor pkgs;
+          in
+          pkgs.runCommand "git-conflict-markers-catches-violation" { } ''
+            printf '<<<<<<< HEAD\nours\n=======\ntheirs\n>>>>>>> branch\n' > bad.txt
+            if ${pkgs.lib.getExe wrapper} bad.txt; then
+              echo "FAIL: git-conflict-markers accepted conflict markers"; exit 1
+            fi
+            echo "PASS: pinned git-conflict-markers rejects a violation"
+            touch $out
+          '';
+        git-no-local-paths-catches-violation =
+          let
+            wrapper = gitNoLocalPathsWrapperFor pkgs;
+          in
+          pkgs.runCommand "git-no-local-paths-catches-violation" { } ''
+            printf 'url = "git+file:///home/user/repo"\n' > bad.txt # nolocalpath
+            if ${pkgs.lib.getExe wrapper} bad.txt; then
+              echo "FAIL: git-no-local-paths accepted a local path"; exit 1
+            fi
+            echo "PASS: pinned git-no-local-paths rejects a violation"
+            touch $out
+          '';
+        execute-permissions-catches-violation =
+          let
+            wrapper = executePermissionsWrapperFor pkgs;
+          in
+          pkgs.runCommand "execute-permissions-catches-violation" { } ''
+            printf 'not a script\n' > bad.txt
+            chmod +x bad.txt
+            if ${pkgs.lib.getExe wrapper} bad.txt; then
+              echo "FAIL: execute-permissions accepted a non-script executable"; exit 1
+            fi
+            echo "PASS: pinned execute-permissions rejects a violation"
+            touch $out
+          '';
+        file-size-check-catches-violation =
+          let
+            wrapper = fileSizeCheckWrapperFor pkgs;
+          in
+          pkgs.runCommand "file-size-check-catches-violation" { } ''
+            mkdir -p config/lefthook
+            printf '%s\n' '---' 'default: 10' > config/lefthook/file_size_limits.yml
+            dd if=/dev/zero of=big.txt bs=1 count=100 2>/dev/null
+            if ${pkgs.lib.getExe wrapper} big.txt; then
+              echo "FAIL: file-size-check accepted an oversized file"; exit 1
+            fi
+            echo "PASS: pinned file-size-check rejects a violation"
             touch $out
           '';
 
@@ -1692,9 +1904,10 @@
               echo "FAIL: scaffold still has ci devShell"; exit 1
             fi
 
-            # #97/#98/#99/#100: consumers stay whole -- the scaffold flake.nix
-            # wires the pinned checks that replaced the dropped lefthook remotes.
-            for c in mkNixfmtCheck mkShfmtCheck mkTrailingWhitespaceCheck mkMissingFinalNewlineCheck mkEditorconfigCheckerCheck mkStatixCheck mkDeadnixCheck mkNixNoEmbeddedShellCheck mkShellcheckCheck mkNoShellFunctionsCheck mkAsciiOnlyCheck mkTyposCheck; do
+            # #97/#98/#99/#100/#101: consumers stay whole -- the scaffold
+            # flake.nix wires the pinned checks that replaced the dropped
+            # lefthook remotes.
+            for c in mkNixfmtCheck mkShfmtCheck mkTrailingWhitespaceCheck mkMissingFinalNewlineCheck mkEditorconfigCheckerCheck mkStatixCheck mkDeadnixCheck mkNixNoEmbeddedShellCheck mkShellcheckCheck mkNoShellFunctionsCheck mkAsciiOnlyCheck mkTyposCheck mkGitleaksCheck mkGitConflictMarkersCheck mkGitNoLocalPathsCheck mkExecutePermissionsCheck mkFileSizeCheckCheck; do
               grep -q "$c" "${scaffold}/flake.nix" \
                 || { echo "FAIL: scaffold flake.nix missing $c pinned check"; exit 1; }
             done
@@ -1704,15 +1917,12 @@
             grep -q 'devshell:.*"default"' "${scaffold}/.github/workflows/ci.yml" \
               || { echo "FAIL: ci.yml missing devshell: default (B17)"; exit 1; }
 
-            # lefthook.yml has remotes from all fragments
-            grep -q 'nix-lefthook-git-conflict-markers' "${scaffold}/lefthook.yml" \
-              || { echo "FAIL: lefthook.yml missing base remote"; exit 1; }
-            # #97/#98/#99/#100: nixfmt, formatters, nix linters, and
-            # shell/content checks are pinned checks now, not remotes; none
-            # must survive in the assembled scaffold lefthook.yml.
-            for t in nixfmt shfmt trailing-whitespace missing-final-newline editorconfig-checker statix deadnix nix-no-embedded-shell nix-flake-check shellcheck no-shell-functions ascii-only typos; do
+            # #97-#101: all base + nix + shell + ascii + content linters are
+            # pinned checks now, not remotes; none must survive in the
+            # assembled scaffold lefthook.yml.
+            for t in nixfmt shfmt trailing-whitespace missing-final-newline editorconfig-checker statix deadnix nix-no-embedded-shell nix-flake-check shellcheck no-shell-functions ascii-only typos gitleaks git-conflict-markers git-no-local-paths execute-permissions file-size-check; do
               if grep -q "nix-lefthook-$t" "${scaffold}/lefthook.yml"; then
-                echo "FAIL: lefthook.yml still has $t remote (#97/#98/#99/#100)"; exit 1
+                echo "FAIL: lefthook.yml still has $t remote (#97-#101)"; exit 1
               fi
             done
             grep -q '^pre-commit:' "${scaffold}/lefthook.yml" \

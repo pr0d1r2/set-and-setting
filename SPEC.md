@@ -132,7 +132,12 @@ and dogfoods both.
   allowlist). #100 adds the shell/content tier's helpers
   `lib.mkShellcheckCheck`, `lib.mkNoShellFunctionsCheck` (`*.sh`, no check
   flag), `lib.mkAsciiOnlyCheck` (`*.{nix,yml,json}`, no check flag),
-  `lib.mkTyposCheck` (glob-less whole-tree, no check flag).
+  `lib.mkTyposCheck` (glob-less whole-tree, no check flag). #101 adds the
+  git/security tier's helpers `lib.mkGitleaksCheck`,
+  `lib.mkGitConflictMarkersCheck`, `lib.mkExecutePermissionsCheck`,
+  `lib.mkFileSizeCheckCheck` (glob-less whole-tree, no check flag),
+  `lib.mkGitNoLocalPathsCheck` (custom derivation excluding
+  `flake.nix`/`flake.lock`).
 - I.sync-set: CLI script in mkSet output. Copies skills+concepts+set.md to consumer repo target dir.
 - I.sync-setting: CLI script in mkSetting output. Copies dotfiles to consumer repo root.
 - I.sets: Attrset of raw paths to each skill category dir.
@@ -393,9 +398,13 @@ and dogfoods both.
   IS `nix flake check`). #100 lands the shell/content tier --
   `checks.<sys>.{shellcheck,no-shell-functions,ascii-only,typos}` + their
   removed `remotes:` entries (shell + ascii + base fragments); ascii-only
-  gates `*.{nix,yml,json}`, typos is glob-less whole-tree. Each tier has
-  per-tool `<tool>-catches-violation` proofs. Remaining tools stay on
-  `remotes:` until their tier lands; converting a tier = add
+  gates `*.{nix,yml,json}`, typos is glob-less whole-tree. #101 lands the
+  git/security tier --
+  `checks.<sys>.{gitleaks,git-conflict-markers,git-no-local-paths,
+  execute-permissions,file-size-check}` + their removed `remotes:` entries
+  (base fragment); git-no-local-paths uses a custom derivation excluding
+  `flake.nix`/`flake.lock`; base fragment now has no remotes. Each tier
+  has per-tool `<tool>-catches-violation` proofs. Converting a tier = add
   `checks.<tool>` + drop its `remotes:` entry (fragment + tracked
   `lefthook.yml`) + point consumers' scaffold at the same pinned check.
 
@@ -474,6 +483,7 @@ and dogfoods both.
 | T68 | x | checks->pinned formatters tier (#98, part of #93) -- convert shfmt, trailing-whitespace, missing-final-newline, editorconfig-checker to pinned `checks.<sys>.<tool>` via new `lib.mk{Shfmt,TrailingWhitespace,MissingFinalNewline,EditorconfigChecker}Check`; extend `mk-lefthook-check.nix` with `suffices ? null` (whole-tree) + `checkFlag` args; drop the four `remotes:` entries (shell + base fragments, tracked `lefthook.yml`); scaffold wires the same pinned checks; per-tool `-catches-violation` proofs. CI green (a partial is never red, C38) | I.mkLefthookCheck,V41,C6,C7,T67 |
 | T69 | x | checks->pinned nix linters tier (#99, part of #93) -- convert statix, deadnix, nix-no-embedded-shell, nix-flake-check to pinned `checks.<sys>.<tool>` via `lib.mk{Statix,Deadnix,NixNoEmbeddedShell}Check`; drop the four `remotes:` entries (nix fragment + tracked `lefthook.yml`); scaffold wires the same pinned checks; per-tool `-catches-violation` proofs | I.mkLefthookCheck,V41,C6,C7,T67 |
 | T70 | x | checks->pinned shell/content tier (#100, part of #93) -- convert shellcheck, no-shell-functions, ascii-only, typos to pinned `checks.<sys>.<tool>` via `lib.mk{Shellcheck,NoShellFunctions,AsciiOnly,Typos}Check`; drop the four `remotes:` entries (shell + ascii + base fragments, tracked `lefthook.yml`); remove ascii-only commands from lefthook.yml (pinned check runs on all matching files); scaffold wires the same pinned checks; per-tool `-catches-violation` proofs | I.mkLefthookCheck,V41,C6,C7,T67 |
+| T71 | x | checks->pinned git/security tier (#101, part of #93) -- convert gitleaks, git-conflict-markers, git-no-local-paths, execute-permissions, file-size-check to pinned `checks.<sys>.<tool>` via `lib.mk{Gitleaks,GitConflictMarkers,GitNoLocalPaths,ExecutePermissions,FileSizeCheck}Check`; drop the five `remotes:` entries (base fragment, tracked `lefthook.yml`); base fragment now has no remotes; git-no-local-paths uses a custom derivation to exclude `flake.nix`/`flake.lock`; scaffold wires the same pinned checks; per-tool `-catches-violation` proofs | I.mkLefthookCheck,V41,C6,C7,T67 |
 
 ## §B Bugs
 

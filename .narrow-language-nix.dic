@@ -58,6 +58,7 @@ attr
 attrs
 auto
 avahi
+avoid
 back
 bad
 base
@@ -66,11 +67,13 @@ bats
 beats
 because
 before
+begin
 behavioral
 belongs
 below
 between
 beyond
+big
 bin
 blockquotes
 blocks
@@ -80,6 +83,7 @@ bootstrap
 both
 boundary
 bounding
+bqji
 branch
 broad
 brown
@@ -154,6 +158,7 @@ consumed
 consumer
 consumers
 consumes
+contain
 contained
 contains
 content
@@ -164,6 +169,7 @@ copilot
 core
 coreutils
 correct
+count
 counterparts
 coverage
 cpbody
@@ -199,6 +205,7 @@ derives
 description
 destructive
 detect
+detection
 deterministic
 dev
 develop
@@ -216,6 +223,7 @@ directory
 dirty
 disable
 dispatch
+dne
 documentation
 documents
 does
@@ -233,6 +241,7 @@ each
 echo
 editorconfig
 edits
+ehxb
 either
 elem
 else
@@ -244,6 +253,7 @@ emitted
 emitter
 empty
 enable
+encoded
 end
 enforce
 enforcement
@@ -253,6 +263,7 @@ entries
 entry
 enumerated
 environment
+enx
 error
 escape
 euo
@@ -270,6 +281,7 @@ example
 examples
 exclude
 excluded
+excludes
 exdir
 exe
 exec
@@ -335,7 +347,6 @@ for
 force
 format
 formatter
-formatters
 fox
 fragment
 fragments
@@ -391,6 +402,7 @@ helpers
 here
 hermetic
 hermetically
+hex
 high
 hint
 historical
@@ -400,6 +412,7 @@ hook
 hooks
 host
 hxegsi
+ibaakcaqea
 identical
 ifs
 image
@@ -417,6 +430,7 @@ inherit
 inherited
 inherits
 init
+inji
 inline
 inlined
 inlines
@@ -440,6 +454,7 @@ invoke
 invoked
 iso
 its
+iuk
 jobs
 join
 json
@@ -456,12 +471,14 @@ known
 lang
 language
 layout
+lcngfu
 leak
 leaked
 leaks
 least
 lefthook
 legacy
+legitimately
 length
 less
 let
@@ -514,6 +531,7 @@ matching
 materialization
 materialize
 materialized
+mbezmtbvg
 means
 mechanically
 mechanism
@@ -523,6 +541,7 @@ merged
 meta
 metadata
 migration
+miieow
 mindset
 minimal
 mirrored
@@ -566,19 +585,25 @@ nixeof
 nixfmt
 nixos
 nixpkgs
+nolocalpath
 non
 none
 not
 nothing
+nours
 now
+ntheirs
 ntrailing
 null
+nuqzs
+obb
 ocagents
 ocbody
 ocjson
 ocset
 ocskill
 offline
+ofk
 old
 omit
 omits
@@ -599,6 +624,7 @@ outside
 over
 override
 overrides
+oversized
 own
 owned
 package
@@ -619,6 +645,7 @@ paths
 pattern
 per
 permissions
+pgfek
 picks
 pinned
 pipefail
@@ -626,6 +653,7 @@ place
 plain
 platform
 portable
+ppqqbjuf
 pre
 prefix
 prefixes
@@ -635,6 +663,7 @@ present
 preserve
 preserved
 printf
+private
 produces
 product
 profile
@@ -709,6 +738,7 @@ reusable
 rev
 rewritten
 root
+rsa
 rule
 rules
 run
@@ -729,6 +759,7 @@ script
 scripts
 seam
 seams
+secret
 section
 security
 sed
@@ -902,6 +933,8 @@ used
 user
 uses
 usually
+uth
+uwpz
 valid
 validates
 value

@@ -1,28 +1,10 @@
-# trailing-whitespace, missing-final-newline, editorconfig-checker (#98), and
-# typos (#100) are intentionally absent here: they are delivered as PINNED
-# flake `checks.<sys>.<tool>` (set-and-setting.lib.mk{TrailingWhitespace,
-# MissingFinalNewline,EditorconfigChecker,Typos}Check), replacing their
-# runtime `remotes:` git_urls with offline-runnable, cache-warm checks. The
-# remaining base linters follow per #93's strangler-fig decomposition.
+# gitleaks, git-conflict-markers, git-no-local-paths, execute-permissions,
+# file-size-check (#101), trailing-whitespace, missing-final-newline,
+# editorconfig-checker (#98), and typos (#100) are intentionally absent here:
+# they are delivered as PINNED flake `checks.<sys>.<tool>` (set-and-setting.lib.
+# mk{Gitleaks,GitConflictMarkers,GitNoLocalPaths,ExecutePermissions,
+# FileSizeCheck,TrailingWhitespace,MissingFinalNewline,EditorconfigChecker,
+# Typos}Check), replacing their runtime `remotes:` git_urls with offline-
+# runnable, cache-warm checks. No base remotes remain (#93 strangler-fig
+# complete for this fragment).
 ---
-remotes:
-  - git_url: https://github.com/pr0d1r2/nix-lefthook-git-conflict-markers
-    ref: main
-    configs:
-      - lefthook-remote.yml
-  - git_url: https://github.com/pr0d1r2/nix-lefthook-file-size-check
-    ref: main
-    configs:
-      - lefthook-remote.yml
-  - git_url: https://github.com/pr0d1r2/nix-lefthook-execute-permissions
-    ref: main
-    configs:
-      - lefthook-remote.yml
-  - git_url: https://github.com/pr0d1r2/nix-lefthook-gitleaks
-    ref: main
-    configs:
-      - lefthook-remote.yml
-  - git_url: https://github.com/pr0d1r2/nix-lefthook-git-no-local-paths
-    ref: main
-    configs:
-      - lefthook-remote.yml
