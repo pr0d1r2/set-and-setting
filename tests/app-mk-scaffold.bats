@@ -137,7 +137,9 @@ teardown() {
     printf '' >"$TARGET/test.nix"
     git -C "$TARGET" add test.nix
     bash "$SCRIPT"
-    grep -q 'nix-lefthook-nixfmt' "$TARGET/lefthook.yml"
+    # #97: nixfmt is a pinned check now; statix remains from the nix fragment.
+    grep -q 'nix-lefthook-statix' "$TARGET/lefthook.yml"
+    run ! grep -q 'nix-lefthook-nixfmt' "$TARGET/lefthook.yml"
     grep -q 'nix-lefthook-trailing-whitespace' "$TARGET/lefthook.yml"
 }
 
@@ -150,7 +152,9 @@ teardown() {
 
 @test "content-aware: empty repo gets all fragments" {
     bash "$SCRIPT"
-    grep -q 'nix-lefthook-nixfmt' "$TARGET/lefthook.yml"
+    # #97: nixfmt is a pinned check now; statix remains from the nix fragment.
+    grep -q 'nix-lefthook-statix' "$TARGET/lefthook.yml"
+    run ! grep -q 'nix-lefthook-nixfmt' "$TARGET/lefthook.yml"
     grep -q 'nix-lefthook-shellcheck' "$TARGET/lefthook.yml"
     grep -q 'nix-lefthook-markdownlint' "$TARGET/lefthook.yml"
     grep -q 'nix-lefthook-yamllint' "$TARGET/lefthook.yml"

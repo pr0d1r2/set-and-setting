@@ -91,7 +91,9 @@ teardown() {
     printf '' >"$TARGET/test.nix"
     git -C "$TARGET" add test.nix
     bash "$SCRIPT"
-    grep -q 'nix-lefthook-nixfmt' "$TARGET/lefthook.yml"
+    # #97: nixfmt is a pinned check now; statix remains from the nix fragment.
+    grep -q 'nix-lefthook-statix' "$TARGET/lefthook.yml"
+    run ! grep -q 'nix-lefthook-nixfmt' "$TARGET/lefthook.yml"
 }
 
 @test "content-aware: nix-only repo excludes shell checks" {

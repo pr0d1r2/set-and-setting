@@ -135,7 +135,9 @@ teardown() {
     bash "$SCRIPT"
     [ -f "$out/lefthook.yml" ]
     grep -q 'nix-lefthook-trailing-whitespace' "$out/lefthook.yml"
-    grep -q 'nix-lefthook-nixfmt' "$out/lefthook.yml"
+    # #97: nixfmt is a pinned flake check now, not a remote; statix remains.
+    grep -q 'nix-lefthook-statix' "$out/lefthook.yml"
+    run ! grep -q 'nix-lefthook-nixfmt' "$out/lefthook.yml"
     grep -q 'nix-lefthook-yamllint' "$out/lefthook.yml"
     grep -q '^pre-commit:' "$out/lefthook.yml"
     grep -q '^pre-push:' "$out/lefthook.yml"
@@ -179,7 +181,9 @@ teardown() {
     export FRAGMENTS_DIR
     FRAGMENTS="base nix ascii" bash "$SCRIPT"
     grep -q 'nix-lefthook-trailing-whitespace' "$out/lefthook.yml"
-    grep -q 'nix-lefthook-nixfmt' "$out/lefthook.yml"
+    # #97: nixfmt moved to a pinned check; statix still comes from nix fragment.
+    grep -q 'nix-lefthook-statix' "$out/lefthook.yml"
+    run ! grep -q 'nix-lefthook-nixfmt' "$out/lefthook.yml"
     run ! grep -q 'nix-lefthook-shellcheck' "$out/lefthook.yml"
     run ! grep -q 'nix-lefthook-markdownlint' "$out/lefthook.yml"
     run ! grep -q 'nix-lefthook-yamllint' "$out/lefthook.yml"

@@ -184,6 +184,16 @@
           // extra
         );
 
+      # #97: the pinned nixfmt wrapper, built from the pinned
+      # `nix-lefthook-nixfmt-src` flake input. Shared by the devShell wrapper
+      # list and the hermetic `checks.<sys>.nixfmt` derivation so both resolve
+      # the exact same pinned lint logic (no runtime `remotes:` git_url).
+      nixfmtWrapperFor =
+        pkgs:
+        wrap pkgs "lefthook-nixfmt" nix-lefthook-nixfmt-src {
+          runtimeInputs = [ pkgs.nixfmt ];
+        };
+
       lefthookWrappersFor =
         pkgs:
         let
@@ -302,9 +312,7 @@
           (w "lefthook-shfmt" nix-lefthook-shfmt-src {
             runtimeInputs = [ pkgs.shfmt ];
           })
-          (w "lefthook-nixfmt" nix-lefthook-nixfmt-src {
-            runtimeInputs = [ pkgs.nixfmt ];
-          })
+          (nixfmtWrapperFor pkgs)
           (w "lefthook-statix" nix-lefthook-statix-src {
             runtimeInputs = [ pkgs.statix ];
           })
@@ -384,6 +392,28 @@
         mkMaterializeCheck = import ./lib/mk-materialize-check.nix { inherit (nixpkgs) lib; };
         mkDepGraphCheck = import ./lib/mk-dep-graph-check.nix;
         mkDevShells = import ./setting/lib/mk-dev-shells.nix;
+
+        # #97: the framework seam -- wrap any pinned lefthook-* wrapper into a
+        # hermetic flake check. Consumers repeat this per tier to replace a
+        # runtime `remotes:` git_url with a pinned `checks.<name>` derivation.
+        mkLefthookCheck = import ./lib/mk-lefthook-check.nix;
+
+        # #97: convenience over mkLefthookCheck for the nixfmt tier. Closes
+        # over set-and-setting's OWN pinned `nix-lefthook-nixfmt-src`, so a
+        # consumer's `nixfmt` check tracks the upstream nixfmt rev via
+        # `nix flake update set-and-setting` (C7) -- no local wrapper wiring.
+        # Args: pkgs, src (repo root to lint), name ? "nixfmt".
+        mkNixfmtCheck =
+          {
+            pkgs,
+            src,
+            name ? "nixfmt",
+          }:
+          import ./lib/mk-lefthook-check.nix {
+            inherit pkgs src name;
+            wrapper = nixfmtWrapperFor pkgs;
+            suffices = [ ".nix" ];
+          };
       };
 
       packages = forAllSystems (pkgs: {
@@ -415,6 +445,32 @@
       );
 
       checks = forAllSystems (pkgs: {
+        # #97 (part of #93): nixfmt as a PINNED hermetic check, replacing the
+        # runtime `remotes:` git_url in lefthook. Resolves the lint via the
+        # pinned `nix-lefthook-nixfmt-src` input (nixfmtWrapperFor) -- offline-
+        # runnable on a warm cache. A nixfmt violation fails `nix flake check`.
+        # This is the framework proof; the next #93 tiers repeat the pattern.
+        nixfmt = self.lib.mkNixfmtCheck {
+          inherit pkgs;
+          src = ./.;
+        };
+
+        # #97: prove the pinned check REJECTS a violation (acceptance:
+        # "a nixfmt violation fails it"). Runs the same pinned wrapper path
+        # the framework uses over a known-malformed file and asserts non-zero.
+        nixfmt-catches-violation =
+          let
+            wrapper = nixfmtWrapperFor pkgs;
+          in
+          pkgs.runCommand "nixfmt-catches-violation" { } ''
+            printf '{ x =    1 ;}\n' > bad.nix
+            if ${pkgs.lib.getExe wrapper} --check bad.nix; then
+              echo "FAIL: nixfmt --check accepted a malformed file"; exit 1
+            fi
+            echo "PASS: pinned nixfmt rejects a violation"
+            touch $out
+          '';
+
         mkSet-generic = import ./set/lib/mk-set.nix { inherit (nixpkgs) lib; } {
           inherit pkgs;
           categories = [ "generic" ];
@@ -1184,8 +1240,13 @@
             # lefthook.yml has remotes from all fragments
             grep -q 'nix-lefthook-trailing-whitespace' "${scaffold}/lefthook.yml" \
               || { echo "FAIL: lefthook.yml missing base remote"; exit 1; }
-            grep -q 'nix-lefthook-nixfmt' "${scaffold}/lefthook.yml" \
+            # #97: nixfmt is now a pinned check, not a remote; assert a
+            # remaining nix remote still composes from the nix fragment.
+            grep -q 'nix-lefthook-statix' "${scaffold}/lefthook.yml" \
               || { echo "FAIL: lefthook.yml missing nix remote"; exit 1; }
+            if grep -q 'nix-lefthook-nixfmt' "${scaffold}/lefthook.yml"; then
+              echo "FAIL: lefthook.yml still has nixfmt remote (#97)"; exit 1
+            fi
             grep -q 'nix-lefthook-shellcheck' "${scaffold}/lefthook.yml" \
               || { echo "FAIL: lefthook.yml missing shell remote"; exit 1; }
             grep -q '^pre-commit:' "${scaffold}/lefthook.yml" \

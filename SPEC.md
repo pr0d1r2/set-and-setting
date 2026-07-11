@@ -107,6 +107,19 @@ and dogfoods both.
   tooling; `agentic` = default + LLM. Emitted from mkSetting
   (passthru) so refresh propagates via `nix flake update` (C7). Also
   exposed as `lib.mkDevShells`.
+- I.mkLefthookCheck: `lib/mk-lefthook-check.nix` -- the checks->pinned
+  framework (#97, part of #93). Wraps a PINNED lefthook-* wrapper
+  derivation into a hermetic flake `check`: runs the wrapper `--check`
+  over the repo's `suffices`-filtered files, resolving lint logic via a
+  pinned flake input (the wrapper is built from `nix-lefthook-<tool>-src`),
+  NOT a runtime `remotes:` git_url. Strangler-fig seam -- each tier
+  replaces one lefthook `remotes:` entry with `checks.<name>`; the pinned
+  closure is offline-runnable on a warm cache. Args: `pkgs`, `wrapper`,
+  `src`, `name`, `suffices`. Exposed as `lib.mkLefthookCheck`.
+  `lib.mkNixfmtCheck { pkgs, src, name ? "nixfmt" }` is the nixfmt
+  convenience -- closes over set-and-setting's own pinned
+  `nix-lefthook-nixfmt-src` so a consumer's `nixfmt` check tracks the
+  upstream nixfmt rev via `nix flake update set-and-setting` (C7).
 - I.sync-set: CLI script in mkSet output. Copies skills+concepts+set.md to consumer repo target dir.
 - I.sync-setting: CLI script in mkSetting output. Copies dotfiles to consumer repo root.
 - I.sets: Attrset of raw paths to each skill category dir.
@@ -348,6 +361,17 @@ and dogfoods both.
   diff. Convergent: adding a new file type (e.g. `*.sh`) causes the next
   `mkSetting` run to add the matching checks. `lefthook-local.yml`
   overrides preserved (never touched).
+- V41: Pinned checks over runtime remotes (#93 strangler-fig). A lint
+  delivered as `checks.<sys>.<tool>` (built from a pinned flake input via
+  I.mkLefthookCheck) is offline-runnable on a warm cache and MUST NOT also
+  appear as a lefthook `remotes:` git_url -- the pinned check replaces
+  that entry, one tier at a time, CI green at every step (a partial is
+  never red). nixfmt is the pattern proof (#97): `checks.<sys>.nixfmt` +
+  the removed `nix-lefthook-nixfmt` remote; `nix flake check` runs it
+  hermetically and a nixfmt violation fails it. Remaining tools stay on
+  `remotes:` until their tier lands; converting a tier = add
+  `checks.<tool>` + drop its `remotes:` entry (fragment + tracked
+  `lefthook.yml`) + point consumers' scaffold at the same pinned check.
 
 ## §T Tasks
 
@@ -420,6 +444,7 @@ and dogfoods both.
 | T56 | x | skill extension lint -- nix check + lefthook hook enforcing V6/V13: only `*.md` files in `set/skills/` and `set/drafts/`. Pure `find` + exit-on-non-md. No content parsing. Bats coverage | V6,V13,T14 |
 | T57 | x | skill size budget lint -- nix check + lefthook hook enforcing per-file size limit on individual skill/draft markdown. Single `wc -c` / `find -size` check. Independent of format or structure checks. Bats coverage | V6,V7,T14 |
 | T58 | ~ | `@` ref resolution lint -- nix check validating all `@`-references in `set/` files resolve to existing source paths; also enforces V12 -- SUPERSEDED by T63-T66 (a plain grep flags real non-ref `@` tokens -- git SHAs, email addresses, prose `@main`/`@include` -- and relative refs, so it never goes green; granularized into matcher -> resolution -> V12 -> hook) | V12,T14,T63,T64,T65,T66 |
+| T67 | x | checks->pinned framework + nixfmt proof (#97, part of #93) -- `lib/mk-lefthook-check.nix` wraps a PINNED lefthook-* wrapper into a hermetic flake `check`; `lib.mkNixfmtCheck` closes over the pinned `nix-lefthook-nixfmt-src`; `checks.<sys>.nixfmt` replaces the `nix-lefthook-nixfmt` lefthook `remotes:` entry (nix fragment + tracked `lefthook.yml`); scaffolded consumers get the same pinned check; `nixfmt-catches-violation` proves a violation fails. Establishes the strangler-fig pattern for the remaining #93 tiers | I.mkLefthookCheck,V41,C6,C7 |
 
 ## §B Bugs
 
