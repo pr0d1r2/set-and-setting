@@ -1,9 +1,9 @@
+# nixfmt is intentionally absent here: it is delivered as a PINNED flake
+# `checks.<sys>.nixfmt` (set-and-setting.lib.mkNixfmtCheck / #97), replacing
+# the runtime `remotes:` git_url with an offline-runnable, cache-warm check.
+# The remaining nix linters follow per #93's strangler-fig decomposition.
 ---
 remotes:
-  - git_url: https://github.com/pr0d1r2/nix-lefthook-nixfmt
-    ref: main
-    configs:
-      - lefthook-remote.yml
   - git_url: https://github.com/pr0d1r2/nix-lefthook-statix
     ref: main
     configs:

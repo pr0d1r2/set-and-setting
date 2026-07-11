@@ -2,6 +2,24 @@
 
 ## Unreleased
 
+- T67 (#97, part of #93): checks->pinned framework + nixfmt proof.
+  New `lib/mk-lefthook-check.nix` (exposed as `lib.mkLefthookCheck`)
+  wraps a PINNED lefthook-* wrapper derivation into a hermetic flake
+  `check` -- runs the wrapper `--check` over the repo's
+  `suffices`-filtered files, resolving lint logic via a pinned flake
+  input instead of a runtime lefthook `remotes:` git_url. `lib.mkNixfmtCheck`
+  is the nixfmt convenience, closing over the pinned
+  `nix-lefthook-nixfmt-src`. Added `checks.<sys>.nixfmt` (pinned,
+  offline-runnable) and `checks.<sys>.nixfmt-catches-violation` (proves
+  a malformed file fails). Removed the `nix-lefthook-nixfmt` entry from
+  the `nix` lefthook fragment and the tracked `lefthook.yml`; the
+  scaffold (`component-flake.txt`) now exposes the same pinned `nixfmt`
+  check so consumers stay whole. Bumped `.nix` file-size limit
+  69632 -> 73728. Establishes the strangler-fig pattern (V41) for the
+  remaining #93 tiers. Updated `compose-scaffold` +
+  assemble/scaffold/setting bats to assert nixfmt is a pinned check,
+  not a remote.
+
 - B20: bump `.md` file-size limit from 49152 to 57344 in
   `file_size_limits.yml` -- `SPEC.md` grew past the prior limit.
 

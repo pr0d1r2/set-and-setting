@@ -281,6 +281,12 @@
           inherit pkgs;
           projectRoot = ./.;
         };
+        # #97: nixfmt as a PINNED flake check (not a runtime lefthook remote).
+        # Tracks the upstream nixfmt rev via `nix flake update set-and-setting`.
+        nixfmt = set-and-setting.lib.mkNixfmtCheck {
+          inherit pkgs;
+          src = ./.;
+        };
         default = pkgs.runCommand "checks" { } "touch $out";
       });
     };
