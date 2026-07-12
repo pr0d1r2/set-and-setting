@@ -55,7 +55,8 @@
         }
       );
 
-      checks = forAllSystems (pkgs:
+      checks = forAllSystems (
+        pkgs:
         (set-and-setting.lib.checksFor {
           inherit pkgs fragments;
           src = ./.;
