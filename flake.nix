@@ -787,6 +787,41 @@
             ];
             wrappersForFragment = wrappersForFragment pkgs;
           };
+
+        # #93: fragment-driven check selection -- the CI-gate counterpart to
+        # materializationFor. A consumer declares fragments once and gets both
+        # the local convenience (materializationFor -> lefthook.yml + packages)
+        # and CI gate (checksFor -> flake checks). Only tools with pinned-check
+        # equivalents are included; hooks needing git context, test runners, and
+        # `nix-flake-check` (which IS this mechanism) stay lefthook-local-only.
+        checksFor =
+          {
+            pkgs,
+            src,
+            fragments,
+          }:
+          import ./lib/checks-for.nix {
+            inherit pkgs src fragments;
+            inherit (self.lib)
+              mkNixfmtCheck
+              mkShfmtCheck
+              mkTrailingWhitespaceCheck
+              mkMissingFinalNewlineCheck
+              mkEditorconfigCheckerCheck
+              mkShellcheckCheck
+              mkNoShellFunctionsCheck
+              mkAsciiOnlyCheck
+              mkTyposCheck
+              mkStatixCheck
+              mkDeadnixCheck
+              mkNixNoEmbeddedShellCheck
+              mkGitleaksCheck
+              mkGitConflictMarkersCheck
+              mkGitNoLocalPathsCheck
+              mkExecutePermissionsCheck
+              mkFileSizeCheckCheck
+              ;
+          };
       };
 
       packages = forAllSystems (pkgs: {
@@ -1943,13 +1978,9 @@
               echo "FAIL: scaffold still has ci devShell"; exit 1
             fi
 
-            # #97/#98/#99/#100/#101: consumers stay whole -- the scaffold
-            # flake.nix wires the pinned checks that replaced the dropped
-            # lefthook remotes.
-            for c in mkNixfmtCheck mkShfmtCheck mkTrailingWhitespaceCheck mkMissingFinalNewlineCheck mkEditorconfigCheckerCheck mkStatixCheck mkDeadnixCheck mkNixNoEmbeddedShellCheck mkShellcheckCheck mkNoShellFunctionsCheck mkAsciiOnlyCheck mkTyposCheck mkGitleaksCheck mkGitConflictMarkersCheck mkGitNoLocalPathsCheck mkExecutePermissionsCheck mkFileSizeCheckCheck; do
-              grep -q "$c" "${scaffold}/flake.nix" \
-                || { echo "FAIL: scaffold flake.nix missing $c pinned check"; exit 1; }
-            done
+            # #93: scaffold uses checksFor for fragment-driven pinned checks
+            grep -q 'checksFor' "${scaffold}/flake.nix" \
+              || { echo "FAIL: scaffold flake.nix missing checksFor"; exit 1; }
 
             # T59/B17: scaffold ci.yml must specify devshell: "default"
             # (the CI action defaults to "ci" which no longer exists)
@@ -2287,6 +2318,124 @@
               echo "FAIL: minimal lefthook.yml should not have markdownlint"; exit 1
             fi
             echo "PASS: fragment subset produces fewer packages"
+            touch $out
+          '';
+
+        # #93: checksFor returns fragment-filtered checks -- the CI-gate
+        # counterpart to materializationFor. Verify it returns the expected
+        # check attrset for a given fragment list.
+        checksFor-base =
+          let
+            result = self.lib.checksFor {
+              inherit pkgs;
+              src = ./.;
+              fragments = [ "base" ];
+            };
+          in
+          pkgs.runCommand "checksFor-base" { } ''
+            # base fragment should produce these checks
+            ${builtins.concatStringsSep "\n" (
+              map (name: ''[ -e "${result.${name}}" ] || { echo "FAIL: missing ${name}"; exit 1; }'') [
+                "gitleaks"
+                "git-conflict-markers"
+                "git-no-local-paths"
+                "execute-permissions"
+                "file-size-check"
+                "trailing-whitespace"
+                "missing-final-newline"
+                "editorconfig-checker"
+                "typos"
+              ]
+            )}
+            echo "PASS: base fragment returns all expected checks"
+            touch $out
+          '';
+
+        checksFor-nix =
+          let
+            result = self.lib.checksFor {
+              inherit pkgs;
+              src = ./.;
+              fragments = [ "nix" ];
+            };
+          in
+          pkgs.runCommand "checksFor-nix" { } ''
+            ${builtins.concatStringsSep "\n" (
+              map (name: ''[ -e "${result.${name}}" ] || { echo "FAIL: missing ${name}"; exit 1; }'') [
+                "nixfmt"
+                "statix"
+                "deadnix"
+                "nix-no-embedded-shell"
+              ]
+            )}
+            echo "PASS: nix fragment returns all expected checks"
+            touch $out
+          '';
+
+        checksFor-shell =
+          let
+            result = self.lib.checksFor {
+              inherit pkgs;
+              src = ./.;
+              fragments = [ "shell" ];
+            };
+          in
+          pkgs.runCommand "checksFor-shell" { } ''
+            ${builtins.concatStringsSep "\n" (
+              map (name: ''[ -e "${result.${name}}" ] || { echo "FAIL: missing ${name}"; exit 1; }'') [
+                "shellcheck"
+                "shfmt"
+                "no-shell-functions"
+              ]
+            )}
+            echo "PASS: shell fragment returns all expected checks"
+            touch $out
+          '';
+
+        checksFor-subset =
+          let
+            full = self.lib.checksFor {
+              inherit pkgs;
+              src = ./.;
+              fragments = [
+                "base"
+                "nix"
+                "shell"
+                "ascii"
+              ];
+            };
+            minimal = self.lib.checksFor {
+              inherit pkgs;
+              src = ./.;
+              fragments = [ "base" ];
+            };
+          in
+          pkgs.runCommand "checksFor-subset" { } ''
+            full_count=${toString (builtins.length (builtins.attrNames full))}
+            minimal_count=${toString (builtins.length (builtins.attrNames minimal))}
+            [ "$full_count" -gt "$minimal_count" ] \
+              || { echo "FAIL: full ($full_count) should have more checks than minimal ($minimal_count)"; exit 1; }
+            echo "PASS: fragment subset produces fewer checks ($minimal_count < $full_count)"
+            touch $out
+          '';
+
+        checksFor-empty-fragments =
+          let
+            result = self.lib.checksFor {
+              inherit pkgs;
+              src = ./.;
+              fragments = [
+                "markdown"
+                "yaml"
+                "set"
+              ];
+            };
+          in
+          pkgs.runCommand "checksFor-empty-fragments" { } ''
+            count=${toString (builtins.length (builtins.attrNames result))}
+            [ "$count" -eq 0 ] \
+              || { echo "FAIL: markdown/yaml/set should produce 0 checks, got $count"; exit 1; }
+            echo "PASS: fragments with no pinned checks return empty attrset"
             touch $out
           '';
 

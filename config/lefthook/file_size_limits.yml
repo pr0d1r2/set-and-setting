@@ -5,6 +5,6 @@ extensions:
   dic: 32768
   lock: 262144
   md: 65536
-  nix: 106496
+  nix: 114688
   sh: 16384
   txt: 12288

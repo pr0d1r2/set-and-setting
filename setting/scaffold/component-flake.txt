@@ -273,94 +273,26 @@
         }
       );
 
-      checks = forAllSystems (pkgs: {
-        dep-graph = set-and-setting.lib.mkDepGraphCheck {
-          inherit pkgs;
-          projectRoot = ./.;
-        };
-        # #97: nixfmt as a PINNED flake check (not a runtime lefthook remote).
-        # Tracks the upstream nixfmt rev via `nix flake update set-and-setting`.
-        nixfmt = set-and-setting.lib.mkNixfmtCheck {
+      # #93: fragment-driven checks -- declare fragments once, get all relevant
+      # pinned checks. Fragments match those used in materializationFor.
+      checks = forAllSystems (pkgs:
+        (set-and-setting.lib.checksFor {
           inherit pkgs;
           src = ./.;
-        };
-        # #98: the formatter tier as PINNED flake checks (not runtime lefthook
-        # remotes). Each tracks its upstream tool rev via
-        # `nix flake update set-and-setting`.
-        shfmt = set-and-setting.lib.mkShfmtCheck {
-          inherit pkgs;
-          src = ./.;
-        };
-        trailing-whitespace = set-and-setting.lib.mkTrailingWhitespaceCheck {
-          inherit pkgs;
-          src = ./.;
-        };
-        missing-final-newline = set-and-setting.lib.mkMissingFinalNewlineCheck {
-          inherit pkgs;
-          src = ./.;
-        };
-        editorconfig-checker = set-and-setting.lib.mkEditorconfigCheckerCheck {
-          inherit pkgs;
-          src = ./.;
-        };
-        # #99: nix linters as PINNED flake checks (not runtime lefthook
-        # remotes). Each tracks its upstream tool rev via
-        # `nix flake update set-and-setting`.
-        statix = set-and-setting.lib.mkStatixCheck {
-          inherit pkgs;
-          src = ./.;
-        };
-        deadnix = set-and-setting.lib.mkDeadnixCheck {
-          inherit pkgs;
-          src = ./.;
-        };
-        nix-no-embedded-shell = set-and-setting.lib.mkNixNoEmbeddedShellCheck {
-          inherit pkgs;
-          src = ./.;
-        };
-        # #100: shell/content linters as PINNED flake checks (not runtime
-        # lefthook remotes). Each tracks its upstream tool rev via
-        # `nix flake update set-and-setting`.
-        shellcheck = set-and-setting.lib.mkShellcheckCheck {
-          inherit pkgs;
-          src = ./.;
-        };
-        no-shell-functions = set-and-setting.lib.mkNoShellFunctionsCheck {
-          inherit pkgs;
-          src = ./.;
-        };
-        ascii-only = set-and-setting.lib.mkAsciiOnlyCheck {
-          inherit pkgs;
-          src = ./.;
-        };
-        typos = set-and-setting.lib.mkTyposCheck {
-          inherit pkgs;
-          src = ./.;
-        };
-        # #101: git/security linters as PINNED flake checks (not runtime
-        # lefthook remotes). Each tracks its upstream tool rev via
-        # `nix flake update set-and-setting`.
-        gitleaks = set-and-setting.lib.mkGitleaksCheck {
-          inherit pkgs;
-          src = ./.;
-        };
-        git-conflict-markers = set-and-setting.lib.mkGitConflictMarkersCheck {
-          inherit pkgs;
-          src = ./.;
-        };
-        git-no-local-paths = set-and-setting.lib.mkGitNoLocalPathsCheck {
-          inherit pkgs;
-          src = ./.;
-        };
-        execute-permissions = set-and-setting.lib.mkExecutePermissionsCheck {
-          inherit pkgs;
-          src = ./.;
-        };
-        file-size-check = set-and-setting.lib.mkFileSizeCheckCheck {
-          inherit pkgs;
-          src = ./.;
-        };
-        default = pkgs.runCommand "checks" { } "touch $out";
-      });
+          fragments = [
+            "base"
+            "nix"
+            "shell"
+            "ascii"
+          ];
+        })
+        // {
+          dep-graph = set-and-setting.lib.mkDepGraphCheck {
+            inherit pkgs;
+            projectRoot = ./.;
+          };
+          default = pkgs.runCommand "checks" { } "touch $out";
+        }
+      );
     };
 }
