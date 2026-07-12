@@ -2,13 +2,8 @@
 # shellcheck disable=SC2030,SC2031
 
 # Unit tests for setting/lib/assemble-lefthook.sh -- assembles lefthook.yml
-# from integration fragments by merging remotes + pre-commit + pre-push.
-
-write_remote() {
-    printf '%s\n' "---" "remotes:" \
-        "  - git_url: https://github.com/example/$1" \
-        "    ref: main" "    configs:" "      - lefthook-remote.yml"
-}
+# from integration fragments by merging pre-commit + pre-push sections.
+# No remotes: block -- all linters are pinned flake checks (#102 FLIP).
 
 write_commands() {
     printf '\n%s\n' "$1:"
@@ -25,27 +20,25 @@ setup() {
     out="$(mktemp -d)"
     SCRIPT="$BATS_TEST_DIRNAME/../setting/lib/assemble-lefthook.sh"
 
-    write_remote hook-a >"$FRAGMENTS_DIR/base.yml"
-    printf '%s\n' "  - git_url: https://github.com/example/hook-b" \
-        "    ref: main" "    configs:" "      - lefthook-remote.yml" \
-        >>"$FRAGMENTS_DIR/base.yml"
-    write_remote hook-nix >"$FRAGMENTS_DIR/nix.yml"
-    write_remote hook-shell >"$FRAGMENTS_DIR/shell.yml"
+    printf '%s\n' "---" >"$FRAGMENTS_DIR/base.yml"
+
+    printf '%s\n' "---" >"$FRAGMENTS_DIR/nix.yml"
+    printf '%s\n' "---" >"$FRAGMENTS_DIR/shell.yml"
 
     {
-        write_remote hook-ascii
+        printf '%s\n' "---"
         write_commands pre-commit ascii-check "*.nix" staged_files
         write_commands pre-push ascii-check "*.nix" push_files
     } >"$FRAGMENTS_DIR/ascii.yml"
 
     {
-        write_remote hook-md
+        printf '%s\n' "---"
         write_commands pre-commit mdlint "*.md" staged_files
         write_commands pre-push mdlint "*.md" push_files
     } >"$FRAGMENTS_DIR/markdown.yml"
 
     {
-        write_remote hook-yaml
+        printf '%s\n' "---"
         write_commands pre-commit yamllint "*.yml" staged_files
         write_commands pre-push yamllint "*.yml" push_files
     } >"$FRAGMENTS_DIR/yaml.yml"
@@ -74,17 +67,10 @@ teardown() {
     head -1 "$out/lefthook.yml" | grep -q '^---$'
 }
 
-@test "merges all remotes from all fragments" {
+@test "no remotes block in output" {
     bash "$SCRIPT"
-    grep -c 'git_url:' "$out/lefthook.yml" | grep -q '^7$'
-}
-
-@test "remotes appear in fragment order" {
-    bash "$SCRIPT"
-    first_remote="$(grep 'git_url:' "$out/lefthook.yml" | head -1)"
-    [[ "$first_remote" == *"hook-a"* ]]
-    last_remote="$(grep 'git_url:' "$out/lefthook.yml" | tail -1)"
-    [[ "$last_remote" == *"hook-yaml"* ]]
+    run ! grep -q 'remotes:' "$out/lefthook.yml"
+    run ! grep -q 'git_url:' "$out/lefthook.yml"
 }
 
 @test "has pre-commit section with commands" {
@@ -119,7 +105,7 @@ teardown() {
 
 @test "fragments without commands do not add empty sections" {
     for name in ascii markdown yaml; do
-        write_remote "hook-$name" >"$FRAGMENTS_DIR/$name.yml"
+        printf '%s\n' "---" >"$FRAGMENTS_DIR/$name.yml"
     done
     printf '%s\n' "---" >"$FRAGMENTS_DIR/set.yml"
     bash "$SCRIPT"
@@ -134,24 +120,9 @@ teardown() {
     export FRAGMENTS_DIR
     bash "$SCRIPT"
     [ -f "$out/lefthook.yml" ]
-    # #97-#101: all base linters are pinned flake checks now -- no base
-    # remotes remain. markdown/yaml remotes still present.
-    run ! grep -q 'nix-lefthook-git-conflict-markers' "$out/lefthook.yml"
-    run ! grep -q 'nix-lefthook-gitleaks' "$out/lefthook.yml"
-    run ! grep -q 'nix-lefthook-git-no-local-paths' "$out/lefthook.yml"
-    run ! grep -q 'nix-lefthook-execute-permissions' "$out/lefthook.yml"
-    run ! grep -q 'nix-lefthook-file-size-check' "$out/lefthook.yml"
-    run ! grep -q 'nix-lefthook-statix' "$out/lefthook.yml"
-    run ! grep -q 'nix-lefthook-nixfmt' "$out/lefthook.yml"
-    run ! grep -q 'nix-lefthook-shfmt' "$out/lefthook.yml"
-    run ! grep -q 'nix-lefthook-trailing-whitespace' "$out/lefthook.yml"
-    run ! grep -q 'nix-lefthook-missing-final-newline' "$out/lefthook.yml"
-    run ! grep -q 'nix-lefthook-editorconfig-checker' "$out/lefthook.yml"
-    run ! grep -q 'nix-lefthook-shellcheck' "$out/lefthook.yml"
-    run ! grep -q 'nix-lefthook-no-shell-functions' "$out/lefthook.yml"
-    run ! grep -q 'nix-lefthook-ascii-only' "$out/lefthook.yml"
-    run ! grep -q 'nix-lefthook-typos' "$out/lefthook.yml"
-    grep -q 'nix-lefthook-yamllint' "$out/lefthook.yml"
+    # #102 FLIP: no remotes anywhere in the emitted lefthook.
+    run ! grep -q 'remotes:' "$out/lefthook.yml"
+    run ! grep -q 'git_url:' "$out/lefthook.yml"
     grep -q '^pre-commit:' "$out/lefthook.yml"
     grep -q '^pre-push:' "$out/lefthook.yml"
     grep -q 'markdownlint:' "$out/lefthook.yml"
@@ -162,28 +133,23 @@ teardown() {
 
 @test "FRAGMENTS restricts included fragments" {
     FRAGMENTS="base markdown" bash "$SCRIPT"
-    grep -q 'hook-a' "$out/lefthook.yml"
-    grep -q 'hook-md' "$out/lefthook.yml"
-    run ! grep -q 'hook-nix' "$out/lefthook.yml"
-    run ! grep -q 'hook-shell' "$out/lefthook.yml"
-    run ! grep -q 'hook-ascii' "$out/lefthook.yml"
-    run ! grep -q 'hook-yaml' "$out/lefthook.yml"
+    grep -q 'mdlint' "$out/lefthook.yml"
+    run ! grep -q 'yamllint' "$out/lefthook.yml"
+    run ! grep -q 'ascii-check' "$out/lefthook.yml"
     run ! grep -q 'set-ref-resolution' "$out/lefthook.yml"
 }
 
-@test "FRAGMENTS=base produces remotes-only output" {
+@test "FRAGMENTS=base produces commands-only output" {
     FRAGMENTS="base" bash "$SCRIPT"
-    grep -q 'hook-a' "$out/lefthook.yml"
     run ! grep -q '^pre-commit:' "$out/lefthook.yml"
     run ! grep -q '^pre-push:' "$out/lefthook.yml"
+    run ! grep -q 'remotes:' "$out/lefthook.yml"
 }
 
 @test "FRAGMENTS=base+ascii includes ascii commands" {
     FRAGMENTS="base ascii" bash "$SCRIPT"
-    grep -q 'hook-a' "$out/lefthook.yml"
-    grep -q 'hook-ascii' "$out/lefthook.yml"
     grep -q 'ascii-check:' "$out/lefthook.yml"
-    run ! grep -q 'hook-nix' "$out/lefthook.yml"
+    run ! grep -q 'yamllint' "$out/lefthook.yml"
 }
 
 @test "FRAGMENTS with real fragments -- nix only" {
@@ -192,22 +158,9 @@ teardown() {
     FRAGMENTS_DIR="$real_dir"
     export FRAGMENTS_DIR
     FRAGMENTS="base nix ascii" bash "$SCRIPT"
-    # #97-#101: all base + nix + shell + ascii linters are pinned checks --
-    # no remotes from those fragments remain.
-    run ! grep -q 'nix-lefthook-git-conflict-markers' "$out/lefthook.yml"
-    run ! grep -q 'nix-lefthook-gitleaks' "$out/lefthook.yml"
-    run ! grep -q 'nix-lefthook-git-no-local-paths' "$out/lefthook.yml"
-    run ! grep -q 'nix-lefthook-execute-permissions' "$out/lefthook.yml"
-    run ! grep -q 'nix-lefthook-file-size-check' "$out/lefthook.yml"
-    run ! grep -q 'nix-lefthook-statix' "$out/lefthook.yml"
-    run ! grep -q 'nix-lefthook-nixfmt' "$out/lefthook.yml"
-    run ! grep -q 'nix-lefthook-trailing-whitespace' "$out/lefthook.yml"
-    run ! grep -q 'nix-lefthook-missing-final-newline' "$out/lefthook.yml"
-    run ! grep -q 'nix-lefthook-editorconfig-checker' "$out/lefthook.yml"
-    run ! grep -q 'nix-lefthook-shellcheck' "$out/lefthook.yml"
-    run ! grep -q 'nix-lefthook-no-shell-functions' "$out/lefthook.yml"
-    run ! grep -q 'nix-lefthook-ascii-only' "$out/lefthook.yml"
-    run ! grep -q 'nix-lefthook-typos' "$out/lefthook.yml"
+    # #102 FLIP: no remotes from any fragment.
+    run ! grep -q 'remotes:' "$out/lefthook.yml"
+    run ! grep -q 'git_url:' "$out/lefthook.yml"
     run ! grep -q 'nix-lefthook-markdownlint' "$out/lefthook.yml"
     run ! grep -q 'nix-lefthook-yamllint' "$out/lefthook.yml"
     run ! grep -q 'set-ref-resolution' "$out/lefthook.yml"
@@ -215,17 +168,14 @@ teardown() {
 
 @test "FRAGMENTS=base+set includes set commands" {
     FRAGMENTS="base set" bash "$SCRIPT"
-    grep -q 'hook-a' "$out/lefthook.yml"
     grep -q 'set-ref-resolution:' "$out/lefthook.yml"
-    run ! grep -q 'hook-nix' "$out/lefthook.yml"
-    run ! grep -q 'hook-md' "$out/lefthook.yml"
+    run ! grep -q 'mdlint' "$out/lefthook.yml"
 }
 
-@test "set fragment has no remotes" {
+@test "no remotes even with set-only fragment" {
     FRAGMENTS="set" bash "$SCRIPT"
-    local remote_count
-    remote_count="$(grep -c 'git_url:' "$out/lefthook.yml" || true)"
-    [ "$remote_count" -eq 0 ]
+    run ! grep -q 'remotes:' "$out/lefthook.yml"
+    run ! grep -q 'git_url:' "$out/lefthook.yml"
 }
 
 @test "set fragment commands in pre-commit and pre-push" {

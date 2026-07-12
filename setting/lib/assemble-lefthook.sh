@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 # assemble-lefthook.sh -- assemble lefthook.yml from integration fragments.
-# Merges remotes + pre-commit + pre-push sections from selected fragment
-# files into a single lefthook.yml. Fragment order is deterministic.
+# Merges pre-commit + pre-push sections from selected fragment files into
+# a single lefthook.yml. Fragment order is deterministic.
+# No remotes: block -- all linters are pinned flake checks (#102 FLIP).
 # Env in: FRAGMENTS_DIR, out
 #   FRAGMENTS (optional): space-separated fragment names to include.
 #     Defaults to all: "base nix shell ascii markdown yaml set".
@@ -14,12 +15,6 @@ ordered="${FRAGMENTS:-base nix shell ascii markdown yaml set}"
 
 {
     printf '%s\n' '---'
-    printf '%s\n' 'remotes:'
-
-    for name in $ordered; do
-        awk '/^remotes:/{r=1;next} /^[a-z]/{r=0} r&&NF{print}' \
-            "$FRAGMENTS_DIR/$name.yml"
-    done
 
     has_precommit=0
     for name in $ordered; do
