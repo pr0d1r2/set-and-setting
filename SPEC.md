@@ -45,7 +45,7 @@ and dogfoods both.
 
 ## §I Interfaces
 
-- I.flake: `flake.nix` -- main entry. Exposes `sets`, `drafts`, `settings`, `lib.mkSet`, `lib.mkSetting`, `lib.mkDriftCheck`, `lib.mkDepGraphCheck`, `lib.mkMaterializeCheck`, `lib.mkDevShells`, `packages.set`, `packages.setting`, `checks`.
+- I.flake: `flake.nix` -- main entry. Exposes `sets`, `drafts`, `settings`, `lib.mkSet`, `lib.mkSetting`, `lib.mkDriftCheck`, `lib.mkDepGraphCheck`, `lib.mkMaterializeCheck`, `lib.mkDevShells`, `lib.checksFor`, `packages.set`, `packages.setting`, `checks`.
 - I.mkSet: `set/lib/mk-set.nix` -- the skill-set emitter and single
   source of truth for skills. Mirrors agnostic `set/skills/` markdown 1:1
   into `<dir>/set/` as **path-scoped rules**: each source file copied
@@ -151,6 +151,15 @@ and dogfoods both.
   Valid fragments: `base`, `nix`, `shell`, `ascii`, `markdown`, `yaml`,
   `set`. Unknown fragment -> error with guidance. Exposed as
   `lib.materializationFor`.
+- I.checksFor: `lib/checks-for.nix` -- fragment-driven check selection
+  (#93). The CI-gate counterpart to `materializationFor`. Given a
+  consumer's declared fragment list, returns an attrset of pinned check
+  derivations (one per guardrail tool relevant to those fragments). Only
+  tools with pinned-check equivalents (`mk*Check` helpers) are included;
+  hooks needing git context, test runners, and `nix-flake-check` stay
+  lefthook-local-only. Fragment->check mapping mirrors the wrapper mapping
+  in `wrappersForFragment`. Args: `pkgs`, `src`, `fragments`. Exposed as
+  `lib.checksFor`.
 - I.sync-set: CLI script in mkSet output. Copies skills+concepts+set.md to consumer repo target dir.
 - I.sync-setting: CLI script in mkSetting output. Copies dotfiles to consumer repo root.
 - I.sets: Attrset of raw paths to each skill category dir.
@@ -426,6 +435,15 @@ and dogfoods both.
   Formerly remote-only commands (narrow-language-other) are inlined with
   their env (NARROW_LANGUAGE_DICT). Wrapper binaries come from the
   devShell, not from remotes.
+- V42: `checksFor` mirrors `materializationFor` (#93 consumer bridge).
+  Both accept `{ pkgs, fragments }` (checksFor adds `src`); both use
+  `wrappersForFragment` as their single source of truth for the fragment->
+  tool mapping. `materializationFor` returns `{ files, packages }` (local
+  convenience); `checksFor` returns an attrset of pinned check derivations
+  (CI gate). A consumer declares fragments ONCE and gets both. Only tools
+  with pinned-check equivalents (`mk*Check`) appear in `checksFor`;
+  git-context hooks, test runners, and `nix-flake-check` stay
+  lefthook-local.
 
 ## §T Tasks
 
@@ -505,6 +523,7 @@ and dogfoods both.
 | T71 | x | checks->pinned git/security tier (#101, part of #93) -- convert gitleaks, git-conflict-markers, git-no-local-paths, execute-permissions, file-size-check to pinned `checks.<sys>.<tool>` via `lib.mk{Gitleaks,GitConflictMarkers,GitNoLocalPaths,ExecutePermissions,FileSizeCheck}Check`; drop the five `remotes:` entries (base fragment, tracked `lefthook.yml`); base fragment now has no remotes; git-no-local-paths uses a custom derivation to exclude `flake.nix`/`flake.lock`; scaffold wires the same pinned checks; per-tool `-catches-violation` proofs | I.mkLefthookCheck,V41,C6,C7,T67 |
 | T72 | x | checks->pinned FLIP (#102) -- all tiers converted (#97-#101); remove the `remotes:` block from emitted `lefthook.yml` template and all integration fragments (markdown, yaml); remove remotes assembly from `assemble-lefthook.sh`; inline narrow-language-other with env (NARROW_LANGUAGE_DICT); clean up lefthook-local.yml; CI = `nix flake check` exclusively, no runtime git fetch | V41,T67,T68,T69,T70,T71 |
 | T73 | x | materialization primitive (#92) -- `lib.materializationFor { pkgs, fragments }` returns `{ files, packages }` as one atom: assembled lefthook.yml + fragment-mapped wrapper derivations. `wrappersForFragment` is the single source for both `materializationFor` and `lefthookWrappersFor` (no duplication). Coherence check (by construction + nix check). Reuses `assemble-lefthook.sh`. Fragments are a committed declaration (pure eval) | I.materializationFor,V40,V41,I.detectFragments |
+| T74 | x | checksFor -- fragment-driven check selection (#93 consumer bridge). `lib.checksFor { pkgs, src, fragments }` returns an attrset of pinned check derivations matching the given fragments. CI-gate counterpart to `materializationFor`. Scaffold uses `checksFor` instead of manual `mk*Check` wiring. Nix checks: per-fragment verification, subset property, empty-fragment handling | I.checksFor,V42,I.materializationFor,V41 |
 
 ## §B Bugs
 
