@@ -51,6 +51,7 @@
           basePackages = mat.packages;
           defaultShellHook = ''
             ${self.packages.${sys}.setting}/bin/sync-setting .
+            cp -f ${mat.files}/lefthook.yml lefthook.yml
           '';
         }
       );

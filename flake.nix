@@ -2553,6 +2553,7 @@
             # Verify leaf flake references set-and-setting
             grep -q "set-and-setting" ${seed}/flake.nix || { echo "FAIL: flake.nix should reference set-and-setting"; exit 1; }
             grep -q "checksFor" ${seed}/flake.nix || { echo "FAIL: flake.nix should use checksFor"; exit 1; }
+            grep -q "mat.files" ${seed}/flake.nix || { echo "FAIL: flake.nix should materialize lefthook.yml from mat.files"; exit 1; }
             echo "PASS: seed layout verified"
             touch $out
           '';

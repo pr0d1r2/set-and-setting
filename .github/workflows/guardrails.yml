@@ -19,10 +19,6 @@ name: Guardrails
         description: Timeout in seconds for nix flake check
         type: string
         default: "600"
-      extra-platforms:
-        description: Extra platforms for cross-compilation (e.g. aarch64-linux)
-        type: string
-        default: ""
 
 jobs:
   check:
@@ -31,9 +27,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: cachix/install-nix-action@v27
       - name: Materialize configs
-        run: |
-          setting_pkg="$(nix build .#setting --print-out-paths --no-link)"
-          "$setting_pkg/bin/sync-setting" .
+        run: nix develop --command true
       - name: Confirm materialization
         run: nix run .#confirm
       - name: Nix flake check

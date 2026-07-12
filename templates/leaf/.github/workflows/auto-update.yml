@@ -1,6 +1,11 @@
 ---
 name: Update set-and-setting
 
+# Auto-update workflow for consumer repos (T8/C7). Runs daily and on
+# manual dispatch. Updates the set-and-setting flake input and opens
+# a PR with the flake.lock change. After merge, devShell entry
+# (direnv reload) triggers sync-set + sync-setting automatically.
+
 "on":
   schedule:
     - cron: '30 4 * * *'
