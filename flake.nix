@@ -486,6 +486,12 @@
         mkMaterializeCheck = import ./lib/mk-materialize-check.nix { inherit (nixpkgs) lib; };
         mkDepGraphCheck = import ./lib/mk-dep-graph-check.nix;
         mkConfirm = import ./lib/mk-confirm.nix;
+        mkSeed =
+          { pkgs }:
+          import ./lib/mk-seed.nix {
+            inherit pkgs;
+            scaffoldDir = ./setting/scaffold;
+          };
         mkDevShells = import ./setting/lib/mk-dev-shells.nix;
 
         # #97: the framework seam -- wrap any pinned lefthook-* wrapper into a
@@ -2528,6 +2534,29 @@
               touch $out
             '';
 
+        seed-layout =
+          let
+            seed = self.lib.mkSeed { inherit pkgs; };
+          in
+          pkgs.runCommand "seed-layout-check" { } ''
+            # Verify the seed derivation contains expected files
+            test -f ${seed}/flake.nix || { echo "FAIL: flake.nix missing"; exit 1; }
+            test -f ${seed}/.gitignore || { echo "FAIL: .gitignore missing"; exit 1; }
+            test -f ${seed}/.github/workflows/ci.yml || { echo "FAIL: ci.yml missing"; exit 1; }
+            test -f ${seed}/.github/workflows/auto-update.yml || { echo "FAIL: auto-update.yml missing"; exit 1; }
+            # Verify .gitignore ignores materialized artifacts
+            grep -q "lefthook.yml" ${seed}/.gitignore || { echo "FAIL: .gitignore should ignore lefthook.yml"; exit 1; }
+            grep -q ".markdownlint.yml" ${seed}/.gitignore || { echo "FAIL: .gitignore should ignore .markdownlint.yml"; exit 1; }
+            grep -q ".yamllint.yml" ${seed}/.gitignore || { echo "FAIL: .gitignore should ignore .yamllint.yml"; exit 1; }
+            # Verify leaf CI uses reusable guardrails workflow
+            grep -q "guardrails.yml@main" ${seed}/.github/workflows/ci.yml || { echo "FAIL: CI should use guardrails.yml"; exit 1; }
+            # Verify leaf flake references set-and-setting
+            grep -q "set-and-setting" ${seed}/flake.nix || { echo "FAIL: flake.nix should reference set-and-setting"; exit 1; }
+            grep -q "checksFor" ${seed}/flake.nix || { echo "FAIL: flake.nix should use checksFor"; exit 1; }
+            echo "PASS: seed layout verified"
+            touch $out
+          '';
+
         default = pkgs.runCommand "set-and-setting-checks" { } ''
           touch $out
         '';
@@ -2745,7 +2774,28 @@
             type = "app";
             program = "${confirmApp}/bin/confirm";
           };
+          seed = {
+            type = "app";
+            program = "${
+              pkgs.writeShellApplication {
+                name = "seed";
+                runtimeInputs = [
+                  pkgs.coreutils
+                  pkgs.findutils
+                ];
+                text = ''
+                  export SEED_SRC="${self.lib.mkSeed { inherit pkgs; }}"
+                ''
+                + builtins.readFile ./lib/app-seed.sh;
+              }
+            }/bin/seed";
+          };
         }
       );
+
+      templates.leaf = {
+        description = "Thin leaf consumer repo with reusable CI guardrails";
+        path = ./templates/leaf;
+      };
     };
 }
