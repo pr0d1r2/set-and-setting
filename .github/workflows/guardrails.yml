@@ -1,0 +1,53 @@
+---
+name: Guardrails
+
+# Reusable CI workflow for leaf consumer repos (#95). A leaf's CI is a
+# thin caller (~3 lines) that delegates to this workflow. Steps:
+# 1. Checkout + install nix
+# 2. Materialize gitignored configs (lefthook.yml, .markdownlint.yml, etc.)
+# 3. Run `nix flake check` (all pinned checks run hermetically)
+#
+# Consumer usage:
+#   jobs:
+#     guardrails:
+#       uses: pr0d1r2/set-and-setting/.github/workflows/guardrails.yml@main
+
+"on":
+  workflow_call:
+    inputs:
+      flake-check-timeout:
+        description: Timeout in seconds for nix flake check
+        type: string
+        default: "600"
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: cachix/install-nix-action@v27
+      - name: Materialize configs
+        run: nix develop --command true
+      - name: Confirm materialization
+        run: nix run .#confirm
+      - name: Nix flake check
+        run: |
+          nix flake check \
+            --print-build-logs \
+            --timeout ${{ inputs.flake-check-timeout }}
+
+  check-darwin:
+    needs: check
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: cachix/install-nix-action@v27
+      - name: Materialize configs
+        run: |
+          setting_pkg="$(nix build .#setting --print-out-paths --no-link)"
+          "$setting_pkg/bin/sync-setting" .
+      - name: Nix flake check
+        run: |
+          nix flake check \
+            --print-build-logs \
+            --timeout ${{ inputs.flake-check-timeout }}
