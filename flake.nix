@@ -174,6 +174,64 @@
       forAllSystems =
         f: nixpkgs.lib.genAttrs supportedSystems (system: f nixpkgs.legacyPackages.${system});
 
+      # --- apps.migrate fixtures (#96): shared derivation environment ---
+      # Every migrate state fixture runs the same migrator over a fixture
+      # git repo, so they share one env + toolset. The migrator runs on
+      # markdown/awk/git only (the confirmator step is a dry-run, tools are
+      # never executed), so no wrapper packages are needed.
+      migrateSeedFor = pkgs: self.lib.mkSeed { inherit pkgs; };
+      migrateFixtureEnv =
+        pkgs:
+        let
+          allFragments = [
+            "base"
+            "nix"
+            "shell"
+            "ascii"
+            "markdown"
+            "yaml"
+            "set"
+          ];
+          # Names of every pinned flake check the referenced architecture
+          # provides (checksFor over all fragments) -- the equivalence gate
+          # treats these as part of the referenced check-set.
+          checksUniverseChecks = builtins.attrNames (
+            self.lib.checksFor {
+              inherit pkgs;
+              src = ./.;
+              fragments = allFragments;
+            }
+          );
+          # lefthook.yml from ALL fragments -- its command names complete the
+          # universe of architecture-provided guardrails.
+          fullLefthookFiles =
+            (self.lib.materializationFor {
+              inherit pkgs;
+              fragments = allFragments;
+            }).files;
+          migrateSetting = import ./setting/lib/mk-setting.nix { inherit (nixpkgs) lib; } { inherit pkgs; };
+        in
+        {
+          nativeBuildInputs = [
+            pkgs.coreutils
+            pkgs.diffutils
+            pkgs.findutils
+            pkgs.gawk
+            pkgs.git
+            pkgs.gnugrep
+          ];
+          SEED_SRC = migrateSeedFor pkgs;
+          SETTING_SRC = migrateSetting.configFiles;
+          FRAGMENTS_DIR = ./setting/integrations/lefthook;
+          ASSEMBLE_SCRIPT = ./setting/lib/assemble-lefthook.sh;
+          DETECT_SCRIPT = ./setting/lib/detect-fragments.sh;
+          CONFIRM_SCRIPT = ./lib/confirm.sh;
+          CONFIRM_REV = self.rev or self.dirtyRev or "unknown";
+          MIGRATE_SCRIPT = ./lib/migrate.sh;
+          CHECKS_UNIVERSE = builtins.concatStringsSep " " checksUniverseChecks;
+          FULL_LEFTHOOK = "${fullLefthookFiles}/lefthook.yml";
+        };
+
       wrap =
         pkgs: name: src: extra:
         pkgs.writeShellApplication (
@@ -2558,6 +2616,167 @@
             touch $out
           '';
 
+        # --- apps.migrate: vendored->referenced transform (#96) ---
+        # Fixture repos for each state; all share migrateFixtureEnv.
+        migrate-vendored =
+          let
+            # Pre-FLIP style: every guardrail inline as a lefthook command.
+            # Names are all covered by the referenced check-set (pinned checks
+            # nixfmt/statix/shellcheck/gitleaks + materialized markdownlint/
+            # yamllint), so the equivalence gate passes.
+            vendoredLefthook = pkgs.writeText "vendored-lefthook.yml" ''
+              ---
+              pre-commit:
+                commands:
+                  nixfmt:
+                    run: nixfmt --check {staged_files}
+                  statix:
+                    run: statix check
+                  shellcheck:
+                    run: shellcheck {staged_files}
+                  gitleaks:
+                    run: gitleaks protect
+                  markdownlint:
+                    run: markdownlint {staged_files}
+                  yamllint:
+                    run: yamllint {staged_files}
+            '';
+            fixture = pkgs.runCommand "migrate-vendored-fixture" { } ''
+              mkdir -p $out/.github/workflows
+              printf '%s\n' '{ outputs = { self }: { }; } # heavy vendored flake' > $out/flake.nix
+              printf '%s\n' 'inline ci steps' > $out/.github/workflows/ci.yml
+              echo "# demo" > $out/README.md
+              cp ${vendoredLefthook} $out/lefthook.yml
+            '';
+          in
+          pkgs.runCommand "migrate-vendored" (migrateFixtureEnv pkgs) ''
+            cp -r ${fixture} workdir
+            chmod -R u+w workdir
+            cd workdir
+            git init -q
+            git add .
+
+            out1="$(bash "$MIGRATE_SCRIPT")"
+            echo "$out1"
+            echo "$out1" | grep -q 'state=vendored' || { echo "FAIL: not vendored"; exit 1; }
+            echo "$out1" | grep -q 'PASS: equivalence' || { echo "FAIL: no equivalence"; exit 1; }
+
+            # vendored flake replaced by the referenced (thin) seed flake
+            grep -q 'set-and-setting' flake.nix || { echo "FAIL: flake not referenced"; exit 1; }
+            grep -q 'checksFor' flake.nix || { echo "FAIL: flake missing checksFor"; exit 1; }
+            grep -q 'guardrails.yml' .github/workflows/ci.yml || { echo "FAIL: ci not caller"; exit 1; }
+            grep -qxF 'lefthook.yml' .gitignore || { echo "FAIL: lefthook not gitignored"; exit 1; }
+
+            flake_hash="$(sha256sum flake.nix | cut -d' ' -f1)"
+
+            # idempotent: a migrated repo re-migrates to a no-op, no changes
+            git add -A
+            out2="$(bash "$MIGRATE_SCRIPT")"
+            echo "$out2"
+            echo "$out2" | grep -q 'state=referenced' || { echo "FAIL: 2nd not referenced"; exit 1; }
+            echo "$out2" | grep -q 'no-op' || { echo "FAIL: 2nd not no-op"; exit 1; }
+            flake_hash2="$(sha256sum flake.nix | cut -d' ' -f1)"
+            [ "$flake_hash" = "$flake_hash2" ] || { echo "FAIL: not idempotent"; exit 1; }
+
+            echo "PASS: migrate vendored -> referenced, idempotent"
+            touch $out
+          '';
+
+        migrate-already-referenced =
+          pkgs.runCommand "migrate-already-referenced" (migrateFixtureEnv pkgs)
+            ''
+              # an already-referenced repo == the seed layout
+              cp -r ${migrateSeedFor pkgs} workdir
+              chmod -R u+w workdir
+              cd workdir
+              git init -q
+              git add .
+              before="$(sha256sum flake.nix | cut -d' ' -f1)"
+              result="$(bash "$MIGRATE_SCRIPT")"
+              echo "$result"
+              echo "$result" | grep -q 'state=referenced' || { echo "FAIL: not referenced"; exit 1; }
+              echo "$result" | grep -q 'no-op' || { echo "FAIL: should be no-op"; exit 1; }
+              after="$(sha256sum flake.nix | cut -d' ' -f1)"
+              [ "$before" = "$after" ] || { echo "FAIL: no-op mutated flake.nix"; exit 1; }
+              echo "PASS: already-referenced is a no-op"
+              touch $out
+            '';
+
+        migrate-bare = pkgs.runCommand "migrate-bare" (migrateFixtureEnv pkgs) ''
+          mkdir workdir && cd workdir
+          echo "# bare repo" > README.md
+          git init -q
+          git add .
+          result="$(bash "$MIGRATE_SCRIPT")"
+          echo "$result"
+          echo "$result" | grep -q 'state=bare' || { echo "FAIL: not bare"; exit 1; }
+          echo "$result" | grep -q 'PASS: equivalence' || { echo "FAIL: no equivalence"; exit 1; }
+          grep -q 'set-and-setting' flake.nix || { echo "FAIL: seed not planted"; exit 1; }
+          echo "PASS: migrate bare -> referenced"
+          touch $out
+        '';
+
+        migrate-partial =
+          let
+            # a leftover vendored lefthook (covered checks) still tracked
+            partialLefthook = pkgs.writeText "partial-lefthook.yml" ''
+              ---
+              pre-commit:
+                commands:
+                  nixfmt:
+                    run: nixfmt --check {staged_files}
+                  markdownlint:
+                    run: markdownlint {staged_files}
+            '';
+          in
+          pkgs.runCommand "migrate-partial" (migrateFixtureEnv pkgs) ''
+            # partial: references set-and-setting BUT still tracks lefthook.yml
+            cp -r ${migrateSeedFor pkgs} workdir
+            chmod -R u+w workdir
+            cd workdir
+            cp ${partialLefthook} lefthook.yml
+            git init -q
+            git add -f lefthook.yml
+            git add .
+            result="$(bash "$MIGRATE_SCRIPT")"
+            echo "$result"
+            echo "$result" | grep -q 'state=partial' || { echo "FAIL: not partial"; exit 1; }
+            echo "$result" | grep -q 'covers all 2 vendored checks' || { echo "FAIL: wrong count"; exit 1; }
+            echo "$result" | grep -q 'PASS: equivalence' || { echo "FAIL: no equivalence"; exit 1; }
+            # lefthook.yml no longer tracked after the transform
+            git ls-files | grep -qxF 'lefthook.yml' && { echo "FAIL: lefthook still tracked"; exit 1; }
+            echo "PASS: migrate partial -> referenced"
+            touch $out
+          '';
+
+        migrate-rejects-dropped-check =
+          let
+            # a vendored lefthook with a check the referenced set does NOT
+            # provide -- the equivalence gate must refuse to migrate.
+            brokenLefthook = pkgs.writeText "broken-vendored-lefthook.yml" ''
+              ---
+              pre-commit:
+                commands:
+                  nixfmt:
+                    run: nixfmt --check {staged_files}
+                  super-special-check:
+                    run: our-bespoke-linter
+            '';
+          in
+          pkgs.runCommand "migrate-rejects-dropped-check" (migrateFixtureEnv pkgs) ''
+            mkdir -p workdir && cd workdir
+            echo "{ outputs = { self }: { }; }" > flake.nix
+            cp ${brokenLefthook} lefthook.yml
+            git init -q
+            git add .
+            if bash "$MIGRATE_SCRIPT"; then
+              echo "FAIL: migrate should reject a dropped-check transform"
+              exit 1
+            fi
+            echo "PASS: migrate refuses to drop a vendored check"
+            touch $out
+          '';
+
         default = pkgs.runCommand "set-and-setting-checks" { } ''
           touch $out
         '';
@@ -2586,6 +2805,26 @@
             map (c: "${c}=${lib.concatStringsSep "," (meta.resolve c).keywords}") cats.all
           );
           mkSettingFull = import ./setting/lib/mk-setting.nix { inherit lib; } { inherit pkgs; };
+
+          # Every pinned flake check the referenced architecture provides
+          # (checksFor over all fragments). Post-#93 FLIP these -- not lefthook
+          # commands -- are the real guardrails, so the migrate equivalence
+          # gate treats them as part of the referenced effective check-set.
+          checksUniverse = builtins.attrNames (
+            self.lib.checksFor {
+              inherit pkgs;
+              src = ./.;
+              fragments = [
+                "base"
+                "nix"
+                "shell"
+                "ascii"
+                "markdown"
+                "yaml"
+                "set"
+              ];
+            }
+          );
 
           mkSetApp = pkgs.writeShellApplication {
             name = "mkSet";
@@ -2737,6 +2976,44 @@
             ''
             + builtins.readFile ./lib/app-confirm.sh;
           };
+
+          migrateApp = pkgs.writeShellApplication {
+            name = "migrate";
+            runtimeInputs = [
+              pkgs.coreutils
+              pkgs.diffutils
+              pkgs.findutils
+              pkgs.gawk
+              pkgs.git
+              pkgs.gnugrep
+            ];
+            text = ''
+              export SEED_SRC="${self.lib.mkSeed { inherit pkgs; }}"
+              export SETTING_SRC="${mkSettingFull.configFiles}"
+              export FRAGMENTS_DIR="${./setting/integrations/lefthook}"
+              export ASSEMBLE_SCRIPT="${./setting/lib/assemble-lefthook.sh}"
+              export DETECT_SCRIPT="${./setting/lib/detect-fragments.sh}"
+              export CONFIRM_SCRIPT="${./lib/confirm.sh}"
+              export CONFIRM_REV="${self.rev or self.dirtyRev or "unknown"}"
+              export MIGRATE_SCRIPT="${./lib/migrate.sh}"
+              export CHECKS_UNIVERSE="${lib.concatStringsSep " " checksUniverse}"
+              export FULL_LEFTHOOK="${
+                (self.lib.materializationFor {
+                  inherit pkgs;
+                  fragments = [
+                    "base"
+                    "nix"
+                    "shell"
+                    "ascii"
+                    "markdown"
+                    "yaml"
+                    "set"
+                  ];
+                }).files
+              }/lefthook.yml"
+            ''
+            + builtins.readFile ./lib/app-migrate.sh;
+          };
         in
         {
           mkSet = {
@@ -2774,6 +3051,10 @@
           confirm = {
             type = "app";
             program = "${confirmApp}/bin/confirm";
+          };
+          migrate = {
+            type = "app";
+            program = "${migrateApp}/bin/migrate";
           };
           seed = {
             type = "app";
