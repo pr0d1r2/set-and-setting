@@ -485,6 +485,7 @@
         mkSettingDriftCheck = import ./lib/mk-setting-drift-check.nix;
         mkMaterializeCheck = import ./lib/mk-materialize-check.nix { inherit (nixpkgs) lib; };
         mkDepGraphCheck = import ./lib/mk-dep-graph-check.nix;
+        mkConfirm = import ./lib/mk-confirm.nix;
         mkDevShells = import ./setting/lib/mk-dev-shells.nix;
 
         # #97: the framework seam -- wrap any pinned lefthook-* wrapper into a
@@ -2439,6 +2440,94 @@
             touch $out
           '';
 
+        confirm-self-test =
+          let
+            mkSettingFull = import ./setting/lib/mk-setting.nix { inherit (nixpkgs) lib; } { inherit pkgs; };
+            mat = self.lib.materializationFor {
+              inherit pkgs;
+              fragments = [
+                "base"
+                "nix"
+                "shell"
+                "ascii"
+                "markdown"
+                "yaml"
+              ];
+            };
+            fixture = pkgs.runCommand "confirm-fixture" { } ''
+              mkdir -p $out
+              cp ${mat.files}/lefthook.yml $out/lefthook.yml
+              cp ${mkSettingFull.configFiles}/.markdownlint.yml $out/.markdownlint.yml
+              cp ${mkSettingFull.configFiles}/.yamllint.yml $out/.yamllint.yml
+              # create files for each fragment to trigger detection
+              touch $out/dummy.nix $out/dummy.sh $out/dummy.md $out/dummy.yml
+              printf '{}' > $out/flake.lock
+            '';
+          in
+          pkgs.runCommand "confirm-self-test"
+            {
+              nativeBuildInputs = [
+                pkgs.diffutils
+                pkgs.gnugrep
+                pkgs.git
+                pkgs.coreutils
+                pkgs.gawk
+                pkgs.findutils
+              ]
+              ++ mat.packages;
+              FRAGMENTS_DIR = ./setting/integrations/lefthook;
+              ASSEMBLE_SCRIPT = ./setting/lib/assemble-lefthook.sh;
+              DETECT_SCRIPT = ./setting/lib/detect-fragments.sh;
+              SETTING_SRC = mkSettingFull.configFiles;
+              CONFIRM_SCRIPT = ./lib/confirm.sh;
+              CONFIRM_REV = self.rev or self.dirtyRev or "unknown";
+            }
+            ''
+              cp -r ${fixture} workdir
+              chmod -R u+w workdir
+              cd workdir
+              git init -q
+              git add .
+              bash "$CONFIRM_SCRIPT"
+              touch $out
+            '';
+
+        confirm-rejects-broken =
+          let
+            mkSettingFull = import ./setting/lib/mk-setting.nix { inherit (nixpkgs) lib; } { inherit pkgs; };
+          in
+          pkgs.runCommand "confirm-rejects-broken"
+            {
+              nativeBuildInputs = [
+                pkgs.diffutils
+                pkgs.gnugrep
+                pkgs.git
+                pkgs.coreutils
+                pkgs.gawk
+                pkgs.findutils
+              ];
+              FRAGMENTS_DIR = ./setting/integrations/lefthook;
+              ASSEMBLE_SCRIPT = ./setting/lib/assemble-lefthook.sh;
+              DETECT_SCRIPT = ./setting/lib/detect-fragments.sh;
+              SETTING_SRC = mkSettingFull.configFiles;
+              CONFIRM_SCRIPT = ./lib/confirm.sh;
+              CONFIRM_REV = "test-rev";
+            }
+            ''
+              mkdir workdir && cd workdir
+              touch dummy.nix
+              printf '%s\n' '---' 'broken: true' > lefthook.yml
+              printf '%s' '{}' > flake.lock
+              git init -q
+              git add .
+              if bash "$CONFIRM_SCRIPT"; then
+                echo "FAIL: confirmator should reject broken materialization"
+                exit 1
+              fi
+              echo "PASS: confirmator rejects broken materialization"
+              touch $out
+            '';
+
         default = pkgs.runCommand "set-and-setting-checks" { } ''
           touch $out
         '';
@@ -2597,6 +2686,27 @@
             ];
             text = builtins.readFile ./lib/branch-protection.sh;
           };
+
+          confirmApp = pkgs.writeShellApplication {
+            name = "confirm";
+            runtimeInputs = [
+              pkgs.coreutils
+              pkgs.diffutils
+              pkgs.findutils
+              pkgs.gawk
+              pkgs.git
+              pkgs.gnugrep
+            ];
+            text = ''
+              export FRAGMENTS_DIR="${./setting/integrations/lefthook}"
+              export ASSEMBLE_SCRIPT="${./setting/lib/assemble-lefthook.sh}"
+              export DETECT_SCRIPT="${./setting/lib/detect-fragments.sh}"
+              export SETTING_SRC="${mkSettingFull.configFiles}"
+              export CONFIRM_SCRIPT="${./lib/confirm.sh}"
+              export CONFIRM_REV="${self.rev or self.dirtyRev or "unknown"}"
+            ''
+            + builtins.readFile ./lib/app-confirm.sh;
+          };
         in
         {
           mkSet = {
@@ -2630,6 +2740,10 @@
           "branch-protection" = {
             type = "app";
             program = "${branchProtectionApp}/bin/branch-protection";
+          };
+          confirm = {
+            type = "app";
+            program = "${confirmApp}/bin/confirm";
           };
         }
       );
