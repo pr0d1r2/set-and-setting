@@ -184,9 +184,31 @@ and dogfoods both.
   `mkSetting-init` seeds repo-specific starters (skip-if-exists);
   `bootstrap` = mkSet core + mkSetting + mkSetting-init in one. Each
   supports `--list`/`--help`/`--dry-run`. `auto-update` updates
-  flake input, syncs, commits (T8/C7).
+  flake input, syncs, commits (T8/C7). `confirm` (#94) runs the
+  post-materialization acceptance suite; `seed` (#95) emits the leaf
+  committed-minimum; `migrate` (#96) runs the vendored->referenced
+  transform (I.migrate).
 - I.auto-update: `lib/auto-update.sh` + reusable workflow +
   scaffold. Updates flake lock, validates, syncs, opens PR.
+- I.migrate: `lib/migrate.sh` (core) + `lib/app-migrate.sh` (CLI) +
+  `apps.migrate` -- the mechanical, deterministic, idempotent, non-LLM
+  vendored->referenced transform (#96). Runs per repo against the CWD
+  git repo. (1) detect state -- vendored / referenced / bare / partial
+  (already-referenced ⇒ no-op); (2) strip vendored artifacts (heavy
+  `flake.nix`, tracked `lefthook.yml`, inline `ci.yml`) so they become
+  derived (materialized + gitignored); (3) plant the seed (#95, I.mkSeed)
+  skip-if-exists + merge the materialized-artifact ignores into
+  `.gitignore`; (4) confirm-equivalence (the safety net): assert the
+  referenced effective check-set covers every check the vendored
+  `lefthook.yml` enforced -- the check-set is the pinned flake checks
+  (`CHECKS_UNIVERSE` = `checksFor` names) UNION all lefthook command
+  names (`FULL_LEFTHOOK`, post-#93 FLIP the real guardrails are pinned
+  checks, not lefthook commands, V41) -- then dry-run the confirmator
+  (#94, I.mkConfirm). A dropped check ⇒ exit 1, leave vendored, report.
+  Flags: `--detect` (print state only), `--dry-run` (plan only, writes
+  nothing), `--help`. The FULL confirmator + `nix flake check` run in CI
+  once `nix flake update` has produced `flake.lock`. Exposed as
+  `apps.<sys>.migrate`.
 - I.graduate: `lib/graduate-draft.sh` + `apps.graduate` -- developer
   tool to graduate draft skills to stable. Moves
   `set/drafts/<cat>/` files into `set/skills/<cat>/`, updates `@`-refs
@@ -444,6 +466,26 @@ and dogfoods both.
   with pinned-check equivalents (`mk*Check`) appear in `checksFor`;
   git-context hooks, test runners, and `nix-flake-check` stay
   lefthook-local.
+- V43: `apps.migrate` is a mechanical, deterministic, idempotent,
+  non-LLM, confirmator-gated vendored->referenced transform (#96), safe
+  at thousands of repos (one mechanical PR per repo). Idempotent: a
+  migrated repo re-detects as `referenced` and is a no-op -- re-running
+  never mutates a migrated repo. Deterministic: state + transform are a
+  pure function of `git ls-files` + tracked file contents (no clock, no
+  network, no LLM). The confirm-equivalence safety net PROVES referenced
+  ≡ vendored before green: the referenced effective check-set (pinned
+  `checksFor` names UNION all fragment lefthook commands -- what the
+  architecture PROVIDES, since post-#93-FLIP guardrails are pinned checks
+  not lefthook commands, V41) MUST cover every check the vendored
+  `lefthook.yml` enforced; a dropped check ⇒ refuse (exit 1), leave
+  vendored, report -- never silently weaken a repo's gate. Equivalence
+  compares provided-universe membership, not per-file activation (a check
+  activates on file presence identically in both states). The migrator
+  writes the committed minimum (thin flake, guardrails CI caller,
+  gitignored materialized artifacts); the FULL confirmator (#94) +
+  `nix flake check` gate the mechanical PR in CI once `flake.lock`
+  exists. Tested on vendored / partial / bare / already-referenced
+  fixtures + a dropped-check rejection.
 
 ## §T Tasks
 
@@ -524,6 +566,7 @@ and dogfoods both.
 | T72 | x | checks->pinned FLIP (#102) -- all tiers converted (#97-#101); remove the `remotes:` block from emitted `lefthook.yml` template and all integration fragments (markdown, yaml); remove remotes assembly from `assemble-lefthook.sh`; inline narrow-language-other with env (NARROW_LANGUAGE_DICT); clean up lefthook-local.yml; CI = `nix flake check` exclusively, no runtime git fetch | V41,T67,T68,T69,T70,T71 |
 | T73 | x | materialization primitive (#92) -- `lib.materializationFor { pkgs, fragments }` returns `{ files, packages }` as one atom: assembled lefthook.yml + fragment-mapped wrapper derivations. `wrappersForFragment` is the single source for both `materializationFor` and `lefthookWrappersFor` (no duplication). Coherence check (by construction + nix check). Reuses `assemble-lefthook.sh`. Fragments are a committed declaration (pure eval) | I.materializationFor,V40,V41,I.detectFragments |
 | T74 | x | checksFor -- fragment-driven check selection (#93 consumer bridge). `lib.checksFor { pkgs, src, fragments }` returns an attrset of pinned check derivations matching the given fragments. CI-gate counterpart to `materializationFor`. Scaffold uses `checksFor` instead of manual `mk*Check` wiring. Nix checks: per-fragment verification, subset property, empty-fragment handling | I.checksFor,V42,I.materializationFor,V41 |
+| T75 | x | `apps.migrate` (#96) -- mechanical, deterministic, idempotent, non-LLM, confirmator-gated vendored->referenced transform. `lib/migrate.sh` (detect state / strip vendored artifacts / plant seed #95 / confirm-equivalence) + `lib/app-migrate.sh` (`--detect`/`--dry-run`/`--help`) + `apps.migrate`. Safety net: referenced effective check-set (pinned `checksFor` UNION all fragment lefthook commands) MUST cover the vendored `lefthook.yml` check-set; a dropped check ⇒ refuse. Nix checks over vendored / partial / bare / already-referenced fixtures + dropped-check rejection; bats for the core logic + CLI. HOLD (V189): tool lands, fleet run is human-gated | I.migrate,I.mkSeed,I.mkConfirm,V43,C7 |
 
 ## §B Bugs
 

@@ -2,6 +2,28 @@
 
 ## Unreleased
 
+- T75 (#96): `apps.migrate` -- mechanical, deterministic, idempotent,
+  non-LLM, confirmator-gated vendored->referenced transform, safe at
+  thousands of repos (one mechanical PR per repo). `lib/migrate.sh`
+  (core) + `lib/app-migrate.sh` (CLI) + `apps.migrate`. Per repo:
+  (1) detect state (vendored / referenced / bare / partial;
+  already-referenced ⇒ no-op); (2) strip vendored artifacts (heavy
+  `flake.nix`, tracked `lefthook.yml`, inline `ci.yml`) so they become
+  derived + gitignored; (3) plant the leaf seed (#95) skip-if-exists +
+  merge materialized-artifact ignores into `.gitignore`;
+  (4) confirm-equivalence (the safety net) -- assert the referenced
+  effective check-set (pinned `checksFor` names UNION all fragment
+  lefthook commands) covers every check the vendored `lefthook.yml`
+  enforced; a dropped check ⇒ refuse (exit 1), leave vendored, report --
+  then dry-run the confirmator (#94). The FULL confirmator +
+  `nix flake check` gate the PR in CI once `nix flake update` has
+  produced `flake.lock`. Flags: `--detect`, `--dry-run`, `--help`.
+  Added `checks.<sys>.{migrate-vendored,migrate-already-referenced,
+  migrate-bare,migrate-partial,migrate-rejects-dropped-check}` and bats
+  (`tests/migrate.bats`, `tests/app-migrate.bats`). Bumped the `.nix`
+  file-size limit to 143360 and `.md` to 73728. HOLD (V189): the tool
+  lands; the fleet-wide run stays human-gated. (V43, I.migrate)
+
 - T71 (#101, part of #93): checks->pinned git/security tier -- FINAL.
   Convert gitleaks, git-conflict-markers, git-no-local-paths,
   execute-permissions, and file-size-check from runtime lefthook
