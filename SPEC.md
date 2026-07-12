@@ -407,6 +407,12 @@ and dogfoods both.
   has per-tool `<tool>-catches-violation` proofs. Converting a tier = add
   `checks.<tool>` + drop its `remotes:` entry (fragment + tracked
   `lefthook.yml`) + point consumers' scaffold at the same pinned check.
+  #102 is the FLIP: all tiers converted, the `remotes:` block is removed
+  from the emitted `lefthook.yml` template and all integration fragments.
+  CI = `nix flake check` exclusively; no runtime git fetch remains.
+  Formerly remote-only commands (narrow-language-other) are inlined with
+  their env (NARROW_LANGUAGE_DICT). Wrapper binaries come from the
+  devShell, not from remotes.
 
 ## §T Tasks
 
@@ -484,6 +490,7 @@ and dogfoods both.
 | T69 | x | checks->pinned nix linters tier (#99, part of #93) -- convert statix, deadnix, nix-no-embedded-shell, nix-flake-check to pinned `checks.<sys>.<tool>` via `lib.mk{Statix,Deadnix,NixNoEmbeddedShell}Check`; drop the four `remotes:` entries (nix fragment + tracked `lefthook.yml`); scaffold wires the same pinned checks; per-tool `-catches-violation` proofs | I.mkLefthookCheck,V41,C6,C7,T67 |
 | T70 | x | checks->pinned shell/content tier (#100, part of #93) -- convert shellcheck, no-shell-functions, ascii-only, typos to pinned `checks.<sys>.<tool>` via `lib.mk{Shellcheck,NoShellFunctions,AsciiOnly,Typos}Check`; drop the four `remotes:` entries (shell + ascii + base fragments, tracked `lefthook.yml`); remove ascii-only commands from lefthook.yml (pinned check runs on all matching files); scaffold wires the same pinned checks; per-tool `-catches-violation` proofs | I.mkLefthookCheck,V41,C6,C7,T67 |
 | T71 | x | checks->pinned git/security tier (#101, part of #93) -- convert gitleaks, git-conflict-markers, git-no-local-paths, execute-permissions, file-size-check to pinned `checks.<sys>.<tool>` via `lib.mk{Gitleaks,GitConflictMarkers,GitNoLocalPaths,ExecutePermissions,FileSizeCheck}Check`; drop the five `remotes:` entries (base fragment, tracked `lefthook.yml`); base fragment now has no remotes; git-no-local-paths uses a custom derivation to exclude `flake.nix`/`flake.lock`; scaffold wires the same pinned checks; per-tool `-catches-violation` proofs | I.mkLefthookCheck,V41,C6,C7,T67 |
+| T72 | x | checks->pinned FLIP (#102) -- all tiers converted (#97-#101); remove the `remotes:` block from emitted `lefthook.yml` template and all integration fragments (markdown, yaml); remove remotes assembly from `assemble-lefthook.sh`; inline narrow-language-other with env (NARROW_LANGUAGE_DICT); clean up lefthook-local.yml; CI = `nix flake check` exclusively, no runtime git fetch | V41,T67,T68,T69,T70,T71 |
 
 ## §B Bugs
 

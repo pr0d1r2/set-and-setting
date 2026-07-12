@@ -66,7 +66,8 @@ teardown() {
 @test "lefthook.yml is properly assembled" {
     bash "$SCRIPT"
     grep -q '^---$' "$TARGET/lefthook.yml"
-    grep -q 'remotes:' "$TARGET/lefthook.yml"
+    # #102 FLIP: no remotes in emitted lefthook.
+    run ! grep -q 'remotes:' "$TARGET/lefthook.yml"
 }
 
 @test "overwrites existing files" {

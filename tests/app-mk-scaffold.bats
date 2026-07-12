@@ -95,7 +95,8 @@ teardown() {
     bash "$SCRIPT"
     [ "$(cat "$TARGET/lefthook.yml")" != "bundled lefthook" ]
     grep -q '^---$' "$TARGET/lefthook.yml"
-    grep -q 'remotes:' "$TARGET/lefthook.yml"
+    # #102 FLIP: no remotes in emitted lefthook.
+    run ! grep -q 'remotes:' "$TARGET/lefthook.yml"
 }
 
 @test "skips files that already exist" {
@@ -159,25 +160,12 @@ teardown() {
     run ! grep -q 'nix-lefthook-shellcheck' "$TARGET/lefthook.yml"
 }
 
-@test "content-aware: empty repo gets all fragments" {
+@test "content-aware: empty repo gets all fragments without remotes" {
     bash "$SCRIPT"
-    # #97-#101: all base + nix + shell + ascii linters are pinned checks --
-    # no base/nix/shell/ascii remotes remain, even for a bare repo.
-    run ! grep -q 'nix-lefthook-statix' "$TARGET/lefthook.yml"
-    run ! grep -q 'nix-lefthook-nixfmt' "$TARGET/lefthook.yml"
-    run ! grep -q 'nix-lefthook-git-conflict-markers' "$TARGET/lefthook.yml"
-    run ! grep -q 'nix-lefthook-gitleaks' "$TARGET/lefthook.yml"
-    run ! grep -q 'nix-lefthook-git-no-local-paths' "$TARGET/lefthook.yml"
-    run ! grep -q 'nix-lefthook-execute-permissions' "$TARGET/lefthook.yml"
-    run ! grep -q 'nix-lefthook-file-size-check' "$TARGET/lefthook.yml"
-    run ! grep -q 'nix-lefthook-shfmt' "$TARGET/lefthook.yml"
-    run ! grep -q 'nix-lefthook-trailing-whitespace' "$TARGET/lefthook.yml"
-    run ! grep -q 'nix-lefthook-missing-final-newline' "$TARGET/lefthook.yml"
-    run ! grep -q 'nix-lefthook-editorconfig-checker' "$TARGET/lefthook.yml"
-    run ! grep -q 'nix-lefthook-shellcheck' "$TARGET/lefthook.yml"
-    run ! grep -q 'nix-lefthook-no-shell-functions' "$TARGET/lefthook.yml"
-    run ! grep -q 'nix-lefthook-ascii-only' "$TARGET/lefthook.yml"
-    run ! grep -q 'nix-lefthook-typos' "$TARGET/lefthook.yml"
-    grep -q 'nix-lefthook-markdownlint' "$TARGET/lefthook.yml"
-    grep -q 'nix-lefthook-yamllint' "$TARGET/lefthook.yml"
+    # #102 FLIP: no remotes anywhere -- all linters are pinned checks.
+    run ! grep -q 'remotes:' "$TARGET/lefthook.yml"
+    run ! grep -q 'git_url:' "$TARGET/lefthook.yml"
+    # Commands are still present (wrapper binaries from devShell).
+    grep -q 'markdownlint:' "$TARGET/lefthook.yml"
+    grep -q 'yamllint:' "$TARGET/lefthook.yml"
 }

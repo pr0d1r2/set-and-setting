@@ -1,48 +1,10 @@
-# #93 strangler-fig decomposition: linters progressively replaced by PINNED
-# flake `checks.<sys>.<tool>`, not runtime `remotes:` git_urls.
-# #97: nixfmt; #98: shfmt, trailing-whitespace, missing-final-newline,
-# editorconfig-checker; #99: statix, deadnix, nix-no-embedded-shell,
-# nix-flake-check; #100: shellcheck, no-shell-functions, ascii-only, typos;
-# #101: gitleaks, git-conflict-markers, git-no-local-paths, execute-
-# permissions, file-size-check.
+# #102 FLIP: all linters are PINNED flake `checks.<sys>.<tool>` -- no
+# runtime `remotes:` git_urls. CI = `nix flake check` on pinned checks.
+# Wrapper binaries (lefthook-markdownlint, lefthook-yamllint, etc.) come
+# from the devShell, not from remotes.
+# History: #97 nixfmt; #98 formatters; #99 nix linters; #100 shell/
+# content; #101 git/security.
 ---
-remotes:
-  - git_url: https://github.com/pr0d1r2/nix-lefthook-commit-msg-lint
-    ref: main
-    configs:
-      - lefthook-remote.yml
-  - git_url: https://github.com/pr0d1r2/nix-lefthook-changelog-touched
-    ref: main
-    configs:
-      - lefthook-remote.yml
-  - git_url: https://github.com/pr0d1r2/nix-lefthook-markdownlint
-    ref: main
-    configs:
-      - lefthook-remote.yml
-  - git_url: https://github.com/pr0d1r2/nix-lefthook-narrow-language
-    ref: main
-    configs:
-      - lefthook-remote.yml
-  - git_url: https://github.com/pr0d1r2/nix-lefthook-nix-flake-eval
-    ref: main
-    configs:
-      - lefthook-remote.yml
-  - git_url: https://github.com/pr0d1r2/nix-lefthook-yamllint
-    ref: main
-    configs:
-      - lefthook-remote.yml
-  - git_url: https://github.com/pr0d1r2/nix-lefthook-unicode-lint
-    ref: main
-    configs:
-      - lefthook-remote.yml
-  - git_url: https://github.com/pr0d1r2/nix-lefthook-markdownlint-agentic
-    ref: main
-    configs:
-      - lefthook-remote.yml
-  - git_url: https://github.com/pr0d1r2/nix-lefthook-bats-parse
-    ref: main
-    configs:
-      - lefthook-remote.yml
 
 pre-commit:
   commands:
@@ -65,16 +27,14 @@ pre-commit:
       env:
         LEFTHOOK_NIX_FLAKE_EVAL_ATTR: ".#lib"
       run: timeout ${LEFTHOOK_NIX_FLAKE_EVAL_TIMEOUT:-60} lefthook-nix-flake-eval
-    # Scope narrow-language-other to its intended targets (see
-    # set/skills/language/narrow.md). The remote default scans every
-    # file minus a few extensions, wrongly flagging LICENSE and
-    # dotfiles. A positive glob narrows it without dropping the remote
-    # exclude list.
     narrow-language-other:
       glob:
         - "*.{yml,yaml,toml,tcl}"
         - "justfile"
         - "Gemfile"
+      env:
+        NARROW_LANGUAGE_DICT: ".narrow-language-other.dic"
+      run: timeout ${LEFTHOOK_NARROW_LANGUAGE_OTHER_TIMEOUT:-30} lefthook-narrow-language {staged_files}
     bats-unit:
       glob: "*.bats"
       run: timeout ${LEFTHOOK_BATS_UNIT_TIMEOUT:-120} bats {staged_files}
@@ -112,6 +72,9 @@ pre-push:
         - "*.{yml,yaml,toml,tcl}"
         - "justfile"
         - "Gemfile"
+      env:
+        NARROW_LANGUAGE_DICT: ".narrow-language-other.dic"
+      run: timeout ${LEFTHOOK_NARROW_LANGUAGE_OTHER_TIMEOUT:-30} lefthook-narrow-language {push_files}
     bats-unit:
       glob: "*.bats"
       run: timeout ${LEFTHOOK_BATS_UNIT_TIMEOUT:-120} bats {push_files}
