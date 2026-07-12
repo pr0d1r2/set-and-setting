@@ -312,110 +312,132 @@
           ];
         };
 
-      lefthookWrappersFor =
+      wrappersForFragment =
         pkgs:
         let
           w = wrap pkgs;
         in
-        [
-          (w "lefthook-commit-msg-lint" nix-lefthook-commit-msg-lint-src {
-            runtimeInputs = [ pkgs.coreutils ];
-          })
-          (w "lefthook-changelog-touched" nix-lefthook-changelog-touched-src {
-            runtimeInputs = [
-              pkgs.git
-              pkgs.gnugrep
-            ];
-          })
-          (w "lefthook-ascii-only" nix-lefthook-ascii-only-src {
-            runtimeInputs = [ pkgs.gnugrep ];
-          })
-          (deadnixWrapperFor pkgs)
-          (editorconfigCheckerWrapperFor pkgs)
-          (executePermissionsWrapperFor pkgs)
-          (fileSizeCheckWrapperFor pkgs)
-          (gitConflictMarkersWrapperFor pkgs)
-          (gitNoLocalPathsWrapperFor pkgs)
-          (gitleaksWrapperFor pkgs)
-          (w "lefthook-markdownlint" nix-lefthook-markdownlint-src {
-            runtimeInputs = [ pkgs.markdownlint-cli ];
-          })
-          (w "lefthook-markdownlint-agentic" nix-lefthook-markdownlint-agentic-src {
-            runtimeInputs = [ pkgs.markdownlint-cli ];
-          })
-          (missingFinalNewlineWrapperFor pkgs)
-          (w "lefthook-narrow-language" nix-lefthook-narrow-language-src {
-            runtimeInputs = [
-              pkgs.coreutils
-              pkgs.gawk
-              pkgs.gnugrep
-              pkgs.gnused
-            ];
-          })
-          (w "lefthook-narrow-language-add" nix-lefthook-narrow-language-src {
-            runtimeInputs = [
-              pkgs.coreutils
-              pkgs.gawk
-              pkgs.git
-              pkgs.gnugrep
-              pkgs.gnused
-            ];
-          })
-          (w "lefthook-narrow-language-compact" nix-lefthook-narrow-language-src {
-            runtimeInputs = [
-              pkgs.coreutils
-              pkgs.gawk
-              pkgs.git
-              pkgs.gnugrep
-              pkgs.gnused
-            ];
-          })
-          (w "lefthook-narrow-language-freeze" nix-lefthook-narrow-language-src {
-            runtimeInputs = [
-              pkgs.git
-              pkgs.gnugrep
-            ];
-          })
-          (w "lefthook-nix-flake-eval" nix-lefthook-nix-flake-eval-src {
-            runtimeInputs = [ pkgs.nix ];
-          })
-          (w "lefthook-nix-flake-check" nix-lefthook-nix-flake-check-src {
-            runtimeInputs = [ pkgs.nix ];
-          })
-          (nixNoEmbeddedShellWrapperFor pkgs)
-          (w "lefthook-no-shell-functions" nix-lefthook-no-shell-functions-src { })
-          (w "lefthook-shellcheck" nix-lefthook-shellcheck-src {
-            runtimeInputs = [ pkgs.shellcheck ];
-          })
-          (shfmtWrapperFor pkgs)
-          (nixfmtWrapperFor pkgs)
-          (statixWrapperFor pkgs)
-          (trailingWhitespaceWrapperFor pkgs)
-          (w "lefthook-unicode-lint" nix-lefthook-unicode-lint-src {
-            runtimeInputs = [
-              pkgs.gnugrep
-              pkgs.libiconv
-            ];
-          })
-          (w "lefthook-typos" nix-lefthook-typos-src {
-            runtimeInputs = [ pkgs.typos ];
-          })
-          (w "lefthook-yamllint" nix-lefthook-yamllint-src {
-            runtimeInputs = [ pkgs.yamllint ];
-          })
-          (w "lefthook-bats-parse" nix-lefthook-bats-parse-src {
-            runtimeInputs = [
-              pkgs.bats
-              pkgs.coreutils
-            ];
-          })
-          (w "lefthook-bats-unit" nix-lefthook-bats-unit-src {
-            runtimeInputs = [
-              pkgs.bats
-              pkgs.parallel
-              pkgs.coreutils
-            ];
-          })
+        {
+          base = [
+            (w "lefthook-commit-msg-lint" nix-lefthook-commit-msg-lint-src {
+              runtimeInputs = [ pkgs.coreutils ];
+            })
+            (w "lefthook-changelog-touched" nix-lefthook-changelog-touched-src {
+              runtimeInputs = [
+                pkgs.git
+                pkgs.gnugrep
+              ];
+            })
+            (gitleaksWrapperFor pkgs)
+            (gitConflictMarkersWrapperFor pkgs)
+            (gitNoLocalPathsWrapperFor pkgs)
+            (executePermissionsWrapperFor pkgs)
+            (fileSizeCheckWrapperFor pkgs)
+            (trailingWhitespaceWrapperFor pkgs)
+            (missingFinalNewlineWrapperFor pkgs)
+            (editorconfigCheckerWrapperFor pkgs)
+            (typosWrapperFor pkgs)
+            (w "lefthook-narrow-language" nix-lefthook-narrow-language-src {
+              runtimeInputs = [
+                pkgs.coreutils
+                pkgs.gawk
+                pkgs.gnugrep
+                pkgs.gnused
+              ];
+            })
+            (w "lefthook-narrow-language-add" nix-lefthook-narrow-language-src {
+              runtimeInputs = [
+                pkgs.coreutils
+                pkgs.gawk
+                pkgs.git
+                pkgs.gnugrep
+                pkgs.gnused
+              ];
+            })
+            (w "lefthook-narrow-language-compact" nix-lefthook-narrow-language-src {
+              runtimeInputs = [
+                pkgs.coreutils
+                pkgs.gawk
+                pkgs.git
+                pkgs.gnugrep
+                pkgs.gnused
+              ];
+            })
+            (w "lefthook-narrow-language-freeze" nix-lefthook-narrow-language-src {
+              runtimeInputs = [
+                pkgs.git
+                pkgs.gnugrep
+              ];
+            })
+            (w "lefthook-bats-parse" nix-lefthook-bats-parse-src {
+              runtimeInputs = [
+                pkgs.bats
+                pkgs.coreutils
+              ];
+            })
+            (w "lefthook-bats-unit" nix-lefthook-bats-unit-src {
+              runtimeInputs = [
+                pkgs.bats
+                pkgs.parallel
+                pkgs.coreutils
+              ];
+            })
+          ];
+          nix = [
+            (nixfmtWrapperFor pkgs)
+            (statixWrapperFor pkgs)
+            (deadnixWrapperFor pkgs)
+            (nixNoEmbeddedShellWrapperFor pkgs)
+            (w "lefthook-nix-flake-check" nix-lefthook-nix-flake-check-src {
+              runtimeInputs = [ pkgs.nix ];
+            })
+            (w "lefthook-nix-flake-eval" nix-lefthook-nix-flake-eval-src {
+              runtimeInputs = [ pkgs.nix ];
+            })
+          ];
+          shell = [
+            (shellcheckWrapperFor pkgs)
+            (shfmtWrapperFor pkgs)
+            (noShellFunctionsWrapperFor pkgs)
+          ];
+          ascii = [
+            (asciiOnlyWrapperFor pkgs)
+            (w "lefthook-unicode-lint" nix-lefthook-unicode-lint-src {
+              runtimeInputs = [
+                pkgs.gnugrep
+                pkgs.libiconv
+              ];
+            })
+          ];
+          markdown = [
+            (w "lefthook-markdownlint" nix-lefthook-markdownlint-src {
+              runtimeInputs = [ pkgs.markdownlint-cli ];
+            })
+            (w "lefthook-markdownlint-agentic" nix-lefthook-markdownlint-agentic-src {
+              runtimeInputs = [ pkgs.markdownlint-cli ];
+            })
+          ];
+          yaml = [
+            (w "lefthook-yamllint" nix-lefthook-yamllint-src {
+              runtimeInputs = [ pkgs.yamllint ];
+            })
+          ];
+          set = [ ];
+        };
+
+      lefthookWrappersFor =
+        pkgs:
+        let
+          wff = wrappersForFragment pkgs;
+        in
+        builtins.concatMap (f: wff.${f}) [
+          "base"
+          "nix"
+          "shell"
+          "ascii"
+          "markdown"
+          "yaml"
+          "set"
         ];
     in
     {
@@ -747,6 +769,23 @@
             inherit pkgs src name;
             wrapper = fileSizeCheckWrapperFor pkgs;
             checkFlag = "";
+          };
+
+        materializationFor =
+          {
+            pkgs,
+            fragments,
+          }:
+          import ./setting/lib/mk-materialization.nix {
+            inherit pkgs fragments;
+            fragmentsDir = ./setting/integrations/lefthook;
+            assembleScript = ./setting/lib/assemble-lefthook.sh;
+            corePackages = [
+              pkgs.coreutils
+              pkgs.git
+              nix-lefthook.packages.${pkgs.stdenv.hostPlatform.system}.default
+            ];
+            wrappersForFragment = wrappersForFragment pkgs;
           };
       };
 
@@ -2127,6 +2166,129 @@
               echo PASS
               touch $out
             '';
+
+        materializationFor-check =
+          let
+            mat = self.lib.materializationFor {
+              inherit pkgs;
+              fragments = [
+                "base"
+                "markdown"
+                "yaml"
+              ];
+            };
+            allBins = pkgs.symlinkJoin {
+              name = "materialization-bins";
+              paths = mat.packages;
+            };
+          in
+          pkgs.runCommand "materializationFor-check" { } ''
+            [ -f "${mat.files}/lefthook.yml" ] \
+              || { echo "FAIL: no lefthook.yml in files"; exit 1; }
+            grep -q 'markdownlint' "${mat.files}/lefthook.yml" \
+              || { echo "FAIL: lefthook.yml missing markdownlint"; exit 1; }
+            grep -q 'yamllint' "${mat.files}/lefthook.yml" \
+              || { echo "FAIL: lefthook.yml missing yamllint"; exit 1; }
+            [ -x "${allBins}/bin/lefthook-markdownlint" ] \
+              || { echo "FAIL: packages missing lefthook-markdownlint"; exit 1; }
+            [ -x "${allBins}/bin/lefthook-yamllint" ] \
+              || { echo "FAIL: packages missing lefthook-yamllint"; exit 1; }
+            echo "PASS"
+            touch $out
+          '';
+
+        materializationFor-coherence =
+          let
+            mat = self.lib.materializationFor {
+              inherit pkgs;
+              fragments = [
+                "base"
+                "nix"
+                "shell"
+                "ascii"
+                "markdown"
+                "yaml"
+                "set"
+              ];
+            };
+            allBins = pkgs.symlinkJoin {
+              name = "materialization-coherence-bins";
+              paths = mat.packages;
+            };
+          in
+          pkgs.runCommand "materializationFor-coherence" { } ''
+            [ -f "${mat.files}/lefthook.yml" ] \
+              || { echo "FAIL: no lefthook.yml"; exit 1; }
+            for wrapper in $(grep -oE 'lefthook-[a-z][-a-z]*' "${mat.files}/lefthook.yml" | sort -u); do
+              [ -x "${allBins}/bin/$wrapper" ] \
+                || { echo "FAIL: $wrapper in lefthook.yml but missing from packages"; exit 1; }
+            done
+            echo "PASS: all lefthook.yml tool references found in packages"
+            touch $out
+          '';
+
+        materializationFor-idempotent =
+          let
+            mat = self.lib.materializationFor {
+              inherit pkgs;
+              fragments = [
+                "base"
+                "nix"
+                "shell"
+                "ascii"
+                "markdown"
+                "yaml"
+              ];
+            };
+            mat2 = self.lib.materializationFor {
+              inherit pkgs;
+              fragments = [
+                "base"
+                "nix"
+                "shell"
+                "ascii"
+                "markdown"
+                "yaml"
+              ];
+            };
+          in
+          pkgs.runCommand "materializationFor-idempotent" { } ''
+            diff "${mat.files}/lefthook.yml" "${mat2.files}/lefthook.yml" \
+              || { echo "FAIL: same fragments produce different lefthook.yml"; exit 1; }
+            echo "PASS: idempotent"
+            touch $out
+          '';
+
+        materializationFor-subset =
+          let
+            full = self.lib.materializationFor {
+              inherit pkgs;
+              fragments = [
+                "base"
+                "nix"
+                "shell"
+                "ascii"
+                "markdown"
+                "yaml"
+                "set"
+              ];
+            };
+            minimal = self.lib.materializationFor {
+              inherit pkgs;
+              fragments = [ "base" ];
+            };
+          in
+          pkgs.runCommand "materializationFor-subset" { } ''
+            full_count=${toString (builtins.length full.packages)}
+            minimal_count=${toString (builtins.length minimal.packages)}
+            [ "$full_count" -gt "$minimal_count" ] \
+              || { echo "FAIL: full ($full_count) should have more packages than minimal ($minimal_count)"; exit 1; }
+            if grep -q 'markdownlint' "${minimal.files}/lefthook.yml"; then
+              echo "FAIL: minimal lefthook.yml should not have markdownlint"; exit 1
+            fi
+            echo "PASS: fragment subset produces fewer packages"
+            touch $out
+          '';
 
         default = pkgs.runCommand "set-and-setting-checks" { } ''
           touch $out

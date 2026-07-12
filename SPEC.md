@@ -138,6 +138,19 @@ and dogfoods both.
   `lib.mkFileSizeCheckCheck` (glob-less whole-tree, no check flag),
   `lib.mkGitNoLocalPathsCheck` (custom derivation excluding
   `flake.nix`/`flake.lock`).
+- I.materializationFor: `setting/lib/mk-materialization.nix` -- the
+  materialization primitive (#92). Given a committed fragment list, returns
+  `{ files, packages }` as ONE ATOM: `files` is a derivation containing
+  the assembled `lefthook.yml` (reuses `assemble-lefthook.sh`); `packages`
+  is the list of wrapper derivations + core tools needed by those
+  fragments' lefthook commands. Fragment -> wrapper mapping
+  (`wrappersForFragment`) is the single source for both
+  `materializationFor` and `lefthookWrappersFor` (no duplication).
+  Coherence (every tool in emitted lefthook.yml is in packages) holds by
+  construction. Args: `pkgs`, `fragments` (list of fragment names).
+  Valid fragments: `base`, `nix`, `shell`, `ascii`, `markdown`, `yaml`,
+  `set`. Unknown fragment -> error with guidance. Exposed as
+  `lib.materializationFor`.
 - I.sync-set: CLI script in mkSet output. Copies skills+concepts+set.md to consumer repo target dir.
 - I.sync-setting: CLI script in mkSetting output. Copies dotfiles to consumer repo root.
 - I.sets: Attrset of raw paths to each skill category dir.
@@ -491,6 +504,7 @@ and dogfoods both.
 | T70 | x | checks->pinned shell/content tier (#100, part of #93) -- convert shellcheck, no-shell-functions, ascii-only, typos to pinned `checks.<sys>.<tool>` via `lib.mk{Shellcheck,NoShellFunctions,AsciiOnly,Typos}Check`; drop the four `remotes:` entries (shell + ascii + base fragments, tracked `lefthook.yml`); remove ascii-only commands from lefthook.yml (pinned check runs on all matching files); scaffold wires the same pinned checks; per-tool `-catches-violation` proofs | I.mkLefthookCheck,V41,C6,C7,T67 |
 | T71 | x | checks->pinned git/security tier (#101, part of #93) -- convert gitleaks, git-conflict-markers, git-no-local-paths, execute-permissions, file-size-check to pinned `checks.<sys>.<tool>` via `lib.mk{Gitleaks,GitConflictMarkers,GitNoLocalPaths,ExecutePermissions,FileSizeCheck}Check`; drop the five `remotes:` entries (base fragment, tracked `lefthook.yml`); base fragment now has no remotes; git-no-local-paths uses a custom derivation to exclude `flake.nix`/`flake.lock`; scaffold wires the same pinned checks; per-tool `-catches-violation` proofs | I.mkLefthookCheck,V41,C6,C7,T67 |
 | T72 | x | checks->pinned FLIP (#102) -- all tiers converted (#97-#101); remove the `remotes:` block from emitted `lefthook.yml` template and all integration fragments (markdown, yaml); remove remotes assembly from `assemble-lefthook.sh`; inline narrow-language-other with env (NARROW_LANGUAGE_DICT); clean up lefthook-local.yml; CI = `nix flake check` exclusively, no runtime git fetch | V41,T67,T68,T69,T70,T71 |
+| T73 | x | materialization primitive (#92) -- `lib.materializationFor { pkgs, fragments }` returns `{ files, packages }` as one atom: assembled lefthook.yml + fragment-mapped wrapper derivations. `wrappersForFragment` is the single source for both `materializationFor` and `lefthookWrappersFor` (no duplication). Coherence check (by construction + nix check). Reuses `assemble-lefthook.sh`. Fragments are a committed declaration (pure eval) | I.materializationFor,V40,V41,I.detectFragments |
 
 ## §B Bugs
 
