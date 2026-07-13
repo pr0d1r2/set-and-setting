@@ -58,6 +58,8 @@ teardown() {
 # helper: init a git repo with an initial commit (satisfies pre-flight)
 _init_repo() {
     git init -q
+    git config user.email "test@test.com"
+    git config user.name "Test"
     git add .
     git commit -q -m "initial" --allow-empty
 }
@@ -150,6 +152,8 @@ write_vendored_lefthook() {
     cp -r "$SEED_SRC/." .
     write_vendored_lefthook
     git init -q
+    git config user.email "test@test.com"
+    git config user.name "Test"
     git add -f lefthook.yml
     git add .
     git commit -q -m "initial"
@@ -323,6 +327,8 @@ write_vendored_lefthook() {
     cp -r "$SEED_SRC/." .
     write_vendored_lefthook
     git init -q
+    git config user.email "test@test.com"
+    git config user.name "Test"
     git add -f lefthook.yml
     git add .
     git commit -q -m "initial"
