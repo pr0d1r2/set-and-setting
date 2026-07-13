@@ -15,37 +15,37 @@ trap 'rm -rf "$assemble_out"' EXIT
 FRAGMENTS="$detected" out="$assemble_out" bash "$ASSEMBLE_SCRIPT"
 
 if [ "${1:-}" = "--help" ]; then
-    echo "Usage: mkSetting [--help] [--list] [--dry-run]"
-    echo ""
-    echo "Materialize unified configs into CWD."
-    echo "Always overwrites existing files."
-    echo "lefthook.yml is assembled from detected repo content."
-    exit 0
+  echo "Usage: mkSetting [--help] [--list] [--dry-run]"
+  echo ""
+  echo "Materialize unified configs into CWD."
+  echo "Always overwrites existing files."
+  echo "lefthook.yml is assembled from detected repo content."
+  exit 0
 fi
 
 if [ "${1:-}" = "--list" ]; then
-    echo "Materialized configs:"
-    find -L "$SETTING_SRC" -type f | sort | while read -r f; do
-        echo "  ${f#"$SETTING_SRC/"}"
-    done
-    echo "  lefthook.yml (content-aware: $detected)"
-    exit 0
+  echo "Materialized configs:"
+  find -L "$SETTING_SRC" -type f | sort | while read -r f; do
+    echo "  ${f#"$SETTING_SRC/"}"
+  done
+  echo "  lefthook.yml (content-aware: $detected)"
+  exit 0
 fi
 
 if [ "${1:-}" = "--dry-run" ]; then
-    echo "Would materialize into CWD:"
-    echo "Detected fragments: $detected"
-    find -L "$SETTING_SRC" -type f | sort | while read -r f; do
-        echo "  ${f#"$SETTING_SRC/"}"
-    done
-    echo "  lefthook.yml (content-aware: $detected)"
-    exit 0
+  echo "Would materialize into CWD:"
+  echo "Detected fragments: $detected"
+  find -L "$SETTING_SRC" -type f | sort | while read -r f; do
+    echo "  ${f#"$SETTING_SRC/"}"
+  done
+  echo "  lefthook.yml (content-aware: $detected)"
+  exit 0
 fi
 
 find -L "$SETTING_SRC" -type f | sort | while read -r f; do
-    rel="${f#"$SETTING_SRC/"}"
-    mkdir -p "$(dirname "$rel")"
-    cp -f "$f" "$rel"
+  rel="${f#"$SETTING_SRC/"}"
+  mkdir -p "$(dirname "$rel")"
+  cp -f "$f" "$rel"
 done
 
 cp -f "$assemble_out/lefthook.yml" "lefthook.yml"

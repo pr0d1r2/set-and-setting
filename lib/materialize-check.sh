@@ -29,151 +29,151 @@ fail=0
 # file, once per tree file.
 
 for cat in "${cats[@]:-}"; do
-    [ -n "$cat" ] || continue
+  [ -n "$cat" ] || continue
 
-    raw_globs=""
-    for entry in "${mapentries[@]:-}"; do
-        if [ "${entry%%=*}" = "$cat" ]; then
-            raw_globs="${entry#*=}"
-            break
-        fi
-    done
+  raw_globs=""
+  for entry in "${mapentries[@]:-}"; do
+    if [ "${entry%%=*}" = "$cat" ]; then
+      raw_globs="${entry#*=}"
+      break
+    fi
+  done
 
-    cat_channel="domain"
-    for c in ${CORE:-}; do
-        [ "$c" = "$cat" ] && cat_channel="core" && break
-    done
+  cat_channel="domain"
+  for c in ${CORE:-}; do
+    [ "$c" = "$cat" ] && cat_channel="core" && break
+  done
 
-    catdir="$MATERIALIZED/$DIR/$cat"
-    corefile="$MATERIALIZED/$DIR/$cat.md"
-    has_files=0
+  catdir="$MATERIALIZED/$DIR/$cat"
+  corefile="$MATERIALIZED/$DIR/$cat.md"
+  has_files=0
 
-    if [ -f "$corefile" ]; then
-        has_files=1
-        rel="$cat.md"
-        channel="$cat_channel"
-        globs="$raw_globs"
-        exact_ch="" exact_gl="" pfx_ch="" pfx_gl="" pfx_len=0
-        while IFS='|' read -r opath ochannel oglobs; do
-            [ -n "$opath" ] || continue
-            if [ "$opath" = "$rel" ]; then
-                exact_ch="$ochannel"
-                exact_gl="$oglobs"
-            elif [[ "$rel" == "$opath/"* ]] && [ ${#opath} -gt "$pfx_len" ]; then
-                pfx_len=${#opath}
-                pfx_ch="$ochannel"
-                pfx_gl="$oglobs"
-            fi
-        done <<<"${OVERRIDES:-}"
-        if [ -n "$exact_ch" ] || [ -n "$exact_gl" ]; then
-            [ -n "$exact_ch" ] && channel="$exact_ch"
-            [ -n "$exact_gl" ] && globs="$exact_gl"
-        elif [ "$pfx_len" -gt 0 ]; then
-            [ -n "$pfx_ch" ] && channel="$pfx_ch"
-            [ -n "$pfx_gl" ] && globs="$pfx_gl"
-        fi
-
-        if [ "$channel" = "core" ]; then
-            grep -q "^${COND_FIELD}:" "$corefile" && {
-                echo "FAIL: core $rel must be path-less"
-                fail=1
-            }
-        else
-            grep -q "^${COND_FIELD}:" "$corefile" || {
-                echo "FAIL: $rel missing $COND_FIELD frontmatter"
-                fail=1
-            }
-            if [ -n "$globs" ]; then
-                IFS=',' read -ra expected_globs <<<"$globs"
-                for g in "${expected_globs[@]}"; do
-                    grep -qF "\"$g\"" "$corefile" || {
-                        echo "FAIL: $rel missing glob \"$g\""
-                        fail=1
-                    }
-                done
-            fi
-        fi
+  if [ -f "$corefile" ]; then
+    has_files=1
+    rel="$cat.md"
+    channel="$cat_channel"
+    globs="$raw_globs"
+    exact_ch="" exact_gl="" pfx_ch="" pfx_gl="" pfx_len=0
+    while IFS='|' read -r opath ochannel oglobs; do
+      [ -n "$opath" ] || continue
+      if [ "$opath" = "$rel" ]; then
+        exact_ch="$ochannel"
+        exact_gl="$oglobs"
+      elif [[ "$rel" == "$opath/"* ]] && [ ${#opath} -gt "$pfx_len" ]; then
+        pfx_len=${#opath}
+        pfx_ch="$ochannel"
+        pfx_gl="$oglobs"
+      fi
+    done <<<"${OVERRIDES:-}"
+    if [ -n "$exact_ch" ] || [ -n "$exact_gl" ]; then
+      [ -n "$exact_ch" ] && channel="$exact_ch"
+      [ -n "$exact_gl" ] && globs="$exact_gl"
+    elif [ "$pfx_len" -gt 0 ]; then
+      [ -n "$pfx_ch" ] && channel="$pfx_ch"
+      [ -n "$pfx_gl" ] && globs="$pfx_gl"
     fi
 
-    if [ -d "$catdir" ]; then
-        has_files=1
-        while IFS= read -r rule; do
-            [ -n "$rule" ] || continue
-            relname="${rule#"$catdir"/}"
-            rel="$cat/$relname"
-            channel="$cat_channel"
-            globs="$raw_globs"
-            exact_ch="" exact_gl="" pfx_ch="" pfx_gl="" pfx_len=0
-            while IFS='|' read -r opath ochannel oglobs; do
-                [ -n "$opath" ] || continue
-                if [ "$opath" = "$rel" ]; then
-                    exact_ch="$ochannel"
-                    exact_gl="$oglobs"
-                elif [[ "$rel" == "$opath/"* ]] && [ ${#opath} -gt "$pfx_len" ]; then
-                    pfx_len=${#opath}
-                    pfx_ch="$ochannel"
-                    pfx_gl="$oglobs"
-                fi
-            done <<<"${OVERRIDES:-}"
-            if [ -n "$exact_ch" ] || [ -n "$exact_gl" ]; then
-                [ -n "$exact_ch" ] && channel="$exact_ch"
-                [ -n "$exact_gl" ] && globs="$exact_gl"
-            elif [ "$pfx_len" -gt 0 ]; then
-                [ -n "$pfx_ch" ] && channel="$pfx_ch"
-                [ -n "$pfx_gl" ] && globs="$pfx_gl"
-            fi
-
-            if [ "$channel" = "core" ]; then
-                grep -q "^${COND_FIELD}:" "$rule" && {
-                    echo "FAIL: core $rel must be path-less"
-                    fail=1
-                }
-            else
-                grep -q "^${COND_FIELD}:" "$rule" || {
-                    echo "FAIL: $rel missing $COND_FIELD frontmatter"
-                    fail=1
-                }
-                if [ -n "$globs" ]; then
-                    IFS=',' read -ra expected_globs <<<"$globs"
-                    for g in "${expected_globs[@]}"; do
-                        grep -qF "\"$g\"" "$rule" || {
-                            echo "FAIL: $rel missing glob \"$g\""
-                            fail=1
-                        }
-                    done
-                fi
-            fi
-        done < <(find "$catdir" -name '*.md' 2>/dev/null | sort)
-    fi
-
-    if [ "$has_files" -eq 0 ]; then
-        echo "FAIL: $cat: no rule files found at $DIR/$cat/ or $DIR/$cat.md"
+    if [ "$channel" = "core" ]; then
+      grep -q "^${COND_FIELD}:" "$corefile" && {
+        echo "FAIL: core $rel must be path-less"
         fail=1
+      }
+    else
+      grep -q "^${COND_FIELD}:" "$corefile" || {
+        echo "FAIL: $rel missing $COND_FIELD frontmatter"
+        fail=1
+      }
+      if [ -n "$globs" ]; then
+        IFS=',' read -ra expected_globs <<<"$globs"
+        for g in "${expected_globs[@]}"; do
+          grep -qF "\"$g\"" "$corefile" || {
+            echo "FAIL: $rel missing glob \"$g\""
+            fail=1
+          }
+        done
+      fi
     fi
+  fi
+
+  if [ -d "$catdir" ]; then
+    has_files=1
+    while IFS= read -r rule; do
+      [ -n "$rule" ] || continue
+      relname="${rule#"$catdir"/}"
+      rel="$cat/$relname"
+      channel="$cat_channel"
+      globs="$raw_globs"
+      exact_ch="" exact_gl="" pfx_ch="" pfx_gl="" pfx_len=0
+      while IFS='|' read -r opath ochannel oglobs; do
+        [ -n "$opath" ] || continue
+        if [ "$opath" = "$rel" ]; then
+          exact_ch="$ochannel"
+          exact_gl="$oglobs"
+        elif [[ "$rel" == "$opath/"* ]] && [ ${#opath} -gt "$pfx_len" ]; then
+          pfx_len=${#opath}
+          pfx_ch="$ochannel"
+          pfx_gl="$oglobs"
+        fi
+      done <<<"${OVERRIDES:-}"
+      if [ -n "$exact_ch" ] || [ -n "$exact_gl" ]; then
+        [ -n "$exact_ch" ] && channel="$exact_ch"
+        [ -n "$exact_gl" ] && globs="$exact_gl"
+      elif [ "$pfx_len" -gt 0 ]; then
+        [ -n "$pfx_ch" ] && channel="$pfx_ch"
+        [ -n "$pfx_gl" ] && globs="$pfx_gl"
+      fi
+
+      if [ "$channel" = "core" ]; then
+        grep -q "^${COND_FIELD}:" "$rule" && {
+          echo "FAIL: core $rel must be path-less"
+          fail=1
+        }
+      else
+        grep -q "^${COND_FIELD}:" "$rule" || {
+          echo "FAIL: $rel missing $COND_FIELD frontmatter"
+          fail=1
+        }
+        if [ -n "$globs" ]; then
+          IFS=',' read -ra expected_globs <<<"$globs"
+          for g in "${expected_globs[@]}"; do
+            grep -qF "\"$g\"" "$rule" || {
+              echo "FAIL: $rel missing glob \"$g\""
+              fail=1
+            }
+          done
+        fi
+      fi
+    done < <(find "$catdir" -name '*.md' 2>/dev/null | sort)
+  fi
+
+  if [ "$has_files" -eq 0 ]; then
+    echo "FAIL: $cat: no rule files found at $DIR/$cat/ or $DIR/$cat.md"
+    fail=1
+  fi
 done
 
 for ex in "${excludes[@]:-}"; do
-    [ -n "$ex" ] || continue
-    if find "$MATERIALIZED" -name "$ex" 2>/dev/null | grep -q .; then
-        echo "FAIL: excluded file $ex found in output"
-        fail=1
-    fi
+  [ -n "$ex" ] || continue
+  if find "$MATERIALIZED" -name "$ex" 2>/dev/null | grep -q .; then
+    echo "FAIL: excluded file $ex found in output"
+    fail=1
+  fi
 done
 
 manifest="$MATERIALIZED/$DIR/.mkset.json"
 if [ -f "$manifest" ]; then
-    for cat in "${cats[@]:-}"; do
-        [ -n "$cat" ] || continue
-        grep -qF "\"$cat\"" "$manifest" || {
-            echo "FAIL: manifest missing category $cat"
-            fail=1
-        }
-    done
+  for cat in "${cats[@]:-}"; do
+    [ -n "$cat" ] || continue
+    grep -qF "\"$cat\"" "$manifest" || {
+      echo "FAIL: manifest missing category $cat"
+      fail=1
+    }
+  done
 fi
 
 if [ "$fail" -ne 0 ]; then
-    echo "MATERIALIZATION CHECK FAILED"
-    exit 1
+  echo "MATERIALIZATION CHECK FAILED"
+  exit 1
 fi
 
 echo "PASS"

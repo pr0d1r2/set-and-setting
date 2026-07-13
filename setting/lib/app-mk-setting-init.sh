@@ -6,41 +6,41 @@
 set -euo pipefail
 
 if [ "${1:-}" = "--help" ]; then
-    echo "Usage: mkSetting-init [--help] [--list] [--dry-run]"
-    echo ""
-    echo "Scaffold repo-specific starter files into CWD."
-    echo "Skips files that already exist (repo-owned after scaffolding)."
-    exit 0
+  echo "Usage: mkSetting-init [--help] [--list] [--dry-run]"
+  echo ""
+  echo "Scaffold repo-specific starter files into CWD."
+  echo "Skips files that already exist (repo-owned after scaffolding)."
+  exit 0
 fi
 
 if [ "${1:-}" = "--list" ]; then
-    echo "Seed files:"
-    find -L "$SEED_SRC" -type f | sort | while read -r f; do
-        echo "  ${f#"$SEED_SRC/"}"
-    done
-    exit 0
+  echo "Seed files:"
+  find -L "$SEED_SRC" -type f | sort | while read -r f; do
+    echo "  ${f#"$SEED_SRC/"}"
+  done
+  exit 0
 fi
 
 if [ "${1:-}" = "--dry-run" ]; then
-    echo "Would scaffold into CWD (skip existing):"
-    find -L "$SEED_SRC" -type f | sort | while read -r f; do
-        rel="${f#"$SEED_SRC/"}"
-        if [ -e "$rel" ]; then
-            echo "  $rel (skip -- exists)"
-        else
-            echo "  $rel"
-        fi
-    done
-    exit 0
+  echo "Would scaffold into CWD (skip existing):"
+  find -L "$SEED_SRC" -type f | sort | while read -r f; do
+    rel="${f#"$SEED_SRC/"}"
+    if [ -e "$rel" ]; then
+      echo "  $rel (skip -- exists)"
+    else
+      echo "  $rel"
+    fi
+  done
+  exit 0
 fi
 
 find -L "$SEED_SRC" -type f | sort | while read -r f; do
-    rel="${f#"$SEED_SRC/"}"
-    if [ -e "$rel" ]; then
-        continue
-    fi
-    mkdir -p "$(dirname "$rel")"
-    cp "$f" "$rel"
-    echo "scaffolded: $rel"
+  rel="${f#"$SEED_SRC/"}"
+  if [ -e "$rel" ]; then
+    continue
+  fi
+  mkdir -p "$(dirname "$rel")"
+  cp "$f" "$rel"
+  echo "scaffolded: $rel"
 done
 echo "synced setting-init -> ."
