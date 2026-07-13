@@ -4,17 +4,24 @@
 # INVOKING repo (CWD, a git repo). One repo at a time; safe at scale.
 #
 # Flow (per repo):
-#   1. detect   state (vendored / referenced / bare / partial)
-#               already-referenced => no-op
-#   2. strip    vendored artifacts (full flake.nix / lefthook.yml / ci.yml)
-#               so they become derived (materialized + gitignored)
-#   3. plant    the seed (#95): thin flake.nix, .gitignore, CI caller,
-#               auto-update workflow (skip-if-exists)
-#   4. confirm-equivalence: assert the new materialized check-set covers
-#               every check the old vendored lefthook enforced (the safety
-#               net), then dry-run the confirmator (#94) on the new state.
-#               The FULL confirmator + `nix flake check` run in CI once
-#               `nix flake update` has produced flake.lock.
+#   1. pre-flight  CWD sanity (git repo, clean worktree, not detached)
+#   2. detect      state -- referenced (no-op) | bare | vendored |
+#                  sub-classified partial states (#115):
+#                    partial-tracked-lefthook
+#                    partial-no-gitignore
+#                    partial-no-materialization
+#                    partial-no-flake-update
+#   3. strip       vendored artifacts (full flake.nix / lefthook.yml / ci.yml)
+#                  so they become derived (materialized + gitignored).
+#                  Custom flake.nix content => MIGRATE-FAIL, not silent drop.
+#                  Extra workflows beyond vendored ci.yml => preserved.
+#   4. plant       the seed (#95): thin flake.nix, .gitignore, CI caller,
+#                  auto-update workflow (skip-if-exists)
+#   5. confirm-equivalence: assert the new materialized check-set covers
+#                  every check the old vendored lefthook enforced (the safety
+#                  net), then dry-run the confirmator (#94) on the new state.
+#                  The FULL confirmator + `nix flake check` run in CI once
+#                  `nix flake update` has produced flake.lock.
 #
 # Env in:
 #   SEED_SRC          path to leaf-seed derivation (#95)
@@ -39,8 +46,19 @@
 set -euo pipefail
 
 # --- structured failure diagnostic (#114) ---
-_migrate_stage="detect"
+_migrate_stage="pre-flight"
 _migrate_fail_emitted=0
+
+_emit_fail() {
+    local reason="$1"; shift
+    _migrate_fail_emitted=1
+    echo ""
+    echo "MIGRATE-FAIL: stage=$_migrate_stage reason=$reason"
+    for line in "$@"; do
+        echo "  $line"
+    done
+    echo "  retry: idempotent"
+}
 
 _check_fragment() {
     case "$1" in
@@ -81,23 +99,64 @@ _fragment_trigger() {
 _on_err() {
     local rc=$?
     if [ "$_migrate_fail_emitted" -eq 0 ]; then
-        _migrate_fail_emitted=1
-        echo ""
-        echo "MIGRATE-FAIL: stage=$_migrate_stage reason=unexpected"
-        echo "  detail: command failed with exit $rc at stage=$_migrate_stage"
-        echo "  resolution:"
-        echo "    - inspect the output above for the root cause"
-        echo "    - file a backprop issue at github:pr0d1r2/set-and-setting with the full output"
-        echo "  retry: idempotent"
+        _emit_fail "unexpected" \
+            "detail: command failed with exit $rc at stage=$_migrate_stage" \
+            "resolution:" \
+            "  - inspect the output above for the root cause" \
+            "  - file a backprop issue at github:pr0d1r2/set-and-setting with the full output"
     fi
 }
 trap '_on_err' ERR
 
-# --- detect state (CWD is a git repo) ---
-tracked=""
-if git rev-parse --git-dir >/dev/null 2>&1; then
-    tracked="$(git ls-files 2>/dev/null || true)"
+# --- pre-flight: CWD sanity (#115) ---
+if ! git rev-parse --git-dir >/dev/null 2>&1; then
+    _emit_fail "not-a-git-repo" \
+        "detail: CWD is not inside a git repository" \
+        "resolution:" \
+        "  - run from the root of a git repository" \
+        "  - or: git init && git add . && git commit -m 'initial'"
+    exit 1
 fi
+
+if ! git rev-parse --verify HEAD >/dev/null 2>&1; then
+    _emit_fail "no-commits" \
+        "detail: git repository has no commits (orphan branch)" \
+        "resolution:" \
+        "  - create an initial commit: git add . && git commit -m 'initial'"
+    exit 1
+fi
+
+if [ "$(git rev-parse --is-inside-work-tree 2>/dev/null)" != "true" ]; then
+    _emit_fail "bare-git-repo" \
+        "detail: CWD is inside a bare git repository (no worktree)" \
+        "resolution:" \
+        "  - run from a cloned (non-bare) worktree"
+    exit 1
+fi
+
+head_ref="$(git symbolic-ref HEAD 2>/dev/null || true)"
+if [ -z "$head_ref" ]; then
+    _emit_fail "detached-head" \
+        "detail: HEAD is detached (not on a branch)" \
+        "resolution:" \
+        "  - check out a branch: git checkout main" \
+        "  - migration commits need a branch to land on"
+    exit 1
+fi
+
+if [ -n "$(git status --porcelain 2>/dev/null)" ]; then
+    _emit_fail "dirty-worktree" \
+        "detail: uncommitted changes in the working tree" \
+        "resolution:" \
+        "  - commit or stash changes before migrating" \
+        "  - migration modifies tracked files; a clean state prevents data loss"
+    exit 1
+fi
+
+_migrate_stage="detect"
+
+# --- detect state ---
+tracked="$(git ls-files 2>/dev/null || true)"
 
 flake_present=0
 [ -f flake.nix ] && flake_present=1
@@ -131,7 +190,54 @@ if [ "$ci_present" -eq 1 ] && grep -q 'guardrails.yml' .github/workflows/ci.yml;
     ci_guardrails=1
 fi
 
-# classify: referenced (no-op) | bare | partial | vendored
+flake_lock_present=0
+[ -f flake.lock ] && flake_lock_present=1
+
+# --- custom flake detection (#115) ---
+has_custom_flake=0
+custom_flake_details=""
+if [ "$flake_present" -eq 1 ] && [ "$references_sns" -eq 0 ]; then
+    seed_inputs="nixpkgs-lock nixpkgs set-and-setting"
+    extra_inputs=""
+    while IFS= read -r inp; do
+        is_seed=0
+        for si in $seed_inputs; do
+            if [ "$inp" = "$si" ]; then is_seed=1; break; fi
+        done
+        [ "$is_seed" -eq 0 ] && extra_inputs="$extra_inputs $inp"
+    done < <(grep -oE '[a-zA-Z_-]+\.url\s*=' flake.nix | sed 's/\.url\s*=//;s/[[:space:]]//g' || true)
+    extra_inputs="${extra_inputs# }"
+
+    has_overlays=0
+    grep -qE 'overlays|overlay' flake.nix 2>/dev/null && has_overlays=1
+
+    has_extra_outputs=0
+    grep -qE 'nixosConfigurations|homeConfigurations|nixosModules|darwinConfigurations|templates|lib\.' flake.nix 2>/dev/null && has_extra_outputs=1
+
+    if [ -n "$extra_inputs" ] || [ "$has_overlays" -eq 1 ] || [ "$has_extra_outputs" -eq 1 ]; then
+        has_custom_flake=1
+        details=""
+        [ -n "$extra_inputs" ] && details="extra inputs: $extra_inputs"
+        [ "$has_overlays" -eq 1 ] && details="${details:+$details; }overlays detected"
+        [ "$has_extra_outputs" -eq 1 ] && details="${details:+$details; }extra outputs detected"
+        custom_flake_details="$details"
+    fi
+fi
+
+# --- extra workflow detection (#115) ---
+extra_workflows=""
+if [ -d .github/workflows ]; then
+    while IFS= read -r wf; do
+        wfname="$(basename "$wf")"
+        case "$wfname" in
+            ci.yml|auto-update.yml) ;;
+            *) extra_workflows="$extra_workflows $wfname";;
+        esac
+    done < <(find .github/workflows -maxdepth 1 -name '*.yml' -o -name '*.yaml' | sort)
+    extra_workflows="${extra_workflows# }"
+fi
+
+# classify: referenced (no-op) | bare | partial-* (#115) | vendored
 state="vendored"
 if [ "$references_sns" -eq 1 ] && [ "$uses_materialization" -eq 1 ] &&
     [ "$lefthook_tracked" -eq 0 ] && [ "$gitignores_lefthook" -eq 1 ]; then
@@ -139,10 +245,24 @@ if [ "$references_sns" -eq 1 ] && [ "$uses_materialization" -eq 1 ] &&
 elif [ "$flake_present" -eq 0 ] && [ "$lefthook_present" -eq 0 ]; then
     state="bare"
 elif [ "$references_sns" -eq 1 ] || [ "$gitignores_lefthook" -eq 1 ]; then
-    state="partial"
+    if [ "$references_sns" -eq 1 ] && [ "$lefthook_tracked" -eq 1 ]; then
+        state="partial-tracked-lefthook"
+    elif [ "$references_sns" -eq 1 ] && [ "$gitignores_lefthook" -eq 0 ]; then
+        state="partial-no-gitignore"
+    elif [ "$references_sns" -eq 1 ] && [ "$uses_materialization" -eq 0 ]; then
+        state="partial-no-materialization"
+    elif [ "$gitignores_lefthook" -eq 1 ] && [ "$references_sns" -eq 0 ]; then
+        state="partial-no-gitignore"
+    else
+        state="partial-tracked-lefthook"
+    fi
 fi
 
 echo "migrate: detected state=$state"
+
+if [ -n "$extra_workflows" ]; then
+    echo "migrate: extra workflows detected (will preserve): $extra_workflows"
+fi
 
 if [ "${MIGRATE_DETECT_ONLY:-}" = "1" ]; then
     exit 0
@@ -152,6 +272,18 @@ fi
 if [ "$state" = "referenced" ]; then
     echo "migrate: already referenced -- no-op"
     exit 0
+fi
+
+# custom flake => refuse (never silently drop custom content)
+if [ "$has_custom_flake" -eq 1 ]; then
+    _emit_fail "custom-flake" \
+        "detail: flake.nix contains custom content a blind strip would lose" \
+        "  $custom_flake_details" \
+        "resolution:" \
+        "  - reconcile custom content with the referenced thin flake manually" \
+        "  - the seed flake is at: $SEED_SRC/flake.nix" \
+        "  - after reconciliation, re-run migrate"
+    exit 1
 fi
 
 # --- plan (shared by dry-run report and the real transform) ---
@@ -173,6 +305,7 @@ if [ "${MIGRATE_DRY_RUN:-}" = "1" ]; then
     [ "$strip_flake" -eq 1 ] && echo "  strip: flake.nix (vendored -> derived)"
     [ "$strip_ci" -eq 1 ] && echo "  strip: .github/workflows/ci.yml (vendored -> guardrails caller)"
     [ "$strip_lefthook" -eq 1 ] && echo "  strip: lefthook.yml (vendored -> materialized+gitignored)"
+    [ -n "$extra_workflows" ] && echo "  preserve: extra workflows ($extra_workflows)"
     echo "  plant: seed (thin flake.nix, .gitignore, ci.yml, auto-update.yml) skip-if-exists"
     echo "  confirm-equivalence: new check-set must cover the vendored one"
     exit 0
@@ -229,7 +362,7 @@ done <"$SEED_SRC/.gitignore"
 # (materialized artifacts stay gitignored/untracked; caller commits the rest)
 git add -A
 
-_migrate_stage="equivalence"
+_migrate_stage="materialize"
 # --- materialize the new state (gitignored) for equivalence + confirm ---
 detected="$(bash "$DETECT_SCRIPT")"
 mat_out="$(mktemp -d)"
@@ -239,6 +372,7 @@ cp -f "$SETTING_SRC/.markdownlint.yml" .markdownlint.yml
 cp -f "$SETTING_SRC/.yamllint.yml" .yamllint.yml
 rm -rf "$mat_out"
 
+_migrate_stage="equivalence"
 # --- confirm-equivalence (the safety net) ---
 # The referenced architecture PROVIDES a fixed universe of guardrails:
 # pinned flake checks (CHECKS_UNIVERSE) UNION every lefthook command across

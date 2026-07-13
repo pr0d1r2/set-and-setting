@@ -2655,6 +2655,7 @@
             cd workdir
             git init -q
             git add .
+            git commit -q -m "initial" --allow-empty
 
             out1="$(bash "$MIGRATE_SCRIPT")"
             echo "$out1"
@@ -2671,6 +2672,7 @@
 
             # idempotent: a migrated repo re-migrates to a no-op, no changes
             git add -A
+            git commit -q -m "migrated" --allow-empty
             out2="$(bash "$MIGRATE_SCRIPT")"
             echo "$out2"
             echo "$out2" | grep -q 'state=referenced' || { echo "FAIL: 2nd not referenced"; exit 1; }
@@ -2691,6 +2693,7 @@
               cd workdir
               git init -q
               git add .
+              git commit -q -m "initial" --allow-empty
               before="$(sha256sum flake.nix | cut -d' ' -f1)"
               result="$(bash "$MIGRATE_SCRIPT")"
               echo "$result"
@@ -2707,6 +2710,7 @@
           echo "# bare repo" > README.md
           git init -q
           git add .
+          git commit -q -m "initial" --allow-empty
           result="$(bash "$MIGRATE_SCRIPT")"
           echo "$result"
           echo "$result" | grep -q 'state=bare' || { echo "FAIL: not bare"; exit 1; }
@@ -2730,7 +2734,7 @@
             '';
           in
           pkgs.runCommand "migrate-partial" (migrateFixtureEnv pkgs) ''
-            # partial: references set-and-setting BUT still tracks lefthook.yml
+            # partial-tracked-lefthook: references set-and-setting BUT still tracks lefthook.yml
             cp -r ${migrateSeedFor pkgs} workdir
             chmod -R u+w workdir
             cd workdir
@@ -2738,6 +2742,7 @@
             git init -q
             git add -f lefthook.yml
             git add .
+            git commit -q -m "initial" --allow-empty
             result="$(bash "$MIGRATE_SCRIPT")"
             echo "$result"
             echo "$result" | grep -q 'state=partial' || { echo "FAIL: not partial"; exit 1; }
@@ -2769,6 +2774,7 @@
             cp ${brokenLefthook} lefthook.yml
             git init -q
             git add .
+            git commit -q -m "initial" --allow-empty
             if bash "$MIGRATE_SCRIPT"; then
               echo "FAIL: migrate should reject a dropped-check transform"
               exit 1
