@@ -38,6 +38,10 @@ teardown() {
     [[ "$output" == *"Usage: migrate"* ]]
     [[ "$output" == *"vendored->referenced"* ]]
     [[ "$output" == *"equivalence"* ]]
+    [[ "$output" == *"partial-tracked-lefthook"* ]]
+    [[ "$output" == *"partial-no-gitignore"* ]]
+    [[ "$output" == *"partial-no-materialization"* ]]
+    [[ "$output" == *"Pre-flight checks"* ]]
 }
 
 @test "--detect sets MIGRATE_DETECT_ONLY and prints state" {

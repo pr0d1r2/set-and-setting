@@ -2,8 +2,10 @@
 # shellcheck disable=SC2030,SC2031
 
 # Unit tests for lib/migrate.sh -- vendored->referenced transform (#96).
-# Covers state detection, strip, plant, gitignore-merge, the check-set
-# equivalence gate, idempotency, and the dry-run/detect modes.
+# Covers pre-flight checks (#115), state detection (including sub-classified
+# partial states), strip, plant, gitignore-merge, the check-set equivalence
+# gate, custom flake detection, extra workflow preservation, idempotency,
+# and the dry-run/detect modes.
 
 setup() {
     bats_require_minimum_version 1.5.0
@@ -53,6 +55,15 @@ teardown() {
     rm -rf "$SEED_SRC" "$SETTING_SRC" "$FULL_DIR" "$WORK"
 }
 
+# helper: init a git repo with an initial commit (satisfies pre-flight)
+_init_repo() {
+    git init -q
+    git config user.email "test@test.com"
+    git config user.name "Test"
+    git add .
+    git commit -q -m "initial" --allow-empty
+}
+
 # a vendored (pre-FLIP) lefthook: guardrails inline as commands (all covered)
 write_vendored_lefthook() {
     printf '%s\n' \
@@ -68,11 +79,51 @@ write_vendored_lefthook() {
         >lefthook.yml
 }
 
+# ======== pre-flight checks (#115) ========
+
+@test "pre-flight: rejects non-git-repo with MIGRATE-FAIL" {
+    mkdir not-a-repo && cd not-a-repo
+    run bash "$MIGRATE_SCRIPT"
+    [ "$status" -ne 0 ]
+    [[ "$output" == *"MIGRATE-FAIL: stage=pre-flight reason=not-a-git-repo"* ]]
+    [[ "$output" == *"retry: idempotent"* ]]
+}
+
+@test "pre-flight: rejects repo with no commits with MIGRATE-FAIL" {
+    git init -q
+    run bash "$MIGRATE_SCRIPT"
+    [ "$status" -ne 0 ]
+    [[ "$output" == *"MIGRATE-FAIL: stage=pre-flight reason=no-commits"* ]]
+    [[ "$output" == *"retry: idempotent"* ]]
+}
+
+@test "pre-flight: rejects detached HEAD with MIGRATE-FAIL" {
+    echo "# readme" >README.md
+    _init_repo
+    # detach HEAD
+    git checkout --detach HEAD 2>/dev/null
+    run bash "$MIGRATE_SCRIPT"
+    [ "$status" -ne 0 ]
+    [[ "$output" == *"MIGRATE-FAIL: stage=pre-flight reason=detached-head"* ]]
+    [[ "$output" == *"retry: idempotent"* ]]
+}
+
+@test "pre-flight: rejects dirty worktree with MIGRATE-FAIL" {
+    echo "# readme" >README.md
+    _init_repo
+    echo "uncommitted" >dirty.txt
+    run bash "$MIGRATE_SCRIPT"
+    [ "$status" -ne 0 ]
+    [[ "$output" == *"MIGRATE-FAIL: stage=pre-flight reason=dirty-worktree"* ]]
+    [[ "$output" == *"retry: idempotent"* ]]
+}
+
+# ======== state detection ========
+
 @test "detects vendored state (heavy flake + tracked lefthook)" {
     echo "{ outputs = { self }: { }; }" >flake.nix
     write_vendored_lefthook
-    git init -q
-    git add .
+    _init_repo
     MIGRATE_DETECT_ONLY=1 run bash "$MIGRATE_SCRIPT"
     [ "$status" -eq 0 ]
     [[ "$output" == *"state=vendored"* ]]
@@ -80,8 +131,7 @@ write_vendored_lefthook() {
 
 @test "detects bare state (no flake, no lefthook)" {
     echo "# readme" >README.md
-    git init -q
-    git add .
+    _init_repo
     MIGRATE_DETECT_ONLY=1 run bash "$MIGRATE_SCRIPT"
     [ "$status" -eq 0 ]
     [[ "$output" == *"state=bare"* ]]
@@ -89,32 +139,162 @@ write_vendored_lefthook() {
 
 @test "detects referenced state (seed layout) and is a no-op" {
     cp -r "$SEED_SRC/." .
-    git init -q
-    git add .
+    _init_repo
     run bash "$MIGRATE_SCRIPT"
     [ "$status" -eq 0 ]
     [[ "$output" == *"state=referenced"* ]]
     [[ "$output" == *"no-op"* ]]
 }
 
-@test "detects partial state (referenced flake but tracked lefthook)" {
+# ======== sub-classified partial states (#115) ========
+
+@test "detects partial-tracked-lefthook (referenced flake but tracked lefthook)" {
     cp -r "$SEED_SRC/." .
     write_vendored_lefthook
     git init -q
+    git config user.email "test@test.com"
+    git config user.name "Test"
     git add -f lefthook.yml
     git add .
+    git commit -q -m "initial"
     MIGRATE_DETECT_ONLY=1 run bash "$MIGRATE_SCRIPT"
     [ "$status" -eq 0 ]
-    [[ "$output" == *"state=partial"* ]]
+    [[ "$output" == *"state=partial-tracked-lefthook"* ]]
 }
+
+@test "detects partial-no-gitignore (references SNS but no lefthook gitignore)" {
+    printf '%s\n' \
+        "{" \
+        "  inputs.set-and-setting.url = \"github:pr0d1r2/set-and-setting\";" \
+        "}" \
+        >flake.nix
+    echo "# no lefthook.yml entry" >.gitignore
+    _init_repo
+    MIGRATE_DETECT_ONLY=1 run bash "$MIGRATE_SCRIPT"
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"state=partial-no-gitignore"* ]]
+}
+
+@test "detects partial-no-materialization (references SNS without checksFor)" {
+    printf '%s\n' \
+        "{" \
+        "  inputs.set-and-setting.url = \"github:pr0d1r2/set-and-setting\";" \
+        "}" \
+        >flake.nix
+    printf '%s\n' "lefthook.yml" >.gitignore
+    _init_repo
+    MIGRATE_DETECT_ONLY=1 run bash "$MIGRATE_SCRIPT"
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"state=partial-no-materialization"* ]]
+}
+
+# ======== custom flake detection (#115) ========
+
+@test "custom flake with extra inputs emits MIGRATE-FAIL" {
+    printf '%s\n' \
+        "{" \
+        "  inputs.my-overlay.url = \"github:example/overlay\";" \
+        "}" \
+        >flake.nix
+    write_vendored_lefthook
+    _init_repo
+    run bash "$MIGRATE_SCRIPT"
+    [ "$status" -ne 0 ]
+    [[ "$output" == *"MIGRATE-FAIL: stage=detect reason=custom-flake"* ]]
+    [[ "$output" == *"extra inputs: my-overlay"* ]]
+    [[ "$output" == *"retry: idempotent"* ]]
+}
+
+@test "custom flake with overlays emits MIGRATE-FAIL" {
+    printf '%s\n' \
+        "{" \
+        "  outputs = { self }: {" \
+        "    overlays.default = final: prev: { };" \
+        "  };" \
+        "}" \
+        >flake.nix
+    write_vendored_lefthook
+    _init_repo
+    run bash "$MIGRATE_SCRIPT"
+    [ "$status" -ne 0 ]
+    [[ "$output" == *"MIGRATE-FAIL: stage=detect reason=custom-flake"* ]]
+    [[ "$output" == *"overlays detected"* ]]
+    [[ "$output" == *"retry: idempotent"* ]]
+}
+
+@test "custom flake with extra outputs emits MIGRATE-FAIL" {
+    printf '%s\n' \
+        "{" \
+        "  outputs = { self }: {" \
+        "    nixosConfigurations.test = { };" \
+        "  };" \
+        "}" \
+        >flake.nix
+    write_vendored_lefthook
+    _init_repo
+    run bash "$MIGRATE_SCRIPT"
+    [ "$status" -ne 0 ]
+    [[ "$output" == *"MIGRATE-FAIL: stage=detect reason=custom-flake"* ]]
+    [[ "$output" == *"extra outputs detected"* ]]
+    [[ "$output" == *"retry: idempotent"* ]]
+}
+
+# ======== extra workflow handling (#115) ========
+
+@test "extra workflows are preserved during transform" {
+    echo "{ outputs = { self }: { }; }" >flake.nix
+    write_vendored_lefthook
+    mkdir -p .github/workflows
+    echo "vendored ci" >.github/workflows/ci.yml
+    echo "deploy workflow" >.github/workflows/deploy.yml
+    echo "release workflow" >.github/workflows/release.yml
+    _init_repo
+    run bash "$MIGRATE_SCRIPT"
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"extra workflows detected (will preserve)"* ]]
+    [[ "$output" == *"deploy.yml"* ]]
+    [[ "$output" == *"release.yml"* ]]
+    # extra workflows untouched
+    [ -f .github/workflows/deploy.yml ]
+    [ -f .github/workflows/release.yml ]
+    grep -q "deploy workflow" .github/workflows/deploy.yml
+    grep -q "release workflow" .github/workflows/release.yml
+    # vendored ci.yml replaced
+    grep -q "guardrails.yml" .github/workflows/ci.yml
+}
+
+@test "extra workflows flagged in detect-only mode" {
+    echo "{ outputs = { self }: { }; }" >flake.nix
+    write_vendored_lefthook
+    mkdir -p .github/workflows
+    echo "vendored ci" >.github/workflows/ci.yml
+    echo "custom workflow" >.github/workflows/custom.yml
+    _init_repo
+    MIGRATE_DETECT_ONLY=1 run bash "$MIGRATE_SCRIPT"
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"extra workflows detected (will preserve): custom.yml"* ]]
+}
+
+@test "extra workflows listed in dry-run plan" {
+    echo "{ outputs = { self }: { }; }" >flake.nix
+    write_vendored_lefthook
+    mkdir -p .github/workflows
+    echo "vendored ci" >.github/workflows/ci.yml
+    echo "test workflow" >.github/workflows/test.yml
+    _init_repo
+    MIGRATE_DRY_RUN=1 run bash "$MIGRATE_SCRIPT"
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"preserve: extra workflows (test.yml)"* ]]
+}
+
+# ======== transform ========
 
 @test "vendored transform strips artifacts and plants the seed" {
     echo "{ outputs = { self }: { }; }" >flake.nix
     write_vendored_lefthook
     mkdir -p .github/workflows
     echo "vendored ci" >.github/workflows/ci.yml
-    git init -q
-    git add .
+    _init_repo
     run bash "$MIGRATE_SCRIPT"
     [ "$status" -eq 0 ]
     [[ "$output" == *"PASS: equivalence"* ]]
@@ -131,17 +311,35 @@ write_vendored_lefthook() {
 @test "transform is idempotent (re-run is a no-op)" {
     echo "{ outputs = { self }: { }; }" >flake.nix
     write_vendored_lefthook
-    git init -q
-    git add .
+    _init_repo
     bash "$MIGRATE_SCRIPT"
     hash1="$(sha256sum flake.nix | cut -d' ' -f1)"
     git add -A
+    git commit -q -m "migrated" --allow-empty
     run bash "$MIGRATE_SCRIPT"
     [ "$status" -eq 0 ]
     [[ "$output" == *"no-op"* ]]
     hash2="$(sha256sum flake.nix | cut -d' ' -f1)"
     [ "$hash1" = "$hash2" ]
 }
+
+@test "partial-tracked-lefthook completes the migration" {
+    cp -r "$SEED_SRC/." .
+    write_vendored_lefthook
+    git init -q
+    git config user.email "test@test.com"
+    git config user.name "Test"
+    git add -f lefthook.yml
+    git add .
+    git commit -q -m "initial"
+    run bash "$MIGRATE_SCRIPT"
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"state=partial-tracked-lefthook"* ]]
+    [[ "$output" == *"PASS: equivalence"* ]]
+    ! git ls-files | grep -qxF "lefthook.yml"
+}
+
+# ======== equivalence gate ========
 
 @test "equivalence gate rejects a repo-local dropped check with MIGRATE-FAIL" {
     echo "{ outputs = { self }: { }; }" >flake.nix
@@ -154,8 +352,7 @@ write_vendored_lefthook() {
         "    super-special-check:" \
         "      run: our-bespoke-linter" \
         >lefthook.yml
-    git init -q
-    git add .
+    _init_repo
     run bash "$MIGRATE_SCRIPT"
     [ "$status" -ne 0 ]
     [[ "$output" == *"MIGRATE-FAIL: stage=equivalence reason=uncovered-checks"* ]]
@@ -176,8 +373,7 @@ write_vendored_lefthook() {
         "    markdownlint:" \
         "      run: markdownlint {staged_files}" \
         >lefthook.yml
-    git init -q
-    git add .
+    _init_repo
     # strip FULL_LEFTHOOK so markdownlint is not in the universe
     # (markdownlint is lefthook-only, not in CHECKS_UNIVERSE)
     FULL_LEFTHOOK="" run bash "$MIGRATE_SCRIPT"
@@ -189,6 +385,8 @@ write_vendored_lefthook() {
     [[ "$output" == *"retry: idempotent"* ]]
 }
 
+# ======== stage-trap (#115) ========
+
 @test "mid-stage abort emits MIGRATE-FAIL with reason=unexpected" {
     echo "{ outputs = { self }: { }; }" >flake.nix
     printf '%s\n' \
@@ -198,27 +396,27 @@ write_vendored_lefthook() {
         "    nixfmt:" \
         "      run: nixfmt --check {staged_files}" \
         >lefthook.yml
-    git init -q
-    git add .
-    # point DETECT_SCRIPT at a script that fails during the equivalence stage
+    _init_repo
+    # point DETECT_SCRIPT at a script that fails during the materialize stage
     failing_script="$(mktemp)"
     printf '#!/usr/bin/env bash\nexit 1\n' >"$failing_script"
     chmod +x "$failing_script"
     DETECT_SCRIPT="$failing_script" run bash "$MIGRATE_SCRIPT"
     rm -f "$failing_script"
     [ "$status" -ne 0 ]
-    [[ "$output" == *"MIGRATE-FAIL: stage=equivalence reason=unexpected"* ]]
+    [[ "$output" == *"MIGRATE-FAIL: stage=materialize reason=unexpected"* ]]
     [[ "$output" == *"resolution:"* ]]
     [[ "$output" == *"backprop issue"* ]]
     [[ "$output" == *"retry: idempotent"* ]]
 }
 
+# ======== gitignore / dry-run / detect-only ========
+
 @test "gitignore-merge appends materialized entries to an existing .gitignore" {
     echo "{ outputs = { self }: { }; }" >flake.nix
     write_vendored_lefthook
     printf '%s\n' "node_modules/" >.gitignore
-    git init -q
-    git add .
+    _init_repo
     run bash "$MIGRATE_SCRIPT"
     [ "$status" -eq 0 ]
     grep -qxF "node_modules/" .gitignore
@@ -229,8 +427,7 @@ write_vendored_lefthook() {
 @test "--dry-run reports the plan and writes nothing" {
     echo "{ outputs = { self }: { }; }" >flake.nix
     write_vendored_lefthook
-    git init -q
-    git add .
+    _init_repo
     before="$(sha256sum flake.nix | cut -d' ' -f1)"
     MIGRATE_DRY_RUN=1 run bash "$MIGRATE_SCRIPT"
     [ "$status" -eq 0 ]
@@ -245,8 +442,7 @@ write_vendored_lefthook() {
 @test "detect-only prints state without transforming" {
     echo "{ outputs = { self }: { }; }" >flake.nix
     write_vendored_lefthook
-    git init -q
-    git add .
+    _init_repo
     MIGRATE_DETECT_ONLY=1 run bash "$MIGRATE_SCRIPT"
     [ "$status" -eq 0 ]
     [[ "$output" == *"state=vendored"* ]]
