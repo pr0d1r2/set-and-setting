@@ -10,7 +10,6 @@
 #                    partial-tracked-lefthook
 #                    partial-no-gitignore
 #                    partial-no-materialization
-#                    partial-no-flake-update
 #   3. strip       vendored artifacts (full flake.nix / lefthook.yml / ci.yml)
 #                  so they become derived (materialized + gitignored).
 #                  Custom flake.nix content => MIGRATE-FAIL, not silent drop.
@@ -190,9 +189,6 @@ if [ "$ci_present" -eq 1 ] && grep -q 'guardrails.yml' .github/workflows/ci.yml;
     ci_guardrails=1
 fi
 
-flake_lock_present=0
-[ -f flake.lock ] && flake_lock_present=1
-
 # --- custom flake detection (#115) ---
 has_custom_flake=0
 custom_flake_details=""
@@ -244,17 +240,13 @@ if [ "$references_sns" -eq 1 ] && [ "$uses_materialization" -eq 1 ] &&
     state="referenced"
 elif [ "$flake_present" -eq 0 ] && [ "$lefthook_present" -eq 0 ]; then
     state="bare"
-elif [ "$references_sns" -eq 1 ] || [ "$gitignores_lefthook" -eq 1 ]; then
-    if [ "$references_sns" -eq 1 ] && [ "$lefthook_tracked" -eq 1 ]; then
+elif [ "$references_sns" -eq 1 ]; then
+    if [ "$lefthook_tracked" -eq 1 ]; then
         state="partial-tracked-lefthook"
-    elif [ "$references_sns" -eq 1 ] && [ "$gitignores_lefthook" -eq 0 ]; then
+    elif [ "$gitignores_lefthook" -eq 0 ]; then
         state="partial-no-gitignore"
-    elif [ "$references_sns" -eq 1 ] && [ "$uses_materialization" -eq 0 ]; then
+    elif [ "$uses_materialization" -eq 0 ]; then
         state="partial-no-materialization"
-    elif [ "$gitignores_lefthook" -eq 1 ] && [ "$references_sns" -eq 0 ]; then
-        state="partial-no-gitignore"
-    else
-        state="partial-tracked-lefthook"
     fi
 fi
 
