@@ -34,32 +34,32 @@ root="$work"
 status=0
 
 while IFS= read -r file; do
-    while IFS= read -r ref; do
-        [ -n "$ref" ] || continue
-        path="${ref#@}"
-        dir="$(dirname "$file")"
-        parent="$(dirname "$dir")"
-        ok=0
-        for cand in \
-            "$root/$path" \
-            "$dir/$path" \
-            "$parent/$path" \
-            "$root/set/$path" \
-            "$root/set/skills/$path" \
-            "$root/set/drafts/$path"; do
-            if [ -e "$cand" ]; then
-                ok=1
-                break
-            fi
-        done
-        if [ "$ok" -eq 0 ]; then
-            echo "FAIL: unresolved @-reference '$ref' in ${file#"$root"/}"
-            status=1
-        fi
-    done < <(INPUT="$file" bash "$ref_match")
+  while IFS= read -r ref; do
+    [ -n "$ref" ] || continue
+    path="${ref#@}"
+    dir="$(dirname "$file")"
+    parent="$(dirname "$dir")"
+    ok=0
+    for cand in \
+      "$root/$path" \
+      "$dir/$path" \
+      "$parent/$path" \
+      "$root/set/$path" \
+      "$root/set/skills/$path" \
+      "$root/set/drafts/$path"; do
+      if [ -e "$cand" ]; then
+        ok=1
+        break
+      fi
+    done
+    if [ "$ok" -eq 0 ]; then
+      echo "FAIL: unresolved @-reference '$ref' in ${file#"$root"/}"
+      status=1
+    fi
+  done < <(INPUT="$file" bash "$ref_match")
 done < <(find "$work/set" -type f -name '*.md' | sort)
 
 if [ "$status" -eq 0 ]; then
-    echo "ref-resolution: all @-references resolve"
+  echo "ref-resolution: all @-references resolve"
 fi
 exit "$status"

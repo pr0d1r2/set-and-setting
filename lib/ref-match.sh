@@ -29,75 +29,75 @@ in_fence=0
 in_comment=0
 
 while IFS= read -r line || [ -n "$line" ]; do
-    # Continue stripping an open block-level HTML comment.
-    if [ "$in_comment" -eq 1 ]; then
-        case "$line" in
-            *'-->'*)
-                line="${line#*-->}"
-                in_comment=0
-                ;;
-            *) continue ;;
-        esac
-    fi
-
-    # Strip any complete <!-- ... --> comments on this line.
-    while
-        case "$line" in
-            *'<!--'*'-->'*) true ;;
-            *) false ;;
-        esac
-    do
-        line="${line%%'<!--'*}${line#*-->}"
-    done
-
-    # An opening <!-- with no close: drop the rest and enter comment state.
+  # Continue stripping an open block-level HTML comment.
+  if [ "$in_comment" -eq 1 ]; then
     case "$line" in
-        *'<!--'*)
-            line="${line%%'<!--'*}"
-            in_comment=1
-            ;;
+      *'-->'*)
+        line="${line#*-->}"
+        in_comment=0
+        ;;
+      *) continue ;;
     esac
+  fi
 
-    # Fenced code block toggle: the fence line itself carries no ref.
+  # Strip any complete <!-- ... --> comments on this line.
+  while
     case "$line" in
-        '```'* | '~~~'*)
-            in_fence=$((1 - in_fence))
-            continue
-            ;;
+      *'<!--'*'-->'*) true ;;
+      *) false ;;
     esac
-    if [ "$in_fence" -eq 1 ]; then
-        continue
-    fi
+  do
+    line="${line%%'<!--'*}${line#*-->}"
+  done
 
-    # Strip paired inline code spans so a @ref inside backticks is ignored,
-    # while a real ref elsewhere on the same line still counts.
-    while
-        case "$line" in
-            *'`'*'`'*) true ;;
-            *) false ;;
-        esac
-    do
-        before="${line%%'`'*}"
-        after="${line#*'`'}"
-        after="${after#*'`'}"
-        line="$before $after"
-    done
+  # An opening <!-- with no close: drop the rest and enter comment state.
+  case "$line" in
+    *'<!--'*)
+      line="${line%%'<!--'*}"
+      in_comment=1
+      ;;
+  esac
 
-    # A leading @-token = a whitespace-split word starting with @. This is the
-    # "leading-token" rule: `action@main` (word does not start with @) is out.
-    for word in $line; do
-        case "$word" in
-            '@'*) ;;
-            *) continue ;;
-        esac
-        # Trim trailing prose punctuation that is never part of a ref path.
-        tok="${word#@}"
-        tok="${tok%%[)\],;:]}"
-        # Keep only the three real forms; everything else is a false positive.
-        case "$tok" in
-            set/?* | concepts/?*) printf '@%s\n' "$tok" ;;
-            */*.md) printf '@%s\n' "$tok" ;;
-            *) : ;;
-        esac
-    done
+  # Fenced code block toggle: the fence line itself carries no ref.
+  case "$line" in
+    '```'* | '~~~'*)
+      in_fence=$((1 - in_fence))
+      continue
+      ;;
+  esac
+  if [ "$in_fence" -eq 1 ]; then
+    continue
+  fi
+
+  # Strip paired inline code spans so a @ref inside backticks is ignored,
+  # while a real ref elsewhere on the same line still counts.
+  while
+    case "$line" in
+      *'`'*'`'*) true ;;
+      *) false ;;
+    esac
+  do
+    before="${line%%'`'*}"
+    after="${line#*'`'}"
+    after="${after#*'`'}"
+    line="$before $after"
+  done
+
+  # A leading @-token = a whitespace-split word starting with @. This is the
+  # "leading-token" rule: `action@main` (word does not start with @) is out.
+  for word in $line; do
+    case "$word" in
+      '@'*) ;;
+      *) continue ;;
+    esac
+    # Trim trailing prose punctuation that is never part of a ref path.
+    tok="${word#@}"
+    tok="${tok%%[)\],;:]}"
+    # Keep only the three real forms; everything else is a false positive.
+    case "$tok" in
+      set/?* | concepts/?*) printf '@%s\n' "$tok" ;;
+      */*.md) printf '@%s\n' "$tok" ;;
+      *) : ;;
+    esac
+  done
 done <"$INPUT"

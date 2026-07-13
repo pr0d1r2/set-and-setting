@@ -8,38 +8,38 @@
 set -euo pipefail
 
 if git rev-parse --git-dir >/dev/null 2>&1; then
-    tracked="$(git ls-files 2>/dev/null || true)"
+  tracked="$(git ls-files 2>/dev/null || true)"
 else
-    tracked=""
+  tracked=""
 fi
 
 if [ -z "$tracked" ]; then
-    echo "base nix shell ascii markdown yaml set"
-    exit 0
+  echo "base nix shell ascii markdown yaml set"
+  exit 0
 fi
 
 result="base"
 
 if printf '%s\n' "$tracked" | grep -qE '\.nix$'; then
-    result="$result nix"
+  result="$result nix"
 fi
 
 if printf '%s\n' "$tracked" | grep -qE '\.(sh|bash)$'; then
-    result="$result shell"
+  result="$result shell"
 fi
 
 result="$result ascii"
 
 if printf '%s\n' "$tracked" | grep -qE '\.md$'; then
-    result="$result markdown"
+  result="$result markdown"
 fi
 
 if printf '%s\n' "$tracked" | grep -qE '\.(yml|yaml)$'; then
-    result="$result yaml"
+  result="$result yaml"
 fi
 
 if printf '%s\n' "$tracked" | grep -qE '^set/.*\.md$'; then
-    result="$result set"
+  result="$result set"
 fi
 
 echo "$result"
