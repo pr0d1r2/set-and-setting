@@ -44,18 +44,16 @@ _migrate_fail_emitted=0
 
 _check_fragment() {
     case "$1" in
-        commit-msg-lint|changelog-touched|gitleaks|git-conflict-markers|\
+        gitleaks|git-conflict-markers|\
 git-no-local-paths|execute-permissions|file-size-check|\
 trailing-whitespace|missing-final-newline|editorconfig-checker|\
-typos|narrow-language-nix|narrow-language-shell|\
-narrow-language-markdown|narrow-language-other|bats-parse|bats-unit)
+typos)
             echo "base";;
-        nixfmt|statix|deadnix|nix-no-embedded-shell|\
-nix-flake-check|nix-flake-eval)
+        nixfmt|statix|deadnix|nix-no-embedded-shell)
             echo "nix";;
         shellcheck|shfmt|no-shell-functions)
             echo "shell";;
-        ascii-only|unicode-lint)
+        ascii-only)
             echo "ascii";;
         markdownlint|markdownlint-agentic)
             echo "markdown";;
