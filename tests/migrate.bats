@@ -79,6 +79,26 @@ write_vendored_lefthook() {
         >lefthook.yml
 }
 
+# a vendored lefthook carrying a `remotes:` block (git_url/ref/configs list
+# fields) ALONGSIDE its real inline command -- the remotes fields share the
+# 4-space indent of command keys but are NOT checks. The equivalence parser
+# must scope to the `commands:` block and ignore ref/configs (#regression).
+write_vendored_lefthook_with_remotes() {
+    printf '%s\n' \
+        "---" \
+        "remotes:" \
+        "  - git_url: https://github.com/pr0d1r2/nix-lefthook-nixfmt" \
+        "    ref: main" \
+        "    configs:" \
+        "      - lefthook-remote.yml" \
+        "pre-commit:" \
+        "  parallel: true" \
+        "  commands:" \
+        "    nixfmt:" \
+        "      run: nixfmt --check {staged_files}" \
+        >lefthook.yml
+}
+
 # ======== pre-flight checks (#115) ========
 
 @test "pre-flight: rejects non-git-repo with MIGRATE-FAIL" {
@@ -383,6 +403,52 @@ write_vendored_lefthook() {
     [[ "$output" == *"standard fragment \`markdown\` covers this"* ]]
     [[ "$output" == *"tracked *.md files"* ]]
     [[ "$output" == *"retry: idempotent"* ]]
+}
+
+@test "equivalence gate ignores remotes ref/configs fields (not checks)" {
+    # A vendored lefthook with a `remotes:` block: its `ref:`/`configs:`
+    # list fields sit at 4-space indent (like command keys) but are NOT
+    # lefthook checks. The old grep-based parser mistook them for dropped
+    # checks and failed every migration. The command-scoped extractor must
+    # see ONLY the real `nixfmt` command (covered by CHECKS_UNIVERSE).
+    echo "{ outputs = { self }: { }; }" >flake.nix
+    write_vendored_lefthook_with_remotes
+    _init_repo
+    run bash "$MIGRATE_SCRIPT"
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"PASS: equivalence"* ]]
+    # the remotes-field false-positives must NOT appear as dropped checks
+    [[ "$output" != *"dropped:"*"ref"* ]]
+    [[ "$output" != *"dropped:"*"configs"* ]]
+    [[ "$output" != *"dropped:"*"git_url"* ]]
+    [[ "$output" != *"MIGRATE-FAIL"* ]]
+}
+
+@test "equivalence gate still catches a real command beside a remotes block" {
+    # Sibling to the above: a repo-local command under `commands:` alongside
+    # a `remotes:` block must STILL trip the gate -- proof the scoping did
+    # not weaken the safety net, only removed the remotes false-positives.
+    echo "{ outputs = { self }: { }; }" >flake.nix
+    printf '%s\n' \
+        "---" \
+        "remotes:" \
+        "  - git_url: https://github.com/pr0d1r2/nix-lefthook-nixfmt" \
+        "    ref: main" \
+        "    configs:" \
+        "      - lefthook-remote.yml" \
+        "pre-commit:" \
+        "  commands:" \
+        "    super-special-check:" \
+        "      run: our-bespoke-linter" \
+        >lefthook.yml
+    _init_repo
+    run bash "$MIGRATE_SCRIPT"
+    [ "$status" -ne 0 ]
+    [[ "$output" == *"MIGRATE-FAIL: stage=equivalence reason=uncovered-checks"* ]]
+    [[ "$output" == *"dropped: super-special-check"* ]]
+    # remotes fields still excluded even in the failing case
+    [[ "$output" != *"dropped:"*"ref"* ]]
+    [[ "$output" != *"dropped:"*"configs"* ]]
 }
 
 # ======== stage-trap (#115) ========

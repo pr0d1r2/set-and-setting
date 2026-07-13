@@ -60,6 +60,23 @@ _emit_fail() {
   echo "  retry: idempotent"
 }
 
+# Extract lefthook check-names (command keys) from a lefthook.yml.
+# Scoped to keys under a `commands:` block so `remotes:`/`scripts:` list
+# fields (e.g. `ref:`, `configs:`, `git_url:`) are NOT mistaken for checks.
+# Both the vendored and referenced sides MUST use this SAME extractor.
+extract_lefthook_checks() {
+  awk '
+    /^[A-Za-z]/                      { insec = 0 }         # any top-level key resets
+    /^  commands:[[:space:]]*$/      { insec = 1; next }   # entering a commands block
+    /^  [A-Za-z]/ && !/^  commands:/ { insec = 0 }         # other 2-space key exits commands
+    insec && /^    [A-Za-z][A-Za-z0-9_-]*:/ {
+      k = $1
+      sub(/:.*/, "", k)
+      print k
+    }
+  ' "$1" | sort -u
+}
+
 _check_fragment() {
   case "$1" in
     gitleaks | git-conflict-markers | \
@@ -321,7 +338,7 @@ trap 'rm -f "$old_checks" "$new_checks"' EXIT
 
 _migrate_stage="strip"
 if [ "$lefthook_present" -eq 1 ]; then
-  grep -oE '^    [a-zA-Z][a-zA-Z0-9_-]*:' lefthook.yml | tr -d ' :' | sort -u >"$old_checks" || true
+  extract_lefthook_checks lefthook.yml >"$old_checks" || true
 fi
 
 # --- strip vendored artifacts (stage: strip) ---
@@ -387,8 +404,8 @@ _migrate_stage="equivalence"
 {
   printf '%s\n' ${CHECKS_UNIVERSE:-}
   [ -n "${FULL_LEFTHOOK:-}" ] && [ -f "$FULL_LEFTHOOK" ] &&
-    grep -oE '^    [a-zA-Z][a-zA-Z0-9_-]*:' "$FULL_LEFTHOOK" | tr -d ' :'
-  grep -oE '^    [a-zA-Z][a-zA-Z0-9_-]*:' lefthook.yml | tr -d ' :'
+    extract_lefthook_checks "$FULL_LEFTHOOK"
+  extract_lefthook_checks lefthook.yml
 } | grep -v '^$' | sort -u >"$new_checks"
 
 dropped="$(comm -23 "$old_checks" "$new_checks" || true)"
