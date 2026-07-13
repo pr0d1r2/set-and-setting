@@ -2115,6 +2115,13 @@
             grep -q 'install-nix-action' "${scaffold}/.github/workflows/ci.yml" \
               || { echo "FAIL: ci.yml missing install-nix-action for pre-step (T33)"; exit 1; }
 
+            # T62/#69: scaffold CI must NOT skip lefthook -- the lint gate
+            # runs in the default devShell, same as local hooks.
+            if grep -qE 'skip-lefthook:\s*"?true"?' "${scaffold}/.github/workflows/ci.yml"; then
+              echo "FAIL: ci.yml has skip-lefthook: true -- CI must run lefthook (#69/T62)"
+              exit 1
+            fi
+
             echo PASS
             touch $out
           '';
@@ -2615,6 +2622,10 @@
             grep -q ".yamllint.yml" ${seed}/.gitignore || { echo "FAIL: .gitignore should ignore .yamllint.yml"; exit 1; }
             # Verify leaf CI uses reusable guardrails workflow
             grep -q "guardrails.yml@main" ${seed}/.github/workflows/ci.yml || { echo "FAIL: CI should use guardrails.yml"; exit 1; }
+            # T62/#69: seed CI must NOT skip lefthook
+            if grep -qE 'skip-lefthook:\s*"?true"?' ${seed}/.github/workflows/ci.yml; then
+              echo "FAIL: seed ci.yml has skip-lefthook: true (#69/T62)"; exit 1
+            fi
             # Verify leaf flake references set-and-setting
             grep -q "set-and-setting" ${seed}/flake.nix || { echo "FAIL: flake.nix should reference set-and-setting"; exit 1; }
             grep -q "checksFor" ${seed}/flake.nix || { echo "FAIL: flake.nix should use checksFor"; exit 1; }
