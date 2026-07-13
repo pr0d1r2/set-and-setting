@@ -143,7 +143,7 @@ write_vendored_lefthook() {
     [ "$hash1" = "$hash2" ]
 }
 
-@test "equivalence gate rejects a dropped vendored check" {
+@test "equivalence gate rejects a repo-local dropped check with MIGRATE-FAIL" {
     echo "{ outputs = { self }: { }; }" >flake.nix
     printf '%s\n' \
         "---" \
@@ -158,8 +158,59 @@ write_vendored_lefthook() {
     git add .
     run bash "$MIGRATE_SCRIPT"
     [ "$status" -ne 0 ]
-    [[ "$output" == *"DROPS vendored checks"* ]]
-    [[ "$output" == *"super-special-check"* ]]
+    [[ "$output" == *"MIGRATE-FAIL: stage=equivalence reason=uncovered-checks"* ]]
+    [[ "$output" == *"dropped: super-special-check"* ]]
+    [[ "$output" == *"NO standard equivalent (repo-local)"* ]]
+    [[ "$output" == *"(a) keep"* ]]
+    [[ "$output" == *"(b) retire"* ]]
+    [[ "$output" == *"(c) upstream"* ]]
+    [[ "$output" == *"retry: idempotent"* ]]
+}
+
+@test "equivalence gate classifies a standard-fragment dropped check" {
+    echo "{ outputs = { self }: { }; }" >flake.nix
+    printf '%s\n' \
+        "---" \
+        "pre-commit:" \
+        "  commands:" \
+        "    markdownlint:" \
+        "      run: markdownlint {staged_files}" \
+        >lefthook.yml
+    git init -q
+    git add .
+    # strip FULL_LEFTHOOK so markdownlint is not in the universe
+    # (markdownlint is lefthook-only, not in CHECKS_UNIVERSE)
+    FULL_LEFTHOOK="" run bash "$MIGRATE_SCRIPT"
+    [ "$status" -ne 0 ]
+    [[ "$output" == *"MIGRATE-FAIL: stage=equivalence reason=uncovered-checks"* ]]
+    [[ "$output" == *"dropped:"*"markdownlint"* ]]
+    [[ "$output" == *"standard fragment \`markdown\` covers this"* ]]
+    [[ "$output" == *"tracked *.md files"* ]]
+    [[ "$output" == *"retry: idempotent"* ]]
+}
+
+@test "mid-stage abort emits MIGRATE-FAIL with reason=unexpected" {
+    echo "{ outputs = { self }: { }; }" >flake.nix
+    printf '%s\n' \
+        "---" \
+        "pre-commit:" \
+        "  commands:" \
+        "    nixfmt:" \
+        "      run: nixfmt --check {staged_files}" \
+        >lefthook.yml
+    git init -q
+    git add .
+    # point DETECT_SCRIPT at a script that fails during the equivalence stage
+    failing_script="$(mktemp)"
+    printf '#!/usr/bin/env bash\nexit 1\n' >"$failing_script"
+    chmod +x "$failing_script"
+    DETECT_SCRIPT="$failing_script" run bash "$MIGRATE_SCRIPT"
+    rm -f "$failing_script"
+    [ "$status" -ne 0 ]
+    [[ "$output" == *"MIGRATE-FAIL: stage=equivalence reason=unexpected"* ]]
+    [[ "$output" == *"resolution:"* ]]
+    [[ "$output" == *"backprop issue"* ]]
+    [[ "$output" == *"retry: idempotent"* ]]
 }
 
 @test "gitignore-merge appends materialized entries to an existing .gitignore" {

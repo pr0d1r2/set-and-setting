@@ -38,6 +38,61 @@
 # shellcheck disable=SC2154,SC2086
 set -euo pipefail
 
+# --- structured failure diagnostic (#114) ---
+_migrate_stage="detect"
+_migrate_fail_emitted=0
+
+_check_fragment() {
+    case "$1" in
+        gitleaks|git-conflict-markers|\
+git-no-local-paths|execute-permissions|file-size-check|\
+trailing-whitespace|missing-final-newline|editorconfig-checker|\
+typos)
+            echo "base";;
+        nixfmt|statix|deadnix|nix-no-embedded-shell)
+            echo "nix";;
+        shellcheck|shfmt|no-shell-functions)
+            echo "shell";;
+        ascii-only)
+            echo "ascii";;
+        markdownlint|markdownlint-agentic)
+            echo "markdown";;
+        yamllint)
+            echo "yaml";;
+        set-skill-extension|set-skill-size|set-ref-resolution|\
+set-bundle-content)
+            echo "set";;
+        *) echo "";;
+    esac
+}
+
+_fragment_trigger() {
+    case "$1" in
+        base|ascii) echo "always active";;
+        nix)        echo "tracked *.nix files";;
+        shell)      echo "tracked *.sh/*.bash files";;
+        markdown)   echo "tracked *.md files";;
+        yaml)       echo "tracked *.yml/*.yaml files";;
+        set)        echo "tracked set/*.md files";;
+        *)          echo "";;
+    esac
+}
+
+_on_err() {
+    local rc=$?
+    if [ "$_migrate_fail_emitted" -eq 0 ]; then
+        _migrate_fail_emitted=1
+        echo ""
+        echo "MIGRATE-FAIL: stage=$_migrate_stage reason=unexpected"
+        echo "  detail: command failed with exit $rc at stage=$_migrate_stage"
+        echo "  resolution:"
+        echo "    - inspect the output above for the root cause"
+        echo "    - file a backprop issue at github:pr0d1r2/set-and-setting with the full output"
+        echo "  retry: idempotent"
+    fi
+}
+trap '_on_err' ERR
+
 # --- detect state (CWD is a git repo) ---
 tracked=""
 if git rev-parse --git-dir >/dev/null 2>&1; then
@@ -127,11 +182,13 @@ fi
 old_checks="$(mktemp)"
 new_checks="$(mktemp)"
 trap 'rm -f "$old_checks" "$new_checks"' EXIT
+
+_migrate_stage="strip"
 if [ "$lefthook_present" -eq 1 ]; then
     grep -oE '^    [a-zA-Z][a-zA-Z0-9_-]*:' lefthook.yml | tr -d ' :' | sort -u >"$old_checks" || true
 fi
 
-# --- strip vendored artifacts ---
+# --- strip vendored artifacts (stage: strip) ---
 if [ "$strip_flake" -eq 1 ]; then
     git rm -q --cached --ignore-unmatch flake.nix 2>/dev/null || true
     rm -f flake.nix
@@ -148,6 +205,7 @@ if [ "$strip_lefthook" -eq 1 ]; then
     echo "stripped: lefthook.yml (-> materialized)"
 fi
 
+_migrate_stage="plant"
 # --- plant the seed (#95): skip-if-exists ---
 find -L "$SEED_SRC" -type f | sort | while read -r f; do
     rel="${f#"$SEED_SRC/"}"
@@ -171,6 +229,7 @@ done <"$SEED_SRC/.gitignore"
 # (materialized artifacts stay gitignored/untracked; caller commits the rest)
 git add -A
 
+_migrate_stage="equivalence"
 # --- materialize the new state (gitignored) for equivalence + confirm ---
 detected="$(bash "$DETECT_SCRIPT")"
 mat_out="$(mktemp -d)"
@@ -197,15 +256,31 @@ rm -rf "$mat_out"
 
 dropped="$(comm -23 "$old_checks" "$new_checks" || true)"
 if [ -n "$dropped" ]; then
+    _migrate_fail_emitted=1
+    dropped_list="$(echo $dropped | tr '\n' ' ' | sed 's/ *$//')"
     echo ""
-    echo "FAIL: equivalence -- the referenced check-set DROPS vendored checks:"
-    printf '  %s\n' $dropped
-    echo "migrate: NOT equivalent -- leaving vendored, report for review"
+    echo "MIGRATE-FAIL: stage=equivalence reason=uncovered-checks"
+    echo "  dropped: $dropped_list"
+    echo "  resolution:"
+    for check in $dropped; do
+        frag="$(_check_fragment "$check")"
+        if [ -n "$frag" ]; then
+            trigger="$(_fragment_trigger "$frag")"
+            echo "    - $check: standard fragment \`$frag\` covers this ($trigger)"
+        else
+            echo "    - $check: NO standard equivalent (repo-local). Choose:"
+            echo "        (a) keep     -- add a repo-local lefthook fragment that survives materialization"
+            echo "        (b) retire   -- confirm obsolete, drop it"
+            echo "        (c) upstream -- file a set-and-setting issue: add fragment covering $check"
+        fi
+    done
+    echo "  retry: idempotent"
     exit 1
 fi
 old_count="$(wc -l <"$old_checks" | tr -d ' ')"
 echo "PASS: equivalence -- new check-set [$detected] covers all $old_count vendored checks"
 
+_migrate_stage="confirm"
 # --- confirmator (#94) wiring check on the new state (dry-run) ---
 # The FULL confirmator + `nix flake check` run in CI once `nix flake update`
 # has produced flake.lock; here we validate detection + rev wiring.
