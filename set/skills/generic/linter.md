@@ -13,9 +13,11 @@ Two shells, one gate:
 - `agentic` — `default` + LLM tools. Inherits `default` via
   `inputsFrom`; never duplicates its packages.
 
-`default ⊂ agentic`. Every linter and hook tool goes in
-`basePackages`. `agentic` gets them automatically via stacking.
-Only LLM-specific tools go in `agenticPackages`.
+`default ⊂ agentic`. Every linter, hook tool, and non-LLM dev tool
+(asciinema, formatters, test runners) goes in `basePackages`.
+`agentic` gets them automatically via stacking.
+Only LLM-specific tools (claude, trip harness) go in
+`agenticPackages`.
 
 CI runs the same lefthook gate as local hooks — `nix develop .#default`
 with no skip. A commit that passes locally passes CI; a commit that

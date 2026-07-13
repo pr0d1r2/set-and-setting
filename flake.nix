@@ -1614,7 +1614,10 @@
           let
             shells = import ./setting/lib/mk-dev-shells.nix {
               inherit pkgs;
-              basePackages = [ pkgs.coreutils ];
+              basePackages = [
+                pkgs.coreutils
+                pkgs.asciinema
+              ];
               agenticPackages = [ pkgs.git ];
               agenticShellHook = ''
                 echo agentic-marker
@@ -1627,6 +1630,10 @@
               # agentic inherits base packages via inputsFrom (nativeBuildInputs
               # includes coreutils from default + git from agenticPackages)
               assert builtins.length shells.agentic.nativeBuildInputs >= 2;
+              # #116: non-LLM tools (asciinema) in basePackages are available
+              # in both default AND agentic (inherited via inputsFrom)
+              assert builtins.elem pkgs.asciinema shells.default.nativeBuildInputs;
+              assert builtins.elem pkgs.asciinema shells.agentic.nativeBuildInputs;
               true;
           in
           pkgs.runCommand "mk-dev-shells-check" { inherit ok; } ''
