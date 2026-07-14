@@ -9,4 +9,8 @@ name: CI
 
 jobs:
   guardrails:
-    uses: pr0d1r2/set-and-setting/.github/workflows/guardrails.yml@main
+    # Local-path reference (not `@main`): resolves to THIS commit's copy of
+    # guardrails.yml, so fixes to the reusable workflow on a PR branch are
+    # exercised by the PR's own CI. `@main` pinned to main's stale copy, so
+    # the darwin-installer fix (B26) never ran on the PR that introduced it.
+    uses: ./.github/workflows/guardrails.yml
