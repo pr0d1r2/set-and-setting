@@ -9,18 +9,18 @@ set -euo pipefail
 IFS=';' read -ra seam_entries <<<"${AGENT_SEAMS:-}"
 
 for entry in "${seam_entries[@]:-}"; do
-    [ -n "$entry" ] || continue
-    aname="${entry%%=*}"
-    if [ "$aname" = "$AGENT_NAME" ]; then
-        echo "${entry#*=}"
-        exit 0
-    fi
+  [ -n "$entry" ] || continue
+  aname="${entry%%=*}"
+  if [ "$aname" = "$AGENT_NAME" ]; then
+    echo "${entry#*=}"
+    exit 0
+  fi
 done
 
 names=()
 for entry in "${seam_entries[@]:-}"; do
-    [ -n "$entry" ] || continue
-    names+=("${entry%%=*}")
+  [ -n "$entry" ] || continue
+  names+=("${entry%%=*}")
 done
 echo "error: unknown agent '$AGENT_NAME'" >&2
 echo "Available agents: ${names[*]}" >&2

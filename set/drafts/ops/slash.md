@@ -24,7 +24,7 @@ ops/
   state.
 - Scripts accept positional args. First arg is always the primary
   target.
-- Composable via pipeline: `ops/tmp/run.sh ops/git/clone.sh user/repo`.
+- Composable via pipeline: `ops/util/run.sh ops/git/clone.sh user/repo`.
 - Scripts are testable with bats.
 - Destructive scripts must prompt for confirmation unless `--force`
   flag is passed.

@@ -9,6 +9,7 @@ charset = utf-8
 [*.sh]
 indent_style = space
 indent_size = 2
+switch_case_indent = true
 
 [*.bats]
 indent_style = space

@@ -122,11 +122,11 @@ EOF
         "local-dep": {
             "locked": {
                 "type": "git",
-                "url": "file:///tmp/local"
+                "url": "file:///srv/local"
             },
             "original": {
                 "type": "git",
-                "url": "file:///tmp/local"
+                "url": "file:///srv/local"
             }
         },
         "root": {

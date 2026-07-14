@@ -73,62 +73,62 @@ trap '
 
 # --- pre-flight: CWD sanity (#115) ---
 if ! git rev-parse --git-dir >/dev/null 2>&1; then
-    _migrate_fail_emitted=1
-    echo ""
-    echo "MIGRATE-FAIL: stage=$_migrate_stage reason=not-a-git-repo"
-    echo "  detail: CWD is not inside a git repository"
-    echo "  resolution:"
-    echo "  - run from the root of a git repository"
-    echo "  - or: git init && git add . && git commit -m 'initial'"
-    echo "  retry: idempotent"
-    exit 1
+  _migrate_fail_emitted=1
+  echo ""
+  echo "MIGRATE-FAIL: stage=$_migrate_stage reason=not-a-git-repo"
+  echo "  detail: CWD is not inside a git repository"
+  echo "  resolution:"
+  echo "  - run from the root of a git repository"
+  echo "  - or: git init && git add . && git commit -m 'initial'"
+  echo "  retry: idempotent"
+  exit 1
 fi
 
 if ! git rev-parse --verify HEAD >/dev/null 2>&1; then
-    _migrate_fail_emitted=1
-    echo ""
-    echo "MIGRATE-FAIL: stage=$_migrate_stage reason=no-commits"
-    echo "  detail: git repository has no commits (orphan branch)"
-    echo "  resolution:"
-    echo "  - create an initial commit: git add . && git commit -m 'initial'"
-    echo "  retry: idempotent"
-    exit 1
+  _migrate_fail_emitted=1
+  echo ""
+  echo "MIGRATE-FAIL: stage=$_migrate_stage reason=no-commits"
+  echo "  detail: git repository has no commits (orphan branch)"
+  echo "  resolution:"
+  echo "  - create an initial commit: git add . && git commit -m 'initial'"
+  echo "  retry: idempotent"
+  exit 1
 fi
 
 if [ "$(git rev-parse --is-inside-work-tree 2>/dev/null)" != "true" ]; then
-    _migrate_fail_emitted=1
-    echo ""
-    echo "MIGRATE-FAIL: stage=$_migrate_stage reason=bare-git-repo"
-    echo "  detail: CWD is inside a bare git repository (no worktree)"
-    echo "  resolution:"
-    echo "  - run from a cloned (non-bare) worktree"
-    echo "  retry: idempotent"
-    exit 1
+  _migrate_fail_emitted=1
+  echo ""
+  echo "MIGRATE-FAIL: stage=$_migrate_stage reason=bare-git-repo"
+  echo "  detail: CWD is inside a bare git repository (no worktree)"
+  echo "  resolution:"
+  echo "  - run from a cloned (non-bare) worktree"
+  echo "  retry: idempotent"
+  exit 1
 fi
 
 head_ref="$(git symbolic-ref HEAD 2>/dev/null || true)"
 if [ -z "$head_ref" ]; then
-    _migrate_fail_emitted=1
-    echo ""
-    echo "MIGRATE-FAIL: stage=$_migrate_stage reason=detached-head"
-    echo "  detail: HEAD is detached (not on a branch)"
-    echo "  resolution:"
-    echo "  - check out a branch: git checkout main"
-    echo "  - migration commits need a branch to land on"
-    echo "  retry: idempotent"
-    exit 1
+  _migrate_fail_emitted=1
+  echo ""
+  echo "MIGRATE-FAIL: stage=$_migrate_stage reason=detached-head"
+  echo "  detail: HEAD is detached (not on a branch)"
+  echo "  resolution:"
+  echo "  - check out a branch: git checkout main"
+  echo "  - migration commits need a branch to land on"
+  echo "  retry: idempotent"
+  exit 1
 fi
 
 if [ -n "$(git status --porcelain 2>/dev/null)" ]; then
-    _migrate_fail_emitted=1
-    echo ""
-    echo "MIGRATE-FAIL: stage=$_migrate_stage reason=dirty-worktree"
-    echo "  detail: uncommitted changes in the working tree"
-    echo "  resolution:"
-    echo "  - commit or stash changes before migrating"
-    echo "  - migration modifies tracked files; a clean state prevents data loss"
-    echo "  retry: idempotent"
-    exit 1
+  _migrate_fail_emitted=1
+  echo ""
+  echo "MIGRATE-FAIL: stage=$_migrate_stage reason=dirty-worktree"
+  echo "  detail: uncommitted changes in the working tree"
+  echo "  resolution:"
+  echo "  - commit or stash changes before migrating"
+  echo "  - migration modifies tracked files; a clean state prevents data loss"
+  echo "  retry: idempotent"
+  exit 1
 fi
 
 _migrate_stage="detect"
@@ -147,17 +147,17 @@ printf '%s\n' "$tracked" | grep -qx 'lefthook.yml' && lefthook_tracked=1
 
 references_sns=0
 if [ "$flake_present" -eq 1 ] && grep -q 'set-and-setting' flake.nix; then
-    references_sns=1
+  references_sns=1
 fi
 
 uses_materialization=0
 if [ "$flake_present" -eq 1 ] && grep -qE 'materializationFor|checksFor' flake.nix; then
-    uses_materialization=1
+  uses_materialization=1
 fi
 
 gitignores_lefthook=0
 if [ -f .gitignore ] && grep -qxF 'lefthook.yml' .gitignore; then
-    gitignores_lefthook=1
+  gitignores_lefthook=1
 fi
 
 ci_present=0
@@ -165,127 +165,127 @@ ci_present=0
 
 ci_guardrails=0
 if [ "$ci_present" -eq 1 ] && grep -q 'guardrails.yml' .github/workflows/ci.yml; then
-    ci_guardrails=1
+  ci_guardrails=1
 fi
 
 # --- custom flake detection (#115) ---
 has_custom_flake=0
 custom_flake_details=""
 if [ "$flake_present" -eq 1 ] && [ "$references_sns" -eq 0 ]; then
-    seed_inputs="nixpkgs-lock nixpkgs set-and-setting"
-    extra_inputs=""
-    while IFS= read -r inp; do
-        is_seed=0
-        for si in $seed_inputs; do
-            if [ "$inp" = "$si" ]; then
-                is_seed=1
-                break
-            fi
-        done
-        [ "$is_seed" -eq 0 ] && extra_inputs="$extra_inputs $inp"
-    done < <(grep -oE '[a-zA-Z_-]+\.url\s*=' flake.nix | sed 's/\.url\s*=//;s/[[:space:]]//g' || true)
-    extra_inputs="${extra_inputs# }"
+  seed_inputs="nixpkgs-lock nixpkgs set-and-setting"
+  extra_inputs=""
+  while IFS= read -r inp; do
+    is_seed=0
+    for si in $seed_inputs; do
+      if [ "$inp" = "$si" ]; then
+        is_seed=1
+        break
+      fi
+    done
+    [ "$is_seed" -eq 0 ] && extra_inputs="$extra_inputs $inp"
+  done < <(grep -oE '[a-zA-Z_-]+\.url\s*=' flake.nix | sed 's/\.url\s*=//;s/[[:space:]]//g' || true)
+  extra_inputs="${extra_inputs# }"
 
-    has_overlays=0
-    grep -qE 'overlays|overlay' flake.nix 2>/dev/null && has_overlays=1
+  has_overlays=0
+  grep -qE 'overlays|overlay' flake.nix 2>/dev/null && has_overlays=1
 
-    has_extra_outputs=0
-    grep -qE 'nixosConfigurations|homeConfigurations|nixosModules|darwinConfigurations|templates|lib\.' flake.nix 2>/dev/null && has_extra_outputs=1
+  has_extra_outputs=0
+  grep -qE 'nixosConfigurations|homeConfigurations|nixosModules|darwinConfigurations|templates|lib\.' flake.nix 2>/dev/null && has_extra_outputs=1
 
-    if [ -n "$extra_inputs" ] || [ "$has_overlays" -eq 1 ] || [ "$has_extra_outputs" -eq 1 ]; then
-        has_custom_flake=1
-        details=""
-        [ -n "$extra_inputs" ] && details="extra inputs: $extra_inputs"
-        [ "$has_overlays" -eq 1 ] && details="${details:+$details; }overlays detected"
-        [ "$has_extra_outputs" -eq 1 ] && details="${details:+$details; }extra outputs detected"
-        custom_flake_details="$details"
-    fi
+  if [ -n "$extra_inputs" ] || [ "$has_overlays" -eq 1 ] || [ "$has_extra_outputs" -eq 1 ]; then
+    has_custom_flake=1
+    details=""
+    [ -n "$extra_inputs" ] && details="extra inputs: $extra_inputs"
+    [ "$has_overlays" -eq 1 ] && details="${details:+$details; }overlays detected"
+    [ "$has_extra_outputs" -eq 1 ] && details="${details:+$details; }extra outputs detected"
+    custom_flake_details="$details"
+  fi
 fi
 
 # --- extra workflow detection (#115) ---
 extra_workflows=""
 if [ -d .github/workflows ]; then
-    while IFS= read -r wf; do
-        wfname="$(basename "$wf")"
-        case "$wfname" in
-            ci.yml | auto-update.yml) ;;
-            *) extra_workflows="$extra_workflows $wfname" ;;
-        esac
-    done < <(find .github/workflows -maxdepth 1 -name '*.yml' -o -name '*.yaml' | sort)
-    extra_workflows="${extra_workflows# }"
+  while IFS= read -r wf; do
+    wfname="$(basename "$wf")"
+    case "$wfname" in
+      ci.yml | auto-update.yml) ;;
+      *) extra_workflows="$extra_workflows $wfname" ;;
+    esac
+  done < <(find .github/workflows -maxdepth 1 -name '*.yml' -o -name '*.yaml' | sort)
+  extra_workflows="${extra_workflows# }"
 fi
 
 # classify: referenced (no-op) | bare | partial-* (#115) | vendored
 state="vendored"
 if [ "$references_sns" -eq 1 ] && [ "$uses_materialization" -eq 1 ] &&
-    [ "$lefthook_tracked" -eq 0 ] && [ "$gitignores_lefthook" -eq 1 ]; then
-    state="referenced"
+  [ "$lefthook_tracked" -eq 0 ] && [ "$gitignores_lefthook" -eq 1 ]; then
+  state="referenced"
 elif [ "$flake_present" -eq 0 ] && [ "$lefthook_present" -eq 0 ]; then
-    state="bare"
+  state="bare"
 elif [ "$references_sns" -eq 1 ]; then
-    if [ "$lefthook_tracked" -eq 1 ]; then
-        state="partial-tracked-lefthook"
-    elif [ "$gitignores_lefthook" -eq 0 ]; then
-        state="partial-no-gitignore"
-    elif [ "$uses_materialization" -eq 0 ]; then
-        state="partial-no-materialization"
-    fi
+  if [ "$lefthook_tracked" -eq 1 ]; then
+    state="partial-tracked-lefthook"
+  elif [ "$gitignores_lefthook" -eq 0 ]; then
+    state="partial-no-gitignore"
+  elif [ "$uses_materialization" -eq 0 ]; then
+    state="partial-no-materialization"
+  fi
 fi
 
 echo "migrate: detected state=$state"
 
 if [ -n "$extra_workflows" ]; then
-    echo "migrate: extra workflows detected (will preserve): $extra_workflows"
+  echo "migrate: extra workflows detected (will preserve): $extra_workflows"
 fi
 
 if [ "${MIGRATE_DETECT_ONLY:-}" = "1" ]; then
-    exit 0
+  exit 0
 fi
 
 # already-referenced => no-op (idempotent: a migrated repo re-migrates clean)
 if [ "$state" = "referenced" ]; then
-    echo "migrate: already referenced -- no-op"
-    exit 0
+  echo "migrate: already referenced -- no-op"
+  exit 0
 fi
 
 # custom flake => refuse (never silently drop custom content)
 if [ "$has_custom_flake" -eq 1 ]; then
-    _migrate_fail_emitted=1
-    echo ""
-    echo "MIGRATE-FAIL: stage=$_migrate_stage reason=custom-flake"
-    echo "  detail: flake.nix contains custom content a blind strip would lose"
-    echo "  $custom_flake_details"
-    echo "  resolution:"
-    echo "  - reconcile custom content with the referenced thin flake manually"
-    echo "  - the seed flake is at: $SEED_SRC/flake.nix"
-    echo "  - after reconciliation, re-run migrate"
-    echo "  retry: idempotent"
-    exit 1
+  _migrate_fail_emitted=1
+  echo ""
+  echo "MIGRATE-FAIL: stage=$_migrate_stage reason=custom-flake"
+  echo "  detail: flake.nix contains custom content a blind strip would lose"
+  echo "  $custom_flake_details"
+  echo "  resolution:"
+  echo "  - reconcile custom content with the referenced thin flake manually"
+  echo "  - the seed flake is at: $SEED_SRC/flake.nix"
+  echo "  - after reconciliation, re-run migrate"
+  echo "  retry: idempotent"
+  exit 1
 fi
 
 # --- plan (shared by dry-run report and the real transform) ---
 strip_flake=0
 if [ "$flake_present" -eq 1 ] &&
-    ! { [ "$references_sns" -eq 1 ] && [ "$uses_materialization" -eq 1 ]; }; then
-    strip_flake=1
+  ! { [ "$references_sns" -eq 1 ] && [ "$uses_materialization" -eq 1 ]; }; then
+  strip_flake=1
 fi
 
 strip_ci=0
 if [ "$ci_present" -eq 1 ] && [ "$ci_guardrails" -eq 0 ]; then
-    strip_ci=1
+  strip_ci=1
 fi
 
 strip_lefthook="$lefthook_present"
 
 if [ "${MIGRATE_DRY_RUN:-}" = "1" ]; then
-    echo "migrate: dry-run plan for state=$state"
-    [ "$strip_flake" -eq 1 ] && echo "  strip: flake.nix (vendored -> derived)"
-    [ "$strip_ci" -eq 1 ] && echo "  strip: .github/workflows/ci.yml (vendored -> guardrails caller)"
-    [ "$strip_lefthook" -eq 1 ] && echo "  strip: lefthook.yml (vendored -> materialized+gitignored)"
-    [ -n "$extra_workflows" ] && echo "  preserve: extra workflows ($extra_workflows)"
-    echo "  plant: seed (thin flake.nix, .gitignore, ci.yml, auto-update.yml) skip-if-exists"
-    echo "  confirm-equivalence: new check-set must cover the vendored one"
-    exit 0
+  echo "migrate: dry-run plan for state=$state"
+  [ "$strip_flake" -eq 1 ] && echo "  strip: flake.nix (vendored -> derived)"
+  [ "$strip_ci" -eq 1 ] && echo "  strip: .github/workflows/ci.yml (vendored -> guardrails caller)"
+  [ "$strip_lefthook" -eq 1 ] && echo "  strip: lefthook.yml (vendored -> materialized+gitignored)"
+  [ -n "$extra_workflows" ] && echo "  preserve: extra workflows ($extra_workflows)"
+  echo "  plant: seed (thin flake.nix, .gitignore, ci.yml, auto-update.yml) skip-if-exists"
+  echo "  confirm-equivalence: new check-set must cover the vendored one"
+  exit 0
 fi
 
 # --- capture the vendored check-set BEFORE stripping (the equivalence baseline) ---
@@ -295,7 +295,7 @@ trap 'rm -f "$old_checks" "$new_checks"' EXIT
 
 _migrate_stage="strip"
 if [ "$lefthook_present" -eq 1 ]; then
-    awk '
+  awk '
         /^[A-Za-z]/                      { insec = 0 }
         /^  commands:[[:space:]]*$/      { insec = 1; next }
         /^  [A-Za-z]/ && !/^  commands:/ { insec = 0 }
@@ -309,39 +309,39 @@ fi
 
 # --- strip vendored artifacts (stage: strip) ---
 if [ "$strip_flake" -eq 1 ]; then
-    git rm -q --cached --ignore-unmatch flake.nix 2>/dev/null || true
-    rm -f flake.nix
-    echo "stripped: flake.nix (vendored)"
+  git rm -q --cached --ignore-unmatch flake.nix 2>/dev/null || true
+  rm -f flake.nix
+  echo "stripped: flake.nix (vendored)"
 fi
 if [ "$strip_ci" -eq 1 ]; then
-    git rm -q --cached --ignore-unmatch .github/workflows/ci.yml 2>/dev/null || true
-    rm -f .github/workflows/ci.yml
-    echo "stripped: .github/workflows/ci.yml (vendored)"
+  git rm -q --cached --ignore-unmatch .github/workflows/ci.yml 2>/dev/null || true
+  rm -f .github/workflows/ci.yml
+  echo "stripped: .github/workflows/ci.yml (vendored)"
 fi
 if [ "$strip_lefthook" -eq 1 ]; then
-    git rm -q --cached --ignore-unmatch lefthook.yml 2>/dev/null || true
-    rm -f lefthook.yml
-    echo "stripped: lefthook.yml (-> materialized)"
+  git rm -q --cached --ignore-unmatch lefthook.yml 2>/dev/null || true
+  rm -f lefthook.yml
+  echo "stripped: lefthook.yml (-> materialized)"
 fi
 
 _migrate_stage="plant"
 # --- plant the seed (#95): skip-if-exists ---
 find -L "$SEED_SRC" -type f | sort | while read -r f; do
-    rel="${f#"$SEED_SRC/"}"
-    [ -e "$rel" ] && continue
-    mkdir -p "$(dirname "$rel")"
-    cp "$f" "$rel"
-    echo "planted: $rel"
+  rel="${f#"$SEED_SRC/"}"
+  [ -e "$rel" ] && continue
+  mkdir -p "$(dirname "$rel")"
+  cp "$f" "$rel"
+  echo "planted: $rel"
 done
 
 # --- ensure the .gitignore ignores every materialized artifact (merge, DRY) ---
 while IFS= read -r entry; do
-    [ -n "$entry" ] || continue
-    if [ -f .gitignore ] && grep -qxF "$entry" .gitignore; then
-        continue
-    fi
-    printf '%s\n' "$entry" >>.gitignore
-    echo "gitignore += $entry"
+  [ -n "$entry" ] || continue
+  if [ -f .gitignore ] && grep -qxF "$entry" .gitignore; then
+    continue
+  fi
+  printf '%s\n' "$entry" >>.gitignore
+  echo "gitignore += $entry"
 done <"$SEED_SRC/.gitignore"
 
 # --- stage the committed minimum so detection reflects the NEW tracked set ---
@@ -368,9 +368,9 @@ _migrate_stage="equivalence"
 # provided check ACTIVATES depends on file presence -- same for both states
 # -- so we compare provided-universe membership, not per-file activation.)
 {
-    printf '%s\n' ${CHECKS_UNIVERSE:-}
-    [ -n "${FULL_LEFTHOOK:-}" ] && [ -f "$FULL_LEFTHOOK" ] &&
-        awk '
+  printf '%s\n' ${CHECKS_UNIVERSE:-}
+  [ -n "${FULL_LEFTHOOK:-}" ] && [ -f "$FULL_LEFTHOOK" ] &&
+    awk '
             /^[A-Za-z]/                      { insec = 0 }
             /^  commands:[[:space:]]*$/      { insec = 1; next }
             /^  [A-Za-z]/ && !/^  commands:/ { insec = 0 }
@@ -380,7 +380,7 @@ _migrate_stage="equivalence"
                 print k
             }
         ' "$FULL_LEFTHOOK" | sort -u
-    awk '
+  awk '
         /^[A-Za-z]/                      { insec = 0 }
         /^  commands:[[:space:]]*$/      { insec = 1; next }
         /^  [A-Za-z]/ && !/^  commands:/ { insec = 0 }
@@ -394,65 +394,65 @@ _migrate_stage="equivalence"
 
 dropped="$(comm -23 "$old_checks" "$new_checks" || true)"
 if [ -n "$dropped" ]; then
-    _migrate_fail_emitted=1
-    dropped_list="$(echo $dropped | tr '\n' ' ' | sed 's/ *$//')"
-    echo ""
-    echo "MIGRATE-FAIL: stage=equivalence reason=uncovered-checks"
-    echo "  dropped: $dropped_list"
-    echo "  resolution:"
-    for check in $dropped; do
-        # inline fragment lookup (no function per no-shell-functions guardrail)
-        frag=""
-        case "$check" in
-            gitleaks | git-conflict-markers | \
-                git-no-local-paths | execute-permissions | file-size-check | \
-                trailing-whitespace | missing-final-newline | editorconfig-checker | \
-                typos)
-                frag="base"
-                ;;
-            nixfmt | statix | deadnix | nix-no-embedded-shell)
-                frag="nix"
-                ;;
-            shellcheck | shfmt | no-shell-functions)
-                frag="shell"
-                ;;
-            ascii-only)
-                frag="ascii"
-                ;;
-            markdownlint | markdownlint-agentic)
-                frag="markdown"
-                ;;
-            yamllint)
-                frag="yaml"
-                ;;
-            set-skill-extension | set-skill-size | set-ref-resolution | \
-                set-bundle-content)
-                frag="set"
-                ;;
-            *) frag="" ;;
-        esac
-        if [ -n "$frag" ]; then
-            # inline trigger lookup (no function per no-shell-functions guardrail)
-            trigger=""
-            case "$frag" in
-                base | ascii) trigger="always active" ;;
-                nix) trigger="tracked *.nix files" ;;
-                shell) trigger="tracked *.sh/*.bash files" ;;
-                markdown) trigger="tracked *.md files" ;;
-                yaml) trigger="tracked *.yml/*.yaml files" ;;
-                set) trigger="tracked set/*.md files" ;;
-                *) trigger="" ;;
-            esac
-            echo "    - $check: standard fragment \`$frag\` covers this ($trigger)"
-        else
-            echo "    - $check: NO standard equivalent (repo-local). Choose:"
-            echo "        (a) keep     -- add a repo-local lefthook fragment that survives materialization"
-            echo "        (b) retire   -- confirm obsolete, drop it"
-            echo "        (c) upstream -- file a set-and-setting issue: add fragment covering $check"
-        fi
-    done
-    echo "  retry: idempotent"
-    exit 1
+  _migrate_fail_emitted=1
+  dropped_list="$(echo $dropped | tr '\n' ' ' | sed 's/ *$//')"
+  echo ""
+  echo "MIGRATE-FAIL: stage=equivalence reason=uncovered-checks"
+  echo "  dropped: $dropped_list"
+  echo "  resolution:"
+  for check in $dropped; do
+    # inline fragment lookup (no function per no-shell-functions guardrail)
+    frag=""
+    case "$check" in
+      gitleaks | git-conflict-markers | \
+        git-no-local-paths | execute-permissions | file-size-check | \
+        trailing-whitespace | missing-final-newline | editorconfig-checker | \
+        typos)
+        frag="base"
+        ;;
+      nixfmt | statix | deadnix | nix-no-embedded-shell)
+        frag="nix"
+        ;;
+      shellcheck | shfmt | no-shell-functions)
+        frag="shell"
+        ;;
+      ascii-only)
+        frag="ascii"
+        ;;
+      markdownlint | markdownlint-agentic)
+        frag="markdown"
+        ;;
+      yamllint)
+        frag="yaml"
+        ;;
+      set-skill-extension | set-skill-size | set-ref-resolution | \
+        set-bundle-content)
+        frag="set"
+        ;;
+      *) frag="" ;;
+    esac
+    if [ -n "$frag" ]; then
+      # inline trigger lookup (no function per no-shell-functions guardrail)
+      trigger=""
+      case "$frag" in
+        base | ascii) trigger="always active" ;;
+        nix) trigger="tracked *.nix files" ;;
+        shell) trigger="tracked *.sh/*.bash files" ;;
+        markdown) trigger="tracked *.md files" ;;
+        yaml) trigger="tracked *.yml/*.yaml files" ;;
+        set) trigger="tracked set/*.md files" ;;
+        *) trigger="" ;;
+      esac
+      echo "    - $check: standard fragment \`$frag\` covers this ($trigger)"
+    else
+      echo "    - $check: NO standard equivalent (repo-local). Choose:"
+      echo "        (a) keep     -- add a repo-local lefthook fragment that survives materialization"
+      echo "        (b) retire   -- confirm obsolete, drop it"
+      echo "        (c) upstream -- file a set-and-setting issue: add fragment covering $check"
+    fi
+  done
+  echo "  retry: idempotent"
+  exit 1
 fi
 old_count="$(wc -l <"$old_checks" | tr -d ' ')"
 echo "PASS: equivalence -- new check-set [$detected] covers all $old_count vendored checks"

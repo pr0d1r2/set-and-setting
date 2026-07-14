@@ -26,7 +26,7 @@ set -euo pipefail
 # KEEP filter: when non-empty, only the listed relpaths are emitted.
 keep_active=0
 if [ -n "${KEEP:-}" ]; then
-    keep_active=1
+  keep_active=1
 fi
 
 catdir="$SKILLS_DIR/$CAT"
@@ -35,37 +35,37 @@ core="$SKILLS_DIR/$CAT.md"
 read -ra excludes <<<"${EXCLUDE:-}"
 findargs=()
 for e in "${excludes[@]:-}"; do
-    [ -n "$e" ] || continue
-    findargs+=(! -name "$e")
-    [ "$e" = "$CAT.md" ] && core=""
+  [ -n "$e" ] || continue
+  findargs+=(! -name "$e")
+  [ "$e" = "$CAT.md" ] && core=""
 done
 
 # Category channel: core (always-on) if listed in CORE, else domain.
 cat_channel="domain"
 for c in ${CORE:-}; do
-    [ "$c" = "$CAT" ] && cat_channel="core" && break
+  [ "$c" = "$CAT" ] && cat_channel="core" && break
 done
 
 mkdir -p "$DEST_DIR"
 
 # Core file (loose <cat>.md), emitted as "<cat>.md" at the set root.
 if [ -n "$core" ] && [ -f "$core" ]; then
-    if [ "$keep_active" -eq 0 ] || printf '%s\n' "$KEEP" | grep -qxF "$CAT.md"; then
-        SRC="$core" REL="$CAT.md" DEST="$DEST_DIR/$CAT.md" \
-            CAT_CHANNEL="$cat_channel" CAT_GLOBS="$GLOBS" \
-            COND_FIELD="$COND_FIELD" OVERRIDES="${OVERRIDES:-}" bash "$EMIT_RULE"
-    fi
+  if [ "$keep_active" -eq 0 ] || printf '%s\n' "$KEEP" | grep -qxF "$CAT.md"; then
+    SRC="$core" REL="$CAT.md" DEST="$DEST_DIR/$CAT.md" \
+      CAT_CHANNEL="$cat_channel" CAT_GLOBS="$GLOBS" \
+      COND_FIELD="$COND_FIELD" OVERRIDES="${OVERRIDES:-}" bash "$EMIT_RULE"
+  fi
 fi
 
 if [ -d "$catdir" ]; then
-    find "$catdir" -name '*.md' ${findargs[@]+"${findargs[@]}"} | sort | while read -r f; do
-        sub="${f#"$catdir"/}"
-        rel="$CAT/$sub"
-        if [ "$keep_active" -eq 1 ] && ! printf '%s\n' "$KEEP" | grep -qxF "$rel"; then
-            continue
-        fi
-        SRC="$f" REL="$rel" DEST="$DEST_DIR/$CAT/$sub" \
-            CAT_CHANNEL="$cat_channel" CAT_GLOBS="$GLOBS" \
-            COND_FIELD="$COND_FIELD" OVERRIDES="${OVERRIDES:-}" bash "$EMIT_RULE"
-    done
+  find "$catdir" -name '*.md' ${findargs[@]+"${findargs[@]}"} | sort | while read -r f; do
+    sub="${f#"$catdir"/}"
+    rel="$CAT/$sub"
+    if [ "$keep_active" -eq 1 ] && ! printf '%s\n' "$KEEP" | grep -qxF "$rel"; then
+      continue
+    fi
+    SRC="$f" REL="$rel" DEST="$DEST_DIR/$CAT/$sub" \
+      CAT_CHANNEL="$cat_channel" CAT_GLOBS="$GLOBS" \
+      COND_FIELD="$COND_FIELD" OVERRIDES="${OVERRIDES:-}" bash "$EMIT_RULE"
+  done
 fi
