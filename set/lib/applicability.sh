@@ -23,66 +23,66 @@ declare -A hassig reason
 
 # pass 1: record every signalled file + decide per-file evidence.
 while IFS='|' read -r rel paths content; do
-  [ -n "$rel" ] || continue
-  hassig["$rel"]=1
+    [ -n "$rel" ] || continue
+    hassig["$rel"]=1
 
-  case "$rel" in
-    */*) cat="${rel%%/*}" ;;
-    *) cat="${rel%.md}" ;;
-  esac
+    case "$rel" in
+        */*) cat="${rel%%/*}" ;;
+        *) cat="${rel%.md}" ;;
+    esac
 
-  is_core=0
-  for c in ${CORE:-}; do
-    [ "$c" = "$cat" ] && is_core=1 && break
-  done
-  if [ "$is_core" -eq 1 ]; then
-    reason["$rel"]="core"
-    continue
-  fi
-
-  # path match: does any tracked file have this shape?
-  matched=()
-  IFS=',' read -ra globs <<<"$paths"
-  for g in "${globs[@]}"; do
-    [ -n "$g" ] || continue
-    # gitignore/Claude semantics: a leading "**/" matches zero or more
-    # dirs, INCLUDING top-level files. bash globstar does not, so also
-    # try the pattern with a leading "**/" stripped.
-    gtop="${g#'**/'}"
-    for f in "${tracked[@]}"; do
-      [ -n "$f" ] || continue
-      # shellcheck disable=SC2053
-      if [[ "$f" == $g ]] || [[ "$f" == $gtop ]]; then
-        matched+=("$f")
-      fi
+    is_core=0
+    for c in ${CORE:-}; do
+        [ "$c" = "$cat" ] && is_core=1 && break
     done
-  done
-  [ "${#matched[@]}" -gt 0 ] || continue
+    if [ "$is_core" -eq 1 ]; then
+        reason["$rel"]="core"
+        continue
+    fi
 
-  # content match: paths-only signal -> applicable on path evidence;
-  # otherwise a path-matched file must contain a content pattern.
-  if [ -z "$content" ]; then
-    reason["$rel"]="paths:${globs[0]}"
-    continue
-  fi
-  pat="${content//,/|}"
-  if grep -lE "$pat" "${matched[@]}" >/dev/null 2>&1; then
-    reason["$rel"]="content:${content}"
-  fi
+    # path match: does any tracked file have this shape?
+    matched=()
+    IFS=',' read -ra globs <<<"$paths"
+    for g in "${globs[@]}"; do
+        [ -n "$g" ] || continue
+        # gitignore/Claude semantics: a leading "**/" matches zero or more
+        # dirs, INCLUDING top-level files. bash globstar does not, so also
+        # try the pattern with a leading "**/" stripped.
+        gtop="${g#'**/'}"
+        for f in "${tracked[@]}"; do
+            [ -n "$f" ] || continue
+            # shellcheck disable=SC2053
+            if [[ "$f" == $g ]] || [[ "$f" == $gtop ]]; then
+                matched+=("$f")
+            fi
+        done
+    done
+    [ "${#matched[@]}" -gt 0 ] || continue
+
+    # content match: paths-only signal -> applicable on path evidence;
+    # otherwise a path-matched file must contain a content pattern.
+    if [ -z "$content" ]; then
+        reason["$rel"]="paths:${globs[0]}"
+        continue
+    fi
+    pat="${content//,/|}"
+    if grep -lE "$pat" "${matched[@]}" >/dev/null 2>&1; then
+        reason["$rel"]="content:${content}"
+    fi
 done <<<"${SIGNALS:-}"
 
 # pass 2: facet -> topic core backfill (V36).
 for rel in "${!reason[@]}"; do
-  case "$rel" in
-    */*)
-      core="${rel%%/*}.md"
-      if [ -n "${hassig[$core]:-}" ] && [ -z "${reason[$core]:-}" ]; then
-        reason["$core"]="required-by:${rel%%/*}"
-      fi
-      ;;
-  esac
+    case "$rel" in
+        */*)
+            core="${rel%%/*}.md"
+            if [ -n "${hassig[$core]:-}" ] && [ -z "${reason[$core]:-}" ]; then
+                reason["$core"]="required-by:${rel%%/*}"
+            fi
+            ;;
+    esac
 done
 
 for rel in "${!reason[@]}"; do
-  printf '%s|%s\n' "$rel" "${reason[$rel]}"
+    printf '%s|%s\n' "$rel" "${reason[$rel]}"
 done | sort

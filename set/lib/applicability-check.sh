@@ -19,79 +19,79 @@ printf 'spawn qemu -enable-kvm -serial stdio\n' >tests/integration/boot.exp
 printf '# readme\n' >README.md
 
 tracked="$(printf '%s\n' flake.nix src/main.nix pkg.nix lefthook.yml \
-  tests/integration/boot.exp README.md)"
+    tests/integration/boot.exp README.md)"
 
 out="$(SIGNALS="$SIGNALS" CORE="generic git" TRACKED="$tracked" bash "$FILTER")"
 
 # helper assertions (no functions: inline greps)
 case "$out" in
-  *"generic/skill.md|core"*) ;;
-  *)
-    echo "FAIL: core generic not kept"
-    exit 1
-    ;;
+    *"generic/skill.md|core"*) ;;
+    *)
+        echo "FAIL: core generic not kept"
+        exit 1
+        ;;
 esac
 case "$out" in
-  *"git/git.md|core"*) ;;
-  *)
-    echo "FAIL: core git not kept"
-    exit 1
-    ;;
+    *"git/git.md|core"*) ;;
+    *)
+        echo "FAIL: core git not kept"
+        exit 1
+        ;;
 esac
 case "$out" in
-  *"nix/flake.md|paths:"*) ;;
-  *)
-    echo "FAIL: nix kept by paths"
-    exit 1
-    ;;
+    *"nix/flake.md|paths:"*) ;;
+    *)
+        echo "FAIL: nix kept by paths"
+        exit 1
+        ;;
 esac
 case "$out" in
-  *"lefthook/lefthook.md|paths:lefthook.yml"*) ;;
-  *)
-    echo "FAIL: lefthook kept by paths"
-    exit 1
-    ;;
+    *"lefthook/lefthook.md|paths:lefthook.yml"*) ;;
+    *)
+        echo "FAIL: lefthook kept by paths"
+        exit 1
+        ;;
 esac
 case "$out" in
-  *"test/qemu.md|content:qemu,enable-kvm"*) ;;
-  *)
-    echo "FAIL: qemu kept by content"
-    exit 1
-    ;;
+    *"test/qemu.md|content:qemu,enable-kvm"*) ;;
+    *)
+        echo "FAIL: qemu kept by content"
+        exit 1
+        ;;
 esac
 case "$out" in
-  *"nix/python-package.md|content:buildPythonPackage"*) ;;
-  *)
-    echo "FAIL: python-package kept by content (top-level pkg.nix)"
-    exit 1
-    ;;
+    *"nix/python-package.md|content:buildPythonPackage"*) ;;
+    *)
+        echo "FAIL: python-package kept by content (top-level pkg.nix)"
+        exit 1
+        ;;
 esac
 
 # pruned: no evidence for these features
 case "$out" in
-  *"opensource/cachix.md"*)
-    echo "FAIL: cachix kept without evidence"
-    exit 1
-    ;;
+    *"opensource/cachix.md"*)
+        echo "FAIL: cachix kept without evidence"
+        exit 1
+        ;;
 esac
 case "$out" in
-  *"test/iso.md"*)
-    echo "FAIL: iso kept without evidence"
-    exit 1
-    ;;
+    *"test/iso.md"*)
+        echo "FAIL: iso kept without evidence"
+        exit 1
+        ;;
 esac
 case "$out" in
-  *"security/hardening.md"*)
-    echo "FAIL: hardening kept without evidence"
-    exit 1
-    ;;
+    *"security/hardening.md"*)
+        echo "FAIL: hardening kept without evidence"
+        exit 1
+        ;;
 esac
 
 # determinism: a second run is identical
 out2="$(SIGNALS="$SIGNALS" CORE="generic git" TRACKED="$tracked" bash "$FILTER")"
 [ "$out" = "$out2" ] || {
-  echo "FAIL: nondeterministic"
-  exit 1
+    echo "FAIL: nondeterministic"
+    exit 1
 }
 
 echo PASS

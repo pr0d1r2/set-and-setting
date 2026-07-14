@@ -9,15 +9,15 @@ set -uo pipefail
 tracked="$(git ls-files 2>/dev/null || true)"
 filtered=""
 if [ -n "$tracked" ]; then
-  while IFS= read -r f; do
-    [ -n "$f" ] || continue
-    attr="$(git check-attr linguist-vendored linguist-generated -- "$f" 2>/dev/null || true)"
-    case "$attr" in
-      *": set"*) continue ;;
-    esac
-    filtered+="$f"$'\n'
-  done <<<"$tracked"
+    while IFS= read -r f; do
+        [ -n "$f" ] || continue
+        attr="$(git check-attr linguist-vendored linguist-generated -- "$f" 2>/dev/null || true)"
+        case "$attr" in
+            *": set"*) continue ;;
+        esac
+        filtered+="$f"$'\n'
+    done <<<"$tracked"
 fi
 
 SIGNALS="${SIGNALS_MANIFEST:-}" CORE="$CORE_CATEGORIES" \
-  TRACKED="$filtered" bash "$APPLICABILITY_SCRIPT"
+    TRACKED="$filtered" bash "$APPLICABILITY_SCRIPT"

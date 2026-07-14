@@ -18,16 +18,16 @@ votes="${VOTES:-3}"
 hits=0
 i=0
 while [ "$i" -lt "$votes" ]; do
-  [ -n "${PRE:-}" ] && eval "$PRE"
-  out="$(claude -p "$PROMPT" --dangerously-skip-permissions 2>/dev/null || true)"
-  case "$out" in
-    *"$TOKEN"*) hits=$((hits + 1)) ;;
-  esac
-  i=$((i + 1))
+    [ -n "${PRE:-}" ] && eval "$PRE"
+    out="$(claude -p "$PROMPT" --dangerously-skip-permissions 2>/dev/null || true)"
+    case "$out" in
+        *"$TOKEN"*) hits=$((hits + 1)) ;;
+    esac
+    i=$((i + 1))
 done
 
 if [ $((hits * 2)) -gt "$votes" ]; then
-  echo "LOADED"
+    echo "LOADED"
 else
-  echo "NOTLOADED"
+    echo "NOTLOADED"
 fi

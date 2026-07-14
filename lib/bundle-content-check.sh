@@ -45,72 +45,72 @@ status=0
 # file the matcher finds a real @-ref in; every line must be blank, the one
 # heading, a purpose-statement prose line, or a bare @-ref line.
 while IFS= read -r file; do
-  # Bundle iff the T63 matcher emits at least one real ref.
-  [ -n "$(INPUT="$file" bash "$ref_match")" ] || continue
+    # Bundle iff the T63 matcher emits at least one real ref.
+    [ -n "$(INPUT="$file" bash "$ref_match")" ] || continue
 
-  rel="${file#"$root"/}"
-  in_fence=0
-  headings=0
-  ln=0
-  while IFS= read -r line || [ -n "$line" ]; do
-    ln=$((ln + 1))
-    # Strip leading whitespace for structural classification.
-    trimmed="${line#"${line%%[![:space:]]*}"}"
+    rel="${file#"$root"/}"
+    in_fence=0
+    headings=0
+    ln=0
+    while IFS= read -r line || [ -n "$line" ]; do
+        ln=$((ln + 1))
+        # Strip leading whitespace for structural classification.
+        trimmed="${line#"${line%%[![:space:]]*}"}"
 
-    # Fenced code: report the opening fence once, then skip the body so a
-    # single block yields a single violation.
-    case "$trimmed" in
-      '```'* | '~~~'*)
+        # Fenced code: report the opening fence once, then skip the body so a
+        # single block yields a single violation.
+        case "$trimmed" in
+            '```'* | '~~~'*)
+                if [ "$in_fence" -eq 1 ]; then
+                    in_fence=0
+                else
+                    in_fence=1
+                    echo "FAIL: $rel:$ln fenced code block -- bundles compose via @, not inline content (V12)"
+                    status=1
+                fi
+                continue
+                ;;
+        esac
         if [ "$in_fence" -eq 1 ]; then
-          in_fence=0
-        else
-          in_fence=1
-          echo "FAIL: $rel:$ln fenced code block -- bundles compose via @, not inline content (V12)"
-          status=1
+            continue
         fi
-        continue
-        ;;
-    esac
-    if [ "$in_fence" -eq 1 ]; then
-      continue
-    fi
 
-    # Blank lines are always fine.
-    [ -n "$trimmed" ] || continue
+        # Blank lines are always fine.
+        [ -n "$trimmed" ] || continue
 
-    case "$trimmed" in
-      '#'*)
-        headings=$((headings + 1))
-        if [ "$headings" -gt 1 ]; then
-          echo "FAIL: $rel:$ln extra heading -- a bundle carries one heading (V12)"
-          status=1
-        fi
-        ;;
-      '|'*)
-        echo "FAIL: $rel:$ln table row -- not heading/purpose/@ref (V12)"
-        status=1
-        ;;
-      '>'*)
-        echo "FAIL: $rel:$ln blockquote -- not heading/purpose/@ref (V12)"
-        status=1
-        ;;
-      [-+*]' '* | [-+*]$'\t'*)
-        echo "FAIL: $rel:$ln list item -- refs are bare @ lines, not bullets (V12)"
-        status=1
-        ;;
-      [0-9]'. '* | [0-9][0-9]'. '*)
-        echo "FAIL: $rel:$ln ordered list item -- not heading/purpose/@ref (V12)"
-        status=1
-        ;;
-      *)
-        # Prose purpose statement or a bare @-ref line: allowed.
-        :
-        ;;
-    esac
-  done <"$file"
+        case "$trimmed" in
+            '#'*)
+                headings=$((headings + 1))
+                if [ "$headings" -gt 1 ]; then
+                    echo "FAIL: $rel:$ln extra heading -- a bundle carries one heading (V12)"
+                    status=1
+                fi
+                ;;
+            '|'*)
+                echo "FAIL: $rel:$ln table row -- not heading/purpose/@ref (V12)"
+                status=1
+                ;;
+            '>'*)
+                echo "FAIL: $rel:$ln blockquote -- not heading/purpose/@ref (V12)"
+                status=1
+                ;;
+            [-+*]' '* | [-+*]$'\t'*)
+                echo "FAIL: $rel:$ln list item -- refs are bare @ lines, not bullets (V12)"
+                status=1
+                ;;
+            [0-9]'. '* | [0-9][0-9]'. '*)
+                echo "FAIL: $rel:$ln ordered list item -- not heading/purpose/@ref (V12)"
+                status=1
+                ;;
+            *)
+                # Prose purpose statement or a bare @-ref line: allowed.
+                :
+                ;;
+        esac
+    done <"$file"
 done < <(find "$work/set" -type f -name '*.md' | sort)
 
 if [ "$status" -eq 0 ]; then
-  echo "bundle-content: all bundle files limit own content to heading + purpose + refs"
+    echo "bundle-content: all bundle files limit own content to heading + purpose + refs"
 fi
 exit "$status"
