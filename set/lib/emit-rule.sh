@@ -23,35 +23,35 @@ globs="$CAT_GLOBS"
 # subtree-inherit). Mirrors meta.nix resolve's cascading behaviour.
 exact_ch="" exact_gl="" pfx_ch="" pfx_gl="" pfx_len=0
 while IFS='|' read -r opath ochannel oglobs; do
-    [ -n "$opath" ] || continue
-    if [ "$opath" = "$REL" ]; then
-        exact_ch="$ochannel"
-        exact_gl="$oglobs"
-    elif [[ "$REL" == "$opath/"* ]] && [ ${#opath} -gt "$pfx_len" ]; then
-        pfx_len=${#opath}
-        pfx_ch="$ochannel"
-        pfx_gl="$oglobs"
-    fi
+  [ -n "$opath" ] || continue
+  if [ "$opath" = "$REL" ]; then
+    exact_ch="$ochannel"
+    exact_gl="$oglobs"
+  elif [[ "$REL" == "$opath/"* ]] && [ ${#opath} -gt "$pfx_len" ]; then
+    pfx_len=${#opath}
+    pfx_ch="$ochannel"
+    pfx_gl="$oglobs"
+  fi
 done <<<"${OVERRIDES:-}"
 
 if [ -n "$exact_ch" ] || [ -n "$exact_gl" ]; then
-    [ -n "$exact_ch" ] && channel="$exact_ch"
-    [ -n "$exact_gl" ] && globs="${exact_gl//,/ }"
+  [ -n "$exact_ch" ] && channel="$exact_ch"
+  [ -n "$exact_gl" ] && globs="${exact_gl//,/ }"
 elif [ "$pfx_len" -gt 0 ]; then
-    [ -n "$pfx_ch" ] && channel="$pfx_ch"
-    [ -n "$pfx_gl" ] && globs="${pfx_gl//,/ }"
+  [ -n "$pfx_ch" ] && channel="$pfx_ch"
+  [ -n "$pfx_gl" ] && globs="${pfx_gl//,/ }"
 fi
 
 mkdir -p "$(dirname "$DEST")"
 
 if [ "$channel" = "core" ]; then
-    cat "$SRC" >"$DEST"
+  cat "$SRC" >"$DEST"
 else
-    read -ra garr <<<"$globs"
-    {
-        printf '%s\n%s:\n' "---" "$COND_FIELD"
-        for g in "${garr[@]}"; do printf '  - "%s"\n' "$g"; done
-        printf '%s\n\n' "---"
-    } >"$DEST"
-    cat "$SRC" >>"$DEST"
+  read -ra garr <<<"$globs"
+  {
+    printf '%s\n%s:\n' "---" "$COND_FIELD"
+    for g in "${garr[@]}"; do printf '  - "%s"\n' "$g"; done
+    printf '%s\n\n' "---"
+  } >"$DEST"
+  cat "$SRC" >>"$DEST"
 fi

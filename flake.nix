@@ -922,6 +922,14 @@
             pkgs.bats
             nix-lefthook.packages.${sys}.default
           ];
+          # Materialize the gitignored configs (content-aware lefthook.yml,
+          # .markdownlint.yml, .yamllint.yml) on devShell entry. Post-migration
+          # (vendored -> referenced) lefthook.yml is no longer tracked, so it
+          # MUST be materialized before `lefthook install` runs -- else lefthook
+          # writes a default stub that fails the confirmator's fidelity check.
+          settingHook = ''
+            ${self.apps.${sys}.mkSetting.program} >/dev/null
+          '';
           agenticShellHook = ''
             ${self.packages.${sys}.set}/bin/sync-set .
           '';
@@ -2996,6 +3004,11 @@
 
           confirmApp = pkgs.writeShellApplication {
             name = "confirm";
+            # Include the lefthook wrappers so confirm.sh's coherence check
+            # (every `lefthook-*` referenced in lefthook.yml is on PATH) can
+            # resolve them -- this repo's fragments reference lefthook-
+            # markdownlint / -yamllint, which are otherwise absent under
+            # `nix run .#confirm` (fresh PATH, not inside `nix develop`).
             runtimeInputs = [
               pkgs.coreutils
               pkgs.diffutils
@@ -3003,7 +3016,8 @@
               pkgs.gawk
               pkgs.git
               pkgs.gnugrep
-            ];
+            ]
+            ++ lefthookWrappersFor pkgs;
             text = ''
               export FRAGMENTS_DIR="${./setting/integrations/lefthook}"
               export ASSEMBLE_SCRIPT="${./setting/lib/assemble-lefthook.sh}"

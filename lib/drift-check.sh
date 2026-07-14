@@ -10,19 +10,19 @@ read -ra paths <<<"${REL_PATHS:-}"
 drift=0
 
 for rel in "${paths[@]:-}"; do
-    [ -n "$rel" ] || continue
-    [ -e "$EXPECTED/$rel" ] || continue
-    if [ ! -e "$ACTUAL/$rel" ]; then
-        echo "MISSING: $rel -- $SYNC_HINT"
-        drift=1
-    else
-        diff -rq "$EXPECTED/$rel" "$ACTUAL/$rel" || drift=1
-    fi
+  [ -n "$rel" ] || continue
+  [ -e "$EXPECTED/$rel" ] || continue
+  if [ ! -e "$ACTUAL/$rel" ]; then
+    echo "MISSING: $rel -- $SYNC_HINT"
+    drift=1
+  else
+    diff -rq "$EXPECTED/$rel" "$ACTUAL/$rel" || drift=1
+  fi
 done
 
 if [ "$drift" -ne 0 ]; then
-    echo "DRIFT DETECTED -- $SYNC_HINT"
-    exit 1
+  echo "DRIFT DETECTED -- $SYNC_HINT"
+  exit 1
 fi
 
 echo "no drift"
