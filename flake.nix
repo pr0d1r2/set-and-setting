@@ -220,6 +220,17 @@
             pkgs.git
             pkgs.gnugrep
           ];
+          # The nix build sandbox has no $HOME and no git identity. Point git
+          # at empty config files (so it never consults $HOME) and supply the
+          # author/committer identity via env, matching the bats fixtures
+          # (B22). Without this `git commit` fails "$HOME not set" /
+          # "Author identity unknown" (exit 128).
+          GIT_CONFIG_GLOBAL = "/dev/null";
+          GIT_CONFIG_SYSTEM = "/dev/null";
+          GIT_AUTHOR_NAME = "Test";
+          GIT_AUTHOR_EMAIL = "test@test.com";
+          GIT_COMMITTER_NAME = "Test";
+          GIT_COMMITTER_EMAIL = "test@test.com";
           SEED_SRC = migrateSeedFor pkgs;
           SETTING_SRC = migrateSetting.configFiles;
           FRAGMENTS_DIR = ./setting/integrations/lefthook;
@@ -2706,7 +2717,9 @@
           pkgs.runCommand "migrate-already-referenced" (migrateFixtureEnv pkgs)
             ''
               # an already-referenced repo == the seed layout
-              cp -r ${migrateSeedFor pkgs} workdir
+              # -L: dereference the seed's store symlinks into real, writable
+              # files so `chmod -R u+w` and `git add` work in the sandbox.
+              cp -rL ${migrateSeedFor pkgs} workdir
               chmod -R u+w workdir
               cd workdir
               git init -q
@@ -2753,7 +2766,8 @@
           in
           pkgs.runCommand "migrate-partial" (migrateFixtureEnv pkgs) ''
             # partial-tracked-lefthook: references set-and-setting BUT still tracks lefthook.yml
-            cp -r ${migrateSeedFor pkgs} workdir
+            # -L: dereference the seed's store symlinks into real, writable files.
+            cp -rL ${migrateSeedFor pkgs} workdir
             chmod -R u+w workdir
             cd workdir
             cp ${partialLefthook} lefthook.yml
