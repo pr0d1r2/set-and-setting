@@ -3,8 +3,6 @@
 
 pre-commit:
   commands:
-    narrow-language-other:
-      timeout: 300s
     markdownlint:
       timeout: 300s
     markdownlint-agentic:
