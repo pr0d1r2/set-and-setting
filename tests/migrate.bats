@@ -361,7 +361,7 @@ write_vendored_lefthook_with_remotes() {
 
 # ======== equivalence gate ========
 
-@test "equivalence gate rejects a repo-local dropped check with MIGRATE-FAIL" {
+@test "equivalence gate carries through a repo-local check (#126)" {
     echo "{ outputs = { self }: { }; }" >flake.nix
     printf '%s\n' \
         "---" \
@@ -374,14 +374,13 @@ write_vendored_lefthook_with_remotes() {
         >lefthook.yml
     _init_repo
     run bash "$MIGRATE_SCRIPT"
-    [ "$status" -ne 0 ]
-    [[ "$output" == *"MIGRATE-FAIL: stage=equivalence reason=uncovered-checks"* ]]
-    [[ "$output" == *"dropped: super-special-check"* ]]
-    [[ "$output" == *"NO standard equivalent (repo-local)"* ]]
-    [[ "$output" == *"(a) keep"* ]]
-    [[ "$output" == *"(b) retire"* ]]
-    [[ "$output" == *"(c) upstream"* ]]
-    [[ "$output" == *"retry: idempotent"* ]]
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"carried-through: super-special-check"* ]]
+    [[ "$output" == *"PASS: equivalence"* ]]
+    [ -f lefthook-repo.yml ]
+    grep -q 'super-special-check:' lefthook-repo.yml
+    grep -q 'our-bespoke-linter' lefthook-repo.yml
+    grep -q 'super-special-check:' lefthook.yml
 }
 
 @test "equivalence gate classifies a standard-fragment dropped check" {
@@ -424,10 +423,125 @@ write_vendored_lefthook_with_remotes() {
     [[ "$output" != *"MIGRATE-FAIL"* ]]
 }
 
-@test "equivalence gate still catches a real command beside a remotes block" {
-    # Sibling to the above: a repo-local command under `commands:` alongside
-    # a `remotes:` block must STILL trip the gate -- proof the scoping did
-    # not weaken the safety net, only removed the remotes false-positives.
+# ======== carry-through: repo-local checks (#126) ========
+
+@test "carry-through: self-hosting repo migrates with repo-local check preserved" {
+    echo "{ outputs = { self }: { }; }" >flake.nix
+    printf '%s\n' \
+        "---" \
+        "pre-commit:" \
+        "  commands:" \
+        "    nixfmt:" \
+        "      run: nixfmt --check {staged_files}" \
+        "    taplo:" \
+        "      run: lefthook-taplo --check {staged_files}" \
+        "      glob: \"*.toml\"" \
+        >lefthook.yml
+    _init_repo
+    run bash "$MIGRATE_SCRIPT"
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"carried-through: taplo"* ]]
+    [[ "$output" == *"PASS: equivalence"* ]]
+    # lefthook-repo.yml created and tracked
+    [ -f lefthook-repo.yml ]
+    git ls-files | grep -qxF "lefthook-repo.yml"
+    grep -q 'taplo:' lefthook-repo.yml
+    # taplo appears in the materialized lefthook.yml
+    grep -q 'taplo:' lefthook.yml
+}
+
+@test "carry-through: plain consumer with only standard checks is unaffected" {
+    echo "{ outputs = { self }: { }; }" >flake.nix
+    write_vendored_lefthook
+    _init_repo
+    run bash "$MIGRATE_SCRIPT"
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"PASS: equivalence"* ]]
+    [[ "$output" != *"carried-through"* ]]
+    # no lefthook-repo.yml created
+    [ ! -f lefthook-repo.yml ]
+}
+
+@test "carry-through: pre-push repo-local check also carried" {
+    echo "{ outputs = { self }: { }; }" >flake.nix
+    printf '%s\n' \
+        "---" \
+        "pre-commit:" \
+        "  commands:" \
+        "    nixfmt:" \
+        "      run: nixfmt --check {staged_files}" \
+        "    taplo:" \
+        "      run: lefthook-taplo --check {staged_files}" \
+        "      glob: \"*.toml\"" \
+        "pre-push:" \
+        "  commands:" \
+        "    taplo:" \
+        "      run: lefthook-taplo {push_files}" \
+        "      glob: \"*.toml\"" \
+        >lefthook.yml
+    _init_repo
+    run bash "$MIGRATE_SCRIPT"
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"carried-through: taplo"* ]]
+    # both hooks present in repo-local fragment
+    grep -q 'pre-commit:' lefthook-repo.yml
+    grep -q 'pre-push:' lefthook-repo.yml
+    # both hooks have taplo in materialized lefthook.yml
+    local precommit_section prepush_section
+    precommit_section="$(awk '/^pre-commit:/,/^pre-push:/' lefthook.yml)"
+    prepush_section="$(awk '/^pre-push:/,0' lefthook.yml)"
+    echo "$precommit_section" | grep -q 'taplo:'
+    echo "$prepush_section" | grep -q 'taplo:'
+}
+
+@test "carry-through: multiple repo-local checks all carried" {
+    echo "{ outputs = { self }: { }; }" >flake.nix
+    printf '%s\n' \
+        "---" \
+        "pre-commit:" \
+        "  commands:" \
+        "    nixfmt:" \
+        "      run: nixfmt --check {staged_files}" \
+        "    taplo:" \
+        "      run: lefthook-taplo --check {staged_files}" \
+        "    custom-lint:" \
+        "      run: custom-linter {staged_files}" \
+        >lefthook.yml
+    _init_repo
+    run bash "$MIGRATE_SCRIPT"
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"carried-through:"* ]]
+    [[ "$output" == *"taplo"* ]]
+    [[ "$output" == *"custom-lint"* ]]
+    [[ "$output" == *"PASS: equivalence"* ]]
+    grep -q 'taplo:' lefthook-repo.yml
+    grep -q 'custom-lint:' lefthook-repo.yml
+}
+
+@test "carry-through: standard-fragment drop still fails even with repo-local carry" {
+    echo "{ outputs = { self }: { }; }" >flake.nix
+    printf '%s\n' \
+        "---" \
+        "pre-commit:" \
+        "  commands:" \
+        "    taplo:" \
+        "      run: lefthook-taplo --check {staged_files}" \
+        "    markdownlint:" \
+        "      run: markdownlint {staged_files}" \
+        >lefthook.yml
+    _init_repo
+    # strip FULL_LEFTHOOK so markdownlint is not in the universe
+    FULL_LEFTHOOK="" run bash "$MIGRATE_SCRIPT"
+    [ "$status" -ne 0 ]
+    [[ "$output" == *"MIGRATE-FAIL: stage=equivalence reason=uncovered-checks"* ]]
+    [[ "$output" == *"dropped:"*"markdownlint"* ]]
+    # taplo was carried through but markdownlint still fails
+    [[ "$output" == *"carried-through: taplo"* ]]
+}
+
+@test "equivalence gate carries through repo-local command beside a remotes block" {
+    # A repo-local command under `commands:` alongside a `remotes:` block
+    # is carried through (#126); remotes fields are still excluded.
     echo "{ outputs = { self }: { }; }" >flake.nix
     printf '%s\n' \
         "---" \
@@ -443,12 +557,20 @@ write_vendored_lefthook_with_remotes() {
         >lefthook.yml
     _init_repo
     run bash "$MIGRATE_SCRIPT"
-    [ "$status" -ne 0 ]
-    [[ "$output" == *"MIGRATE-FAIL: stage=equivalence reason=uncovered-checks"* ]]
-    [[ "$output" == *"dropped: super-special-check"* ]]
-    # remotes fields still excluded even in the failing case
-    [[ "$output" != *"dropped:"*"ref"* ]]
-    [[ "$output" != *"dropped:"*"configs"* ]]
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"carried-through: super-special-check"* ]]
+    [[ "$output" == *"PASS: equivalence"* ]]
+    # only the expected check was carried through (not remotes fields)
+    local carried_line
+    carried_line="$(echo "$output" | grep 'carried-through:')"
+    [[ "$carried_line" == "carried-through: super-special-check"* ]]
+    echo "$carried_line" | run ! grep -qw 'ref'
+    echo "$carried_line" | run ! grep -qw 'configs'
+    echo "$carried_line" | run ! grep -qw 'git_url'
+    # repo-local fragment created
+    [ -f lefthook-repo.yml ]
+    grep -q 'super-special-check:' lefthook-repo.yml
+    grep -q 'our-bespoke-linter' lefthook-repo.yml
 }
 
 # ======== stage-trap (#115) ========

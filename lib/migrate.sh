@@ -291,7 +291,12 @@ fi
 # --- capture the vendored check-set BEFORE stripping (the equivalence baseline) ---
 old_checks="$(mktemp)"
 new_checks="$(mktemp)"
-trap 'rm -f "$old_checks" "$new_checks"' EXIT
+saved_vendored=""
+if [ "$lefthook_present" -eq 1 ]; then
+  saved_vendored="$(mktemp)"
+  cp lefthook.yml "$saved_vendored"
+fi
+trap 'rm -f "$old_checks" "$new_checks" "${saved_vendored:-}"' EXIT
 
 _migrate_stage="strip"
 if [ "$lefthook_present" -eq 1 ]; then
@@ -393,6 +398,118 @@ _migrate_stage="equivalence"
 } | grep -v '^$' | sort -u >"$new_checks"
 
 dropped="$(comm -23 "$old_checks" "$new_checks" || true)"
+
+# --- carry-through: repo-local checks (#126) ---
+# Identify vendored checks with no standard fragment equivalent. These
+# are repo-local checks (e.g., a nix-lefthook-taplo repo's own taplo
+# hook) that the CHECKS_UNIVERSE cannot provide. Extract them from the
+# saved vendored lefthook.yml and write a tracked lefthook-repo.yml so
+# they survive materialization, equivalence passes, and the repo keeps
+# dogfooding its own check.
+if [ -n "$dropped" ] && [ -n "${saved_vendored:-}" ] && [ -f "${saved_vendored:-}" ]; then
+  local_dropped=""
+  for check in $dropped; do
+    # inline fragment lookup (no function per no-shell-functions guardrail)
+    frag=""
+    case "$check" in
+      gitleaks | git-conflict-markers | \
+        git-no-local-paths | execute-permissions | file-size-check | \
+        trailing-whitespace | missing-final-newline | editorconfig-checker | \
+        typos)
+        frag="base"
+        ;;
+      nixfmt | statix | deadnix | nix-no-embedded-shell)
+        frag="nix"
+        ;;
+      shellcheck | shfmt | no-shell-functions)
+        frag="shell"
+        ;;
+      ascii-only)
+        frag="ascii"
+        ;;
+      markdownlint | markdownlint-agentic)
+        frag="markdown"
+        ;;
+      yamllint)
+        frag="yaml"
+        ;;
+      set-skill-extension | set-skill-size | set-ref-resolution | \
+        set-bundle-content)
+        frag="set"
+        ;;
+      *) frag="" ;;
+    esac
+    [ -z "$frag" ] && local_dropped="$local_dropped $check"
+  done
+  local_dropped="${local_dropped# }"
+
+  if [ -n "$local_dropped" ]; then
+    # Extract repo-local command blocks from the saved vendored
+    # lefthook.yml. The awk program finds commands matching the check
+    # names under their hook sections (pre-commit/pre-push), collects
+    # each block (key + sub-keys), and emits a valid fragment YAML.
+    repo_frag="$(awk -v checks="$local_dropped" '
+      BEGIN {
+        n = split(checks, arr, " ")
+        for (i = 1; i <= n; i++) wanted[arr[i]] = 1
+        hook = ""; in_cmds = 0; cap = 0; cmd_key = ""
+      }
+      /^(pre-commit|pre-push):/ {
+        hook = $1; sub(/:$/, "", hook)
+        in_cmds = 0; cap = 0; next
+      }
+      /^  commands:[[:space:]]*$/ { in_cmds = 1; next }
+      /^  [A-Za-z]/ && !/^  commands:/ { in_cmds = 0; cap = 0; next }
+      /^[A-Za-z]/ { in_cmds = 0; cap = 0; next }
+      in_cmds && /^    [A-Za-z][A-Za-z0-9_-]*:/ {
+        k = $1; sub(/:.*/, "", k)
+        if (k in wanted) {
+          cap = 1; cmd_key = hook SUBSEP k
+          lines[cmd_key] = (lines[cmd_key] ? lines[cmd_key] "\n" : "") $0
+          hooks[hook] = 1
+        } else { cap = 0 }
+        next
+      }
+      cap { lines[cmd_key] = lines[cmd_key] "\n" $0 }
+      END {
+        if ("pre-commit" in hooks) {
+          printf "\npre-commit:\n  commands:\n"
+          for (key in lines) {
+            split(key, parts, SUBSEP)
+            if (parts[1] == "pre-commit") printf "%s\n", lines[key]
+          }
+        }
+        if ("pre-push" in hooks) {
+          printf "\npre-push:\n  commands:\n"
+          for (key in lines) {
+            split(key, parts, SUBSEP)
+            if (parts[1] == "pre-push") printf "%s\n", lines[key]
+          }
+        }
+      }
+    ' "$saved_vendored")"
+
+    if [ -n "$repo_frag" ]; then
+      printf '# Repo-local checks carried through from vendored lefthook.yml (#126).\n---\n%s\n' "$repo_frag" >lefthook-repo.yml
+
+      # Re-assemble lefthook.yml to include the repo-local fragment
+      mat_out2="$(mktemp -d)"
+      FRAGMENTS="$detected" out="$mat_out2" bash "$ASSEMBLE_SCRIPT"
+      cp -f "$mat_out2/lefthook.yml" lefthook.yml
+      rm -rf "$mat_out2"
+
+      git add lefthook-repo.yml
+
+      # Update new_checks with carried-through names so equivalence passes
+      printf '%s\n' $local_dropped >>"$new_checks"
+      sort -u -o "$new_checks" "$new_checks"
+      dropped="$(comm -23 "$old_checks" "$new_checks" || true)"
+
+      echo "carried-through: $local_dropped (repo-local checks preserved in lefthook-repo.yml)"
+    fi
+  fi
+fi
+
 if [ -n "$dropped" ]; then
   _migrate_fail_emitted=1
   dropped_list="$(echo $dropped | tr '\n' ' ' | sed 's/ *$//')"

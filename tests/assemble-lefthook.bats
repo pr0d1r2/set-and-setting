@@ -198,3 +198,82 @@ teardown() {
     grep -q 'ref-resolve-check.sh' "$out/lefthook.yml"
     grep -q 'bundle-content-check.sh' "$out/lefthook.yml"
 }
+
+# ======== repo-local fragment (#126) ========
+
+@test "lefthook-repo.yml in CWD is included in assembly" {
+    local workdir
+    workdir="$(mktemp -d)"
+    {
+        printf '%s\n' "---"
+        write_commands pre-commit taplo "*.toml" staged_files
+        write_commands pre-push taplo "*.toml" push_files
+    } >"$workdir/lefthook-repo.yml"
+    cd "$workdir"
+    bash "$SCRIPT"
+    grep -q 'taplo:' "$out/lefthook.yml"
+    grep -q 'lefthook-taplo' "$out/lefthook.yml"
+    # standard fragment commands also present
+    grep -q 'ascii-check:' "$out/lefthook.yml"
+    grep -q 'mdlint:' "$out/lefthook.yml"
+    rm -rf "$workdir"
+}
+
+@test "repo-local pre-commit commands merge with standard fragments" {
+    local workdir
+    workdir="$(mktemp -d)"
+    {
+        printf '%s\n' "---"
+        write_commands pre-commit taplo "*.toml" staged_files
+    } >"$workdir/lefthook-repo.yml"
+    cd "$workdir"
+    bash "$SCRIPT"
+    local precommit_section
+    precommit_section="$(awk '/^pre-commit:/,/^pre-push:/' "$out/lefthook.yml")"
+    echo "$precommit_section" | grep -q 'taplo:'
+    echo "$precommit_section" | grep -q 'ascii-check:'
+    rm -rf "$workdir"
+}
+
+@test "repo-local pre-push commands merge with standard fragments" {
+    local workdir
+    workdir="$(mktemp -d)"
+    {
+        printf '%s\n' "---"
+        write_commands pre-push taplo "*.toml" push_files
+    } >"$workdir/lefthook-repo.yml"
+    cd "$workdir"
+    bash "$SCRIPT"
+    local prepush_section
+    prepush_section="$(awk '/^pre-push:/,0' "$out/lefthook.yml")"
+    echo "$prepush_section" | grep -q 'taplo:'
+    echo "$prepush_section" | grep -q 'ascii-check:'
+    rm -rf "$workdir"
+}
+
+@test "no lefthook-repo.yml means no repo-local commands" {
+    local workdir
+    workdir="$(mktemp -d)"
+    cd "$workdir"
+    bash "$SCRIPT"
+    run ! grep -q 'taplo' "$out/lefthook.yml"
+    rm -rf "$workdir"
+}
+
+@test "repo-local fragment alone creates hook sections" {
+    # All standard fragments empty -- repo-local is the only source
+    for name in base nix shell ascii markdown yaml set; do
+        printf '%s\n' "---" >"$FRAGMENTS_DIR/$name.yml"
+    done
+    local workdir
+    workdir="$(mktemp -d)"
+    {
+        printf '%s\n' "---"
+        write_commands pre-commit taplo "*.toml" staged_files
+    } >"$workdir/lefthook-repo.yml"
+    cd "$workdir"
+    bash "$SCRIPT"
+    grep -q '^pre-commit:' "$out/lefthook.yml"
+    grep -q 'taplo:' "$out/lefthook.yml"
+    rm -rf "$workdir"
+}
