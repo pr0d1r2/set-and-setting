@@ -16,21 +16,24 @@ setup() {
     git config user.email "test@test.com"
     git config user.name "Test"
 
-    mkdir -p "$TARGET/setting-src"
-    printf '%s\n' "---" "extends: default" > "$TARGET/setting-src/.markdownlint.yml"
-    printf '%s\n' "---" "extends: default" > "$TARGET/setting-src/.yamllint.yml"
+    SETTING_DIR="$(mktemp -d)"
+    printf '%s\n' "---" "extends: default" > "$SETTING_DIR/.markdownlint.yml"
+    printf '%s\n' "---" "extends: default" > "$SETTING_DIR/.yamllint.yml"
 
     export FRAGMENTS_DIR ASSEMBLE_SCRIPT DETECT_SCRIPT
-    export SETTING_SRC="$TARGET/setting-src"
+    export SETTING_SRC="$SETTING_DIR"
     export CONFIRM_REV="abc1234"
 }
 
 teardown() {
-    rm -rf "$TARGET"
+    rm -rf "$TARGET" "$SETTING_DIR"
 }
 
 materialize_basic() {
     touch flake.lock
+    printf '%s\n' ".markdownlint.yml" ".yamllint.yml" "lefthook.yml" >.gitignore
+    cp "$SETTING_SRC/.markdownlint.yml" .markdownlint.yml
+    cp "$SETTING_SRC/.yamllint.yml" .yamllint.yml
     git add .
     local detected
     detected="$(bash "$DETECT_SCRIPT")"
@@ -38,10 +41,7 @@ materialize_basic() {
     assemble_out="$(mktemp -d)"
     FRAGMENTS="$detected" out="$assemble_out" bash "$ASSEMBLE_SCRIPT"
     cp "$assemble_out/lefthook.yml" lefthook.yml
-    cp "$TARGET/setting-src/.markdownlint.yml" .markdownlint.yml
-    cp "$TARGET/setting-src/.yamllint.yml" .yamllint.yml
     rm -rf "$assemble_out"
-    git add .
 }
 
 @test "--dry-run prints check plan and exits 0" {
@@ -63,8 +63,8 @@ materialize_basic() {
 }
 
 @test "fails when lefthook.yml missing" {
-    cp "$TARGET/setting-src/.markdownlint.yml" .markdownlint.yml
-    cp "$TARGET/setting-src/.yamllint.yml" .yamllint.yml
+    cp "$SETTING_SRC/.markdownlint.yml" .markdownlint.yml
+    cp "$SETTING_SRC/.yamllint.yml" .yamllint.yml
     touch flake.lock
     git add .
     run bash "$SCRIPT"
@@ -117,8 +117,8 @@ materialize_basic() {
     FRAGMENTS="base" out="$assemble_out" bash "$ASSEMBLE_SCRIPT"
     cp "$assemble_out/lefthook.yml" lefthook.yml
     rm -rf "$assemble_out"
-    cp "$TARGET/setting-src/.markdownlint.yml" .markdownlint.yml
-    cp "$TARGET/setting-src/.yamllint.yml" .yamllint.yml
+    cp "$SETTING_SRC/.markdownlint.yml" .markdownlint.yml
+    cp "$SETTING_SRC/.yamllint.yml" .yamllint.yml
     git add .
     run bash "$SCRIPT"
     [ "$status" -eq 1 ]
