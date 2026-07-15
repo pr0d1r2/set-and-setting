@@ -143,7 +143,7 @@ lefthook_present=0
 [ -f lefthook.yml ] && lefthook_present=1
 
 lefthook_tracked=0
-printf '%s\n' "$tracked" | grep -qx 'lefthook.yml' && lefthook_tracked=1
+grep -qx 'lefthook.yml' <<<"$tracked" && lefthook_tracked=1
 
 references_sns=0
 if [ "$flake_present" -eq 1 ] && grep -q 'set-and-setting' flake.nix; then
