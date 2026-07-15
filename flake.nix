@@ -2796,32 +2796,65 @@
 
         migrate-rejects-dropped-check =
           let
-            # a vendored lefthook with a check the referenced set does NOT
-            # provide -- the equivalence gate must refuse to migrate.
-            brokenLefthook = pkgs.writeText "broken-vendored-lefthook.yml" ''
+            # A vendored lefthook with a standard-fragment check
+            # (markdownlint) that the reduced universe does NOT cover.
+            # Repo-local checks get carried through (#126), so we must
+            # test with a standard-fragment check to exercise rejection.
+            vendoredLefthook = pkgs.writeText "vendored-lefthook.yml" ''
               ---
               pre-commit:
                 commands:
                   nixfmt:
                     run: nixfmt --check {staged_files}
-                  super-special-check:
-                    run: our-bespoke-linter
+                  markdownlint:
+                    run: markdownlint {staged_files}
             '';
+            # Exclude the markdown fragment so markdownlint is genuinely
+            # uncovered -- carry-through classifies it as standard (not
+            # repo-local), so it stays dropped and triggers rejection.
+            reducedFragments = [
+              "base"
+              "nix"
+              "shell"
+              "ascii"
+              "yaml"
+              "set"
+            ];
+            reducedChecksUniverse = builtins.attrNames (
+              self.lib.checksFor {
+                inherit pkgs;
+                src = ./.;
+                fragments = reducedFragments;
+              }
+            );
+            reducedLefthookFiles =
+              (self.lib.materializationFor {
+                inherit pkgs;
+                fragments = reducedFragments;
+              }).files;
           in
-          pkgs.runCommand "migrate-rejects-dropped-check" (migrateFixtureEnv pkgs) ''
-            mkdir -p workdir && cd workdir
-            echo "{ outputs = { self }: { }; }" > flake.nix
-            cp ${brokenLefthook} lefthook.yml
-            git init -q
-            git add .
-            git commit -q -m "initial" --allow-empty
-            if bash "$MIGRATE_SCRIPT"; then
-              echo "FAIL: migrate should reject a dropped-check transform"
-              exit 1
-            fi
-            echo "PASS: migrate refuses to drop a vendored check"
-            touch $out
-          '';
+          pkgs.runCommand "migrate-rejects-dropped-check"
+            (
+              (migrateFixtureEnv pkgs)
+              // {
+                CHECKS_UNIVERSE = builtins.concatStringsSep " " reducedChecksUniverse;
+                FULL_LEFTHOOK = "${reducedLefthookFiles}/lefthook.yml";
+              }
+            )
+            ''
+              mkdir -p workdir && cd workdir
+              echo "{ outputs = { self }: { }; }" > flake.nix
+              cp ${vendoredLefthook} lefthook.yml
+              git init -q
+              git add .
+              git commit -q -m "initial" --allow-empty
+              if bash "$MIGRATE_SCRIPT"; then
+                echo "FAIL: migrate should reject a dropped-check transform"
+                exit 1
+              fi
+              echo "PASS: migrate refuses to drop a vendored check"
+              touch $out
+            '';
 
         default = pkgs.runCommand "set-and-setting-checks" { } ''
           touch $out
