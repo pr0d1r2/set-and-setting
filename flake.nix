@@ -2705,6 +2705,9 @@
             grep -q 'guardrails.yml' .github/workflows/ci.yml || { echo "FAIL: ci not caller"; exit 1; }
             grep -qxF 'lefthook.yml' .gitignore || { echo "FAIL: lefthook not gitignored"; exit 1; }
 
+            # #143: fragments customized to match detected content (README.md -> markdown)
+            grep -q '"markdown"' flake.nix || { echo "FAIL: fragments missing markdown"; exit 1; }
+
             flake_hash="$(sha256sum flake.nix | cut -d' ' -f1)"
 
             # idempotent: a migrated repo re-migrates to a no-op, no changes
