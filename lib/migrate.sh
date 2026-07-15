@@ -479,6 +479,36 @@ git add -A
 _migrate_stage="materialize"
 # --- materialize the new state (gitignored) for equivalence + confirm ---
 detected="$(bash "$DETECT_SCRIPT")"
+
+# --- update the planted flake.nix fragments to match detected content (#143) ---
+# The seed template ships with a minimal ["base" "nix"]; the consumer
+# needs all fragments matching their tracked file types so the devShell
+# materializes the same lefthook.yml that the confirmator expects.
+# "set" is excluded (specific to set-and-setting itself).
+if [ -f flake.nix ] && grep -q 'fragments = \[' flake.nix; then
+  consumer_frags=""
+  for f in $detected; do
+    [ "$f" = "set" ] && continue
+    consumer_frags="${consumer_frags:+$consumer_frags }$f"
+  done
+  awk -v frags="$consumer_frags" '
+    /fragments = \[/ {
+      print
+      n = split(frags, arr, " ")
+      for (i = 1; i <= n; i++) {
+        print "        \"" arr[i] "\""
+      }
+      skip = 1
+      next
+    }
+    skip && /\];/ { print; skip = 0; next }
+    skip { next }
+    { print }
+  ' flake.nix >flake.nix.tmp && mv flake.nix.tmp flake.nix
+  git add flake.nix
+  echo "fragments: $consumer_frags"
+fi
+
 mat_out="$(mktemp -d)"
 FRAGMENTS="$detected" out="$mat_out" bash "$ASSEMBLE_SCRIPT"
 cp -f "$mat_out/lefthook.yml" lefthook.yml

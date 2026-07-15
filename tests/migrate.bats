@@ -31,7 +31,7 @@ setup() {
     # helpers (checksFor / materializationFor) that mark it as referenced.
     # Structure mirrors leaf-flake.txt with injection points for reconciliation:
     # set-and-setting.url (custom inputs), set-and-setting, (output args),
-    # closing    }; (custom outputs).
+    # closing    }; (custom outputs), and a fragments declaration.
     printf '%s\n' \
         "{" \
         "  inputs = {" \
@@ -48,6 +48,12 @@ setup() {
         "      set-and-setting," \
         "      ..." \
         "    }:" \
+        "    let" \
+        "      fragments = [" \
+        "        \"base\"" \
+        "        \"nix\"" \
+        "      ];" \
+        "    in" \
         "    {" \
         "      checks = checksFor { };" \
         "      devShells = materializationFor { };" \
@@ -464,6 +470,27 @@ write_vendored_lefthook_with_remotes() {
     [[ "$output" == *"no-op"* ]]
     hash2="$(sha256sum flake.nix | cut -d' ' -f1)"
     [ "$hash1" = "$hash2" ]
+}
+
+@test "migrate customizes fragments in planted flake.nix (#143)" {
+    echo "{ outputs = { self }: { }; }" >flake.nix
+    write_vendored_lefthook
+    echo "# readme" >README.md
+    echo "test: true" >config.yml
+    echo 'echo hello' >script.sh
+    _init_repo
+    run bash "$MIGRATE_SCRIPT"
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"PASS: equivalence"* ]]
+    [[ "$output" == *"fragments:"* ]]
+    # fragments in planted flake.nix match detected content
+    grep -q '"base"' flake.nix
+    grep -q '"markdown"' flake.nix
+    grep -q '"yaml"' flake.nix
+    grep -q '"shell"' flake.nix
+    grep -q '"ascii"' flake.nix
+    # "set" excluded (specific to set-and-setting)
+    ! grep -q '"set"' flake.nix
 }
 
 @test "partial-tracked-lefthook completes the migration" {
