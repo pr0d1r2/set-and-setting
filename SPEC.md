@@ -196,7 +196,14 @@ and dogfoods both.
   git repo. (1) detect state -- vendored / referenced / bare / partial
   (already-referenced ⇒ no-op); (2) strip vendored artifacts (heavy
   `flake.nix`, tracked `lefthook.yml`, inline `ci.yml`) so they become
-  derived (materialized + gitignored); (3) plant the seed (#95, I.mkSeed)
+  derived (materialized + gitignored); (2b) reconcile custom flake.nix
+  (#127) -- when the vendored flake has custom content (extra inputs,
+  output attributes, overlays-as-outputs), extract the custom pieces and
+  inject them into the seed template (inputs after `set-and-setting.url`,
+  input names into output args, output blocks before the closing `};`).
+  Un-reconcilable content (overlays applied to pkgs, non-extractable
+  output blocks) ⇒ MIGRATE-FAIL with actionable detail; the plain-seed
+  path is never silently lossy. (3) plant the seed (#95, I.mkSeed)
   skip-if-exists + merge the materialized-artifact ignores into
   `.gitignore`; (4) confirm-equivalence (the safety net): assert the
   referenced effective check-set covers every check the vendored
@@ -480,12 +487,19 @@ and dogfoods both.
   `lefthook.yml` enforced; a dropped check ⇒ refuse (exit 1), leave
   vendored, report -- never silently weaken a repo's gate. Equivalence
   compares provided-universe membership, not per-file activation (a check
-  activates on file presence identically in both states). The migrator
+  activates on file presence identically in both states). When the
+  vendored flake carries custom content (extra inputs, overlay-as-output
+  attributes, nixosConfigurations / homeConfigurations / etc.),
+  reconciliation (#127) extracts the custom pieces and injects them into
+  the seed template instead of blocking; only truly un-reconcilable
+  patterns (overlays applied to pkgs, non-extractable output blocks) ⇒
+  MIGRATE-FAIL with actionable detail. The migrator
   writes the committed minimum (thin flake, guardrails CI caller,
   gitignored materialized artifacts); the FULL confirmator (#94) +
   `nix flake check` gate the mechanical PR in CI once `flake.lock`
   exists. Tested on vendored / partial / bare / already-referenced
-  fixtures + a dropped-check rejection.
+  fixtures + a dropped-check rejection + custom-flake reconciliation +
+  un-reconcilable refusal.
 
 ## §T Tasks
 
