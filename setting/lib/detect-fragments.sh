@@ -20,25 +20,25 @@ fi
 
 result="base"
 
-if printf '%s\n' "$tracked" | grep -qE '\.nix$'; then
+if grep -qE '\.nix$' <<<"$tracked"; then
   result="$result nix"
 fi
 
-if printf '%s\n' "$tracked" | grep -qE '\.(sh|bash)$'; then
+if grep -qE '\.(sh|bash)$' <<<"$tracked"; then
   result="$result shell"
 fi
 
 result="$result ascii"
 
-if printf '%s\n' "$tracked" | grep -qE '\.md$'; then
+if grep -qE '\.md$' <<<"$tracked"; then
   result="$result markdown"
 fi
 
-if printf '%s\n' "$tracked" | grep -qE '\.(yml|yaml)$'; then
+if grep -qE '\.(yml|yaml)$' <<<"$tracked"; then
   result="$result yaml"
 fi
 
-if printf '%s\n' "$tracked" | grep -qE '^set/.*\.md$'; then
+if grep -qE '^set/.*\.md$' <<<"$tracked"; then
   result="$result set"
 fi
 

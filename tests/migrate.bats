@@ -28,11 +28,30 @@ setup() {
     SEED_SRC="$(mktemp -d)"
     mkdir -p "$SEED_SRC/.github/workflows"
     # a referenced (thin) flake: names set-and-setting + the materialization
-    # helpers (checksFor / materializationFor) that mark it as referenced
+    # helpers (checksFor / materializationFor) that mark it as referenced.
+    # Structure mirrors leaf-flake.txt with injection points for reconciliation:
+    # set-and-setting.url (custom inputs), set-and-setting, (output args),
+    # closing    }; (custom outputs).
     printf '%s\n' \
         "{" \
-        "  inputs.set-and-setting.url = \"github:pr0d1r2/set-and-setting\";" \
-        "  # uses checksFor + materializationFor" \
+        "  inputs = {" \
+        "    nixpkgs-lock.url = \"github:pr0d1r2/nixpkgs-lock\";" \
+        "    nixpkgs.follows = \"nixpkgs-lock/nixpkgs\";" \
+        "" \
+        "    set-and-setting.url = \"github:pr0d1r2/set-and-setting\";" \
+        "  };" \
+        "" \
+        "  outputs =" \
+        "    {" \
+        "      self," \
+        "      nixpkgs," \
+        "      set-and-setting," \
+        "      ..." \
+        "    }:" \
+        "    {" \
+        "      checks = checksFor { };" \
+        "      devShells = materializationFor { };" \
+        "    };" \
         "}" \
         >"$SEED_SRC/flake.nix"
     printf '%s\n' ".direnv/" "result" ".markdownlint.yml" ".yamllint.yml" "lefthook.yml" >"$SEED_SRC/.gitignore"
@@ -208,24 +227,35 @@ write_vendored_lefthook_with_remotes() {
     [[ "$output" == *"state=partial-no-materialization"* ]]
 }
 
-# ======== custom flake detection (#115) ========
+# ======== custom flake reconciliation (#127) ========
 
-@test "custom flake with extra inputs emits MIGRATE-FAIL" {
+@test "custom flake with extra inputs is reconciled (#127)" {
     printf '%s\n' \
         "{" \
+        "  inputs.nixpkgs-lock.url = \"github:pr0d1r2/nixpkgs-lock\";" \
+        "  inputs.nixpkgs.follows = \"nixpkgs-lock/nixpkgs\";" \
         "  inputs.my-overlay.url = \"github:example/overlay\";" \
+        "  inputs.my-overlay.inputs.nixpkgs.follows = \"nixpkgs\";" \
+        "  outputs = { self, nixpkgs, my-overlay, ... }: { };" \
         "}" \
         >flake.nix
     write_vendored_lefthook
     _init_repo
     run bash "$MIGRATE_SCRIPT"
-    [ "$status" -ne 0 ]
-    [[ "$output" == *"MIGRATE-FAIL: stage=detect reason=custom-flake"* ]]
-    [[ "$output" == *"extra inputs: my-overlay"* ]]
-    [[ "$output" == *"retry: idempotent"* ]]
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"reconcil"* ]]
+    [[ "$output" == *"PASS: equivalence"* ]]
+    # custom input preserved in reconciled flake
+    grep -q 'my-overlay.url' flake.nix
+    grep -q 'my-overlay.inputs.nixpkgs.follows' flake.nix
+    # custom input in outputs args
+    grep -q 'my-overlay,' flake.nix
+    # standard infrastructure present
+    grep -q 'set-and-setting' flake.nix
+    grep -q 'checksFor' flake.nix
 }
 
-@test "custom flake with overlays emits MIGRATE-FAIL" {
+@test "custom flake with overlays as outputs is reconciled (#127)" {
     printf '%s\n' \
         "{" \
         "  outputs = { self }: {" \
@@ -236,13 +266,17 @@ write_vendored_lefthook_with_remotes() {
     write_vendored_lefthook
     _init_repo
     run bash "$MIGRATE_SCRIPT"
-    [ "$status" -ne 0 ]
-    [[ "$output" == *"MIGRATE-FAIL: stage=detect reason=custom-flake"* ]]
-    [[ "$output" == *"overlays detected"* ]]
-    [[ "$output" == *"retry: idempotent"* ]]
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"reconcil"* ]]
+    [[ "$output" == *"PASS: equivalence"* ]]
+    # overlay preserved in reconciled flake
+    grep -q 'overlays.default' flake.nix
+    # standard infrastructure present
+    grep -q 'set-and-setting' flake.nix
+    grep -q 'checksFor' flake.nix
 }
 
-@test "custom flake with extra outputs emits MIGRATE-FAIL" {
+@test "custom flake with extra outputs is reconciled (#127)" {
     printf '%s\n' \
         "{" \
         "  outputs = { self }: {" \
@@ -253,10 +287,99 @@ write_vendored_lefthook_with_remotes() {
     write_vendored_lefthook
     _init_repo
     run bash "$MIGRATE_SCRIPT"
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"reconcil"* ]]
+    [[ "$output" == *"PASS: equivalence"* ]]
+    # custom output preserved
+    grep -q 'nixosConfigurations.test' flake.nix
+    # standard infrastructure present
+    grep -q 'set-and-setting' flake.nix
+    grep -q 'checksFor' flake.nix
+}
+
+@test "custom flake with inputs + outputs is fully reconciled (#127)" {
+    printf '%s\n' \
+        "{" \
+        "  inputs.nixpkgs-lock.url = \"github:pr0d1r2/nixpkgs-lock\";" \
+        "  inputs.nixpkgs.follows = \"nixpkgs-lock/nixpkgs\";" \
+        "  inputs.home-manager.url = \"github:nix-community/home-manager\";" \
+        "  outputs = { self, nixpkgs, home-manager, ... }: {" \
+        "    homeConfigurations.user = home-manager.lib.homeManagerConfiguration {" \
+        "      modules = [ ./home.nix ];" \
+        "    };" \
+        "  };" \
+        "}" \
+        >flake.nix
+    write_vendored_lefthook
+    _init_repo
+    run bash "$MIGRATE_SCRIPT"
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"reconcil"* ]]
+    [[ "$output" == *"PASS: equivalence"* ]]
+    # both custom input and output preserved
+    grep -q 'home-manager.url' flake.nix
+    grep -q 'home-manager,' flake.nix
+    grep -q 'homeConfigurations.user' flake.nix
+    # standard infrastructure present
+    grep -q 'set-and-setting' flake.nix
+    grep -q 'checksFor' flake.nix
+    grep -q 'materializationFor' flake.nix
+}
+
+@test "un-reconcilable: overlays applied to pkgs emits MIGRATE-FAIL (#127)" {
+    printf '%s\n' \
+        "{" \
+        "  inputs.my-overlay.url = \"github:example/overlay\";" \
+        "  outputs = { self, nixpkgs, my-overlay, ... }:" \
+        "  let" \
+        "    pkgs = import nixpkgs {" \
+        "      system = \"x86_64-linux\";" \
+        "      overlays = [ my-overlay.overlays.default ];" \
+        "    };" \
+        "  in { packages.x86_64-linux.default = pkgs.hello; };" \
+        "}" \
+        >flake.nix
+    write_vendored_lefthook
+    _init_repo
+    run bash "$MIGRATE_SCRIPT"
     [ "$status" -ne 0 ]
-    [[ "$output" == *"MIGRATE-FAIL: stage=detect reason=custom-flake"* ]]
-    [[ "$output" == *"extra outputs detected"* ]]
+    [[ "$output" == *"MIGRATE-FAIL: stage=detect reason=unreconcilable-flake"* ]]
+    [[ "$output" == *"overlays applied"* ]]
     [[ "$output" == *"retry: idempotent"* ]]
+}
+
+@test "un-reconcilable: custom outputs not extractable emits MIGRATE-FAIL (#127)" {
+    # nixosConfigurations in a string value triggers has_extra_outputs but the
+    # brace-counted extractor cannot find a top-level attribute block
+    printf '%s\n' \
+        "{" \
+        "  outputs = { self }: {" \
+        "    packages.desc = \"generates nixosConfigurations\";" \
+        "  };" \
+        "}" \
+        >flake.nix
+    write_vendored_lefthook
+    _init_repo
+    run bash "$MIGRATE_SCRIPT"
+    [ "$status" -ne 0 ]
+    [[ "$output" == *"MIGRATE-FAIL: stage=detect reason=unreconcilable-flake"* ]]
+    [[ "$output" == *"not extractable"* ]]
+    [[ "$output" == *"retry: idempotent"* ]]
+}
+
+@test "dry-run with custom flake shows reconciliation plan (#127)" {
+    printf '%s\n' \
+        "{" \
+        "  inputs.my-overlay.url = \"github:example/overlay\";" \
+        "  outputs = { self }: { };" \
+        "}" \
+        >flake.nix
+    write_vendored_lefthook
+    _init_repo
+    MIGRATE_DRY_RUN=1 run bash "$MIGRATE_SCRIPT"
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"dry-run plan"* ]]
+    [[ "$output" == *"reconcile: flake.nix"* ]]
 }
 
 # ======== extra workflow handling (#115) ========

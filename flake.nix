@@ -2856,6 +2856,84 @@
               touch $out
             '';
 
+        # --- apps.migrate: custom flake reconciliation (#127) ---
+        migrate-custom-inputs =
+          let
+            vendoredLefthook = pkgs.writeText "vendored-lefthook.yml" ''
+              ---
+              pre-commit:
+                commands:
+                  nixfmt:
+                    run: nixfmt --check {staged_files}
+                  shellcheck:
+                    run: shellcheck {staged_files}
+            '';
+            customFlake = pkgs.writeText "custom-flake.nix" ''
+              {
+                inputs.nixpkgs-lock.url = "github:pr0d1r2/nixpkgs-lock";
+                inputs.nixpkgs.follows = "nixpkgs-lock/nixpkgs";
+                inputs.my-overlay.url = "github:example/overlay";
+                inputs.my-overlay.inputs.nixpkgs.follows = "nixpkgs";
+                outputs = { self, nixpkgs, my-overlay, ... }: { };
+              }
+            '';
+          in
+          pkgs.runCommand "migrate-custom-inputs" (migrateFixtureEnv pkgs) ''
+            mkdir -p workdir && cd workdir
+            cp ${customFlake} flake.nix
+            cp ${vendoredLefthook} lefthook.yml
+            git init -q
+            git add .
+            git commit -q -m "initial" --allow-empty
+            result="$(bash "$MIGRATE_SCRIPT")"
+            echo "$result"
+            echo "$result" | grep -q 'reconcil' || { echo "FAIL: not reconciled"; exit 1; }
+            echo "$result" | grep -q 'PASS: equivalence' || { echo "FAIL: no equivalence"; exit 1; }
+            grep -q 'my-overlay.url' flake.nix || { echo "FAIL: custom input lost"; exit 1; }
+            grep -q 'my-overlay,' flake.nix || { echo "FAIL: custom input not in args"; exit 1; }
+            grep -q 'set-and-setting' flake.nix || { echo "FAIL: no set-and-setting"; exit 1; }
+            grep -q 'checksFor' flake.nix || { echo "FAIL: no checksFor"; exit 1; }
+            echo "PASS: migrate custom-inputs -> reconciled"
+            touch $out
+          '';
+
+        migrate-unreconcilable =
+          let
+            vendoredLefthook = pkgs.writeText "vendored-lefthook.yml" ''
+              ---
+              pre-commit:
+                commands:
+                  nixfmt:
+                    run: nixfmt --check {staged_files}
+            '';
+            unreconcilableFlake = pkgs.writeText "unreconcilable-flake.nix" ''
+              {
+                inputs.my-overlay.url = "github:example/overlay";
+                outputs = { self, nixpkgs, my-overlay, ... }:
+                let
+                  pkgs = import nixpkgs {
+                    system = "x86_64-linux";
+                    overlays = [ my-overlay.overlays.default ];
+                  };
+                in { packages.x86_64-linux.default = pkgs.hello; };
+              }
+            '';
+          in
+          pkgs.runCommand "migrate-unreconcilable" (migrateFixtureEnv pkgs) ''
+            mkdir -p workdir && cd workdir
+            cp ${unreconcilableFlake} flake.nix
+            cp ${vendoredLefthook} lefthook.yml
+            git init -q
+            git add .
+            git commit -q -m "initial" --allow-empty
+            if bash "$MIGRATE_SCRIPT"; then
+              echo "FAIL: migrate should refuse an un-reconcilable flake"
+              exit 1
+            fi
+            echo "PASS: migrate refuses un-reconcilable flake"
+            touch $out
+          '';
+
         default = pkgs.runCommand "set-and-setting-checks" { } ''
           touch $out
         '';

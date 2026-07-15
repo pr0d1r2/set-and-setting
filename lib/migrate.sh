@@ -143,7 +143,7 @@ lefthook_present=0
 [ -f lefthook.yml ] && lefthook_present=1
 
 lefthook_tracked=0
-printf '%s\n' "$tracked" | grep -qx 'lefthook.yml' && lefthook_tracked=1
+grep -qx 'lefthook.yml' <<<"$tracked" && lefthook_tracked=1
 
 references_sns=0
 if [ "$flake_present" -eq 1 ] && grep -q 'set-and-setting' flake.nix; then
@@ -187,7 +187,7 @@ if [ "$flake_present" -eq 1 ] && [ "$references_sns" -eq 0 ]; then
   extra_inputs="${extra_inputs# }"
 
   has_overlays=0
-  grep -qE 'overlays|overlay' flake.nix 2>/dev/null && has_overlays=1
+  grep -qE '(^|[[:space:]])overlays?[[:space:]]*[.=\[]' flake.nix 2>/dev/null && has_overlays=1
 
   has_extra_outputs=0
   grep -qE 'nixosConfigurations|homeConfigurations|nixosModules|darwinConfigurations|templates|lib\.' flake.nix 2>/dev/null && has_extra_outputs=1
@@ -199,6 +199,69 @@ if [ "$flake_present" -eq 1 ] && [ "$references_sns" -eq 0 ]; then
     [ "$has_overlays" -eq 1 ] && details="${details:+$details; }overlays detected"
     [ "$has_extra_outputs" -eq 1 ] && details="${details:+$details; }extra outputs detected"
     custom_flake_details="$details"
+  fi
+fi
+
+# --- reconciliation attempt (#127) ---
+# When a custom flake is detected, try to reconcile: extract custom inputs
+# and output blocks from the vendored flake, inject them into the seed
+# template. Only fall back to MIGRATE-FAIL when reconciliation is impossible.
+reconcile_flake=0
+reconciled_inputs=""
+reconciled_input_names=""
+reconciled_outputs=""
+unreconcilable=""
+
+if [ "$has_custom_flake" -eq 1 ]; then
+  # un-reconcilable: overlays applied to pkgs (not just defined as outputs)
+  if [ "$has_overlays" -eq 1 ] && grep -qE 'overlays\s*=\s*\[' flake.nix; then
+    unreconcilable="overlays applied to pkgs (not just defined as output attributes)"
+  fi
+
+  # extract custom input declarations
+  if [ -z "$unreconcilable" ] && [ -n "$extra_inputs" ]; then
+    reconciled_input_names="$extra_inputs"
+    for inp in $extra_inputs; do
+      inp_lines="$(grep -E "(^[[:space:]]*|^[[:space:]]*inputs\.)${inp}\." flake.nix | sed 's/^[[:space:]]*inputs\.//' || true)"
+      if [ -z "$inp_lines" ]; then
+        unreconcilable="${unreconcilable:+$unreconcilable; }input $inp: declaration not extractable"
+      else
+        reconciled_inputs="${reconciled_inputs:+${reconciled_inputs}
+}${inp_lines}"
+      fi
+    done
+  fi
+
+  # extract custom output blocks (brace-counted)
+  if [ -z "$unreconcilable" ] && { [ "$has_extra_outputs" -eq 1 ] || [ "$has_overlays" -eq 1 ]; }; then
+    reconciled_outputs="$(awk '
+      BEGIN { cap=0; depth=0; buf=""; result="" }
+      /^[[:space:]]*(nixosConfigurations|homeConfigurations|nixosModules|darwinConfigurations|templates|overlays)[[:space:]]*[.=]/ {
+        if (!cap) { cap=1; depth=0; buf="" }
+      }
+      cap {
+        buf = buf $0 "\n"
+        for (i=1; i<=length($0); i++) {
+          c = substr($0, i, 1)
+          if (c == "{" || c == "[" || c == "(") depth++
+          if (c == "}" || c == "]" || c == ")") depth--
+        }
+        if (depth <= 0 && /;[[:space:]]*$/) {
+          result = result buf
+          cap=0; depth=0; buf=""
+        }
+        next
+      }
+      END { printf "%s", result }
+    ' flake.nix)"
+    if [ -z "$reconciled_outputs" ]; then
+      unreconcilable="${unreconcilable:+$unreconcilable; }custom output blocks not extractable"
+    fi
+  fi
+
+  if [ -z "$unreconcilable" ]; then
+    reconcile_flake=1
+    echo "migrate: custom flake detected, reconciling ($custom_flake_details)"
   fi
 fi
 
@@ -248,17 +311,17 @@ if [ "$state" = "referenced" ]; then
   exit 0
 fi
 
-# custom flake => refuse (never silently drop custom content)
-if [ "$has_custom_flake" -eq 1 ]; then
+# custom flake, un-reconcilable => refuse with specific detail (#127)
+if [ "$has_custom_flake" -eq 1 ] && [ "$reconcile_flake" -eq 0 ]; then
   _migrate_fail_emitted=1
   echo ""
-  echo "MIGRATE-FAIL: stage=$_migrate_stage reason=custom-flake"
-  echo "  detail: flake.nix contains custom content a blind strip would lose"
-  echo "  $custom_flake_details"
+  echo "MIGRATE-FAIL: stage=$_migrate_stage reason=unreconcilable-flake"
+  echo "  detail: custom flake content cannot be automatically reconciled"
+  echo "  $unreconcilable"
   echo "  resolution:"
-  echo "  - reconcile custom content with the referenced thin flake manually"
-  echo "  - the seed flake is at: $SEED_SRC/flake.nix"
-  echo "  - after reconciliation, re-run migrate"
+  echo "    - manually reconcile custom content with the referenced thin flake"
+  echo "    - the seed flake is at: $SEED_SRC/flake.nix"
+  echo "    - after reconciliation, re-run migrate"
   echo "  retry: idempotent"
   exit 1
 fi
@@ -280,6 +343,7 @@ strip_lefthook="$lefthook_present"
 if [ "${MIGRATE_DRY_RUN:-}" = "1" ]; then
   echo "migrate: dry-run plan for state=$state"
   [ "$strip_flake" -eq 1 ] && echo "  strip: flake.nix (vendored -> derived)"
+  [ "$reconcile_flake" -eq 1 ] && echo "  reconcile: flake.nix (custom content preserved in seed)"
   [ "$strip_ci" -eq 1 ] && echo "  strip: .github/workflows/ci.yml (vendored -> guardrails caller)"
   [ "$strip_lefthook" -eq 1 ] && echo "  strip: lefthook.yml (vendored -> materialized+gitignored)"
   [ -n "$extra_workflows" ] && echo "  preserve: extra workflows ($extra_workflows)"
@@ -330,6 +394,65 @@ if [ "$strip_lefthook" -eq 1 ]; then
 fi
 
 _migrate_stage="plant"
+# --- reconcile flake.nix (#127): inject custom content into seed template ---
+if [ "$reconcile_flake" -eq 1 ]; then
+  awk -v custom_inputs="$reconciled_inputs" \
+    -v custom_names="$reconciled_input_names" \
+    -v custom_outputs="$reconciled_outputs" '
+    { lines[NR] = $0 }
+    END {
+      last_close = 0
+      for (i = NR; i >= 1; i--) {
+        if (lines[i] ~ /^    };/) { last_close = i; break }
+      }
+      n_names = split(custom_names, input_names, " ")
+      for (i = 1; i <= NR; i++) {
+        skip = 0
+        if (lines[i] ~ /set-and-setting\.url/) {
+          print lines[i]
+          if (custom_inputs != "") {
+            print ""
+            n_inp = split(custom_inputs, inp_lines, "\n")
+            for (j = 1; j <= n_inp; j++) {
+              if (inp_lines[j] != "") {
+                line = inp_lines[j]
+                gsub(/^[[:space:]]+/, "", line)
+                print "    " line
+              }
+            }
+          }
+          skip = 1
+        }
+        if (!skip && lines[i] ~ /^      set-and-setting,$/) {
+          print lines[i]
+          for (j = 1; j <= n_names; j++) {
+            print "      " input_names[j] ","
+          }
+          skip = 1
+        }
+        if (!skip && i == last_close && custom_outputs != "") {
+          print ""
+          n_out = split(custom_outputs, out_lines, "\n")
+          min_indent = 9999
+          for (j = 1; j <= n_out; j++) {
+            if (out_lines[j] == "") continue
+            match(out_lines[j], /^[[:space:]]*/)
+            if (RLENGTH < min_indent) min_indent = RLENGTH
+          }
+          if (min_indent == 9999) min_indent = 0
+          for (j = 1; j <= n_out; j++) {
+            if (out_lines[j] == "") continue
+            stripped = substr(out_lines[j], min_indent + 1)
+            print "      " stripped
+          }
+        }
+        if (!skip) print lines[i]
+      }
+    }
+  ' "$SEED_SRC/flake.nix" >flake.nix
+  echo "reconciled: flake.nix (custom content preserved)"
+fi
+
 # --- plant the seed (#95): skip-if-exists ---
 find -L "$SEED_SRC" -type f | sort | while read -r f; do
   rel="${f#"$SEED_SRC/"}"
