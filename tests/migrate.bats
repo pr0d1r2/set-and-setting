@@ -485,6 +485,7 @@ write_vendored_lefthook_with_remotes() {
     [[ "$output" == *"fragments:"* ]]
     # fragments in planted flake.nix match detected content
     grep -q '"base"' flake.nix
+    grep -q '"nix"' flake.nix
     grep -q '"markdown"' flake.nix
     grep -q '"yaml"' flake.nix
     grep -q '"shell"' flake.nix
