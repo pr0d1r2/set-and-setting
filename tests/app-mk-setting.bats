@@ -11,7 +11,9 @@ setup() {
     SCRIPT="$BATS_TEST_DIRNAME/../setting/lib/app-mk-setting.sh"
     ASSEMBLE_SCRIPT="$BATS_TEST_DIRNAME/../setting/lib/assemble-lefthook.sh"
     DETECT_SCRIPT="$BATS_TEST_DIRNAME/../setting/lib/detect-fragments.sh"
+    COVERAGE_SCRIPT="$BATS_TEST_DIRNAME/../lib/check-coverage.sh"
     FRAGMENTS_DIR="$BATS_TEST_DIRNAME/../setting/integrations/lefthook"
+    CHECKS_UNIVERSE="gitleaks git-conflict-markers git-no-local-paths execute-permissions file-size-check trailing-whitespace missing-final-newline editorconfig-checker typos nixfmt statix deadnix nix-no-embedded-shell shellcheck shfmt no-shell-functions ascii-only"
 
     echo "markdownlint config" >"$SETTING_SRC/.markdownlint.yml"
     echo "yamllint config" >"$SETTING_SRC/.yamllint.yml"
@@ -21,7 +23,8 @@ setup() {
     git config user.email "test@test.com"
     git config user.name "Test"
 
-    export SETTING_SRC ASSEMBLE_SCRIPT DETECT_SCRIPT FRAGMENTS_DIR
+    export SETTING_SRC ASSEMBLE_SCRIPT DETECT_SCRIPT COVERAGE_SCRIPT
+    export FRAGMENTS_DIR CHECKS_UNIVERSE
 }
 
 teardown() {
@@ -125,4 +128,60 @@ teardown() {
     [ "$status" -eq 0 ]
     [[ "$output" == *"lefthook:"* ]]
     [[ "$output" == *"nix"* ]]
+}
+
+@test "vendored remotes without checksFor are refused and left intact" {
+    printf '%s\n' \
+        "---" \
+        "remotes:" \
+        "  - git_url: https://github.com/pr0d1r2/nix-lefthook-git-no-local-paths" \
+        "    ref: main" \
+        >lefthook.yml
+    before="$(cat lefthook.yml)"
+
+    run bash "$SCRIPT"
+
+    [ "$status" -ne 0 ]
+    [[ "$output" == *"model: vendored"* ]]
+    [[ "$output" == *"migrate first"* ]]
+    [ "$(cat lefthook.yml)" = "$before" ]
+    [ ! -f .markdownlint.yml ]
+}
+
+@test "referenced model preserves vendored identities through checksFor" {
+    printf '%s\n' \
+        "---" \
+        "remotes:" \
+        "  - git_url: https://github.com/pr0d1r2/nix-lefthook-git-no-local-paths.git" \
+        "  - git_url: https://github.com/pr0d1r2/nix-lefthook-nixfmt" \
+        "  - git_url: https://github.com/pr0d1r2/nix-lefthook-shellcheck" \
+        "  - git_url: https://github.com/pr0d1r2/nix-lefthook-statix" \
+        "  - git_url: https://github.com/pr0d1r2/nix-lefthook-deadnix" \
+        >lefthook.yml
+    echo '{ checks = checksFor { }; }' >flake.nix
+    git add flake.nix
+
+    run bash "$SCRIPT"
+
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"PASS: coverage"* ]]
+    run ! grep -q '^remotes:' lefthook.yml
+}
+
+@test "coverage backstop reports dropped custom local commands" {
+    printf '%s\n' \
+        "---" \
+        "pre-commit:" \
+        "  commands:" \
+        "    repo-own-linter:" \
+        "      run: repo-own-linter {staged_files}" \
+        >lefthook.yml
+    before="$(cat lefthook.yml)"
+
+    run bash "$SCRIPT"
+
+    [ "$status" -ne 0 ]
+    [[ "$output" == *"COVERAGE-FAIL"* ]]
+    [[ "$output" == *"dropped: repo-own-linter"* ]]
+    [ "$(cat lefthook.yml)" = "$before" ]
 }

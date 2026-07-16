@@ -3026,6 +3026,8 @@
               export FRAGMENTS_DIR="${./setting/integrations/lefthook}"
               export ASSEMBLE_SCRIPT="${./setting/lib/assemble-lefthook.sh}"
               export DETECT_SCRIPT="${./setting/lib/detect-fragments.sh}"
+              export COVERAGE_SCRIPT="${./lib/check-coverage.sh}"
+              export CHECKS_UNIVERSE="${lib.concatStringsSep " " checksUniverse}"
             ''
             + builtins.readFile ./setting/lib/app-mk-setting.sh;
           };
