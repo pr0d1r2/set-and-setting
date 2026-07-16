@@ -6,7 +6,7 @@
 # shellcheck disable=SC2154,SC2086
 set -euo pipefail
 
-has_active_checks_for() {
+if [ "${1:-}" = "--has-active-checks-for" ]; then
   awk '
     {
       line = $0
@@ -28,11 +28,7 @@ has_active_checks_for() {
       code = code " "
     }
     END { exit(code ~ /checksFor[[:space:]]*\{/ ? 0 : 1) }
-  ' "$1"
-}
-
-if [ "${1:-}" = "--has-active-checks-for" ]; then
-  has_active_checks_for "$2"
+  ' "$2"
   exit
 fi
 
@@ -74,7 +70,7 @@ awk '
       if (url != "") print url
     }
   ' "$AFTER_LEFTHOOK"
-  if [ -f "$FLAKE_FILE" ] && has_active_checks_for "$FLAKE_FILE"; then
+  if [ -f "$FLAKE_FILE" ] && bash "$0" --has-active-checks-for "$FLAKE_FILE"; then
     printf '%s\n' ${CHECKS_UNIVERSE:-}
   fi
 } | sed '/^$/d' | sort -u >"$after_checks"
