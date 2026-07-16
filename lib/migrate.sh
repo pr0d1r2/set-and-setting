@@ -14,8 +14,8 @@
 #                  so they become derived (materialized + gitignored).
 #                  Custom flake.nix content => MIGRATE-FAIL, not silent drop.
 #                  Extra workflows beyond vendored ci.yml => preserved.
-#   4. plant       the seed (#95): thin flake.nix, .gitignore, CI caller,
-#                  auto-update workflow (skip-if-exists)
+#   4. plant       the seed (#95): thin flake.nix, .gitignore, and CI caller
+#                  (skip-if-exists)
 #   5. confirm-equivalence: assert the new materialized check-set covers
 #                  every check the old vendored lefthook enforced (the safety
 #                  net), then dry-run the confirmator (#94) on the new state.
@@ -271,7 +271,7 @@ if [ -d .github/workflows ]; then
   while IFS= read -r wf; do
     wfname="$(basename "$wf")"
     case "$wfname" in
-      ci.yml | auto-update.yml) ;;
+      ci.yml) ;;
       *) extra_workflows="$extra_workflows $wfname" ;;
     esac
   done < <(find .github/workflows -maxdepth 1 -name '*.yml' -o -name '*.yaml' | sort)
@@ -347,7 +347,7 @@ if [ "${MIGRATE_DRY_RUN:-}" = "1" ]; then
   [ "$strip_ci" -eq 1 ] && echo "  strip: .github/workflows/ci.yml (vendored -> guardrails caller)"
   [ "$strip_lefthook" -eq 1 ] && echo "  strip: lefthook.yml (vendored -> materialized+gitignored)"
   [ -n "$extra_workflows" ] && echo "  preserve: extra workflows ($extra_workflows)"
-  echo "  plant: seed (thin flake.nix, .gitignore, ci.yml, auto-update.yml) skip-if-exists"
+  echo "  plant: seed (thin flake.nix, .gitignore, ci.yml) skip-if-exists"
   echo "  confirm-equivalence: new check-set must cover the vendored one"
   exit 0
 fi

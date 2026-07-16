@@ -18,7 +18,6 @@ let
       assembledLefthook
       (pkgs.writeTextDir "flake.nix" (readFile ../scaffold/component-flake.txt))
       (pkgs.writeTextDir ".github/workflows/ci.yml" (readFile ../scaffold/ci.yml))
-      (pkgs.writeTextDir ".github/workflows/auto-update.yml" (readFile ../scaffold/auto-update.yml))
     ];
   };
 in

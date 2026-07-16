@@ -29,7 +29,7 @@ if [ "${1:-}" = "--help" ]; then
   echo "Custom flake.nix content (extra inputs, outputs, overlays) is"
   echo "reconciled into the seed flake automatically. Un-reconcilable"
   echo "content (e.g. overlays applied to pkgs) emits a clean MIGRATE-FAIL."
-  echo "Extra workflows beyond ci.yml/auto-update.yml are preserved."
+  echo "Extra workflows beyond ci.yml are preserved."
   echo ""
   echo "Already-referenced repos are a no-op. Run per repo; a caller opens"
   echo "ONE mechanical PR/repo. CI then runs the full confirmator +"

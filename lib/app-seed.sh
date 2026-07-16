@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # shellcheck disable=SC2154
 # app-seed.sh -- emit the committed minimum for a leaf consumer repo (#95).
-# Seeds: thin flake.nix, .gitignore, CI caller workflow, auto-update workflow.
+# Seeds: thin flake.nix, .gitignore, and CI caller workflow.
 # Skips files that already exist (repo-owned after seeding).
 # Env in: SEED_SRC (path to leaf-seed derivation)
 set -euo pipefail
@@ -10,8 +10,7 @@ if [ "${1:-}" = "--help" ]; then
   echo "Usage: seed [--help] [--list] [--dry-run]"
   echo ""
   echo "Emit the committed minimum for a leaf consumer repo."
-  echo "Seeds: flake.nix, .gitignore, .github/workflows/ci.yml,"
-  echo "       .github/workflows/auto-update.yml"
+  echo "Seeds: flake.nix, .gitignore, .github/workflows/ci.yml"
   echo ""
   echo "Skips files that already exist. After seeding, run:"
   echo "  nix flake update"

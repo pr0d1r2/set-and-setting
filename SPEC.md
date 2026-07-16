@@ -174,7 +174,7 @@ and dogfoods both.
   with `packages.set`. Seed/init scaffold is separate
   (`bin/sync-setting-init`), not in this package.
 - I.sync-target: `sync-set`/`sync-setting` take a target dir arg; default preserves prior behavior.
-- I.apps: `apps.<sys>.{mkSet,mkSetting,mkSetting-init,bootstrap,auto-update,graduate,branch-protection}`
+- I.apps: `apps.<sys>.{mkSet,mkSetting,mkSetting-init,bootstrap,graduate,branch-protection}`
   -- runnable installers for the zero-dependency delivery path (C9).
   `nix run github:pr0d1r2/set-and-setting#mkSet [cats|--all|--all-except
   a b]` materializes skills into `./.claude/rules/set/` at the CWD.
@@ -183,13 +183,10 @@ and dogfoods both.
   seam are pure runtime flags. `mkSetting` materializes unified config;
   `mkSetting-init` seeds repo-specific starters (skip-if-exists);
   `bootstrap` = mkSet core + mkSetting + mkSetting-init in one. Each
-  supports `--list`/`--help`/`--dry-run`. `auto-update` updates
-  flake input, syncs, commits (T8/C7). `confirm` (#94) runs the
+  supports `--list`/`--help`/`--dry-run`. `confirm` (#94) runs the
   post-materialization acceptance suite; `seed` (#95) emits the leaf
   committed-minimum; `migrate` (#96) runs the vendored->referenced
   transform (I.migrate).
-- I.auto-update: `lib/auto-update.sh` + reusable workflow +
-  scaffold. Updates flake lock, validates, syncs, opens PR.
 - I.migrate: `lib/migrate.sh` (core) + `lib/app-migrate.sh` (CLI) +
   `apps.migrate` -- the mechanical, deterministic, idempotent, non-LLM
   vendored->referenced transform (#96). Runs per repo against the CWD
@@ -520,7 +517,7 @@ and dogfoods both.
 | T5  | x | expose mkDriftCheck for setting/ (not just set/)     | I.mkDriftCheck |
 | T6  | x | add tests for mkSet exclude param                    | V8        |
 | T7  | x | switch consumer repos from git+file: to github: URLs | C6        |
-| T8  | x | auto-update mechanism -- flake re-eval triggers sync-set + sync-setting + commit in consumer repos | C7,I.sync-set,I.sync-setting |
+| T8  | ~ | per-repo auto-update mechanism -- superseded by the hallucinogen tend loop | C7,I.sync-set,I.sync-setting |
 | T9  | x | consumer dependency graph: upstream repos switch git+file: to github: URLs after push | C6,I.mkDepGraphCheck |
 | T10 | x | add `set/drafts/` tree with atomic skill files and bundles | V11,V12,V13 |
 | T11 | x | wire drafts categories into mkSet and flake.nix | I.flake,I.drafts |
@@ -617,4 +614,6 @@ and dogfoods both.
 | B29 | 2026-07-15 | `guardrails / check` CI still red after B28: `checks.migrate-rejects-dropped-check` failed. The nix check's vendored lefthook fixture included `super-special-check` (a repo-local check), expecting migration to reject it. But #126 carry-through now correctly rescues repo-local checks into `lefthook-repo.yml`, so migration succeeded and the test (which expected failure) failed. The test was written pre-#126 and never updated for the carry-through feature. | fixed: redesigned the fixture to use `markdownlint` (a standard-fragment check) with a reduced universe excluding the `markdown` fragment. Carry-through classifies `markdownlint` as standard (not repo-local), so it stays dropped and triggers the rejection the test expects. `nix flake check` green. |
 | B30 | 2026-07-15 | `guardrails / check` CI still red after B29: `checks.file-size-check` red because `SPEC.md` grew to 73776 bytes, exceeding the 73728-byte `.md` file-size limit in `file_size_limits.yml`. Same class as B6/B14/B20/B28 -- SPEC.md grows with each bug entry added by prior fix rounds (B28, B29 entries pushed it 48 bytes over). The `confirm-rejects-broken` output in the log (6 passed, 3 failed) is a negative test that PASSED -- the 3 failures are the confirmator correctly rejecting a broken fixture. Only `file-size-check-check.drv` actually failed. | fixed: bumped `.md` limit from 73728 to 81920 (80 KiB) in `config/lefthook/file_size_limits.yml`. |
 | B31 | 2026-07-15 | `guardrails / check` CI failed: `checks.file-size-check` red because `lib/migrate.sh` (26062 bytes) and `tests/migrate.bats` (26940 bytes) both exceeded the 24576-byte `.sh`/`.bats` file-size limits in `file_size_limits.yml`. Same class as B6/B14/B20/B28/B30 -- files grew with B23 functionless rewrite (migrate.sh) and B22/B29 test additions (migrate.bats). All other checks passed; the cascade in the log is nix's all-or-nothing `nix flake check` behavior. | fixed: bumped `.sh` and `.bats` limits from 24576 to 32768 (32 KiB) in `config/lefthook/file_size_limits.yml`. |
+<!-- markdownlint-disable MD013 MD038 MD056 -->
 | B32 | 2026-07-15 | `guardrails / check` CI failed: `checks.confirm-self-test` red because `detect-fragments.sh` used `printf '%s\n' "$tracked" | grep -qE PATTERN` with `set -o pipefail`. On CI runners, `grep -q` exits immediately on match, closing the pipe before `printf` finishes writing, causing SIGPIPE (exit 141). With `pipefail`, the pipeline returns 141, making the `if` condition false and silently dropping the `yaml` fragment. The re-assembled `lefthook.yml` (built from detected fragments "base nix shell ascii markdown") then differed from the fixture's (built with all 6 fragments including `yaml`). Passed locally due to timing differences (small file list completes before `grep -q` closes the pipe). Same pattern in `lib/migrate.sh` was also vulnerable. | fixed: replaced all `printf '%s\n' "$tracked" \| grep -qE` pipelines with `grep -qE PATTERN <<<"$tracked"` (here-strings) in both `detect-fragments.sh` and `migrate.sh`. Here-strings feed stdin from a temporary file, not a pipe, eliminating the SIGPIPE race entirely. |
+<!-- markdownlint-enable MD013 MD038 MD056 -->

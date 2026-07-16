@@ -38,7 +38,7 @@ teardown() {
     [ "$status" -eq 0 ]
     [[ "$output" == *"Usage: mkScaffold"* ]]
     [[ "$output" == *"detected repo content"* ]]
-    [[ "$output" == *"CACHIX_AUTH_TOKEN"* ]]
+    [[ "$output" != *"auto-update"* ]]
 }
 
 @test "--list shows scaffold files including content-aware lefthook" {
@@ -47,6 +47,7 @@ teardown() {
     [[ "$output" == *"flake.nix"* ]]
     [[ "$output" == *"lefthook.yml (content-aware:"* ]]
     [[ "$output" == *".github/workflows/ci.yml"* ]]
+    [[ "$output" != *"auto-update"* ]]
 }
 
 @test "--list does not show bundled lefthook.yml separately" {
@@ -89,6 +90,7 @@ teardown() {
     [ -f "$TARGET/lefthook.yml" ]
     [ -f "$TARGET/.github/workflows/ci.yml" ]
     [ "$(cat "$TARGET/.github/workflows/ci.yml")" = "ci content" ]
+    [ ! -f "$TARGET/.github/workflows/auto-update.yml" ]
 }
 
 @test "lefthook.yml is assembled from fragments, not bundled copy" {

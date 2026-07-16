@@ -62,7 +62,6 @@ setup() {
         >"$SEED_SRC/flake.nix"
     printf '%s\n' ".direnv/" "result" ".markdownlint.yml" ".yamllint.yml" "lefthook.yml" >"$SEED_SRC/.gitignore"
     printf '%s\n' "jobs:" "  guardrails:" "    uses: pr0d1r2/set-and-setting/.github/workflows/guardrails.yml@main" >"$SEED_SRC/.github/workflows/ci.yml"
-    echo "auto-update" >"$SEED_SRC/.github/workflows/auto-update.yml"
     export SEED_SRC
 
     # FULL_LEFTHOOK: assembled from all fragments (command-name universe)

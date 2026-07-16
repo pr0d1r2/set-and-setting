@@ -186,16 +186,6 @@ preserves untracked (gitignored) files, so synced configs survive.
 
 See `setting/scaffold/ci.yml` for the complete CI template.
 
-#### Auto-update
-
-Set up daily auto-updates with the reusable workflow:
-
-```yaml
-uses: pr0d1r2/set-and-setting/.github/workflows/auto-update.yml@main
-```
-
-See `setting/scaffold/auto-update.yml` for the complete template.
-
 ### Path 3 -- home-manager (user-level)
 
 Install skills globally so every repo inherits them.

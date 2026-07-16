@@ -21,7 +21,6 @@ if [ "${1:-}" = "--help" ]; then
   echo "(assembled from detected repo content), and CI workflow."
   echo "Skips files that already exist (repo-owned after scaffolding)."
   echo ""
-  echo "Note: CACHIX_AUTH_TOKEN repo secret is needed for auto-update caching, not CI."
   exit 0
 fi
 
