@@ -6,6 +6,36 @@
 # shellcheck disable=SC2154,SC2086
 set -euo pipefail
 
+has_active_checks_for() {
+  awk '
+    {
+      line = $0
+      for (i = 1; i <= length(line); i++) {
+        c = substr(line, i, 1); pair = substr(line, i, 2)
+        if (in_block) { if (pair == "*/") { in_block = 0; i++ }; continue }
+        if (in_string) {
+          if (c == "\\") i++
+          else if (c == "\"") in_string = 0
+          continue
+        }
+        if (in_indent) { if (pair == "\047\047") { in_indent = 0; i++ }; continue }
+        if (c == "#") break
+        if (pair == "/*") { in_block = 1; i++; continue }
+        if (pair == "\047\047") { in_indent = 1; i++; continue }
+        if (c == "\"") { in_string = 1; continue }
+        code = code c
+      }
+      code = code " "
+    }
+    END { exit(code ~ /checksFor[[:space:]]*\{/ ? 0 : 1) }
+  ' "$1"
+}
+
+if [ "${1:-}" = "--has-active-checks-for" ]; then
+  has_active_checks_for "$2"
+  exit
+fi
+
 before_checks="$(mktemp)"
 after_checks="$(mktemp)"
 trap 'rm -f "$before_checks" "$after_checks"' EXIT
@@ -44,10 +74,7 @@ awk '
       if (url != "") print url
     }
   ' "$AFTER_LEFTHOOK"
-  if [ -f "$FLAKE_FILE" ] && awk '
-    { sub(/#.*/, ""); code = code " " $0 }
-    END { exit(code ~ /checksFor[[:space:]]*\{/ ? 0 : 1) }
-  ' "$FLAKE_FILE"; then
+  if [ -f "$FLAKE_FILE" ] && has_active_checks_for "$FLAKE_FILE"; then
     printf '%s\n' ${CHECKS_UNIVERSE:-}
   fi
 } | sed '/^$/d' | sort -u >"$after_checks"

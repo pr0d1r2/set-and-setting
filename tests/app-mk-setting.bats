@@ -148,13 +148,20 @@ teardown() {
     [ ! -f .markdownlint.yml ]
 }
 
-@test "checksFor mentioned only in a comment does not certify coverage" {
+@test "checksFor mentioned only in comments does not certify coverage" {
     printf '%s\n' \
         "---" \
         "remotes:" \
         "  - git_url: https://github.com/pr0d1r2/nix-lefthook-nixfmt" \
         >lefthook.yml
-    echo '# TODO: migrate to checksFor before refreshing' >flake.nix
+    printf '%s\n' \
+        '# TODO: migrate to checksFor before refreshing' \
+        '/* example migration:' \
+        '   checks = checksFor { };' \
+        '*/' \
+        'example = "checksFor { is not active here";' \
+        "example2 = ''checksFor { is not active here'';" \
+        >flake.nix
     before="$(cat lefthook.yml)"
 
     run bash "$SCRIPT"
@@ -183,6 +190,24 @@ teardown() {
     [ "$status" -eq 0 ]
     [[ "$output" == *"PASS: coverage"* ]]
     run ! grep -q '^remotes:' lefthook.yml
+}
+
+@test "coverage backstop ignores inactive checksFor examples" {
+    printf '%s\n' \
+        "pre-commit:" \
+        "  commands:" \
+        "    nixfmt:" \
+        "      run: nixfmt {staged_files}" \
+        >lefthook.yml
+    printf '%s\n' \
+        '/* checks = checksFor { }; */' \
+        'example = "checksFor { is not active here";' \
+        >flake.nix
+
+    run bash "$SCRIPT"
+
+    [ "$status" -ne 0 ]
+    [[ "$output" == *"dropped: nixfmt"* ]]
 }
 
 @test "coverage backstop reports dropped custom local commands" {

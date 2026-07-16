@@ -47,10 +47,7 @@ fi
 # be replaced by leaf materialization alone: migration must move its coverage
 # into checksFor in the same change. Refuse before copying any files.
 if [ -f lefthook.yml ] && grep -q '^remotes:' lefthook.yml &&
-  { [ ! -f flake.nix ] || ! awk '
-    { sub(/#.*/, ""); code = code " " $0 }
-    END { exit(code ~ /checksFor[[:space:]]*\{/ ? 0 : 1) }
-  ' flake.nix; }; then
+  { [ ! -f flake.nix ] || ! bash "$COVERAGE_SCRIPT" --has-active-checks-for flake.nix; }; then
   echo "COVERAGE-FAIL: vendored lefthook remotes require migration"
   echo "  model: vendored (lefthook remotes present, flake checksFor absent)"
   echo "  resolution: run nix run github:pr0d1r2/set-and-setting#migrate first"
