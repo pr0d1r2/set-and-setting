@@ -13,7 +13,6 @@ setup() {
     echo "leaf gitignore" >"$SEED_SRC/.gitignore"
     mkdir -p "$SEED_SRC/.github/workflows"
     printf '%s\n' "jobs:" "  guardrails:" "    uses: pr0d1r2/set-and-setting/.github/workflows/guardrails.yml@main" >"$SEED_SRC/.github/workflows/ci.yml"
-    echo "auto-update" >"$SEED_SRC/.github/workflows/auto-update.yml"
 
     cd "$TARGET" || exit 1
     export SEED_SRC
@@ -38,7 +37,7 @@ teardown() {
     [[ "$output" == *"flake.nix"* ]]
     [[ "$output" == *".gitignore"* ]]
     [[ "$output" == *".github/workflows/ci.yml"* ]]
-    [[ "$output" == *".github/workflows/auto-update.yml"* ]]
+    [[ "$output" != *"auto-update"* ]]
 }
 
 @test "--dry-run shows what would be seeded without writing" {
@@ -66,7 +65,7 @@ teardown() {
     [ "$(cat "$TARGET/.gitignore")" = "leaf gitignore" ]
     [ -f "$TARGET/.github/workflows/ci.yml" ]
     grep -q "guardrails" "$TARGET/.github/workflows/ci.yml"
-    [ -f "$TARGET/.github/workflows/auto-update.yml" ]
+    [ ! -f "$TARGET/.github/workflows/auto-update.yml" ]
 }
 
 @test "skips files that already exist" {
@@ -83,7 +82,7 @@ teardown() {
     [ "$status" -eq 0 ]
     [ -d "$TARGET/.github/workflows" ]
     [ -f "$TARGET/.github/workflows/ci.yml" ]
-    [ -f "$TARGET/.github/workflows/auto-update.yml" ]
+    [ ! -f "$TARGET/.github/workflows/auto-update.yml" ]
 }
 
 @test "idempotent -- re-running changes nothing" {

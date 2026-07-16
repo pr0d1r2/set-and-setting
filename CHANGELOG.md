@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+- Remove the obsolete per-repository auto-update workflow and app. Scaffold
+  and leaf-seed outputs now contain only `ci.yml` under workflows; their Nix
+  checks assert that `auto-update.yml` is absent. Fleet updates are handled by
+  the hallucinogen tend loop. (#145)
+
 - T75 (#96): `apps.migrate` -- mechanical, deterministic, idempotent,
   non-LLM, confirmator-gated vendored->referenced transform, safe at
   thousands of repos (one mechanical PR per repo). `lib/migrate.sh`

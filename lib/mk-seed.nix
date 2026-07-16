@@ -16,6 +16,5 @@ pkgs.symlinkJoin {
     (pkgs.writeTextDir "flake.nix" (readFile "${scaffoldDir}/leaf-flake.txt"))
     (pkgs.writeTextDir ".gitignore" (readFile "${scaffoldDir}/leaf-gitignore.txt"))
     (pkgs.writeTextDir ".github/workflows/ci.yml" (readFile "${scaffoldDir}/leaf-ci.yml"))
-    (pkgs.writeTextDir ".github/workflows/auto-update.yml" (readFile "${scaffoldDir}/auto-update.yml"))
   ];
 }

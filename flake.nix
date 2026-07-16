@@ -2042,15 +2042,15 @@
             scaffold = import ./setting/lib/mk-scaffold.nix { inherit pkgs; };
           in
           pkgs.runCommand "compose-scaffold-check" { } ''
-            # scaffold produces all three files
+            # scaffold produces the repo flake, lefthook config, and CI workflow
             [ -f "${scaffold}/flake.nix" ] \
               || { echo "FAIL: no flake.nix"; exit 1; }
             [ -f "${scaffold}/lefthook.yml" ] \
               || { echo "FAIL: no lefthook.yml"; exit 1; }
             [ -f "${scaffold}/.github/workflows/ci.yml" ] \
               || { echo "FAIL: no ci.yml"; exit 1; }
-            [ -f "${scaffold}/.github/workflows/auto-update.yml" ] \
-              || { echo "FAIL: no auto-update.yml"; exit 1; }
+            [ ! -f "${scaffold}/.github/workflows/auto-update.yml" ] \
+              || { echo "FAIL: obsolete auto-update.yml present"; exit 1; }
 
             # flake.nix is a valid nix expression (has description)
             grep -q 'description' "${scaffold}/flake.nix" \
@@ -2096,12 +2096,6 @@
               || { echo "FAIL: ci.yml missing action ref"; exit 1; }
             grep -q 'skip-build' "${scaffold}/.github/workflows/ci.yml" \
               || { echo "FAIL: ci.yml missing skip-build"; exit 1; }
-
-            # auto-update.yml uses the reusable workflow (T8)
-            grep -q 'auto-update.yml@main' "${scaffold}/.github/workflows/auto-update.yml" \
-              || { echo "FAIL: auto-update.yml missing reusable workflow ref"; exit 1; }
-            grep -q 'workflow_dispatch' "${scaffold}/.github/workflows/auto-update.yml" \
-              || { echo "FAIL: auto-update.yml missing workflow_dispatch"; exit 1; }
 
             # C6/T7: all flake inputs use github: URLs, no git+file:
             if grep -q 'git+file:' "${scaffold}/flake.nix"; then
@@ -2634,7 +2628,7 @@
             test -f ${seed}/flake.nix || { echo "FAIL: flake.nix missing"; exit 1; }
             test -f ${seed}/.gitignore || { echo "FAIL: .gitignore missing"; exit 1; }
             test -f ${seed}/.github/workflows/ci.yml || { echo "FAIL: ci.yml missing"; exit 1; }
-            test -f ${seed}/.github/workflows/auto-update.yml || { echo "FAIL: auto-update.yml missing"; exit 1; }
+            test ! -f ${seed}/.github/workflows/auto-update.yml || { echo "FAIL: obsolete auto-update.yml present"; exit 1; }
             # Verify .gitignore ignores materialized artifacts
             grep -q "lefthook.yml" ${seed}/.gitignore || { echo "FAIL: .gitignore should ignore lefthook.yml"; exit 1; }
             grep -q ".markdownlint.yml" ${seed}/.gitignore || { echo "FAIL: .gitignore should ignore .markdownlint.yml"; exit 1; }
@@ -3078,18 +3072,6 @@
             + builtins.readFile ./set/lib/app-bootstrap.sh;
           };
 
-          autoUpdateApp = pkgs.writeShellApplication {
-            name = "auto-update";
-            runtimeInputs = [
-              pkgs.coreutils
-              pkgs.findutils
-              pkgs.git
-              pkgs.nix
-              pkgs.gnugrep
-            ];
-            text = builtins.readFile ./lib/auto-update.sh;
-          };
-
           graduateApp = pkgs.writeShellApplication {
             name = "graduate";
             runtimeInputs = [
@@ -3201,10 +3183,6 @@
           bootstrap = {
             type = "app";
             program = "${bootstrapApp}/bin/bootstrap";
-          };
-          "auto-update" = {
-            type = "app";
-            program = "${autoUpdateApp}/bin/auto-update";
           };
           graduate = {
             type = "app";
