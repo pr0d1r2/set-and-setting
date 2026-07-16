@@ -44,7 +44,10 @@ awk '
       if (url != "") print url
     }
   ' "$AFTER_LEFTHOOK"
-  if [ -f "$FLAKE_FILE" ] && grep -q 'checksFor' "$FLAKE_FILE"; then
+  if [ -f "$FLAKE_FILE" ] && awk '
+    { sub(/#.*/, ""); code = code " " $0 }
+    END { exit(code ~ /checksFor[[:space:]]*\{/ ? 0 : 1) }
+  ' "$FLAKE_FILE"; then
     printf '%s\n' ${CHECKS_UNIVERSE:-}
   fi
 } | sed '/^$/d' | sort -u >"$after_checks"

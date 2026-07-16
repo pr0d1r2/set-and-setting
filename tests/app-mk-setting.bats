@@ -148,6 +148,23 @@ teardown() {
     [ ! -f .markdownlint.yml ]
 }
 
+@test "checksFor mentioned only in a comment does not certify coverage" {
+    printf '%s\n' \
+        "---" \
+        "remotes:" \
+        "  - git_url: https://github.com/pr0d1r2/nix-lefthook-nixfmt" \
+        >lefthook.yml
+    echo '# TODO: migrate to checksFor before refreshing' >flake.nix
+    before="$(cat lefthook.yml)"
+
+    run bash "$SCRIPT"
+
+    [ "$status" -ne 0 ]
+    [[ "$output" == *"vendored lefthook remotes require migration"* ]]
+    [ "$(cat lefthook.yml)" = "$before" ]
+    [ ! -f .markdownlint.yml ]
+}
+
 @test "referenced model preserves vendored identities through checksFor" {
     printf '%s\n' \
         "---" \
