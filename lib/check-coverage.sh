@@ -29,7 +29,7 @@ awk '
 ' "$BEFORE_LEFTHOOK" | sort -u >"$before_checks"
 
 {
-    awk '
+  awk '
     /^[A-Za-z]/                      { in_commands = 0 }
     /^  commands:[[:space:]]*$/      { in_commands = 1; next }
     /^  [A-Za-z]/ && !/^  commands:/ { in_commands = 0 }
@@ -44,17 +44,17 @@ awk '
       if (url != "") print url
     }
   ' "$AFTER_LEFTHOOK"
-    if [ -f "$FLAKE_FILE" ] && grep -q 'checksFor' "$FLAKE_FILE"; then
-        printf '%s\n' ${CHECKS_UNIVERSE:-}
-    fi
+  if [ -f "$FLAKE_FILE" ] && grep -q 'checksFor' "$FLAKE_FILE"; then
+    printf '%s\n' ${CHECKS_UNIVERSE:-}
+  fi
 } | sed '/^$/d' | sort -u >"$after_checks"
 
 dropped="$(comm -23 "$before_checks" "$after_checks" || true)"
 if [ -n "$dropped" ]; then
-    echo "COVERAGE-FAIL: standards refresh would reduce effective check coverage"
-    echo "  dropped: $(echo "$dropped" | tr '\n' ' ' | sed 's/ $//')"
-    echo "  resolution: preserve repo-local checks or run migrate first"
-    exit 1
+  echo "COVERAGE-FAIL: standards refresh would reduce effective check coverage"
+  echo "  dropped: $(echo "$dropped" | tr '\n' ' ' | sed 's/ $//')"
+  echo "  resolution: preserve repo-local checks or run migrate first"
+  exit 1
 fi
 
 before_count="$(wc -l <"$before_checks" | tr -d ' ')"
