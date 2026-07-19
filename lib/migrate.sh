@@ -483,6 +483,14 @@ if [ "$has_custom_flake" -eq 1 ]; then
   fi
 fi
 
+# --- relic detection (#151) ---
+# Known relic files that should be stripped from any repo (referenced or not).
+# These are dead artifacts from earlier scaffold revisions that cause CI noise.
+relic_workflows=""
+if [ -f .github/workflows/auto-update.yml ]; then
+  relic_workflows="auto-update.yml"
+fi
+
 # --- extra workflow detection (#115) ---
 extra_workflows=""
 if [ -d .github/workflows ]; then
@@ -490,6 +498,7 @@ if [ -d .github/workflows ]; then
     wfname="$(basename "$wf")"
     case "$wfname" in
       ci.yml) ;;
+      auto-update.yml) ;;
       *) extra_workflows="$extra_workflows $wfname" ;;
     esac
   done < <(find .github/workflows -maxdepth 1 -name '*.yml' -o -name '*.yaml' | sort)
@@ -524,7 +533,19 @@ if [ "${MIGRATE_DETECT_ONLY:-}" = "1" ]; then
 fi
 
 # already-referenced => no-op (idempotent: a migrated repo re-migrates clean)
+# EXCEPT: strip any lingering relic files (#151) so the fleet converges.
 if [ "$state" = "referenced" ]; then
+  if [ -n "$relic_workflows" ]; then
+    _migrate_stage="relic-strip"
+    for relic in $relic_workflows; do
+      git rm -q --cached --ignore-unmatch ".github/workflows/$relic" 2>/dev/null || true
+      rm -f ".github/workflows/$relic"
+      echo "stripped relic: .github/workflows/$relic (#151)"
+    done
+    git add -A
+    echo "migrate: already referenced -- relics stripped"
+    exit 0
+  fi
   echo "migrate: already referenced -- no-op"
   exit 0
 fi
@@ -569,6 +590,7 @@ if [ "${MIGRATE_DRY_RUN:-}" = "1" ]; then
   [ "$reconcile_flake" -eq 1 ] && echo "  reconcile: flake.nix (custom content preserved in seed)"
   [ "$strip_ci" -eq 1 ] && echo "  strip: .github/workflows/ci.yml (vendored -> guardrails caller)"
   [ "$strip_lefthook" -eq 1 ] && echo "  strip: lefthook.yml (vendored -> materialized+gitignored)"
+  [ -n "$relic_workflows" ] && echo "  strip-relic: .github/workflows/$relic_workflows (#151)"
   [ -n "$extra_workflows" ] && echo "  preserve: extra workflows ($extra_workflows)"
   echo "  plant: seed (thin flake.nix, .gitignore, ci.yml) skip-if-exists"
   echo "  confirm-equivalence: new check-set must cover the vendored one"
@@ -614,6 +636,13 @@ if [ "$strip_lefthook" -eq 1 ]; then
   git rm -q --cached --ignore-unmatch lefthook.yml 2>/dev/null || true
   rm -f lefthook.yml
   echo "stripped: lefthook.yml (-> materialized)"
+fi
+if [ -n "$relic_workflows" ]; then
+  for relic in $relic_workflows; do
+    git rm -q --cached --ignore-unmatch ".github/workflows/$relic" 2>/dev/null || true
+    rm -f ".github/workflows/$relic"
+    echo "stripped relic: .github/workflows/$relic (#151)"
+  done
 fi
 
 _migrate_stage="plant"
