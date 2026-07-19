@@ -8,6 +8,7 @@
     "architecture"
     "ci"
     "cli"
+    "design"
     "git"
     "gnu"
     "integration"
@@ -52,6 +53,7 @@
       ".github/**/*.yaml"
     ];
     # Core/universal: broad (V20)
+    design = [ "**/*" ];
     generic = [ "**/*" ];
     integration = [ "**/*" ];
     architecture = [ "**/*" ];

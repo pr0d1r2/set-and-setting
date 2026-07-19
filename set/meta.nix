@@ -102,9 +102,30 @@ let
         "isoImage"
       ];
     };
+    "design/paradigm" = {
+      keywords = [
+        "design"
+        "paradigm"
+        "interface"
+        "api"
+      ];
+    };
+    "design/paradigm/pola.md" = {
+      keywords = [
+        "pola"
+        "pols"
+        "least-astonishment"
+        "least-surprise"
+        "interface"
+        "api"
+        "naming"
+        "defaults"
+      ];
+    };
     "principles/pola.md" = {
       keywords = [
         "pola"
+        "pols"
         "least-astonishment"
         "least-surprise"
         "interface"

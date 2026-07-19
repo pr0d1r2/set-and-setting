@@ -1,7 +1,8 @@
-# Principle of Least Astonishment (POLA)
+# Principle of Least Astonishment (POLA / POLS)
 
-Every interface -- function signature, API endpoint, CLI flag, config
-option, class method, return value -- should behave the way its user
+Also called the Principle of Least Surprise (POLS). Every interface --
+function signature, API endpoint, CLI flag, config option, class method,
+return value -- should behave the way its user
 would reasonably expect given its name, context, and the conventions of
 the surrounding system. When two interpretations are possible, choose
 the one that surprises fewer people.
