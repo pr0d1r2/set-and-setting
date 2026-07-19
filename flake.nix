@@ -1502,6 +1502,8 @@
               || { echo "FAIL: git core not inlined"; exit 1; }
             grep -q "behavioral rules" "$f" \
               || { echo "FAIL: generic core not inlined"; exit 1; }
+            grep -q "Keep solutions as simple as possible" "$f" \
+              || { echo "FAIL: KISS principle not inlined"; exit 1; }
             # always-on manifest had no domain refs, so none leak in
             if grep -q '^@set/nix' "$f"; then
               echo "FAIL: unexpected domain ref in AGENTS.md"; exit 1
@@ -1540,6 +1542,11 @@
             if grep -q '^paths:' "$setdir/git/git.md"; then
               echo "FAIL: core git/git.md must be path-less"; exit 1
             fi
+            [ -f "$setdir/generic/kiss.md" ] \
+              || { echo "FAIL: KISS principle missing from core"; exit 1; }
+            if grep -q '^paths:' "$setdir/generic/kiss.md"; then
+              echo "FAIL: KISS principle must be always-on"; exit 1
+            fi
 
             # per-file override (meta V30): generic/rtk.md flipped to domain
             grep -q '^paths:' "$setdir/generic/rtk.md" \
@@ -1577,6 +1584,8 @@
               || { echo "FAIL: set.md missing concept ref"; exit 1; }
             grep -q '^@set/generic/skill.md$' "$manifest" \
               || { echo "FAIL: set.md missing core ref"; exit 1; }
+            grep -q '^@set/generic/kiss.md$' "$manifest" \
+              || { echo "FAIL: set.md missing KISS principle"; exit 1; }
             if grep -q 'nix/flake.md' "$manifest"; then
               echo "FAIL: set.md must not list domain rules"; exit 1
             fi
@@ -1602,6 +1611,8 @@
             if grep -qi 'rtk' "$exskill"; then
               echo "FAIL: excluded rtk leaked into SKILL.md"; exit 1
             fi
+            grep -q 'Keep solutions as simple as possible' "$exskill" \
+              || { echo "FAIL: KISS principle missing from SKILL.md"; exit 1; }
 
             echo PASS
             touch $out
