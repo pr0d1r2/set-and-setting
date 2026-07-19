@@ -174,6 +174,7 @@ custom_flake_details=""
 if [ "$flake_present" -eq 1 ] && [ "$references_sns" -eq 0 ]; then
   seed_inputs="nixpkgs-lock nixpkgs set-and-setting"
   extra_inputs=""
+  # detect both inline (name.url = "...") and block-style (name = { url = ...) inputs
   while IFS= read -r inp; do
     is_seed=0
     for si in $seed_inputs; do
@@ -183,7 +184,27 @@ if [ "$flake_present" -eq 1 ] && [ "$references_sns" -eq 0 ]; then
       fi
     done
     [ "$is_seed" -eq 0 ] && extra_inputs="$extra_inputs $inp"
-  done < <(grep -oE '[a-zA-Z_-]+\.url\s*=' flake.nix | sed 's/\.url\s*=//;s/[[:space:]]//g' || true)
+  done < <({
+    grep -oE '[a-zA-Z_][a-zA-Z0-9_-]*\.url\s*=' flake.nix | sed 's/\.url\s*=//;s/[[:space:]]//g'
+    # block-style: "name = {" inside the inputs section (skip `inputs = {` itself)
+    awk '
+      /^[[:space:]]*inputs[[:space:]]*=[[:space:]]*\{/ { in_inputs=1; depth=1; next }
+      in_inputs {
+        prev_depth = depth
+        for (i=1; i<=length($0); i++) {
+          c = substr($0, i, 1)
+          if (c == "{") depth++
+          if (c == "}") { depth--; if (depth <= 0) { in_inputs=0; next } }
+        }
+        if (/=[[:space:]]*\{/ && prev_depth == 1) {
+          line = $0
+          gsub(/^[[:space:]]*(inputs\.)?/, "", line)
+          gsub(/[[:space:]]*=.*/, "", line)
+          if (line ~ /^[a-zA-Z_][a-zA-Z0-9_-]*$/) print line
+        }
+      }
+    ' flake.nix
+  } | sort -u || true)
   extra_inputs="${extra_inputs# }"
 
   has_overlays=0
@@ -218,11 +239,60 @@ if [ "$has_custom_flake" -eq 1 ]; then
     unreconcilable="overlays applied to pkgs (not just defined as output attributes)"
   fi
 
-  # extract custom input declarations
+  # extract custom input declarations (inputs section only, not outputs body)
   if [ -z "$unreconcilable" ] && [ -n "$extra_inputs" ]; then
     reconciled_input_names="$extra_inputs"
+    # extract the inputs section to avoid matching usage in outputs body
+    # handles both flat format (inputs.name.key = val;) and block format
+    # (inputs = { name.key = val; name = { ... }; })
+    inputs_section="$(awk '
+      # block format: inputs = { ... }
+      /^[[:space:]]*inputs[[:space:]]*=[[:space:]]*\{/ { cap=1; depth=0 }
+      cap {
+        for (i=1; i<=length($0); i++) {
+          c = substr($0, i, 1)
+          if (c == "{") depth++
+          if (c == "}") { depth--; if (depth <= 0) { print; cap=0; next } }
+        }
+        print; next
+      }
+      # flat format: inputs.name.key = val;
+      /^[[:space:]]*inputs\./ { print }
+    ' flake.nix)"
     for inp in $extra_inputs; do
-      inp_lines="$(grep -E "(^[[:space:]]*|^[[:space:]]*inputs\.)${inp}\." flake.nix | sed 's/^[[:space:]]*inputs\.//' || true)"
+      # extract inline declarations (name.key = val;)
+      inp_lines="$(grep -E "(^[[:space:]]*(inputs\.)?${inp}\.)" <<<"$inputs_section" | sed 's/^[[:space:]]*inputs\.//' | sed 's/^[[:space:]]*//' || true)"
+      # extract block-style declarations (name = { ... };)
+      if [ -z "$inp_lines" ]; then
+        inp_lines="$(awk -v name="$inp" '
+          !cap && $0 ~ "(^[[:space:]]*(inputs\\.)?" name "[[:space:]]*=[[:space:]]*\\{)" {
+            cap = 1; bdepth = 0
+            line = $0
+            sub(/^[[:space:]]*inputs\./, "", line)
+            sub(/^[[:space:]]+/, "", line)
+            buf = line "\n"
+            for (i=1; i<=length($0); i++) {
+              c = substr($0, i, 1)
+              if (c == "{") bdepth++
+              if (c == "}") bdepth--
+            }
+            if (bdepth <= 0 && /;[[:space:]]*$/) { result = result buf; cap = 0 }
+            next
+          }
+          cap {
+            line = $0
+            sub(/^[[:space:]]+/, "", line)
+            buf = buf "  " line "\n"
+            for (i=1; i<=length($0); i++) {
+              c = substr($0, i, 1)
+              if (c == "{") bdepth++
+              if (c == "}") bdepth--
+            }
+            if (bdepth <= 0 && /;[[:space:]]*$/) { result = result buf; cap = 0 }
+          }
+          END { printf "%s", result }
+        ' <<<"$inputs_section")"
+      fi
       if [ -z "$inp_lines" ]; then
         unreconcilable="${unreconcilable:+$unreconcilable; }input $inp: declaration not extractable"
       else
@@ -257,6 +327,61 @@ if [ "$has_custom_flake" -eq 1 ]; then
     if [ -z "$reconciled_outputs" ]; then
       unreconcilable="${unreconcilable:+$unreconcilable; }custom output blocks not extractable"
     fi
+  fi
+
+  # extract let-bindings referenced by custom outputs (#149)
+  # When an output references a binding (e.g. `overlays.default = myOverlay;`),
+  # the binding must also be extracted or the reconciled flake has dangling refs.
+  reconciled_let_bindings=""
+  if [ -z "$unreconcilable" ] && [ -n "$reconciled_outputs" ]; then
+    reconciled_let_bindings="$(awk -v outputs="$reconciled_outputs" '
+      BEGIN {
+        # collect identifiers used in outputs (RHS of = assignments)
+        n_out = split(outputs, out_lines, "\n")
+        for (i = 1; i <= n_out; i++) {
+          line = out_lines[i]
+          # skip lines that are just closing braces/brackets
+          if (line ~ /^[[:space:]]*[}\]);]*$/) continue
+          # find RHS: after the first = sign, look for identifiers
+          eq_pos = index(line, "=")
+          if (eq_pos > 0) {
+            rhs = substr(line, eq_pos + 1)
+            # extract identifier tokens (nix identifiers: [a-zA-Z_][a-zA-Z0-9_-]*)
+            gsub(/[^a-zA-Z0-9_-]+/, " ", rhs)
+            m = split(rhs, tokens, " ")
+            for (j = 1; j <= m; j++) {
+              if (tokens[j] ~ /^[a-zA-Z_]/ && tokens[j] !~ /^(self|nixpkgs|pkgs|lib|builtins|true|false|null|import|inherit|let|in|if|then|else|with|rec|assert)$/) {
+                refs[tokens[j]] = 1
+              }
+            }
+          }
+        }
+      }
+      # track let-block: capture bindings inside the top-level let...in
+      /^[[:space:]]*let[[:space:]]*$/ || /^[[:space:]]+let$/ { in_let = 1; next }
+      /^[[:space:]]*in[[:space:]]*$/ || /^[[:space:]]+in$/ { in_let = 0; next }
+      in_let && /^[[:space:]]+[a-zA-Z_][a-zA-Z0-9_-]*[[:space:]]*=/ {
+        # start of a let-binding
+        match($0, /[a-zA-Z_][a-zA-Z0-9_-]*/)
+        binding_name = substr($0, RSTART, RLENGTH)
+        if (binding_name in refs) {
+          cap = 1; depth = 0; buf = ""
+        }
+      }
+      cap {
+        buf = buf $0 "\n"
+        for (i = 1; i <= length($0); i++) {
+          c = substr($0, i, 1)
+          if (c == "{" || c == "[" || c == "(") depth++
+          if (c == "}" || c == "]" || c == ")") depth--
+        }
+        if (depth <= 0 && /;[[:space:]]*$/) {
+          result = result buf
+          cap = 0
+        }
+      }
+      END { printf "%s", result }
+    ' flake.nix)"
   fi
 
   if [ -z "$unreconcilable" ]; then
@@ -398,7 +523,8 @@ _migrate_stage="plant"
 if [ "$reconcile_flake" -eq 1 ]; then
   awk -v custom_inputs="$reconciled_inputs" \
     -v custom_names="$reconciled_input_names" \
-    -v custom_outputs="$reconciled_outputs" '
+    -v custom_outputs="$reconciled_outputs" \
+    -v custom_let="$reconciled_let_bindings" '
     { lines[NR] = $0 }
     END {
       last_close = 0
@@ -413,12 +539,17 @@ if [ "$reconcile_flake" -eq 1 ]; then
           if (custom_inputs != "") {
             print ""
             n_inp = split(custom_inputs, inp_lines, "\n")
+            min_inp_indent = 9999
             for (j = 1; j <= n_inp; j++) {
-              if (inp_lines[j] != "") {
-                line = inp_lines[j]
-                gsub(/^[[:space:]]+/, "", line)
-                print "    " line
-              }
+              if (inp_lines[j] == "") continue
+              match(inp_lines[j], /^[[:space:]]*/)
+              if (RLENGTH < min_inp_indent) min_inp_indent = RLENGTH
+            }
+            if (min_inp_indent == 9999) min_inp_indent = 0
+            for (j = 1; j <= n_inp; j++) {
+              if (inp_lines[j] == "") continue
+              stripped = substr(inp_lines[j], min_inp_indent + 1)
+              print "    " stripped
             }
           }
           skip = 1
@@ -429,6 +560,22 @@ if [ "$reconcile_flake" -eq 1 ]; then
             print "      " input_names[j] ","
           }
           skip = 1
+        }
+        if (!skip && lines[i] ~ /^[[:space:]]*in[[:space:]]*$/ && custom_let != "") {
+          n_let = split(custom_let, let_lines, "\n")
+          min_let_indent = 9999
+          for (j = 1; j <= n_let; j++) {
+            if (let_lines[j] == "") continue
+            match(let_lines[j], /^[[:space:]]*/)
+            if (RLENGTH < min_let_indent) min_let_indent = RLENGTH
+          }
+          if (min_let_indent == 9999) min_let_indent = 0
+          print ""
+          for (j = 1; j <= n_let; j++) {
+            if (let_lines[j] == "") continue
+            stripped = substr(let_lines[j], min_let_indent + 1)
+            print "      " stripped
+          }
         }
         if (!skip && i == last_close && custom_outputs != "") {
           print ""

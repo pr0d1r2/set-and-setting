@@ -49,9 +49,15 @@
         set-and-setting.lib.mkDevShells {
           inherit pkgs;
           basePackages = mat.packages;
-          defaultShellHook = ''
+          settingHook = ''
             ${self.packages.${sys}.setting}/bin/sync-setting .
-            cp -f ${mat.files}/lefthook.yml lefthook.yml
+            _assemble_out="$(mktemp -d)"
+            FRAGMENTS="${builtins.concatStringsSep " " fragments}" \
+              out="$_assemble_out" \
+              FRAGMENTS_DIR="${set-and-setting}/setting/integrations/lefthook" \
+              bash "${set-and-setting}/setting/lib/assemble-lefthook.sh"
+            cp -f "$_assemble_out/lefthook.yml" lefthook.yml
+            rm -rf "$_assemble_out"
           '';
         }
       );
