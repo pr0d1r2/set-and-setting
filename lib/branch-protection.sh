@@ -84,19 +84,19 @@ fi
 
 status_checks_json="null"
 if [ -n "$status_checks" ]; then
-    IFS=',' read -ra checks <<<"$status_checks"
-    contexts_json="$(printf '%s\n' "${checks[@]}" | jq -R . | jq -s .)"
-    status_checks_json="$(
-        jq -n \
-            --argjson contexts "$contexts_json" \
-            '{strict: true, contexts: $contexts}'
-    )"
+  IFS=',' read -ra checks <<<"$status_checks"
+  contexts_json="$(printf '%s\n' "${checks[@]}" | jq -R . | jq -s .)"
+  status_checks_json="$(
+    jq -n \
+      --argjson contexts "$contexts_json" \
+      '{strict: true, contexts: $contexts}'
+  )"
 fi
 
 payload="$(
-    jq -n \
-        --argjson status_checks "$status_checks_json" \
-        '{
+  jq -n \
+    --argjson status_checks "$status_checks_json" \
+    '{
             required_status_checks: $status_checks,
             enforce_admins: true,
             required_pull_request_reviews: {
