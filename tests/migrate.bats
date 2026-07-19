@@ -31,7 +31,9 @@ setup() {
     # helpers (checksFor / materializationFor) that mark it as referenced.
     # Structure mirrors leaf-flake.txt with injection points for reconciliation:
     # set-and-setting.url (custom inputs), set-and-setting, (output args),
-    # closing    }; (custom outputs), and a fragments declaration.
+    # closing    }; (custom outputs), a fragments declaration, and an inner
+    # let...in (devShells) to verify let-binding injection targets only the
+    # outer let block.
     printf '%s\n' \
         "{" \
         "  inputs = {" \
@@ -56,7 +58,11 @@ setup() {
         "    in" \
         "    {" \
         "      checks = checksFor { };" \
-        "      devShells = materializationFor { };" \
+        "      devShells =" \
+        "        let" \
+        "          mat = materializationFor { };" \
+        "        in" \
+        "        mkDevShells { packages = mat.packages; };" \
         "    };" \
         "}" \
         >"$SEED_SRC/flake.nix"
@@ -826,6 +832,8 @@ write_vendored_lefthook_with_remotes() {
     [[ "$output" == *"PASS: equivalence"* ]]
     # let-binding preserved (not dangling reference)
     grep -q 'myOverlay = final: prev:' flake.nix
+    # let-binding injected exactly once (not at inner let...in blocks)
+    [ "$(grep -c 'myOverlay = final: prev:' flake.nix)" -eq 1 ]
     # overlay output preserved
     grep -q 'overlays.default = myOverlay' flake.nix
     # block-style input preserved

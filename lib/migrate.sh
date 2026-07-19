@@ -532,6 +532,7 @@ if [ "$reconcile_flake" -eq 1 ]; then
         if (lines[i] ~ /^    };/) { last_close = i; break }
       }
       n_names = split(custom_names, input_names, " ")
+      let_injected = 0
       for (i = 1; i <= NR; i++) {
         skip = 0
         if (lines[i] ~ /set-and-setting\.url/) {
@@ -561,7 +562,8 @@ if [ "$reconcile_flake" -eq 1 ]; then
           }
           skip = 1
         }
-        if (!skip && lines[i] ~ /^[[:space:]]*in[[:space:]]*$/ && custom_let != "") {
+        if (!skip && !let_injected && lines[i] ~ /^[[:space:]]*in[[:space:]]*$/ && custom_let != "") {
+          let_injected = 1
           n_let = split(custom_let, let_lines, "\n")
           min_let_indent = 9999
           for (j = 1; j <= n_let; j++) {
