@@ -45,7 +45,7 @@ The `HUMAN-GATED` prefix is the anchor. It signals:
 1. The task requires human approval before execution.
 2. Autonomous loops must not auto-complete it.
 3. The agent must surface it with enough context for the human to
-   decide.
+    decide.
 
 ## Autonomous loop integration
 
