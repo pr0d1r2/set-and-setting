@@ -1191,6 +1191,18 @@ write_vendored_lefthook_with_remotes() {
     [[ "$output" == *"strip-relic: .github/workflows/auto-update.yml"* ]]
 }
 
+@test "relic: dry-run on referenced repo does NOT delete auto-update.yml (#151)" {
+    cp -r "$SEED_SRC/." .
+    mkdir -p .github/workflows
+    echo "name: dead cron" >.github/workflows/auto-update.yml
+    _init_repo
+    MIGRATE_DRY_RUN=1 run bash "$MIGRATE_SCRIPT"
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"dry-run plan for state=referenced"* ]]
+    [[ "$output" == *"strip-relic: .github/workflows/auto-update.yml"* ]]
+    [ -f .github/workflows/auto-update.yml ]
+}
+
 @test "relic: referenced repo without relic is still a clean no-op" {
     cp -r "$SEED_SRC/." .
     _init_repo

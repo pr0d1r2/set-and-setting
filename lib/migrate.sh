@@ -536,6 +536,13 @@ fi
 # EXCEPT: strip any lingering relic files (#151) so the fleet converges.
 if [ "$state" = "referenced" ]; then
   if [ -n "$relic_workflows" ]; then
+    if [ "${MIGRATE_DRY_RUN:-}" = "1" ]; then
+      echo "migrate: dry-run plan for state=$state"
+      for relic in $relic_workflows; do
+        echo "  strip-relic: .github/workflows/$relic (#151)"
+      done
+      exit 0
+    fi
     _migrate_stage="relic-strip"
     for relic in $relic_workflows; do
       git rm -q --cached --ignore-unmatch ".github/workflows/$relic" 2>/dev/null || true
