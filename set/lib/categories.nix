@@ -17,6 +17,7 @@
     "nix"
     "nixos"
     "opensource"
+    "principles"
     "product"
     "security"
     "test"
@@ -60,6 +61,7 @@
       "**/.narrow-language-*.dic"
     ];
     opensource = [ "**/*" ];
+    principles = [ "**/*" ];
     product = [ "**/*" ];
     security = [ "**/*" ];
     update = [ "**/*" ];

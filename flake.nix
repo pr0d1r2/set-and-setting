@@ -525,6 +525,7 @@
         nix = ./set/skills/nix;
         nixos = ./set/skills/nixos;
         opensource = ./set/skills/opensource;
+        principles = ./set/skills/principles;
         product = ./set/skills/product;
         security = ./set/skills/security;
         test = ./set/skills/test;
