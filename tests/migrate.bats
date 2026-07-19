@@ -1134,6 +1134,85 @@ write_vendored_lefthook_with_remotes() {
     [[ "$output" == *"PASS: equivalence"* ]]
 }
 
+# ======== relic stripping (#151) ========
+
+@test "relic: auto-update.yml stripped from already-referenced repo (#151)" {
+    cp -r "$SEED_SRC/." .
+    mkdir -p .github/workflows
+    echo "name: dead cron" >.github/workflows/auto-update.yml
+    _init_repo
+    run bash "$MIGRATE_SCRIPT"
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"state=referenced"* ]]
+    [[ "$output" == *"stripped relic: .github/workflows/auto-update.yml"* ]]
+    [[ "$output" == *"relics stripped"* ]]
+    [ ! -f .github/workflows/auto-update.yml ]
+    ! git ls-files | grep -q 'auto-update.yml'
+}
+
+@test "relic: auto-update.yml stripped during vendored transform (#151)" {
+    echo "{ outputs = { self }: { }; }" >flake.nix
+    write_vendored_lefthook
+    mkdir -p .github/workflows
+    echo "vendored ci" >.github/workflows/ci.yml
+    echo "name: dead cron" >.github/workflows/auto-update.yml
+    _init_repo
+    run bash "$MIGRATE_SCRIPT"
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"stripped relic: .github/workflows/auto-update.yml"* ]]
+    [[ "$output" == *"PASS: equivalence"* ]]
+    [ ! -f .github/workflows/auto-update.yml ]
+    ! git ls-files | grep -q 'auto-update.yml'
+}
+
+@test "relic: auto-update.yml NOT in extra_workflows (not preserved)" {
+    echo "{ outputs = { self }: { }; }" >flake.nix
+    write_vendored_lefthook
+    mkdir -p .github/workflows
+    echo "vendored ci" >.github/workflows/ci.yml
+    echo "name: dead cron" >.github/workflows/auto-update.yml
+    echo "deploy workflow" >.github/workflows/deploy.yml
+    _init_repo
+    MIGRATE_DETECT_ONLY=1 run bash "$MIGRATE_SCRIPT"
+    [ "$status" -eq 0 ]
+    # deploy is preserved, auto-update is NOT listed as extra
+    [[ "$output" == *"extra workflows detected (will preserve): deploy.yml"* ]]
+    [[ "$output" != *"auto-update"* ]]
+}
+
+@test "relic: dry-run reports auto-update.yml strip (#151)" {
+    echo "{ outputs = { self }: { }; }" >flake.nix
+    write_vendored_lefthook
+    mkdir -p .github/workflows
+    echo "name: dead cron" >.github/workflows/auto-update.yml
+    _init_repo
+    MIGRATE_DRY_RUN=1 run bash "$MIGRATE_SCRIPT"
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"strip-relic: .github/workflows/auto-update.yml"* ]]
+}
+
+@test "relic: dry-run on referenced repo does NOT delete auto-update.yml (#151)" {
+    cp -r "$SEED_SRC/." .
+    mkdir -p .github/workflows
+    echo "name: dead cron" >.github/workflows/auto-update.yml
+    _init_repo
+    MIGRATE_DRY_RUN=1 run bash "$MIGRATE_SCRIPT"
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"dry-run plan for state=referenced"* ]]
+    [[ "$output" == *"strip-relic: .github/workflows/auto-update.yml"* ]]
+    [ -f .github/workflows/auto-update.yml ]
+}
+
+@test "relic: referenced repo without relic is still a clean no-op" {
+    cp -r "$SEED_SRC/." .
+    _init_repo
+    run bash "$MIGRATE_SCRIPT"
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"state=referenced"* ]]
+    [[ "$output" == *"no-op"* ]]
+    [[ "$output" != *"relic"* ]]
+}
+
 @test "content-aware-leaf: MIGRATE-FAIL names the archetype (#150)" {
     # A leaf that is unreconcilable for another reason (e.g., overlays applied
     # to pkgs) should still report the archetype in the diagnostic
