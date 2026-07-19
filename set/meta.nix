@@ -102,6 +102,16 @@ let
         "isoImage"
       ];
     };
+    "principles/pola.md" = {
+      keywords = [
+        "pola"
+        "least-astonishment"
+        "least-surprise"
+        "interface"
+        "api"
+        "naming"
+      ];
+    };
     "security/hardening.md" = {
       paths = [ "**/*.nix" ];
       content = [
