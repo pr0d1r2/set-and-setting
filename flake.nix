@@ -1330,6 +1330,33 @@
             concepts = false;
           };
 
+        # #154: autonomous-loop consumers opt into drafts/ops once and get
+        # the paired HOOTL authority + HITL escalation skills and anchors.
+        ops-loop-skills =
+          let
+            mergedSkills = pkgs.runCommand "merged-skills-for-ops-loop-check" { } ''
+              cp -r ${./set/skills} $out
+              chmod -R u+w $out
+              cp -r ${./set/drafts} $out/drafts
+            '';
+            emitted = import ./set/lib/mk-set.nix { inherit (nixpkgs) lib; } {
+              inherit pkgs;
+              skillsDir = mergedSkills;
+              categories = [ "drafts/ops" ];
+              concepts = false;
+            };
+            rules = "${emitted}/.claude/rules/set/drafts/ops";
+          in
+          pkgs.runCommand "ops-loop-skills-check" { } ''
+            test -f "${rules}/hitl.md"
+            test -f "${rules}/hootl.md"
+            grep -q 'HOOTL-ELIGIBLE' "${rules}/hootl.md"
+            grep -q 'HUMAN-GATED' "${rules}/hootl.md"
+            grep -q '@set/drafts/ops/hitl.md' "${./set/drafts/ops/ops.md}"
+            grep -q '@set/drafts/ops/hootl.md' "${./set/drafts/ops/ops.md}"
+            touch $out
+          '';
+
         # meta-resolve -- V30: the sidecar map resolves each source path to
         # { channel, paths, keywords, always } via category fallback <-
         # subtree entry <- exact-file override (most specific wins).
