@@ -57,6 +57,10 @@ setup() {
         "      ];" \
         "    in" \
         "    {" \
+        "      packages = forAllSystems (pkgs: {" \
+        "        setting = (set-and-setting.lib.mkSetting { inherit pkgs; }).materialized;" \
+        "      });" \
+        "" \
         "      checks = checksFor { };" \
         "      devShells =" \
         "        let" \
@@ -941,4 +945,232 @@ write_vendored_lefthook_with_remotes() {
     grep -q 'assemble-lefthook.sh' "$seed_flake"
     # must NOT have `cp -f ${mat.files}/lefthook.yml` (store copy)
     run ! grep -q 'mat\.files.*lefthook\.yml' "$seed_flake"
+}
+
+# ======== #150: content-aware-leaf archetype ========
+
+@test "content-aware-leaf: packages.default preserved, scaffolding stripped (#150)" {
+    # A typical nix-lefthook-yamllint leaf: packages.default = writeShellApplication
+    # + nix-lefthook-*-src flake=false inputs (standard CI scaffolding)
+    printf '%s\n' \
+        "{" \
+        "  inputs = {" \
+        "    nixpkgs-lock.url = \"github:pr0d1r2/nixpkgs-lock\";" \
+        "    nixpkgs.follows = \"nixpkgs-lock/nixpkgs\";" \
+        "    nix-lefthook-nixfmt-src = {" \
+        "      url = \"github:pr0d1r2/nix-lefthook-nixfmt\";" \
+        "      flake = false;" \
+        "    };" \
+        "    nix-lefthook-statix-src = {" \
+        "      url = \"github:pr0d1r2/nix-lefthook-statix\";" \
+        "      flake = false;" \
+        "    };" \
+        "  };" \
+        "" \
+        "  outputs =" \
+        "    { self, nixpkgs, nix-lefthook-nixfmt-src, nix-lefthook-statix-src, ... }:" \
+        "    let" \
+        "      forAllSystems = f: nixpkgs.lib.genAttrs [ \"x86_64-linux\" ] (s: f s);" \
+        "    in" \
+        "    {" \
+        "      packages.default = nixpkgs.legacyPackages.x86_64-linux.writeShellApplication {" \
+        "        name = \"lefthook-yamllint\";" \
+        "        text = builtins.readFile ./lefthook-yamllint.sh;" \
+        "      };" \
+        "    };" \
+        "}" \
+        >flake.nix
+    echo "#!/usr/bin/env bash" >lefthook-yamllint.sh
+    write_vendored_lefthook
+    _init_repo
+    run bash "$MIGRATE_SCRIPT"
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"reconcil"* ]]
+    [[ "$output" == *"content-aware-leaf"* ]]
+    [[ "$output" == *"PASS: equivalence"* ]]
+    # leaf product preserved in reconciled flake
+    grep -q 'writeShellApplication' flake.nix
+    grep -q 'lefthook-yamllint' flake.nix
+    grep -q 'default' flake.nix
+    # scaffolding inputs NOT in reconciled flake
+    run ! grep -q 'nix-lefthook-nixfmt-src' flake.nix
+    run ! grep -q 'nix-lefthook-statix-src' flake.nix
+    # standard infrastructure present
+    grep -q 'set-and-setting' flake.nix
+    grep -q 'checksFor' flake.nix
+}
+
+@test "content-aware-leaf: leaf with own source input preserves it (#150)" {
+    # A leaf that has both scaffolding inputs AND its own source input
+    printf '%s\n' \
+        "{" \
+        "  inputs = {" \
+        "    nixpkgs-lock.url = \"github:pr0d1r2/nixpkgs-lock\";" \
+        "    nixpkgs.follows = \"nixpkgs-lock/nixpkgs\";" \
+        "    nix-lefthook-nixfmt-src = {" \
+        "      url = \"github:pr0d1r2/nix-lefthook-nixfmt\";" \
+        "      flake = false;" \
+        "    };" \
+        "    yamllint-src = {" \
+        "      url = \"github:example/yamllint\";" \
+        "      flake = false;" \
+        "    };" \
+        "  };" \
+        "" \
+        "  outputs =" \
+        "    { self, nixpkgs, nix-lefthook-nixfmt-src, yamllint-src, ... }:" \
+        "    {" \
+        "      packages.default = nixpkgs.legacyPackages.x86_64-linux.writeShellApplication {" \
+        "        name = \"lefthook-yamllint\";" \
+        "        text = builtins.readFile ./lefthook-yamllint.sh;" \
+        "      };" \
+        "    };" \
+        "}" \
+        >flake.nix
+    echo "#!/usr/bin/env bash" >lefthook-yamllint.sh
+    write_vendored_lefthook
+    _init_repo
+    run bash "$MIGRATE_SCRIPT"
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"reconcil"* ]]
+    [[ "$output" == *"PASS: equivalence"* ]]
+    # leaf product preserved
+    grep -q 'writeShellApplication' flake.nix
+    grep -q 'lefthook-yamllint' flake.nix
+    # own source input preserved (not stripped as scaffolding)
+    grep -q 'yamllint-src' flake.nix
+    # scaffolding input stripped
+    run ! grep -q 'nix-lefthook-nixfmt-src' flake.nix
+    # standard infrastructure present
+    grep -q 'set-and-setting' flake.nix
+    grep -q 'checksFor' flake.nix
+}
+
+@test "content-aware-leaf: forAllSystems pattern extracts default (#150)" {
+    # Leaf using the forAllSystems pattern for packages
+    printf '%s\n' \
+        "{" \
+        "  inputs = {" \
+        "    nixpkgs-lock.url = \"github:pr0d1r2/nixpkgs-lock\";" \
+        "    nixpkgs.follows = \"nixpkgs-lock/nixpkgs\";" \
+        "    nix-lefthook-nixfmt-src = {" \
+        "      url = \"github:pr0d1r2/nix-lefthook-nixfmt\";" \
+        "      flake = false;" \
+        "    };" \
+        "  };" \
+        "" \
+        "  outputs =" \
+        "    { self, nixpkgs, nix-lefthook-nixfmt-src, ... }:" \
+        "    let" \
+        "      forAllSystems = f: nixpkgs.lib.genAttrs [ \"x86_64-linux\" ] (s: f s);" \
+        "    in" \
+        "    {" \
+        "      packages = forAllSystems (system:" \
+        "        let" \
+        "          pkgs = nixpkgs.legacyPackages.\${system};" \
+        "        in" \
+        "        {" \
+        "          default = pkgs.writeShellApplication {" \
+        "            name = \"lefthook-typos\";" \
+        "            text = builtins.readFile ./lefthook-typos.sh;" \
+        "          };" \
+        "        });" \
+        "    };" \
+        "}" \
+        >flake.nix
+    echo "#!/usr/bin/env bash" >lefthook-typos.sh
+    write_vendored_lefthook
+    _init_repo
+    run bash "$MIGRATE_SCRIPT"
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"reconcil"* ]]
+    [[ "$output" == *"content-aware-leaf"* ]]
+    [[ "$output" == *"PASS: equivalence"* ]]
+    # leaf product preserved
+    grep -q 'writeShellApplication' flake.nix
+    grep -q 'lefthook-typos' flake.nix
+    # scaffolding stripped
+    run ! grep -q 'nix-lefthook-nixfmt-src' flake.nix
+    # standard infrastructure present
+    grep -q 'set-and-setting' flake.nix
+    grep -q 'checksFor' flake.nix
+}
+
+@test "content-aware-leaf: lib false positive does not trigger unreconcilable (#150)" {
+    # nixpkgs.lib.genAttrs used to trigger has_extra_outputs via the
+    # lib\. grep pattern, causing "custom output blocks not extractable"
+    printf '%s\n' \
+        "{" \
+        "  inputs = {" \
+        "    nixpkgs-lock.url = \"github:pr0d1r2/nixpkgs-lock\";" \
+        "    nixpkgs.follows = \"nixpkgs-lock/nixpkgs\";" \
+        "    nix-lefthook-nixfmt-src = {" \
+        "      url = \"github:pr0d1r2/nix-lefthook-nixfmt\";" \
+        "      flake = false;" \
+        "    };" \
+        "  };" \
+        "" \
+        "  outputs =" \
+        "    { self, nixpkgs, nix-lefthook-nixfmt-src, ... }:" \
+        "    let" \
+        "      forAllSystems = f: nixpkgs.lib.genAttrs [ \"x86_64-linux\" ] (s: f s);" \
+        "    in" \
+        "    {" \
+        "      packages.default = nixpkgs.legacyPackages.x86_64-linux.writeShellApplication {" \
+        "        name = \"lefthook-nixfmt\";" \
+        "        text = builtins.readFile ./lefthook-nixfmt.sh;" \
+        "      };" \
+        "    };" \
+        "}" \
+        >flake.nix
+    echo "#!/usr/bin/env bash" >lefthook-nixfmt.sh
+    write_vendored_lefthook
+    _init_repo
+    run bash "$MIGRATE_SCRIPT"
+    # must NOT fail with "custom output blocks not extractable"
+    [ "$status" -eq 0 ]
+    [[ "$output" != *"unreconcilable"* ]]
+    [[ "$output" != *"not extractable"* ]]
+    [[ "$output" == *"PASS: equivalence"* ]]
+}
+
+@test "content-aware-leaf: MIGRATE-FAIL names the archetype (#150)" {
+    # A leaf that is unreconcilable for another reason (e.g., overlays applied
+    # to pkgs) should still report the archetype in the diagnostic
+    printf '%s\n' \
+        "{" \
+        "  inputs = {" \
+        "    nixpkgs-lock.url = \"github:pr0d1r2/nixpkgs-lock\";" \
+        "    nixpkgs.follows = \"nixpkgs-lock/nixpkgs\";" \
+        "    nix-lefthook-nixfmt-src = {" \
+        "      url = \"github:pr0d1r2/nix-lefthook-nixfmt\";" \
+        "      flake = false;" \
+        "    };" \
+        "    my-overlay.url = \"github:example/overlay\";" \
+        "  };" \
+        "" \
+        "  outputs =" \
+        "    { self, nixpkgs, nix-lefthook-nixfmt-src, my-overlay, ... }:" \
+        "    let" \
+        "      pkgs = import nixpkgs {" \
+        "        system = \"x86_64-linux\";" \
+        "        overlays = [ my-overlay.overlays.default ];" \
+        "      };" \
+        "    in" \
+        "    {" \
+        "      packages.default = pkgs.writeShellApplication {" \
+        "        name = \"lefthook-nixfmt\";" \
+        "        text = builtins.readFile ./lefthook-nixfmt.sh;" \
+        "      };" \
+        "    };" \
+        "}" \
+        >flake.nix
+    echo "#!/usr/bin/env bash" >lefthook-nixfmt.sh
+    write_vendored_lefthook
+    _init_repo
+    run bash "$MIGRATE_SCRIPT"
+    [ "$status" -ne 0 ]
+    [[ "$output" == *"MIGRATE-FAIL"* ]]
+    [[ "$output" == *"archetype=content-aware-leaf"* ]]
+    [[ "$output" == *"overlays applied"* ]]
 }

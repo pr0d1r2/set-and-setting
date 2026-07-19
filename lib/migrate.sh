@@ -211,14 +211,49 @@ if [ "$flake_present" -eq 1 ] && [ "$references_sns" -eq 0 ]; then
   grep -qE '(^|[[:space:]])overlays?[[:space:]]*[.=\[]' flake.nix 2>/dev/null && has_overlays=1
 
   has_extra_outputs=0
-  grep -qE 'nixosConfigurations|homeConfigurations|nixosModules|darwinConfigurations|templates|lib\.' flake.nix 2>/dev/null && has_extra_outputs=1
+  # detect genuine extra output attributes -- lib. only when it starts a token
+  # (not nixpkgs.lib / pkgs.lib which is standard boilerplate, #150)
+  grep -qE 'nixosConfigurations|homeConfigurations|nixosModules|darwinConfigurations|templates' flake.nix 2>/dev/null && has_extra_outputs=1
+  if [ "$has_extra_outputs" -eq 0 ] &&
+    grep -qE '(^|[[:space:]])lib[[:space:]]*[.=]' flake.nix 2>/dev/null; then
+    has_extra_outputs=1
+  fi
 
-  if [ -n "$extra_inputs" ] || [ "$has_overlays" -eq 1 ] || [ "$has_extra_outputs" -eq 1 ]; then
+  # --- content-aware-leaf archetype detection (#150) ---
+  # A leaf flake has: packages.default = writeShellApplication reading a local
+  # script (the leaf product) + vendored nix-lefthook-*-src flake=false inputs
+  # (standard CI scaffolding that the referenced seed replaces).
+  # Matches both flat (packages.default = ...) and forAllSystems patterns.
+  is_leaf_archetype=0
+  leaf_product_inputs=""
+  if grep -qE 'writeShellApplication' flake.nix 2>/dev/null &&
+    { grep -qE 'packages\.(default|[a-z0-9_-]+\.default)[[:space:]]*=' flake.nix 2>/dev/null ||
+      grep -qE 'packages[[:space:]]*=' flake.nix 2>/dev/null; }; then
+    scaffolding_inputs=""
+    leaf_inputs=""
+    for inp in $extra_inputs; do
+      case "$inp" in
+        nix-lefthook-*-src) scaffolding_inputs="$scaffolding_inputs $inp" ;;
+        *) leaf_inputs="$leaf_inputs $inp" ;;
+      esac
+    done
+    scaffolding_inputs="${scaffolding_inputs# }"
+    leaf_inputs="${leaf_inputs# }"
+    if [ -n "$scaffolding_inputs" ]; then
+      is_leaf_archetype=1
+      extra_inputs="$leaf_inputs"
+      leaf_product_inputs="$scaffolding_inputs"
+    fi
+  fi
+
+  if [ -n "$extra_inputs" ] || [ "$has_overlays" -eq 1 ] || [ "$has_extra_outputs" -eq 1 ] || [ "$is_leaf_archetype" -eq 1 ]; then
     has_custom_flake=1
     details=""
     [ -n "$extra_inputs" ] && details="extra inputs: $extra_inputs"
+    [ -n "$leaf_product_inputs" ] && details="${details:+$details; }leaf scaffolding inputs (stripped): $leaf_product_inputs"
     [ "$has_overlays" -eq 1 ] && details="${details:+$details; }overlays detected"
     [ "$has_extra_outputs" -eq 1 ] && details="${details:+$details; }extra outputs detected"
+    [ "$is_leaf_archetype" -eq 1 ] && details="${details:+$details; }archetype: content-aware-leaf"
     custom_flake_details="$details"
   fi
 fi
@@ -306,7 +341,7 @@ if [ "$has_custom_flake" -eq 1 ]; then
   if [ -z "$unreconcilable" ] && { [ "$has_extra_outputs" -eq 1 ] || [ "$has_overlays" -eq 1 ]; }; then
     reconciled_outputs="$(awk '
       BEGIN { cap=0; depth=0; buf=""; result="" }
-      /^[[:space:]]*(nixosConfigurations|homeConfigurations|nixosModules|darwinConfigurations|templates|overlays)[[:space:]]*[.=]/ {
+      /^[[:space:]]*(nixosConfigurations|homeConfigurations|nixosModules|darwinConfigurations|templates|overlays|lib)[[:space:]]*[.=]/ {
         if (!cap) { cap=1; depth=0; buf="" }
       }
       cap {
@@ -326,6 +361,63 @@ if [ "$has_custom_flake" -eq 1 ]; then
     ' flake.nix)"
     if [ -z "$reconciled_outputs" ]; then
       unreconcilable="${unreconcilable:+$unreconcilable; }custom output blocks not extractable"
+    fi
+  fi
+
+  # --- content-aware-leaf: extract packages.default as preserved output (#150) ---
+  # The leaf product (packages.default = writeShellApplication { ... }) must
+  # survive migration. Extract the inner `default = ...;` assignment; it is
+  # injected into the seed template's packages block (not as a top-level output).
+  reconciled_leaf_package=""
+  if [ -z "$unreconcilable" ] && [ "${is_leaf_archetype:-0}" -eq 1 ]; then
+    # try flat format: packages.default = ... or packages.<sys>.default = ...
+    reconciled_leaf_package="$(awk '
+      BEGIN { cap=0; depth=0; buf=""; result="" }
+      !cap && /^[[:space:]]*packages\.(default|[a-zA-Z0-9_-]+\.default)[[:space:]]*=/ {
+        cap=1; depth=0; buf=""
+      }
+      cap {
+        buf = buf $0 "\n"
+        for (i=1; i<=length($0); i++) {
+          c = substr($0, i, 1)
+          if (c == "{" || c == "[" || c == "(") depth++
+          if (c == "}" || c == "]" || c == ")") depth--
+        }
+        if (depth <= 0 && /;[[:space:]]*$/) {
+          result = result buf
+          cap=0; depth=0; buf=""
+        }
+        next
+      }
+      END { printf "%s", result }
+    ' flake.nix)"
+    if [ -n "$reconciled_leaf_package" ]; then
+      # normalize flat packages.default or packages.<sys>.default to just default
+      reconciled_leaf_package="$(echo "$reconciled_leaf_package" | sed 's/^[[:space:]]*packages\.\([a-zA-Z0-9_-]*\.\)\?//')"
+    fi
+    if [ -z "$reconciled_leaf_package" ]; then
+      # forAllSystems pattern: extract the `default = ...;` from inside the block
+      reconciled_leaf_package="$(awk '
+        BEGIN { in_pkg=0; cap=0; depth=0; buf=""; result="" }
+        /^[[:space:]]*packages[[:space:]]*=/ { in_pkg=1 }
+        in_pkg && !cap && /[[:space:]]*default[[:space:]]*=/ {
+          cap=1; depth=0; buf=""
+        }
+        cap {
+          buf = buf $0 "\n"
+          for (i=1; i<=length($0); i++) {
+            c = substr($0, i, 1)
+            if (c == "{" || c == "[" || c == "(") depth++
+            if (c == "}" || c == "]" || c == ")") depth--
+          }
+          if (depth <= 0 && /;[[:space:]]*$/) {
+            result = result buf
+            cap=0; depth=0; buf=""
+          }
+          next
+        }
+        END { printf "%s", result }
+      ' flake.nix)"
     fi
   fi
 
@@ -436,13 +528,18 @@ if [ "$state" = "referenced" ]; then
   exit 0
 fi
 
-# custom flake, un-reconcilable => refuse with specific detail (#127)
+# custom flake, un-reconcilable => refuse with specific detail (#127, #150)
 if [ "$has_custom_flake" -eq 1 ] && [ "$reconcile_flake" -eq 0 ]; then
   _migrate_fail_emitted=1
+  archetype_label=""
+  if [ "${is_leaf_archetype:-0}" -eq 1 ]; then
+    archetype_label=" archetype=content-aware-leaf"
+  fi
   echo ""
-  echo "MIGRATE-FAIL: stage=$_migrate_stage reason=unreconcilable-flake"
+  echo "MIGRATE-FAIL: stage=$_migrate_stage reason=unreconcilable-flake${archetype_label}"
   echo "  detail: custom flake content cannot be automatically reconciled"
-  echo "  $unreconcilable"
+  echo "  unreconcilable blocks: $unreconcilable"
+  echo "  detected: $custom_flake_details"
   echo "  resolution:"
   echo "    - manually reconcile custom content with the referenced thin flake"
   echo "    - the seed flake is at: $SEED_SRC/flake.nix"
@@ -519,12 +616,13 @@ if [ "$strip_lefthook" -eq 1 ]; then
 fi
 
 _migrate_stage="plant"
-# --- reconcile flake.nix (#127): inject custom content into seed template ---
+# --- reconcile flake.nix (#127, #150): inject custom content into seed template ---
 if [ "$reconcile_flake" -eq 1 ]; then
   awk -v custom_inputs="$reconciled_inputs" \
     -v custom_names="$reconciled_input_names" \
     -v custom_outputs="$reconciled_outputs" \
-    -v custom_let="$reconciled_let_bindings" '
+    -v custom_let="$reconciled_let_bindings" \
+    -v leaf_pkg="${reconciled_leaf_package:-}" '
     { lines[NR] = $0 }
     END {
       last_close = 0
@@ -533,6 +631,7 @@ if [ "$reconcile_flake" -eq 1 ]; then
       }
       n_names = split(custom_names, input_names, " ")
       let_injected = 0
+      pkg_injected = 0
       for (i = 1; i <= NR; i++) {
         skip = 0
         if (lines[i] ~ /set-and-setting\.url/) {
@@ -579,20 +678,58 @@ if [ "$reconcile_flake" -eq 1 ]; then
             print "      " stripped
           }
         }
-        if (!skip && i == last_close && custom_outputs != "") {
-          print ""
-          n_out = split(custom_outputs, out_lines, "\n")
-          min_indent = 9999
-          for (j = 1; j <= n_out; j++) {
-            if (out_lines[j] == "") continue
-            match(out_lines[j], /^[[:space:]]*/)
-            if (RLENGTH < min_indent) min_indent = RLENGTH
+        # inject leaf package into the packages block (#150)
+        if (!skip && !pkg_injected && leaf_pkg != "" && lines[i] ~ /setting[[:space:]]*=.*mkSetting/) {
+          pkg_injected = 1
+          n_pkg = split(leaf_pkg, pkg_lines, "\n")
+          min_pkg_indent = 9999
+          for (j = 1; j <= n_pkg; j++) {
+            if (pkg_lines[j] == "") continue
+            match(pkg_lines[j], /^[[:space:]]*/)
+            if (RLENGTH < min_pkg_indent) min_pkg_indent = RLENGTH
           }
-          if (min_indent == 9999) min_indent = 0
-          for (j = 1; j <= n_out; j++) {
-            if (out_lines[j] == "") continue
-            stripped = substr(out_lines[j], min_indent + 1)
-            print "      " stripped
+          if (min_pkg_indent == 9999) min_pkg_indent = 0
+          for (j = 1; j <= n_pkg; j++) {
+            if (pkg_lines[j] == "") continue
+            stripped = substr(pkg_lines[j], min_pkg_indent + 1)
+            print "        " stripped
+          }
+        }
+        if (!skip && i == last_close) {
+          # leaf package fallback: inject as packages.default if not merged (#150)
+          if (!pkg_injected && leaf_pkg != "") {
+            pkg_injected = 1
+            print ""
+            print "      packages.default ="
+            n_pkg = split(leaf_pkg, pkg_lines, "\n")
+            min_pkg_indent = 9999
+            for (j = 1; j <= n_pkg; j++) {
+              if (pkg_lines[j] == "") continue
+              match(pkg_lines[j], /^[[:space:]]*/)
+              if (RLENGTH < min_pkg_indent) min_pkg_indent = RLENGTH
+            }
+            if (min_pkg_indent == 9999) min_pkg_indent = 0
+            for (j = 1; j <= n_pkg; j++) {
+              if (pkg_lines[j] == "") continue
+              stripped = substr(pkg_lines[j], min_pkg_indent + 1)
+              print "        " stripped
+            }
+          }
+          if (custom_outputs != "") {
+            print ""
+            n_out = split(custom_outputs, out_lines, "\n")
+            min_indent = 9999
+            for (j = 1; j <= n_out; j++) {
+              if (out_lines[j] == "") continue
+              match(out_lines[j], /^[[:space:]]*/)
+              if (RLENGTH < min_indent) min_indent = RLENGTH
+            }
+            if (min_indent == 9999) min_indent = 0
+            for (j = 1; j <= n_out; j++) {
+              if (out_lines[j] == "") continue
+              stripped = substr(out_lines[j], min_indent + 1)
+              print "      " stripped
+            }
           }
         }
         if (!skip) print lines[i]
