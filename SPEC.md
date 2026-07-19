@@ -42,6 +42,11 @@ and dogfoods both.
   `~/.claude/rules/set`. (3) `nix run github:pr0d1r2/set-and-setting#mkSet
   [cats]` -- zero-dependency, ad-hoc, per-CWD; nix is the only dep (repo
   is public). All three share the one emitter; (3) emits at run time.
+- C10: HOOTL envelope -- autonomous tending may select only
+  `HOOTL-ELIGIBLE` tasks, modify this repository, run its checks, and
+  create green commits. Pushes, pull requests, releases, deployments,
+  permission changes, and any other external side effect remain
+  `HUMAN-GATED`.
 
 ## §I Interfaces
 
@@ -258,6 +263,10 @@ and dogfoods both.
 - I.compiler: `lib/agents-md-compile.nix` (+ `.sh`) -- the `@`->`AGENTS.md`
   resolver (V29). Args: the Claude `CLAUDE.md` (or `@`-manifest). Output:
   inline `AGENTS.md`. Mirrors Claude `@`-parse rules.
+- I.loop-anchors: `SPEC.md` task prefixes are the autonomous-loop control
+  surface. `HOOTL-ELIGIBLE` grants bounded execution under C10;
+  `HUMAN-GATED` queues the task for HITL review. Git history and flake
+  check results provide the durable audit trail.
 - I.mechanism-tests: `tests/mechanism/` -- headless-agent probe suite
   (V31) verifying loading semantics. Each probe: marker fixture + run
   `claude -p`/opencode + assert marker behavior. Skip-if-no-binary.
@@ -497,11 +506,17 @@ and dogfoods both.
   exists. Tested on vendored / partial / bare / already-referenced
   fixtures + a dropped-check rejection + custom-flake reconciliation +
   un-reconcilable refusal.
+- V44: Autonomous loops require paired SPEC anchors. They execute only
+  `HOOTL-ELIGIBLE` tasks inside the documented envelope, never infer
+  authority from an unmarked task, and stop at every `HUMAN-GATED` task
+  until a human approves it in the current session. Changing the envelope
+  or either classification is itself human-gated.
 
 ## §T Tasks
 
 | id  | s | description                                          | cites     |
 |-----|---|------------------------------------------------------|-----------|
+| T76 | x | HOOTL-ELIGIBLE — add the autonomous-loop skill, pair it with HITL in the opt-in ops bundle, and verify both SPEC task anchors survive materialization. #154 | C10,I.loop-anchors,V44 |
 | T63 | x | `@`-ref matcher -- pure shell scanner that emits ONLY real `@`-references from a markdown file: leading-token `@set/...`, `@concepts/...`, or relative `@<category>/<file>.md`. SKIPS code spans/fences + block HTML comments (V29 parse rules) and non-ref `@` tokens (email `@example.com`, git SHAs `@fbeb9d9`, prose `@include`/`@main`/`@v4`/`@privileged`/`@system-service`). No repo-wide gate; bats over fixtures. The false-positive filter that blocked T58 | V12,V29,T58 |
 | T64 | x | ref-resolution nix check -- consume the T63 matcher; resolve each real ref to an existing path under `set/` (`@set/...` from the repo root; relative `@<cat>/<file>.md` against its own dir; drafts vs skills). Exit 1 ONLY on a truly-missing target. Wire `checks.set-ref-resolution`. Green: T63 skips false matches, existing refs resolve. Bats coverage | I.flake,V12,T58,T63 |
 | T65 | x | V12 bundle own-content enforcement -- independent grep check: bundle files (compose via `@`) limit own content to heading + purpose statement + `@` refs. Runs separate from resolution (T64); ships on its own. Bats coverage | V12,T58 |
