@@ -125,6 +125,7 @@ let
     "principles/pola.md" = {
       keywords = [
         "pola"
+        "pols"
         "least-astonishment"
         "least-surprise"
         "interface"
