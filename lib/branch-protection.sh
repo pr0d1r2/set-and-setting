@@ -6,7 +6,7 @@ set -euo pipefail
 branch="main"
 repo=""
 dry_run=0
-status_checks="build-linux"
+status_checks=""
 
 while [ $# -gt 0 ]; do
   case "$1" in
@@ -22,7 +22,7 @@ while [ $# -gt 0 ]; do
       echo "  --repo OWNER/REPO      GitHub repository (default: from git remote)"
       echo "  --branch BRANCH        Branch to protect (default: main)"
       echo "  --status-checks CHECKS Comma-separated required status checks"
-      echo "                         (default: build-linux)"
+      echo "                         (default: none)"
       exit 0
       ;;
     --dry-run)
@@ -82,25 +82,34 @@ if ! echo "$repo" | grep -qE '^[^/]+/[^/]+$'; then
   exit 1
 fi
 
-IFS=',' read -ra checks <<<"$status_checks"
-contexts_json="$(printf '%s\n' "${checks[@]}" | jq -R . | jq -s .)"
+status_checks_json="null"
+if [ -n "$status_checks" ]; then
+    IFS=',' read -ra checks <<<"$status_checks"
+    contexts_json="$(printf '%s\n' "${checks[@]}" | jq -R . | jq -s .)"
+    status_checks_json="$(
+        jq -n \
+            --argjson contexts "$contexts_json" \
+            '{strict: true, contexts: $contexts}'
+    )"
+fi
 
 payload="$(
-  jq -n \
-    --argjson contexts "$contexts_json" \
-    '{
-        required_status_checks: {
-            strict: true,
-            contexts: $contexts
-        },
-        enforce_admins: false,
-        required_pull_request_reviews: {
-            required_approving_review_count: 0
-        },
-        restrictions: null,
-        allow_force_pushes: false,
-        allow_deletions: false
-    }'
+    jq -n \
+        --argjson status_checks "$status_checks_json" \
+        '{
+            required_status_checks: $status_checks,
+            enforce_admins: true,
+            required_pull_request_reviews: {
+                required_approving_review_count: 0,
+                dismiss_stale_reviews: false,
+                require_code_owner_reviews: false
+            },
+            restrictions: null,
+            required_linear_history: false,
+            allow_force_pushes: false,
+            allow_deletions: false,
+            required_conversation_resolution: true
+        }'
 )"
 
 if [ "$dry_run" -eq 1 ]; then
