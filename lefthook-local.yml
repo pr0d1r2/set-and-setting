@@ -1,9 +1,11 @@
 ---
 # Override timeouts for --all-files CI runs.
+# markdownlint-agentic: skip until the wrapper's
+# @MARKDOWNLINT_AGENTIC_CONFIG@ placeholder is fixed upstream.
 
 pre-commit:
   commands:
     markdownlint:
       timeout: 300s
     markdownlint-agentic:
-      timeout: 300s
+      skip: true
