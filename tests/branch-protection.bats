@@ -88,9 +88,13 @@ teardown() {
     run bash -c "cd '$TARGET' && bash '$SCRIPT' --dry-run"
     [ "$status" -eq 0 ]
     [[ "$output" == *"Would configure branch protection on owner/repo/main"* ]]
-    [[ "$output" == *"required_status_checks"* ]]
-    [[ "$output" == *"build-linux"* ]]
-    [[ "$output" == *"required_pull_request_reviews"* ]]
+    [[ "$output" == *'"required_status_checks": null'* ]]
+    [[ "$output" == *'"enforce_admins": true'* ]]
+    [[ "$output" == *'"required_approving_review_count": 0'* ]]
+    [[ "$output" == *'"dismiss_stale_reviews": false'* ]]
+    [[ "$output" == *'"require_code_owner_reviews": false'* ]]
+    [[ "$output" == *'"required_linear_history": false'* ]]
+    [[ "$output" == *'"required_conversation_resolution": true'* ]]
 }
 
 @test "--dry-run with --repo uses explicit repo" {
@@ -111,6 +115,7 @@ teardown() {
     [ "$status" -eq 0 ]
     [[ "$output" == *"ci-linux"* ]]
     [[ "$output" == *"ci-darwin"* ]]
+    [[ "$output" == *'"strict": true'* ]]
 }
 
 @test "--dry-run payload disallows force pushes" {
