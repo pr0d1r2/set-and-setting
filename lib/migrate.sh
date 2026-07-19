@@ -393,6 +393,7 @@ if [ "$has_custom_flake" -eq 1 ]; then
     ' flake.nix)"
     if [ -n "$reconciled_leaf_package" ]; then
       # normalize flat packages.default or packages.<sys>.default to just default
+      # shellcheck disable=SC2001
       reconciled_leaf_package="$(echo "$reconciled_leaf_package" | sed 's/^[[:space:]]*packages\.\([a-zA-Z0-9_-]*\.\)\?//')"
     fi
     if [ -z "$reconciled_leaf_package" ]; then
