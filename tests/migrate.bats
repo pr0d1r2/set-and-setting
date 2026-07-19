@@ -31,7 +31,9 @@ setup() {
     # helpers (checksFor / materializationFor) that mark it as referenced.
     # Structure mirrors leaf-flake.txt with injection points for reconciliation:
     # set-and-setting.url (custom inputs), set-and-setting, (output args),
-    # closing    }; (custom outputs), and a fragments declaration.
+    # closing    }; (custom outputs), a fragments declaration, and an inner
+    # let...in (devShells) to verify let-binding injection targets only the
+    # outer let block.
     printf '%s\n' \
         "{" \
         "  inputs = {" \
@@ -56,7 +58,11 @@ setup() {
         "    in" \
         "    {" \
         "      checks = checksFor { };" \
-        "      devShells = materializationFor { };" \
+        "      devShells =" \
+        "        let" \
+        "          mat = materializationFor { };" \
+        "        in" \
+        "        mkDevShells { packages = mat.packages; };" \
         "    };" \
         "}" \
         >"$SEED_SRC/flake.nix"
@@ -787,4 +793,152 @@ write_vendored_lefthook_with_remotes() {
     # nothing stripped
     [ -f lefthook.yml ]
     grep -q "outputs = { self }" flake.nix
+}
+
+# ======== #149: overlay-exporting hub repos ========
+
+@test "overlay-exporting hub repo: let-binding is extracted with overlay output (#149)" {
+    printf '%s\n' \
+        "{" \
+        "  inputs = {" \
+        "    nixpkgs-lock.url = \"github:pr0d1r2/nixpkgs-lock\";" \
+        "    nixpkgs.follows = \"nixpkgs-lock/nixpkgs\";" \
+        "    my-src = {" \
+        "      url = \"github:example/my-src\";" \
+        "      flake = false;" \
+        "    };" \
+        "  };" \
+        "" \
+        "  outputs =" \
+        "    { self, nixpkgs, my-src, ... }:" \
+        "    let" \
+        "      myOverlay = final: prev: {" \
+        "        my-tool = prev.writeShellApplication {" \
+        "          name = \"my-tool\";" \
+        "          text = builtins.readFile \"\${my-src}/script.sh\";" \
+        "        };" \
+        "      };" \
+        "    in" \
+        "    {" \
+        "      overlays.default = myOverlay;" \
+        "    };" \
+        "}" \
+        >flake.nix
+    write_vendored_lefthook
+    _init_repo
+    run bash "$MIGRATE_SCRIPT"
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"reconcil"* ]]
+    [[ "$output" == *"PASS: equivalence"* ]]
+    # let-binding preserved (not dangling reference)
+    grep -q 'myOverlay = final: prev:' flake.nix
+    # let-binding injected exactly once (not at inner let...in blocks)
+    [ "$(grep -c 'myOverlay = final: prev:' flake.nix)" -eq 1 ]
+    # overlay output preserved
+    grep -q 'overlays.default = myOverlay' flake.nix
+    # block-style input preserved
+    grep -q 'my-src' flake.nix
+    # input in output args
+    grep -q 'my-src,' flake.nix
+    # standard infrastructure present
+    grep -q 'set-and-setting' flake.nix
+    grep -q 'checksFor' flake.nix
+}
+
+# ======== #149: syntax-error repo shapes (input not leaked into outputs) ========
+
+@test "input reference in outputs body not leaked into inputs section (#149)" {
+    printf '%s\n' \
+        "{" \
+        "  inputs = {" \
+        "    nixpkgs-lock.url = \"github:pr0d1r2/nixpkgs-lock\";" \
+        "    nixpkgs.follows = \"nixpkgs-lock/nixpkgs\";" \
+        "    disko.url = \"github:nix-community/disko\";" \
+        "    disko.inputs.nixpkgs.follows = \"nixpkgs\";" \
+        "  };" \
+        "" \
+        "  outputs =" \
+        "    { self, nixpkgs, disko, ... }:" \
+        "    {" \
+        "      nixosConfigurations.builder = nixpkgs.lib.nixosSystem {" \
+        "        system = \"x86_64-linux\";" \
+        "        modules = [" \
+        "          disko.nixosModules.disko" \
+        "          ./configuration.nix" \
+        "        ];" \
+        "      };" \
+        "    };" \
+        "}" \
+        >flake.nix
+    write_vendored_lefthook
+    _init_repo
+    run bash "$MIGRATE_SCRIPT"
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"reconcil"* ]]
+    [[ "$output" == *"PASS: equivalence"* ]]
+    # disko input declarations preserved in inputs section
+    grep -q 'disko.url' flake.nix
+    grep -q 'disko.inputs.nixpkgs.follows' flake.nix
+    # disko in output args
+    grep -q 'disko,' flake.nix
+    # nixosConfigurations preserved in outputs
+    grep -q 'nixosConfigurations.builder' flake.nix
+    grep -q 'disko.nixosModules.disko' flake.nix
+    # no stray disko.nixosModules.disko in inputs section
+    # (the inputs section ends at the first "};" after "inputs = {")
+    local inputs_block
+    inputs_block="$(awk '/inputs = \{/{s=1} s{print} s&&/\};/{exit}' flake.nix)"
+    echo "$inputs_block" | run ! grep -q 'nixosModules'
+    # standard infrastructure present
+    grep -q 'set-and-setting' flake.nix
+    grep -q 'checksFor' flake.nix
+}
+
+@test "block-style input with nixosModules usage does not produce syntax error (#149)" {
+    printf '%s\n' \
+        "{" \
+        "  inputs = {" \
+        "    nixpkgs-lock.url = \"github:pr0d1r2/nixpkgs-lock\";" \
+        "    nixpkgs.follows = \"nixpkgs-lock/nixpkgs\";" \
+        "    disko = {" \
+        "      url = \"github:nix-community/disko\";" \
+        "      inputs.nixpkgs.follows = \"nixpkgs\";" \
+        "    };" \
+        "  };" \
+        "" \
+        "  outputs =" \
+        "    { self, nixpkgs, disko, ... }:" \
+        "    {" \
+        "      nixosConfigurations.builder = nixpkgs.lib.nixosSystem {" \
+        "        modules = [ disko.nixosModules.disko ];" \
+        "      };" \
+        "    };" \
+        "}" \
+        >flake.nix
+    write_vendored_lefthook
+    _init_repo
+    run bash "$MIGRATE_SCRIPT"
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"reconcil"* ]]
+    [[ "$output" == *"PASS: equivalence"* ]]
+    # block-style input preserved
+    grep -q 'disko' flake.nix
+    # nixosConfigurations preserved
+    grep -q 'nixosConfigurations.builder' flake.nix
+    # standard infrastructure present
+    grep -q 'set-and-setting' flake.nix
+    grep -q 'checksFor' flake.nix
+}
+
+# ======== #149: fidelity -- seed template assembles at runtime ========
+
+@test "fidelity: seed template uses runtime assembly (settingHook not store copy)" {
+    # Verify the seed template uses settingHook (runtime assembly) not
+    # defaultShellHook with cp from store -- ensures lefthook-repo.yml is
+    # picked up and fidelity check passes for repos with repo-local checks.
+    local seed_flake="$BATS_TEST_DIRNAME/../setting/scaffold/leaf-flake.txt"
+    grep -q 'settingHook' "$seed_flake"
+    grep -q 'assemble-lefthook.sh' "$seed_flake"
+    # must NOT have `cp -f ${mat.files}/lefthook.yml` (store copy)
+    run ! grep -q 'mat\.files.*lefthook\.yml' "$seed_flake"
 }
