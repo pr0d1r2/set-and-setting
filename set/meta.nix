@@ -122,6 +122,17 @@ let
         "defaults"
       ];
     };
+    "design/paradigm/coc.md" = {
+      keywords = [
+        "convention-over-configuration"
+        "coc"
+        "sensible-defaults"
+        "defaults"
+        "scaffolding"
+        "framework"
+        "boilerplate"
+      ];
+    };
     "principles/pola.md" = {
       keywords = [
         "pola"
