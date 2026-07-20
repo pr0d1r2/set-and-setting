@@ -165,6 +165,18 @@ let
         "failure"
       ];
     };
+    "principles/believability.md" = {
+      keywords = [
+        "believability"
+        "believability-weighted"
+        "track-record"
+        "competence"
+        "credibility"
+        "meritocracy"
+        "autonomy"
+        "trust"
+      ];
+    };
     "principles/transparency.md" = {
       keywords = [
         "transparency"
