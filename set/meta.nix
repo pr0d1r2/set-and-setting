@@ -155,6 +155,17 @@ let
         "debugging"
       ];
     };
+    "principles/truth.md" = {
+      keywords = [
+        "truth"
+        "radical-truth"
+        "honesty"
+        "transparency"
+        "faithful-reporting"
+        "mistakes"
+        "failure"
+      ];
+    };
     "security/hardening.md" = {
       paths = [ "**/*.nix" ];
       content = [
