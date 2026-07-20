@@ -177,6 +177,18 @@ let
         "trust"
       ];
     };
+    "principles/progress.md" = {
+      keywords = [
+        "progress"
+        "pain-reflection"
+        "failure-as-fuel"
+        "backprop"
+        "encode-lesson"
+        "compound-improvement"
+        "introspect"
+        "root-cause"
+      ];
+    };
     "principles/transparency.md" = {
       keywords = [
         "transparency"
