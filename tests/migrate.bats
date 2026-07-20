@@ -17,6 +17,7 @@ setup() {
     export CONFIRM_SCRIPT="$REPO_ROOT/lib/confirm.sh"
     export CONFIRM_REV="test-rev"
     export CHECKS_UNIVERSE="nixfmt statix deadnix shellcheck gitleaks shfmt typos ascii-only editorconfig-checker execute-permissions file-size-check git-conflict-markers git-no-local-paths missing-final-newline nix-no-embedded-shell no-shell-functions trailing-whitespace"
+    export CHECK_FRAGMENT_MAP="gitleaks=base git-conflict-markers=base git-no-local-paths=base execute-permissions=base file-size-check=base trailing-whitespace=base missing-final-newline=base editorconfig-checker=base typos=base nixfmt=nix statix=nix deadnix=nix nix-no-embedded-shell=nix shellcheck=shell shfmt=shell no-shell-functions=shell ascii-only=ascii markdownlint=markdown markdownlint-agentic=markdown yamllint=yaml set-skill-extension=set set-skill-size=set set-ref-resolution=set set-bundle-content=set"
 
     # a materialized config bundle (SETTING_SRC)
     SETTING_SRC="$(mktemp -d)"
@@ -1252,4 +1253,74 @@ write_vendored_lefthook_with_remotes() {
     [[ "$output" == *"MIGRATE-FAIL"* ]]
     [[ "$output" == *"archetype=content-aware-leaf"* ]]
     [[ "$output" == *"overlays applied"* ]]
+}
+
+# ======== CHECK_FRAGMENT_MAP (#168) ========
+
+@test "CHECK_FRAGMENT_MAP drives fragment lookup for carry-through (#168)" {
+    echo "{ outputs = { self }: { }; }" >flake.nix
+    printf '%s\n' \
+        "---" \
+        "pre-commit:" \
+        "  commands:" \
+        "    nixfmt:" \
+        "      run: nixfmt --check {staged_files}" \
+        "    custom-tool:" \
+        "      run: custom-tool check" \
+        >lefthook.yml
+    _init_repo
+    run bash "$MIGRATE_SCRIPT"
+    [ "$status" -eq 0 ]
+    # nixfmt is in CHECK_FRAGMENT_MAP (nix fragment) -> standard, not carried
+    # custom-tool is NOT in CHECK_FRAGMENT_MAP -> repo-local, carried through
+    [[ "$output" == *"carried-through: custom-tool"* ]]
+    [ -f lefthook-repo.yml ]
+    grep -q 'custom-tool:' lefthook-repo.yml
+}
+
+@test "CHECK_FRAGMENT_MAP classifies all fragment checks as standard (#168)" {
+    # markdownlint and set-skill-extension are lefthook-only checks covered
+    # by standard fragments. With FULL_LEFTHOOK="" they are not in the
+    # referenced universe, so they appear as "dropped" with a diagnostic
+    # citing the standard fragment that covers them.
+    echo "{ outputs = { self }: { }; }" >flake.nix
+    printf '%s\n' \
+        "---" \
+        "pre-commit:" \
+        "  commands:" \
+        "    markdownlint:" \
+        "      run: markdownlint {staged_files}" \
+        "    set-skill-extension:" \
+        "      run: set-skill-extension check" \
+        >lefthook.yml
+    _init_repo
+    FULL_LEFTHOOK="" run bash "$MIGRATE_SCRIPT"
+    [ "$status" -ne 0 ]
+    # both are in CHECK_FRAGMENT_MAP -> standard fragment diagnostics
+    [[ "$output" == *"standard fragment \`markdown\`"* ]]
+    [[ "$output" == *"standard fragment \`set\`"* ]]
+    # none should be classified as repo-local
+    [[ "$output" != *"NO standard equivalent"* ]]
+}
+
+@test "empty CHECK_FRAGMENT_MAP treats dropped checks as repo-local (#168)" {
+    # markdownlint is lefthook-only (not in CHECKS_UNIVERSE). With an empty
+    # CHECK_FRAGMENT_MAP it should be classified as repo-local and carried
+    # through, rather than diagnosed as a standard-fragment check.
+    echo "{ outputs = { self }: { }; }" >flake.nix
+    printf '%s\n' \
+        "---" \
+        "pre-commit:" \
+        "  commands:" \
+        "    nixfmt:" \
+        "      run: nixfmt --check {staged_files}" \
+        "    markdownlint:" \
+        "      run: markdownlint {staged_files}" \
+        >lefthook.yml
+    _init_repo
+    # strip FULL_LEFTHOOK so markdownlint is not in the universe
+    CHECK_FRAGMENT_MAP="" FULL_LEFTHOOK="" run bash "$MIGRATE_SCRIPT"
+    [ "$status" -eq 0 ]
+    # markdownlint (not in CHECKS_UNIVERSE, not in empty map) -> repo-local
+    [[ "$output" == *"carried-through: markdownlint"* ]]
 }

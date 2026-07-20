@@ -156,15 +156,24 @@ and dogfoods both.
   Valid fragments: `base`, `nix`, `shell`, `ascii`, `markdown`, `yaml`,
   `set`. Unknown fragment -> error with guidance. Exposed as
   `lib.materializationFor`.
+- I.checkFragmentMap: `lib/check-fragment-map.nix` -- single source of
+  truth for check-name-to-fragment mapping (#168). Pure data (no
+  derivations): `checksPerFragment` (all checks per fragment, both pinned
+  and lefthook-only), `pinnedChecks` (subset with `mk*Check` equivalents),
+  `validFragments`, `fragmentTriggers`. Consumed by `checksFor` (validates
+  names), `flake.nix` (serializes as `CHECK_FRAGMENT_MAP` env var for
+  shell scripts), and `migrate.sh` (replaces hardcoded case statements).
+  Adding a new check = add it here; the map auto-propagates to all
+  consumers. A nix check (`check-fragment-map-complete`) validates
+  completeness against both `checksFor` output and lefthook fragment YAML.
 - I.checksFor: `lib/checks-for.nix` -- fragment-driven check selection
   (#93). The CI-gate counterpart to `materializationFor`. Given a
   consumer's declared fragment list, returns an attrset of pinned check
   derivations (one per guardrail tool relevant to those fragments). Only
   tools with pinned-check equivalents (`mk*Check` helpers) are included;
   hooks needing git context, test runners, and `nix-flake-check` stay
-  lefthook-local-only. Fragment->check mapping mirrors the wrapper mapping
-  in `wrappersForFragment`. Args: `pkgs`, `src`, `fragments`. Exposed as
-  `lib.checksFor`.
+  lefthook-local-only. Check names validated against `check-fragment-map.nix`
+  (#168). Args: `pkgs`, `src`, `fragments`. Exposed as `lib.checksFor`.
 - I.sync-set: CLI script in mkSet output. Copies skills+concepts+set.md to consumer repo target dir.
 - I.sync-setting: CLI script in mkSetting output. Copies dotfiles to consumer repo root.
 - I.sets: Attrset of raw paths to each skill category dir.
@@ -516,6 +525,7 @@ and dogfoods both.
 
 | id  | s | description                                          | cites     |
 |-----|---|------------------------------------------------------|-----------|
+| T77 | x | HOOTL-ELIGIBLE — check-fragment-map: single source of truth for check-name-to-fragment mapping (#168). `lib/check-fragment-map.nix` replaces hardcoded case statements in `migrate.sh` with a nix-generated `CHECK_FRAGMENT_MAP` env var. Completeness nix check validates against `checksFor` + lefthook fragment YAML. Adding a new check = add it to the map; migrate.sh auto-discovers it. | I.checkFragmentMap,I.checksFor,V41,V42,V43 |
 | T76 | x | HOOTL-ELIGIBLE — add the autonomous-loop skill, pair it with HITL in the opt-in ops bundle, and verify both SPEC task anchors survive materialization. #154 | C10,I.loop-anchors,V44 |
 | T63 | x | `@`-ref matcher -- pure shell scanner that emits ONLY real `@`-references from a markdown file: leading-token `@set/...`, `@concepts/...`, or relative `@<category>/<file>.md`. SKIPS code spans/fences + block HTML comments (V29 parse rules) and non-ref `@` tokens (email `@example.com`, git SHAs `@fbeb9d9`, prose `@include`/`@main`/`@v4`/`@privileged`/`@system-service`). No repo-wide gate; bats over fixtures. The false-positive filter that blocked T58 | V12,V29,T58 |
 | T64 | x | ref-resolution nix check -- consume the T63 matcher; resolve each real ref to an existing path under `set/` (`@set/...` from the repo root; relative `@<cat>/<file>.md` against its own dir; drafts vs skills). Exit 1 ONLY on a truly-missing target. Wire `checks.set-ref-resolution`. Green: T63 skips false matches, existing refs resolve. Bats coverage | I.flake,V12,T58,T63 |

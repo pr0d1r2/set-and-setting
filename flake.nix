@@ -174,6 +174,16 @@
       forAllSystems =
         f: nixpkgs.lib.genAttrs supportedSystems (system: f nixpkgs.legacyPackages.${system});
 
+      # check-fragment-map.nix: single source of truth for check-to-fragment.
+      cfm = import ./lib/check-fragment-map.nix;
+      checkFragmentMapStr = builtins.concatStringsSep " " (
+        builtins.concatLists (
+          map (
+            frag: map (check: "${check}=${frag}") cfm.checksPerFragment.${frag}
+          ) cfm.validFragments
+        )
+      );
+
       # --- apps.migrate fixtures (#96): shared derivation environment ---
       # Every migrate state fixture runs the same migrator over a fixture
       # git repo, so they share one env + toolset. The migrator runs on
@@ -240,6 +250,7 @@
           CONFIRM_REV = self.rev or self.dirtyRev or "unknown";
           MIGRATE_SCRIPT = ./lib/migrate.sh;
           CHECKS_UNIVERSE = builtins.concatStringsSep " " checksUniverseChecks;
+          CHECK_FRAGMENT_MAP = checkFragmentMapStr;
           FULL_LEFTHOOK = "${fullLefthookFiles}/lefthook.yml";
         };
 
@@ -2588,6 +2599,80 @@
             touch $out
           '';
 
+        # #168: check-fragment-map completeness -- every check name produced by
+        # checksFor (over all fragments) must appear in the map, and every
+        # command in lefthook integration fragments must appear too.
+        check-fragment-map-complete =
+          let
+            allChecks = builtins.attrNames (
+              self.lib.checksFor {
+                inherit pkgs;
+                src = ./.;
+                fragments = cfm.validFragments;
+              }
+            );
+            mapChecks = builtins.concatLists (
+              map (f: cfm.checksPerFragment.${f}) cfm.validFragments
+            );
+            pinnedMissing = builtins.filter (c: !(builtins.elem c mapChecks)) allChecks;
+            mapPinned = builtins.concatLists (
+              map (f: cfm.pinnedChecks.${f}) cfm.validFragments
+            );
+            extraPinned = builtins.filter (c: !(builtins.elem c allChecks)) mapPinned;
+          in
+          pkgs.runCommand "check-fragment-map-complete"
+            {
+              nativeBuildInputs = [
+                pkgs.gawk
+                pkgs.gnugrep
+              ];
+              FRAGMENTS_DIR = ./setting/integrations/lefthook;
+              MAP_CHECKS = builtins.concatStringsSep "\n" mapChecks;
+            }
+            ''
+              # 1. Every checksFor name must be in the map
+              ${
+                if pinnedMissing != [ ] then
+                  ''
+                    echo "FAIL: checksFor names missing from check-fragment-map.nix:"
+                    echo "  ${builtins.concatStringsSep ", " pinnedMissing}"
+                    exit 1
+                  ''
+                else
+                  ""
+              }
+              # 2. Every map pinnedChecks name must be in checksFor
+              ${
+                if extraPinned != [ ] then
+                  ''
+                    echo "FAIL: check-fragment-map.nix pinnedChecks has names not in checksFor:"
+                    echo "  ${builtins.concatStringsSep ", " extraPinned}"
+                    exit 1
+                  ''
+                else
+                  ""
+              }
+              # 3. Every command in lefthook fragments must be in the map
+              fail=0
+              for frag in $FRAGMENTS_DIR/*.yml; do
+                fname="$(basename "$frag" .yml)"
+                cmds="$(awk '
+                  /^  commands:[[:space:]]*$/ { c=1; next }
+                  c && /^    [A-Za-z][A-Za-z0-9_-]*:/ { k=$1; sub(/:.*/, "", k); print k }
+                  /^[a-z]/ && !/^    / { c=0 }
+                ' "$frag" | sort -u)"
+                for cmd in $cmds; do
+                  if ! echo "$MAP_CHECKS" | grep -qx "$cmd"; then
+                    echo "FAIL: lefthook fragment $fname has command '$cmd' not in check-fragment-map.nix"
+                    fail=1
+                  fi
+                done
+              done
+              [ "$fail" -eq 0 ] || exit 1
+              echo "PASS: check-fragment-map.nix is complete (all checksFor + fragment commands covered)"
+              touch $out
+            '';
+
         confirm-self-test =
           let
             mkSettingFull = import ./setting/lib/mk-setting.nix { inherit (nixpkgs) lib; } { inherit pkgs; };
@@ -3085,6 +3170,7 @@
               export DETECT_SCRIPT="${./setting/lib/detect-fragments.sh}"
               export COVERAGE_SCRIPT="${./lib/check-coverage.sh}"
               export CHECKS_UNIVERSE="${lib.concatStringsSep " " checksUniverse}"
+              export CHECK_FRAGMENT_MAP="${checkFragmentMapStr}"
             ''
             + builtins.readFile ./setting/lib/app-mk-setting.sh;
           };
@@ -3204,6 +3290,7 @@
               export CONFIRM_REV="${self.rev or self.dirtyRev or "unknown"}"
               export MIGRATE_SCRIPT="${./lib/migrate.sh}"
               export CHECKS_UNIVERSE="${lib.concatStringsSep " " checksUniverse}"
+              export CHECK_FRAGMENT_MAP="${checkFragmentMapStr}"
               export FULL_LEFTHOOK="${
                 (self.lib.materializationFor {
                   inherit pkgs;
