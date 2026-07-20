@@ -186,7 +186,18 @@ let
         "encode-lesson"
         "compound-improvement"
         "introspect"
+      ];
+    };
+    "principles/rootcause.md" = {
+      keywords = [
         "root-cause"
+        "rootcause"
+        "diagnosis"
+        "five-whys"
+        "symptom"
+        "underlying-defect"
+        "trace"
+        "debugging"
       ];
     };
     "principles/transparency.md" = {
