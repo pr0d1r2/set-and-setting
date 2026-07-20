@@ -40,6 +40,9 @@
 #                     check-fragment-map.nix (single source of truth).
 #                     Used to classify dropped checks as standard vs
 #                     repo-local during carry-through and diagnostics.
+#   FRAGMENT_TRIGGERS   pipe-separated frag=description pairs from
+#                     check-fragment-map.nix. Human-readable trigger
+#                     descriptions per fragment (for diagnostics).
 #   FULL_LEFTHOOK     (optional) path to a lefthook.yml assembled from ALL
 #                     fragments -- its command names complete the universe of
 #                     guardrails the referenced architecture can provide.
@@ -973,16 +976,7 @@ if [ -n "$dropped" ]; then
     # lookup via CHECK_FRAGMENT_MAP (from check-fragment-map.nix, #168)
     frag="$(printf '%s\n' ${CHECK_FRAGMENT_MAP:-} | awk -F= -v c="$check" '$1==c{print $2; exit}')"
     if [ -n "$frag" ]; then
-      trigger=""
-      case "$frag" in
-        base | ascii) trigger="always active" ;;
-        nix) trigger="tracked *.nix files" ;;
-        shell) trigger="tracked *.sh/*.bash files" ;;
-        markdown) trigger="tracked *.md files" ;;
-        yaml) trigger="tracked *.yml/*.yaml files" ;;
-        set) trigger="tracked set/*.md files" ;;
-        *) trigger="" ;;
-      esac
+      trigger="$(printf '%s\n' "${FRAGMENT_TRIGGERS:-}" | tr '|' '\n' | awk -F= -v f="$frag" '$1==f{sub(/^[^=]*=/, ""); print; exit}')"
       echo "    - $check: standard fragment \`$frag\` covers this ($trigger)"
     else
       echo "    - $check: NO standard equivalent (repo-local). Choose:"

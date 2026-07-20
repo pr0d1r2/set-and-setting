@@ -18,6 +18,7 @@ setup() {
     export CONFIRM_REV="test-rev"
     export CHECKS_UNIVERSE="nixfmt statix deadnix shellcheck gitleaks shfmt typos ascii-only editorconfig-checker execute-permissions file-size-check git-conflict-markers git-no-local-paths missing-final-newline nix-no-embedded-shell no-shell-functions trailing-whitespace"
     export CHECK_FRAGMENT_MAP="gitleaks=base git-conflict-markers=base git-no-local-paths=base execute-permissions=base file-size-check=base trailing-whitespace=base missing-final-newline=base editorconfig-checker=base typos=base nixfmt=nix statix=nix deadnix=nix nix-no-embedded-shell=nix shellcheck=shell shfmt=shell no-shell-functions=shell ascii-only=ascii markdownlint=markdown markdownlint-agentic=markdown yamllint=yaml set-skill-extension=set set-skill-size=set set-ref-resolution=set set-bundle-content=set"
+    export FRAGMENT_TRIGGERS="base=always active|nix=tracked *.nix files|shell=tracked *.sh/*.bash files|ascii=always active|markdown=tracked *.md files|yaml=tracked *.yml/*.yaml files|set=tracked set/*.md files"
 
     # a materialized config bundle (SETTING_SRC)
     SETTING_SRC="$(mktemp -d)"

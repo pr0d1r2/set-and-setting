@@ -181,6 +181,7 @@
           map (frag: map (check: "${check}=${frag}") cfm.checksPerFragment.${frag}) cfm.validFragments
         )
       );
+      fragmentTriggersStr = builtins.concatStringsSep "|" (map (frag: "${frag}=${cfm.fragmentTriggers.${frag}}") cfm.validFragments);
 
       # --- apps.migrate fixtures (#96): shared derivation environment ---
       # Every migrate state fixture runs the same migrator over a fixture
@@ -249,6 +250,7 @@
           MIGRATE_SCRIPT = ./lib/migrate.sh;
           CHECKS_UNIVERSE = builtins.concatStringsSep " " checksUniverseChecks;
           CHECK_FRAGMENT_MAP = checkFragmentMapStr;
+          FRAGMENT_TRIGGERS = fragmentTriggersStr;
           FULL_LEFTHOOK = "${fullLefthookFiles}/lefthook.yml";
         };
 
@@ -3285,6 +3287,7 @@
               export MIGRATE_SCRIPT="${./lib/migrate.sh}"
               export CHECKS_UNIVERSE="${lib.concatStringsSep " " checksUniverse}"
               export CHECK_FRAGMENT_MAP="${checkFragmentMapStr}"
+              export FRAGMENT_TRIGGERS="${fragmentTriggersStr}"
               export FULL_LEFTHOOK="${
                 (self.lib.materializationFor {
                   inherit pkgs;

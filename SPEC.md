@@ -161,8 +161,9 @@ and dogfoods both.
   derivations): `checksPerFragment` (all checks per fragment, both pinned
   and lefthook-only), `pinnedChecks` (subset with `mk*Check` equivalents),
   `validFragments`, `fragmentTriggers`. Consumed by `checksFor` (validates
-  names), `flake.nix` (serializes as `CHECK_FRAGMENT_MAP` env var for
-  shell scripts), and `migrate.sh` (replaces hardcoded case statements).
+  names), `flake.nix` (serializes as `CHECK_FRAGMENT_MAP` and
+  `FRAGMENT_TRIGGERS` env vars for shell scripts), and `migrate.sh`
+  (replaces hardcoded case statements).
   Adding a new check = add it here; the map auto-propagates to all
   consumers. A nix check (`check-fragment-map-complete`) validates
   completeness against both `checksFor` output and lefthook fragment YAML.
