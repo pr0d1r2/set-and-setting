@@ -160,10 +160,21 @@ let
         "truth"
         "radical-truth"
         "honesty"
-        "transparency"
         "faithful-reporting"
         "mistakes"
         "failure"
+      ];
+    };
+    "principles/transparency.md" = {
+      keywords = [
+        "transparency"
+        "radical-transparency"
+        "auditable"
+        "visible"
+        "reasoning"
+        "decisions"
+        "audit-trail"
+        "inspection"
       ];
     };
     "security/hardening.md" = {
