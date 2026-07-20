@@ -1591,6 +1591,24 @@
               echo "FAIL: set.md must not list domain rules"; exit 1
             fi
 
+            # store-root-correct index.md (#167): $out-relative @-imports
+            idx="${full}/index.md"
+            [ -f "$idx" ] || { echo "FAIL: index.md missing"; exit 1; }
+            grep -q '^@\./.claude/rules/set/concepts-user.md$' "$idx" \
+              || { echo "FAIL: index.md missing concept ref"; exit 1; }
+            grep -q '^@\./.claude/rules/set/generic/skill.md$' "$idx" \
+              || { echo "FAIL: index.md missing core ref"; exit 1; }
+            if grep -q 'nix/flake.md' "$idx"; then
+              echo "FAIL: index.md must not list domain rules"; exit 1
+            fi
+            # every @-import in index.md resolves under $out
+            while IFS= read -r line; do
+              case "$line" in @*) ;; *) continue ;; esac
+              ref="''${line#@./}"
+              [ -f "${full}/$ref" ] \
+                || { echo "FAIL: index.md ref $ref not found under derivation"; exit 1; }
+            done <"$idx"
+
             # CHANNEL c (portable SKILL.md, V20): per-category skill folder
             skill="${full}/.claude/skills/set-nix/SKILL.md"
             [ -f "$skill" ] || { echo "FAIL: set-nix SKILL.md missing"; exit 1; }
