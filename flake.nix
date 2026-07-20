@@ -181,7 +181,9 @@
           map (frag: map (check: "${check}=${frag}") cfm.checksPerFragment.${frag}) cfm.validFragments
         )
       );
-      fragmentTriggersStr = builtins.concatStringsSep "|" (map (frag: "${frag}=${cfm.fragmentTriggers.${frag}}") cfm.validFragments);
+      fragmentTriggersStr = builtins.concatStringsSep "|" (
+        map (frag: "${frag}=${cfm.fragmentTriggers.${frag}}") cfm.validFragments
+      );
 
       # --- apps.migrate fixtures (#96): shared derivation environment ---
       # Every migrate state fixture runs the same migrator over a fixture
