@@ -133,6 +133,18 @@ let
         "boilerplate"
       ];
     };
+    "principles/openness.md" = {
+      keywords = [
+        "openness"
+        "open-mindedness"
+        "radical-open-mindedness"
+        "disconfirming"
+        "adversarial-review"
+        "blind-spot"
+        "ego-barrier"
+        "cross-brain"
+      ];
+    };
     "principles/pola.md" = {
       keywords = [
         "pola"
