@@ -178,9 +178,7 @@
       cfm = import ./lib/check-fragment-map.nix;
       checkFragmentMapStr = builtins.concatStringsSep " " (
         builtins.concatLists (
-          map (
-            frag: map (check: "${check}=${frag}") cfm.checksPerFragment.${frag}
-          ) cfm.validFragments
+          map (frag: map (check: "${check}=${frag}") cfm.checksPerFragment.${frag}) cfm.validFragments
         )
       );
 
@@ -2611,13 +2609,9 @@
                 fragments = cfm.validFragments;
               }
             );
-            mapChecks = builtins.concatLists (
-              map (f: cfm.checksPerFragment.${f}) cfm.validFragments
-            );
+            mapChecks = builtins.concatLists (map (f: cfm.checksPerFragment.${f}) cfm.validFragments);
             pinnedMissing = builtins.filter (c: !(builtins.elem c mapChecks)) allChecks;
-            mapPinned = builtins.concatLists (
-              map (f: cfm.pinnedChecks.${f}) cfm.validFragments
-            );
+            mapPinned = builtins.concatLists (map (f: cfm.pinnedChecks.${f}) cfm.validFragments);
             extraPinned = builtins.filter (c: !(builtins.elem c allChecks)) mapPinned;
           in
           pkgs.runCommand "check-fragment-map-complete"
