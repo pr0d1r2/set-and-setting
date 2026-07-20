@@ -36,6 +36,13 @@
 #                     `checks.<sys>.<tool>`, NOT lefthook commands -- so the
 #                     referenced effective check-set is these names UNION the
 #                     lefthook.yml commands.
+#   CHECK_FRAGMENT_MAP  space-separated check=fragment pairs from
+#                     check-fragment-map.nix (single source of truth).
+#                     Used to classify dropped checks as standard vs
+#                     repo-local during carry-through and diagnostics.
+#   FRAGMENT_TRIGGERS   pipe-separated frag=description pairs from
+#                     check-fragment-map.nix. Human-readable trigger
+#                     descriptions per fragment (for diagnostics).
 #   FULL_LEFTHOOK     (optional) path to a lefthook.yml assembled from ALL
 #                     fragments -- its command names complete the universe of
 #                     guardrails the referenced architecture can provide.
@@ -885,36 +892,8 @@ dropped="$(comm -23 "$old_checks" "$new_checks" || true)"
 if [ -n "$dropped" ] && [ -n "${saved_vendored:-}" ] && [ -f "${saved_vendored:-}" ]; then
   local_dropped=""
   for check in $dropped; do
-    # inline fragment lookup (no function per no-shell-functions guardrail)
-    frag=""
-    case "$check" in
-      gitleaks | git-conflict-markers | \
-        git-no-local-paths | execute-permissions | file-size-check | \
-        trailing-whitespace | missing-final-newline | editorconfig-checker | \
-        typos)
-        frag="base"
-        ;;
-      nixfmt | statix | deadnix | nix-no-embedded-shell)
-        frag="nix"
-        ;;
-      shellcheck | shfmt | no-shell-functions)
-        frag="shell"
-        ;;
-      ascii-only)
-        frag="ascii"
-        ;;
-      markdownlint | markdownlint-agentic)
-        frag="markdown"
-        ;;
-      yamllint)
-        frag="yaml"
-        ;;
-      set-skill-extension | set-skill-size | set-ref-resolution | \
-        set-bundle-content)
-        frag="set"
-        ;;
-      *) frag="" ;;
-    esac
+    # lookup via CHECK_FRAGMENT_MAP (from check-fragment-map.nix, #168)
+    frag="$(printf '%s\n' ${CHECK_FRAGMENT_MAP:-} | awk -F= -v c="$check" '$1==c{print $2; exit}')"
     [ -z "$frag" ] && local_dropped="$local_dropped $check"
   done
   local_dropped="${local_dropped# }"
@@ -994,48 +973,10 @@ if [ -n "$dropped" ]; then
   echo "  dropped: $dropped_list"
   echo "  resolution:"
   for check in $dropped; do
-    # inline fragment lookup (no function per no-shell-functions guardrail)
-    frag=""
-    case "$check" in
-      gitleaks | git-conflict-markers | \
-        git-no-local-paths | execute-permissions | file-size-check | \
-        trailing-whitespace | missing-final-newline | editorconfig-checker | \
-        typos)
-        frag="base"
-        ;;
-      nixfmt | statix | deadnix | nix-no-embedded-shell)
-        frag="nix"
-        ;;
-      shellcheck | shfmt | no-shell-functions)
-        frag="shell"
-        ;;
-      ascii-only)
-        frag="ascii"
-        ;;
-      markdownlint | markdownlint-agentic)
-        frag="markdown"
-        ;;
-      yamllint)
-        frag="yaml"
-        ;;
-      set-skill-extension | set-skill-size | set-ref-resolution | \
-        set-bundle-content)
-        frag="set"
-        ;;
-      *) frag="" ;;
-    esac
+    # lookup via CHECK_FRAGMENT_MAP (from check-fragment-map.nix, #168)
+    frag="$(printf '%s\n' ${CHECK_FRAGMENT_MAP:-} | awk -F= -v c="$check" '$1==c{print $2; exit}')"
     if [ -n "$frag" ]; then
-      # inline trigger lookup (no function per no-shell-functions guardrail)
-      trigger=""
-      case "$frag" in
-        base | ascii) trigger="always active" ;;
-        nix) trigger="tracked *.nix files" ;;
-        shell) trigger="tracked *.sh/*.bash files" ;;
-        markdown) trigger="tracked *.md files" ;;
-        yaml) trigger="tracked *.yml/*.yaml files" ;;
-        set) trigger="tracked set/*.md files" ;;
-        *) trigger="" ;;
-      esac
+      trigger="$(printf '%s\n' "${FRAGMENT_TRIGGERS:-}" | tr '|' '\n' | awk -F= -v f="$frag" '$1==f{sub(/^[^=]*=/, ""); print; exit}')"
       echo "    - $check: standard fragment \`$frag\` covers this ($trigger)"
     else
       echo "    - $check: NO standard equivalent (repo-local). Choose:"

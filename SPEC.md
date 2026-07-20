@@ -156,15 +156,25 @@ and dogfoods both.
   Valid fragments: `base`, `nix`, `shell`, `ascii`, `markdown`, `yaml`,
   `set`. Unknown fragment -> error with guidance. Exposed as
   `lib.materializationFor`.
+- I.checkFragmentMap: `lib/check-fragment-map.nix` -- single source of
+  truth for check-name-to-fragment mapping (#168). Pure data (no
+  derivations): `checksPerFragment` (all checks per fragment, both pinned
+  and lefthook-only), `pinnedChecks` (subset with `mk*Check` equivalents),
+  `validFragments`, `fragmentTriggers`. Consumed by `checksFor` (validates
+  names), `flake.nix` (serializes as `CHECK_FRAGMENT_MAP` and
+  `FRAGMENT_TRIGGERS` env vars for shell scripts), and `migrate.sh`
+  (replaces hardcoded case statements).
+  Adding a new check = add it here; the map auto-propagates to all
+  consumers. A nix check (`check-fragment-map-complete`) validates
+  completeness against both `checksFor` output and lefthook fragment YAML.
 - I.checksFor: `lib/checks-for.nix` -- fragment-driven check selection
   (#93). The CI-gate counterpart to `materializationFor`. Given a
   consumer's declared fragment list, returns an attrset of pinned check
   derivations (one per guardrail tool relevant to those fragments). Only
   tools with pinned-check equivalents (`mk*Check` helpers) are included;
   hooks needing git context, test runners, and `nix-flake-check` stay
-  lefthook-local-only. Fragment->check mapping mirrors the wrapper mapping
-  in `wrappersForFragment`. Args: `pkgs`, `src`, `fragments`. Exposed as
-  `lib.checksFor`.
+  lefthook-local-only. Check names validated against `check-fragment-map.nix`
+  (#168). Args: `pkgs`, `src`, `fragments`. Exposed as `lib.checksFor`.
 - I.sync-set: CLI script in mkSet output. Copies skills+concepts+set.md to consumer repo target dir.
 - I.sync-setting: CLI script in mkSetting output. Copies dotfiles to consumer repo root.
 - I.sets: Attrset of raw paths to each skill category dir.
@@ -516,6 +526,7 @@ and dogfoods both.
 
 | id  | s | description                                          | cites     |
 |-----|---|------------------------------------------------------|-----------|
+| T77 | x | HOOTL-ELIGIBLE — check-fragment-map: single source of truth for check-name-to-fragment mapping (#168). `lib/check-fragment-map.nix` replaces hardcoded case statements in `migrate.sh` with a nix-generated `CHECK_FRAGMENT_MAP` env var. Completeness nix check validates against `checksFor` + lefthook fragment YAML. Adding a new check = add it to the map; migrate.sh auto-discovers it. | I.checkFragmentMap,I.checksFor,V41,V42,V43 |
 | T76 | x | HOOTL-ELIGIBLE — add the autonomous-loop skill, pair it with HITL in the opt-in ops bundle, and verify both SPEC task anchors survive materialization. #154 | C10,I.loop-anchors,V44 |
 | T63 | x | `@`-ref matcher -- pure shell scanner that emits ONLY real `@`-references from a markdown file: leading-token `@set/...`, `@concepts/...`, or relative `@<category>/<file>.md`. SKIPS code spans/fences + block HTML comments (V29 parse rules) and non-ref `@` tokens (email `@example.com`, git SHAs `@fbeb9d9`, prose `@include`/`@main`/`@v4`/`@privileged`/`@system-service`). No repo-wide gate; bats over fixtures. The false-positive filter that blocked T58 | V12,V29,T58 |
 | T64 | x | ref-resolution nix check -- consume the T63 matcher; resolve each real ref to an existing path under `set/` (`@set/...` from the repo root; relative `@<cat>/<file>.md` against its own dir; drafts vs skills). Exit 1 ONLY on a truly-missing target. Wire `checks.set-ref-resolution`. Green: T63 skips false matches, existing refs resolve. Bats coverage | I.flake,V12,T58,T63 |
@@ -634,4 +645,6 @@ and dogfoods both.
 | B33 | 2026-07-16 | `guardrails / check` failed because the inactive-`checksFor` detection fix introduced `has_active_checks_for()` in `lib/check-coverage.sh`, violating the repository's pinned `no-shell-functions` guardrail. | fixed: kept the comment/string-aware awk detector as a functionless command mode and invoked that mode recursively for the coverage decision; the full flake check now exercises both the detector behavior and the no-functions constraint. |
 | B34 | 2026-07-19 | `guardrails / check` CI failed: `checks.shellcheck` red because `lib/migrate.sh` line 396 used `echo "$var" | sed 's/.../'` which triggers SC2001 (style: use parameter expansion instead). The pinned `nix-lefthook-shellcheck` wrapper treats SC2001 as an error. All other checks passed. | fixed: added `# shellcheck disable=SC2001` inline directive for the sed invocation (the regex uses an optional group `\(...\)\?` which has no clean bash parameter expansion equivalent). |
 | B35 | 2026-07-19 | `guardrails / check` CI failed: `checks.editorconfig-checker` red because `set/drafts/ops/hitl.md` line 48 used 3-space indentation (continuation of numbered list item `3.`) which is not a multiple of 2 as required by `.editorconfig` `indent_size = 2` for `*.md`. The draft was added in the current PR (#153) and never checked locally against editorconfig. All other checks passed; the cascade in the log is nix's all-or-nothing `nix flake check` behavior. | fixed: changed the continuation indent from 3 spaces to 4 spaces (next valid multiple of 2) in `set/drafts/ops/hitl.md` line 48. |
+| B36 | 2026-07-20 | `guardrails / check` CI failed: `checks.nixfmt` red because `flake.nix` had three multi-line `map` expressions that nixfmt 1.3.1 expects on a single line. The #168 commit introduced `check-fragment-map.nix` references with multi-line `map (frag: ...) cfm.validFragments` and `builtins.concatLists (map ...)` that were not run through the pinned nixfmt before commit. All other checks passed; the cascade in the log is nix's all-or-nothing `nix flake check` behavior. | fixed: reformatted the three `map` expressions in `flake.nix` to single-line form matching nixfmt 1.3.1 output. |
+| B37 | 2026-07-20 | `guardrails / check` CI still red after B36: `checks.nixfmt` failed because `flake.nix` had a fourth `map` expression (`fragmentTriggersStr`) that B36 missed. The `builtins.concatStringsSep` call with an inline `(map (frag: ...) cfm.validFragments)` exceeded nixfmt 1.3.1's line-length threshold and needed to be split into multi-line form. Same class as B36 -- #168 code not run through the pinned nixfmt before commit. | fixed: reformatted the `fragmentTriggersStr` assignment in `flake.nix` to the multi-line `(map ...)` form matching nixfmt 1.3.1 output. |
 <!-- markdownlint-enable MD013 MD038 MD056 -->

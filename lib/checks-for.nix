@@ -14,6 +14,10 @@
 # Hooks that need git context (commit-msg-lint, narrow-language), test runners
 # (bats), or tools that ARE `nix flake check` (nix-flake-check) are excluded --
 # those remain lefthook-local-only.
+#
+# Check names and fragment membership are defined in check-fragment-map.nix
+# (the single source of truth). Adding a new pinned check = add it there +
+# add the mk*Check arg + wire it in checksForFragment below.
 {
   pkgs,
   src,
@@ -38,17 +42,9 @@
 }:
 
 let
-  validFragments = [
-    "base"
-    "nix"
-    "shell"
-    "ascii"
-    "markdown"
-    "yaml"
-    "set"
-  ];
+  cfm = import ./check-fragment-map.nix;
 
-  invalidFragments = builtins.filter (f: !(builtins.elem f validFragments)) fragments;
+  invalidFragments = builtins.filter (f: !(builtins.elem f cfm.validFragments)) fragments;
 
   checksForFragment = {
     base = {
@@ -85,5 +81,5 @@ let
 in
 assert
   invalidFragments == [ ]
-  || builtins.throw "checksFor: unknown fragments: ${builtins.concatStringsSep ", " invalidFragments}. Valid: ${builtins.concatStringsSep ", " validFragments}";
+  || builtins.throw "checksFor: unknown fragments: ${builtins.concatStringsSep ", " invalidFragments}. Valid: ${builtins.concatStringsSep ", " cfm.validFragments}";
 merged
