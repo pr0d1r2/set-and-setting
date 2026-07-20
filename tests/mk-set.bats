@@ -133,6 +133,65 @@ teardown() {
     [ "$status" -eq 0 ]
 }
 
+# --- #167: store-root-correct index.md ---
+
+@test "index.md emitted at store root with $DIR-relative @-imports (#167)" {
+    export CATEGORIES="demo"
+    export GLOBS_MAP="demo=**/*"
+    export CORE="demo"
+    run bash "$SCRIPT"
+    [ "$status" -eq 0 ]
+    [ -f "$out/index.md" ]
+    grep -q '^@\./.claude/rules/set/demo.md$' "$out/index.md"
+    grep -q '^@\./.claude/rules/set/demo/sub.md$' "$out/index.md"
+}
+
+@test "index.md includes concepts when CONCEPTS=1 (#167)" {
+    printf '# User\n\nUser concept.\n' >"$CONCEPTS_DIR/user.md"
+    export CATEGORIES="" GLOBS_MAP="" CONCEPTS="1"
+    run bash "$SCRIPT"
+    [ "$status" -eq 0 ]
+    [ -f "$out/index.md" ]
+    grep -q '^@\./.claude/rules/set/concepts-user.md$' "$out/index.md"
+}
+
+@test "index.md omits domain rules with frontmatter (#167)" {
+    export CATEGORIES="demo"
+    export GLOBS_MAP="demo=**/*.nix,flake.lock"
+    run bash "$SCRIPT"
+    [ "$status" -eq 0 ]
+    [ -f "$out/index.md" ]
+    run ! grep -q 'demo.md' "$out/index.md"
+    run ! grep -q 'demo/sub.md' "$out/index.md"
+}
+
+@test "index.md @-imports resolve under \$out (#167)" {
+    printf '# User\n\nUser concept.\n' >"$CONCEPTS_DIR/user.md"
+    export CATEGORIES="demo"
+    export GLOBS_MAP="demo=**/*"
+    export CORE="demo"
+    export CONCEPTS="1"
+    run bash "$SCRIPT"
+    [ "$status" -eq 0 ]
+    while IFS= read -r line; do
+        [[ "$line" =~ ^@ ]] || continue
+        ref="${line#@./}"
+        [ -f "$out/$ref" ] || { echo "FAIL: $out/$ref not found"; return 1; }
+    done <"$out/index.md"
+}
+
+@test "index.md uses agent DIR for opencode seam (#167)" {
+    export DIR=".opencode/rules/set"
+    export COND_FIELD="globs"
+    export CATEGORIES="demo"
+    export GLOBS_MAP="demo=**/*"
+    export CORE="demo"
+    run bash "$SCRIPT"
+    [ "$status" -eq 0 ]
+    [ -f "$out/index.md" ]
+    grep -q '^@\./.opencode/rules/set/demo.md$' "$out/index.md"
+}
+
 # --- T31/V23: opencode agnosticism proof ---
 
 @test "opencode seam emits to .opencode dir with globs (T31/V23)" {

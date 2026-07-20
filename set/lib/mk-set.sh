@@ -84,6 +84,20 @@ mkdir -p "$setroot" "$(dirname "$manifest")"
   done
 } >"$manifest"
 
+# Store-root-correct registry (#167): index.md at $out with $out-relative
+# @-imports so a built set is Loadable from the derivation root. set.md
+# (above) stays as-is for sync-set consumers.
+{
+  printf '# Set (always-on)\n\n'
+  find "$setroot" -maxdepth 1 -name 'concepts-*.md' | sort | while read -r f; do
+    printf '@./%s/%s\n' "$DIR" "${f#"$setroot"/}"
+  done
+  find "$setroot" -name '*.md' ! -name 'concepts-*.md' | sort | while read -r f; do
+    head -1 "$f" | grep -q '^---$' && continue
+    printf '@./%s/%s\n' "$DIR" "${f#"$setroot"/}"
+  done
+} >"$out/index.md"
+
 # Inline always-on for agents without @-import (V39): compile set.md into
 # an AGENTS.md (universal core only). Only when the profile imports inline.
 manifest_dir="$out/${DIR%/*}"
