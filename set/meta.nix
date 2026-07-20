@@ -144,6 +144,17 @@ let
         "naming"
       ];
     };
+    "principles/reality.md" = {
+      keywords = [
+        "reality"
+        "hyperrealism"
+        "observed-state"
+        "evidence"
+        "verification"
+        "ci-status"
+        "debugging"
+      ];
+    };
     "security/hardening.md" = {
       paths = [ "**/*.nix" ];
       content = [
