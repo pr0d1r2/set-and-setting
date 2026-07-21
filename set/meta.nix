@@ -212,6 +212,19 @@ let
         "debugging"
       ];
     };
+    "principles/machine.md" = {
+      keywords = [
+        "machine"
+        "machine-thinking"
+        "higher-level"
+        "process-design"
+        "system-design"
+        "tend-loop"
+        "recurring-failure"
+        "self-correcting"
+        "feedback-loop"
+      ];
+    };
     "principles/transparency.md" = {
       keywords = [
         "transparency"
