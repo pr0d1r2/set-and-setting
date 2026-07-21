@@ -177,6 +177,18 @@ let
         "failure"
       ];
     };
+    "principles/ownership.md" = {
+      keywords = [
+        "ownership"
+        "accountability"
+        "end-to-end"
+        "outcome"
+        "terminal-state"
+        "pull-request"
+        "handoff"
+        "blocked"
+      ];
+    };
     "principles/believability.md" = {
       keywords = [
         "believability"
