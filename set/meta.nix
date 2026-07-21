@@ -200,6 +200,18 @@ let
         "introspect"
       ];
     };
+    "principles/evolve.md" = {
+      keywords = [
+        "evolve"
+        "continuous-adaptation"
+        "self-improvement"
+        "introspect-flywheel"
+        "fleet-propagation"
+        "spec-upgrade"
+        "toolchain-upgrade"
+        "stagnation"
+      ];
+    };
     "principles/rootcause.md" = {
       keywords = [
         "root-cause"

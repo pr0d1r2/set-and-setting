@@ -1378,6 +1378,7 @@
           let
             meta = import ./set/meta.nix { inherit (nixpkgs) lib; };
             r = meta.resolve;
+            evolve = builtins.readFile ./set/skills/principles/evolve.md;
             ok =
               # category fallback: domain category gets its narrow globs
               assert (r "nix/flake.md").channel == "domain";
@@ -1391,6 +1392,13 @@
               assert builtins.elem "prose" (r "language/language.md").keywords;
               # per-file override beats subtree
               assert builtins.elem "narrow-language" (r "language/narrow.md").keywords;
+              # stable principles expose topic-specific discovery metadata
+              assert builtins.elem "evolve" (r "principles/evolve.md").keywords;
+              assert builtins.elem "introspect-flywheel" (r "principles/evolve.md").keywords;
+              assert (r "principles/evolve.md").paths == [ "**/*" ];
+              assert nixpkgs.lib.hasInfix "Everything improves through continuous adaptation" evolve;
+              assert nixpkgs.lib.hasInfix "See also [[machine]] and" evolve;
+              assert nixpkgs.lib.hasInfix "[[progress]]" evolve;
               # deep path still resolves via category fallback (core + broad)
               assert (r "generic/skill/interchange.md").always;
               assert (r "generic/skill/interchange.md").paths == [ "**/*" ];
