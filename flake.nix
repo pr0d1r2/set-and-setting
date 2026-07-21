@@ -1379,6 +1379,7 @@
             meta = import ./set/meta.nix { inherit (nixpkgs) lib; };
             r = meta.resolve;
             evolve = builtins.readFile ./set/skills/principles/evolve.md;
+            ownership = builtins.readFile ./set/skills/principles/ownership.md;
             ok =
               # category fallback: domain category gets its narrow globs
               assert (r "nix/flake.md").channel == "domain";
@@ -1399,6 +1400,12 @@
               assert nixpkgs.lib.hasInfix "Everything improves through continuous adaptation" evolve;
               assert nixpkgs.lib.hasInfix "See also [[machine]] and" evolve;
               assert nixpkgs.lib.hasInfix "[[progress]]" evolve;
+              assert builtins.elem "ownership" (r "principles/ownership.md").keywords;
+              assert builtins.elem "end-to-end" (r "principles/ownership.md").keywords;
+              assert (r "principles/ownership.md").paths == [ "**/*" ];
+              assert nixpkgs.lib.hasInfix "opening it through green checks, accord, and merge" ownership;
+              assert nixpkgs.lib.hasInfix "explicitly marked blocked" ownership;
+              assert nixpkgs.lib.hasInfix "See also [[reality]] and [[truth]]" ownership;
               # deep path still resolves via category fallback (core + broad)
               assert (r "generic/skill/interchange.md").always;
               assert (r "generic/skill/interchange.md").paths == [ "**/*" ];

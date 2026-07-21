@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- Add the `ownership` principle: own outcomes end-to-end, drive pull
+  requests through green checks, accord, and merge, and finish work or mark
+  its evidence-backed blocker explicitly. (#182)
+
 - Remove the obsolete per-repository auto-update workflow and app. Scaffold
   and leaf-seed outputs now contain only `ci.yml` under workflows; their Nix
   checks assert that `auto-update.yml` is absent. Fleet updates are handled by
