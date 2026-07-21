@@ -225,6 +225,19 @@ let
         "feedback-loop"
       ];
     };
+    "principles/consequences.md" = {
+      keywords = [
+        "consequences"
+        "second-order"
+        "third-order"
+        "blast-radius"
+        "downstream"
+        "canary"
+        "storm-brake"
+        "fleet-reddening"
+        "propagation"
+      ];
+    };
     "principles/transparency.md" = {
       keywords = [
         "transparency"
