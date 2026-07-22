@@ -229,6 +229,18 @@ let
         "trust"
       ];
     };
+    "principles/meritocracy.md" = {
+      keywords = [
+        "meritocracy"
+        "idea-meritocracy"
+        "best-idea-wins"
+        "best-of-n"
+        "judge-panel"
+        "evidence-weighted"
+        "decision-making"
+        "seniority"
+      ];
+    };
     "principles/progress.md" = {
       keywords = [
         "progress"
