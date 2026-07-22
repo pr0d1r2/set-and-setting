@@ -2887,8 +2887,8 @@
               test -f "${canon}/$path" || { echo "FAIL: canon missing $path"; exit 1; }
             done
             grep -q '__OWNER__/__REPO__' ${canon}/README.md
-            grep -q '^## §G Goal$' ${canon}/SPEC.md
-            grep -q '^## §T Tasks$' ${canon}/SPEC.md
+            grep -q '^## .*G Goal$' ${canon}/SPEC.md
+            grep -q '^## .*T Tasks$' ${canon}/SPEC.md
             touch $out
           '';
 
