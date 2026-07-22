@@ -74,6 +74,16 @@ portable `SKILL.md` provides cross-agent reach and `/`-invocability.
 A sidecar meta map (`set/meta.nix`) declares each skill's channel,
 path globs, and keywords -- the source markdown stays agent-agnostic.
 
+### Active principles
+
+Every top-level markdown file in `set/skills/principles/` automatically
+projects into the always-on agent prompt as its name, opening rule, and
+unique filename slug. Cite a principle as `[[slug]]`, for example
+`[[rootcause]]`. The same generated projection supplies the pre-merge
+`principles` accord lens; objective violations block accord and subjective
+judgments are believability-weighted. No registry list needs updating, and
+an empty principles directory emits no projection.
+
 ### Smart materialization
 
 With `--auto`, mkSet installs only skills
@@ -305,6 +315,8 @@ Output layout (Claude default):
 - `.claude/skills/set-<category>/SKILL.md` -- portable skill
   (deduped on Claude via `disable-model-invocation: true`)
 - `.claude/rules/set/concepts-<name>.md` -- concept files
+- `.claude/rules/set/principles-projection.md` -- generated active-principle
+  registry and accord lens (when principles exist)
 - `.claude/rules/set/.mkset.json` -- install manifest (categories,
   upstream rev, per-skill applicability evidence)
 - `bin/sync-set` -- copies emitted tree to a target directory

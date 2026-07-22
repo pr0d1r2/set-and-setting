@@ -26,6 +26,8 @@ in
   # Source tree root. Default: set/skills/. Override to include drafts
   # (e.g. a merged tree with set/drafts/ as a drafts/ subdirectory).
   skillsDir ? ../skills,
+  # Active principle registry; null derives it from skillsDir.
+  principlesDir ? null,
 }:
 
 let
@@ -46,6 +48,7 @@ in
 pkgs.runCommand "agent-set"
   {
     SKILLS_DIR = skillsDir;
+    PRINCIPLES_DIR = if principlesDir == null then "${skillsDir}/principles" else principlesDir;
     CONCEPTS_DIR = ../concepts;
     CONCEPTS = if concepts then "1" else "0";
     DIR = ag.dir;
@@ -69,6 +72,7 @@ pkgs.runCommand "agent-set"
     EMIT = ./emit-skill.sh;
     EMIT_RULE = ./emit-rule.sh;
     EMIT_SKILLMD = ./emit-skillmd.sh;
+    EMIT_PRINCIPLES = ./emit-principles.sh;
     RENAME_PROPAGATE = ./rename-propagate.sh;
     SYNC_SRC = ./sync-set.sh;
   }

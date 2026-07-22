@@ -12,6 +12,7 @@
 #   Optional portable SKILL.md channel (V20): SKILL_DIR (agent skills
 #   dir, e.g. .claude/skills), EMIT_SKILLMD (emit-skillmd.sh path),
 #   KEYWORDS_MAP (cat=kw1,kw2;cat2=kw3). Skipped when SKILL_DIR unset.
+#   Optional principle projection: PRINCIPLES_DIR + EMIT_PRINCIPLES.
 # shellcheck disable=SC2154  # $out is provided by the nix runCommand env
 # shellcheck disable=SC2153  # SKILLS_DIR and SKILL_DIR are distinct env vars
 # shellcheck disable=SC2016  # "$schema" is a literal JSON key, not expansion
@@ -61,6 +62,14 @@ if [ "$CONCEPTS" = "1" ]; then
     rel="${f#"$CONCEPTS_DIR"/}"
     cp "$f" "$out/$DIR/concepts-${rel//\//-}"
   done
+fi
+
+# Principles are a registry, not an opt-in category. Project their compact
+# rules + accord lens into the always-on prompt independently of CATEGORIES.
+# This makes adding one source file sufficient for fleet-wide enrollment.
+if [ -n "${PRINCIPLES_DIR:-}" ] && [ -n "${EMIT_PRINCIPLES:-}" ]; then
+  PRINCIPLES_DIR="$PRINCIPLES_DIR" DEST="$out/$DIR/principles-projection.md" \
+    bash "$EMIT_PRINCIPLES"
 fi
 
 # Always-on @-manifest (channel a authoring surface, V18; input to the
