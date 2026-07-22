@@ -1380,6 +1380,7 @@
             r = meta.resolve;
             evolve = builtins.readFile ./set/skills/principles/evolve.md;
             ownership = builtins.readFile ./set/skills/principles/ownership.md;
+            process = builtins.readFile ./set/skills/principles/process.md;
             ok =
               # category fallback: domain category gets its narrow globs
               assert (r "nix/flake.md").channel == "domain";
@@ -1406,6 +1407,14 @@
               assert nixpkgs.lib.hasInfix "opening it through green checks, accord, and merge" ownership;
               assert nixpkgs.lib.hasInfix "explicitly marked blocked" ownership;
               assert nixpkgs.lib.hasInfix "See also [[reality]] and [[truth]]" ownership;
+              assert builtins.elem "process" (r "principles/process.md").keywords;
+              assert builtins.elem "five-step-process" (r "principles/process.md").keywords;
+              assert builtins.elem "spec-driven-development" (r "principles/process.md").keywords;
+              assert (r "principles/process.md").paths == [ "**/*" ];
+              assert nixpkgs.lib.hasInfix "1. Set goals." process;
+              assert nixpkgs.lib.hasInfix "5. Do." process;
+              assert nixpkgs.lib.hasInfix "The process is a loop, not a one-way checklist" process;
+              assert nixpkgs.lib.hasInfix "[[rootcause]], [[reality]], and [[ownership]]" process;
               # deep path still resolves via category fallback (core + broad)
               assert (r "generic/skill/interchange.md").always;
               assert (r "generic/skill/interchange.md").paths == [ "**/*" ];
