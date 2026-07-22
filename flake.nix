@@ -2957,7 +2957,7 @@
               SYNC_HINT = "restore pinned files";
             }
             ''
-              cp -r "$EXPECTED" actual
+              cp -Lr "$EXPECTED" actual
               chmod -R u+w actual
               printf '\n# drift\n' >> actual/.gitignore
               export ACTUAL="$PWD/actual"
