@@ -2893,6 +2893,8 @@
               echo "FAIL: seed ci.yml has skip-lefthook: true (#69/T62)"; exit 1
             fi
             # Verify leaf flake references set-and-setting
+            grep -q '^  description = "CHANGEME";' ${seed}/flake.nix \
+              || { echo "FAIL: leaf seed should keep the flake description at top level"; exit 1; }
             grep -q "set-and-setting" ${seed}/flake.nix || { echo "FAIL: flake.nix should reference set-and-setting"; exit 1; }
             grep -q "mkConsumerFlake" ${seed}/flake.nix || { echo "FAIL: flake.nix should use mkConsumerFlake"; exit 1; }
             if grep -q "assemble-lefthook.sh" ${seed}/flake.nix; then

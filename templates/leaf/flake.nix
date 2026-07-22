@@ -1,4 +1,6 @@
 {
+  description = "CHANGEME";
+
   nixConfig = {
     extra-substituters = [ "https://pr0d1r2.cachix.org" ];
     extra-trusted-public-keys = [ "pr0d1r2.cachix.org-1:NfWjbhgAj41byXhCKiaE+av3Vnphm1fTezHXEGsiQIM=" ];
@@ -20,7 +22,6 @@
     }:
     set-and-setting.lib.mkConsumerFlake {
       inherit self nixpkgs set-and-setting;
-      description = "CHANGEME";
       fragments = [
         "base"
         "nix"

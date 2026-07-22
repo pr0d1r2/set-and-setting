@@ -8,7 +8,6 @@ let
   consumer = self.lib.mkConsumerFlake {
     inherit self nixpkgs;
     set-and-setting = self;
-    description = "consumer fixture";
     fragments = [ "base" ];
     extraFragments = [ "shell" ];
     src = ../.;
@@ -33,7 +32,6 @@ pkgs.runCommand "mkConsumerFlake-outputs" { } ''
       builtins.attrNames consumer == [
         "apps"
         "checks"
-        "description"
         "devShells"
         "packages"
       ];

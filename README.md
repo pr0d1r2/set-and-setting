@@ -137,12 +137,13 @@ Pin the version in your flake and sync after each update.
 
 ```nix
 {
+  description = "My project";
+
   inputs.set-and-setting.url = "github:pr0d1r2/set-and-setting";
 
   outputs = { self, nixpkgs, set-and-setting, ... }:
     set-and-setting.lib.mkConsumerFlake {
       inherit self nixpkgs set-and-setting;
-      description = "My project";
       fragments = [ "base" "nix" ];
       src = ./.;
     };

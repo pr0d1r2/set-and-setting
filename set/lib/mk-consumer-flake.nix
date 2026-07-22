@@ -7,7 +7,6 @@
   self,
   nixpkgs,
   set-and-setting,
-  description,
   fragments,
   src,
   extraFragments ? [ ],
@@ -22,8 +21,6 @@ let
     f: nixpkgs.lib.genAttrs supportedSystems (system: f nixpkgs.legacyPackages.${system});
 in
 {
-  inherit description;
-
   packages = forAllSystems (
     pkgs:
     (extraPackages pkgs)
