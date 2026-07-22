@@ -49,6 +49,7 @@ for file in "${files[@]}"; do
   rule="$(awk '
     /^# / { heading = 1; next }
     heading && /^[[:space:]]*$/ { if (started) exit; next }
+    heading && /^#/ { exit }
     heading { printf "%s%s", (started ? " " : ""), $0; started = 1 }
   ' "$file")"
   if [ -z "$rule" ]; then

@@ -59,3 +59,12 @@ teardown() {
     [[ "$output" == *"has no H1 name"* ]]
     [ ! -e "$DEST" ]
 }
+
+@test "rejects a principle with no opening prose rule" {
+    printf '# Bad\n\n## Applying Bad\n\n- Detail only.\n' \
+        >"$PRINCIPLES_DIR/bad.md"
+    run bash "$SCRIPT"
+    [ "$status" -eq 1 ]
+    [[ "$output" == *"has no one-line rule"* ]]
+    [ ! -e "$DEST" ]
+}
