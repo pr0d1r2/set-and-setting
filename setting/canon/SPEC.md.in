@@ -1,0 +1,28 @@
+# SPEC -- __REPO__
+
+## §G Goal
+
+__DESCRIPTION__
+
+## §C Constraints
+
+- C1: State the project constraints.
+
+## §I Interfaces
+
+- I.project: Describe the public interface.
+
+## §V Invariants
+
+- V1: State a property that must remain true.
+
+## §T Tasks
+
+| ID | Done | Task | Traces |
+|---|---|---|---|
+| T1 |  | Define the first deliverable. | I.project,V1 |
+
+## §B Bugs
+
+| ID | Date | Finding | Resolution |
+|---|---|---|---|

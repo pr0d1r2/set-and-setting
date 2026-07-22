@@ -190,7 +190,18 @@
       # git repo, so they share one env + toolset. The migrator runs on
       # markdown/awk/git only (the confirmator step is a dry-run, tools are
       # never executed), so no wrapper packages are needed.
-      migrateSeedFor = pkgs: self.lib.mkSeed { inherit pkgs; };
+      migrateSeedFor =
+        pkgs:
+        self.lib.canonFor {
+          inherit pkgs;
+          fragments = [
+            "base"
+            "nix"
+            "ascii"
+            "markdown"
+            "yaml"
+          ];
+        };
       migrateFixtureEnv =
         pkgs:
         let
@@ -575,6 +586,14 @@
             inherit pkgs;
             scaffoldDir = ./setting/scaffold;
           };
+        canonFor =
+          { pkgs, fragments }:
+          import ./lib/canon-for.nix {
+            inherit pkgs fragments;
+            scaffoldDir = ./setting/scaffold;
+            canonDir = ./setting/canon;
+          };
+        mkCanonDriftCheck = import ./lib/mk-canon-drift-check.nix;
         mkDevShells = import ./setting/lib/mk-dev-shells.nix;
 
         # #97: the framework seam -- wrap any pinned lefthook-* wrapper into a
@@ -2831,10 +2850,7 @@
             test -f ${seed}/flake.nix || { echo "FAIL: flake.nix missing"; exit 1; }
             test -f ${seed}/.gitignore || { echo "FAIL: .gitignore missing"; exit 1; }
             test -f ${seed}/.github/workflows/ci.yml || { echo "FAIL: ci.yml missing"; exit 1; }
-            test -f ${seed}/README.md || { echo "FAIL: README.md missing"; exit 1; }
-            test -f ${seed}/LICENSE || { echo "FAIL: LICENSE missing"; exit 1; }
-            grep -q '__OWNER__/__REPO__' ${seed}/README.md || { echo "FAIL: README placeholders missing"; exit 1; }
-            grep -q '__YEAR__ __HOLDER__' ${seed}/LICENSE || { echo "FAIL: LICENSE placeholders missing"; exit 1; }
+            test ! -f ${seed}/README.md || { echo "FAIL: mkSeed absorbed canonDocs"; exit 1; }
             test ! -f ${seed}/.github/workflows/auto-update.yml || { echo "FAIL: obsolete auto-update.yml present"; exit 1; }
             # Verify .gitignore ignores materialized artifacts
             grep -q "lefthook.yml" ${seed}/.gitignore || { echo "FAIL: .gitignore should ignore lefthook.yml"; exit 1; }
@@ -2853,6 +2869,104 @@
             echo "PASS: seed layout verified"
             touch $out
           '';
+
+        canon-layout =
+          let
+            canon = self.lib.canonFor {
+              inherit pkgs;
+              fragments = [
+                "base"
+                "nix"
+                "markdown"
+              ];
+            };
+          in
+          pkgs.runCommand "canon-layout-check" { } ''
+            for path in flake.nix .gitignore .github/workflows/ci.yml README.md LICENSE \
+              CHANGELOG.md CONTRIBUTING.md ATTRIBUTION.md HARDENING.md .envrc SPEC.md; do
+              test -f "${canon}/$path" || { echo "FAIL: canon missing $path"; exit 1; }
+            done
+            grep -q '__OWNER__/__REPO__' ${canon}/README.md
+            grep -q '^## .*G Goal$' ${canon}/SPEC.md
+            grep -q '^## .*T Tasks$' ${canon}/SPEC.md
+            touch $out
+          '';
+
+        canon-deterministic =
+          let
+            first = self.lib.canonFor {
+              inherit pkgs;
+              fragments = [
+                "markdown"
+                "base"
+                "nix"
+              ];
+            };
+            second = self.lib.canonFor {
+              inherit pkgs;
+              fragments = [
+                "nix"
+                "base"
+                "markdown"
+              ];
+            };
+          in
+          pkgs.runCommand "canon-deterministic" { nativeBuildInputs = [ pkgs.diffutils ]; } ''
+            diff -r ${first} ${second}
+            touch $out
+          '';
+
+        canon-fragment-subset =
+          let
+            base = self.lib.canonFor {
+              inherit pkgs;
+              fragments = [ "base" ];
+            };
+          in
+          pkgs.runCommand "canon-fragment-subset" { } ''
+            test -f ${base}/README.md
+            test ! -e ${base}/.envrc
+            test ! -e ${base}/SPEC.md
+            touch $out
+          '';
+
+        canon-pinned-drift-clean =
+          let
+            canon = self.lib.canonFor {
+              inherit pkgs;
+              fragments = [ "base" ];
+            };
+          in
+          self.lib.mkCanonDriftCheck {
+            inherit pkgs canon;
+            projectRoot = canon;
+          };
+
+        canon-pinned-drift-rejects =
+          let
+            canon = self.lib.canonFor {
+              inherit pkgs;
+              fragments = [ "base" ];
+            };
+          in
+          pkgs.runCommand "canon-pinned-drift-rejects"
+            {
+              nativeBuildInputs = [ pkgs.diffutils ];
+              EXPECTED = canon;
+              REL_PATHS = builtins.concatStringsSep " " cfm.pinnedCanonPaths;
+              SYNC_HINT = "restore pinned files";
+            }
+            ''
+              cp -Lr "$EXPECTED" actual
+              chmod -R u+w actual
+              printf '\n# drift\n' >> actual/.gitignore
+              export ACTUAL="$PWD/actual"
+              if bash ${./lib/drift-check.sh}; then
+                echo "FAIL: changed pinned canon was accepted"
+                exit 1
+              fi
+              touch $out
+            '';
 
         # --- apps.migrate: vendored->referenced transform (#96) ---
         # Fixture repos for each state; all share migrateFixtureEnv.
@@ -3344,7 +3458,7 @@
               pkgs.gnugrep
             ];
             text = ''
-              export SEED_SRC="${self.lib.mkSeed { inherit pkgs; }}"
+              export SEED_SRC="${migrateSeedFor pkgs}"
               export SETTING_SRC="${mkSettingFull.configFiles}"
               export FRAGMENTS_DIR="${./setting/integrations/lefthook}"
               export ASSEMBLE_SCRIPT="${./setting/lib/assemble-lefthook.sh}"
@@ -3372,6 +3486,24 @@
             ''
             + builtins.readFile ./lib/app-migrate.sh;
           };
+
+          mkCanonApp = pkgs.writeShellApplication {
+            name = "mkCanon";
+            runtimeInputs = [
+              pkgs.coreutils
+              pkgs.findutils
+              pkgs.git
+              pkgs.gnused
+              nix-lefthook.packages.${pkgs.stdenv.hostPlatform.system}.default
+            ];
+            text = ''
+              export SEED_SRC="${migrateSeedFor pkgs}"
+              export CANON_APP_NAME="mkCanon"
+              export CANON_APP_LABEL="canon"
+              export CANON_INSTALL_HOOKS=1
+            ''
+            + builtins.readFile ./lib/app-seed.sh;
+          };
         in
         {
           mkSet = {
@@ -3389,6 +3521,10 @@
           mkScaffold = {
             type = "app";
             program = "${mkScaffoldApp}/bin/mkScaffold";
+          };
+          mkCanon = {
+            type = "app";
+            program = "${mkCanonApp}/bin/mkCanon";
           };
           bootstrap = {
             type = "app";

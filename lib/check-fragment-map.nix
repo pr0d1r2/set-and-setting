@@ -105,4 +105,27 @@
     yaml = "tracked *.yml/*.yaml files";
     set = "tracked set/*.md files";
   };
+
+  # Fragment -> canonical repo units. This is consumed by canonFor, beside
+  # checksFor and materializationFor's fragment selection.
+  canonUnitsPerFragment = {
+    base = [
+      "canonDocs"
+      "canonGovernance"
+    ];
+    nix = [ "canonDevEnv" ];
+    shell = [ ];
+    ascii = [ ];
+    markdown = [ "canonSpec" ];
+    yaml = [ ];
+    set = [ ];
+  };
+
+  # Canon files that remain standard-owned after emission. Drift is an error;
+  # docs and governance files are intentionally repo-owned after seeding.
+  pinnedCanonPaths = [
+    "flake.nix"
+    ".gitignore"
+    ".github/workflows/ci.yml"
+  ];
 }

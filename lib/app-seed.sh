@@ -1,20 +1,23 @@
 #!/usr/bin/env bash
 # shellcheck disable=SC2154
-# app-seed.sh -- emit the committed minimum for a leaf consumer repo (#95).
-# Seeds: thin flake.nix, .gitignore, CI caller workflow, README, and LICENSE.
+# app-seed.sh -- generic canonical-tree installer.
 # Skips files that already exist (repo-owned after seeding).
 # Env in: SEED_SRC (path to leaf-seed derivation)
 set -euo pipefail
 
+app_name="${CANON_APP_NAME:-seed}"
+app_label="${CANON_APP_LABEL:-seed}"
+
 if [ "${1:-}" = "--help" ]; then
-  echo "Usage: seed [--help] [--list] [--dry-run] [--owner OWNER] [--repo REPO]"
+  echo "Usage: $app_name [--help] [--list] [--dry-run] [--owner OWNER] [--repo REPO]"
   echo ""
-  echo "Emit the committed minimum for a leaf consumer repo."
-  echo "Seeds: flake.nix, .gitignore, .github/workflows/ci.yml, README.md, LICENSE"
+  echo "Emit a canonical repository tree."
+  echo "The selected source bundle determines the emitted files."
   echo ""
   echo "Options:"
   echo "  --owner OWNER    Repository owner (or TRIP_OWNER)"
   echo "  --repo REPO      Repository name (or TRIP_REPO)"
+  echo "  --description D  Project description (or TRIP_DESCRIPTION)"
   echo "  --holder HOLDER  Copyright holder (or TRIP_HOLDER; defaults to owner)"
   echo "  --year YEAR      Copyright year (or TRIP_YEAR; defaults to current year)"
   echo ""
@@ -30,6 +33,7 @@ owner="${TRIP_OWNER:-}"
 repo="${TRIP_REPO:-}"
 holder="${TRIP_HOLDER:-}"
 year="${TRIP_YEAR:-$(date -u +%Y)}"
+description="${TRIP_DESCRIPTION:-Describe the project and the problem it solves.}"
 
 while [ $# -gt 0 ]; do
   case "$1" in
@@ -39,7 +43,7 @@ while [ $# -gt 0 ]; do
     --list)
       list=1
       ;;
-    --owner | --repo | --holder | --year)
+    --owner | --repo | --description | --holder | --year)
       option="$1"
       shift
       if [ $# -eq 0 ]; then
@@ -49,6 +53,7 @@ while [ $# -gt 0 ]; do
       case "$option" in
         --owner) owner="$1" ;;
         --repo) repo="$1" ;;
+        --description) description="$1" ;;
         --holder) holder="$1" ;;
         --year) year="$1" ;;
       esac
@@ -75,7 +80,7 @@ case "$year" in
 esac
 
 if [ "$list" -eq 1 ]; then
-  echo "Seed files:"
+  echo "${app_label^} files:"
   find -L "$SEED_SRC" -type f | sort | while read -r f; do
     rel="${f#"$SEED_SRC/"}"
     echo "  $rel"
@@ -84,7 +89,7 @@ if [ "$list" -eq 1 ]; then
 fi
 
 if [ "$dry_run" -eq 1 ]; then
-  echo "Would seed into CWD (skip existing):"
+  echo "Would $app_label into CWD (skip existing):"
   find -L "$SEED_SRC" -type f | sort | while read -r f; do
     rel="${f#"$SEED_SRC/"}"
     if [ -e "$rel" ]; then
@@ -128,12 +133,12 @@ find -L "$SEED_SRC" -type f | sort | while read -r f; do
   fi
   mkdir -p "$(dirname "$rel")"
   cp "$f" "$rel"
-  if [ "$rel" = "README.md" ]; then
+  if grep -q '__REPO__\|__DESCRIPTION__' "$rel"; then
     repo_title="${repo:-${PWD##*/}}"
-    {
-      printf '# %s\n' "$repo_title"
-      tail -n +2 "$rel"
-    } >"$rel.tmp"
+    escaped_repo="$(printf '%s' "$repo_title" | sed 's#[\\&/]#\\&#g')"
+    escaped_description="$(printf '%s' "$description" | sed 's#[\\&/]#\\&#g')"
+    sed -e "s/__DESCRIPTION__/$escaped_description/g" \
+      -e "1s/__REPO__/$escaped_repo/" "$rel" >"$rel.tmp"
     mv "$rel.tmp" "$rel"
     if [ -n "$owner" ] && [ -n "$repo" ]; then
       sed -e "s/__OWNER__/$owner/g" -e "s/__REPO__/$repo/g" \
@@ -149,6 +154,15 @@ find -L "$SEED_SRC" -type f | sort | while read -r f; do
       mv "$rel.tmp" "$rel"
     fi
   fi
-  echo "seeded: $rel"
+  echo "${app_label}ed: $rel"
 done
-echo "seed complete -> ."
+
+if [ "${CANON_INSTALL_HOOKS:-0}" -eq 1 ]; then
+  if git rev-parse --git-dir >/dev/null 2>&1; then
+    lefthook install
+    echo "installed: lefthook"
+  else
+    echo "deferred: lefthook install (not a git repository)"
+  fi
+fi
+echo "$app_label complete -> ."

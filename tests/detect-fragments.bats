@@ -19,6 +19,25 @@ teardown() {
     rm -rf "$REPO"
 }
 
+@test "source-tree mode detects files before git init" {
+    source_tree="$(mktemp -d)"
+    mkdir -p "$source_tree/.github/workflows"
+    touch "$source_tree/flake.nix" "$source_tree/README.md"
+    touch "$source_tree/.github/workflows/ci.yml"
+    run env DETECT_ROOT="$source_tree" bash "$SCRIPT"
+    rm -rf "$source_tree"
+    [ "$status" -eq 0 ]
+    [ "$output" = "base nix ascii markdown yaml" ]
+}
+
+@test "empty source-tree mode does not over-detect optional fragments" {
+    source_tree="$(mktemp -d)"
+    run env DETECT_ROOT="$source_tree" bash "$SCRIPT"
+    rm -rf "$source_tree"
+    [ "$status" -eq 0 ]
+    [ "$output" = "base ascii" ]
+}
+
 @test "empty repo defaults to all fragments" {
     run bash "$SCRIPT"
     [ "$status" -eq 0 ]

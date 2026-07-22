@@ -8,15 +8,8 @@
 }:
 
 let
-  validFragments = [
-    "base"
-    "nix"
-    "shell"
-    "ascii"
-    "markdown"
-    "yaml"
-    "set"
-  ];
+  cfm = import ../../lib/check-fragment-map.nix;
+  inherit (cfm) validFragments;
 
   invalidFragments = builtins.filter (f: !(builtins.elem f validFragments)) fragments;
 

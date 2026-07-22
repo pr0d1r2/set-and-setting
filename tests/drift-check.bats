@@ -49,7 +49,7 @@ teardown() {
     [ "$status" -eq 1 ]
 }
 
-@test "ignores expected paths that do not exist in EXPECTED" {
+@test "ignores optional paths absent from EXPECTED" {
     REL_PATHS="absent.md" run bash "$SCRIPT"
     [ "$status" -eq 0 ]
 }
