@@ -16,5 +16,7 @@ pkgs.symlinkJoin {
     (pkgs.writeTextDir "flake.nix" (readFile "${scaffoldDir}/leaf-flake.txt"))
     (pkgs.writeTextDir ".gitignore" (readFile "${scaffoldDir}/leaf-gitignore.txt"))
     (pkgs.writeTextDir ".github/workflows/ci.yml" (readFile "${scaffoldDir}/leaf-ci.yml"))
+    (pkgs.writeTextDir "README.md" (readFile "${scaffoldDir}/README.md"))
+    (pkgs.writeTextDir "LICENSE" (readFile "${scaffoldDir}/LICENSE"))
   ];
 }

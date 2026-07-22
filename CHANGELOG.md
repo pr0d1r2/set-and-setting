@@ -7,6 +7,10 @@
   placeholders; MIT is the explicit default and can be disabled with
   `license = null`. (#235)
 
+- Extend the leaf `seed` app to substitute README owner/repo and MIT
+  holder/year placeholders from trip inputs or an existing GitHub `origin`.
+  Repositories without coordinates keep a one-line fill-in note. (#235)
+
 - Auto-project every active principle into the always-on agent prompt as a
   `[[slug]]` registry entry with its name and opening rule, and add a generated
   believability-weighted `principles` accord lens for pre-merge review. (#187)

@@ -117,6 +117,13 @@ nix run github:pr0d1r2/set-and-setting#mkScaffold
 | `mkSetting-init` | Scaffold repo starters (skips files that exist) |
 | `mkScaffold` | Scaffold flake.nix, lefthook.yml, CI workflow (skips files that exist) |
 | `bootstrap` | All four in one command |
+| `seed` | Emit a thin leaf repo; substitutes README/license placeholders from trip coordinates or `origin` |
+
+For repo-birth automation, pass `--owner OWNER --repo REPO`; the trip harness
+can equivalently set `TRIP_OWNER` and `TRIP_REPO`. The copyright holder defaults
+to the owner. Without coordinates, `seed` infers GitHub coordinates from
+`origin`; if none exist, the badge placeholders and their one-line fill-in note
+remain.
 
 Skills are emitted at run time -- the installer carries agnostic
 source and emitter scripts, not a pre-built per-agent tree. The

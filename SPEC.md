@@ -188,7 +188,7 @@ and dogfoods both.
   with `packages.set`. Seed/init scaffold is separate
   (`bin/sync-setting-init`), not in this package.
 - I.sync-target: `sync-set`/`sync-setting` take a target dir arg; default preserves prior behavior.
-- I.apps: `apps.<sys>.{mkSet,mkSetting,mkSetting-init,bootstrap,graduate,branch-protection}`
+- I.apps: `apps.<sys>.{mkSet,mkSetting,mkSetting-init,bootstrap,seed,graduate,branch-protection}`
   -- runnable installers for the zero-dependency delivery path (C9).
   `nix run github:pr0d1r2/set-and-setting#mkSet [cats|--all|--all-except
   a b]` materializes skills into `./.claude/rules/set/` at the CWD.
@@ -199,7 +199,8 @@ and dogfoods both.
   `bootstrap` = mkSet core + mkSetting + mkSetting-init in one. Each
   supports `--list`/`--help`/`--dry-run`. `confirm` (#94) runs the
   post-materialization acceptance suite; `seed` (#95) emits the leaf
-  committed-minimum; `migrate` (#96) runs the vendored->referenced
+  committed-minimum and substitutes README/license placeholders from
+  explicit trip coordinates or an inferred GitHub `origin`; `migrate` (#96) runs the vendored->referenced
   transform (I.migrate).
 - I.migrate: `lib/migrate.sh` (core) + `lib/app-migrate.sh` (CLI) +
   `apps.migrate` -- the mechanical, deterministic, idempotent, non-LLM
@@ -513,7 +514,7 @@ and dogfoods both.
   patterns (overlays applied to pkgs, non-extractable output blocks) ⇒
   MIGRATE-FAIL with actionable detail. The migrator
   writes the committed minimum (thin flake, guardrails CI caller,
-  gitignored materialized artifacts); the FULL confirmator (#94) +
+  README/license seeds, gitignored materialized artifacts); the FULL confirmator (#94) +
   `nix flake check` gate the mechanical PR in CI once `flake.lock`
   exists. Tested on vendored / partial / bare / already-referenced
   fixtures + a dropped-check rejection + custom-flake reconciliation +
@@ -607,6 +608,7 @@ and dogfoods both.
 | T74 | x | checksFor -- fragment-driven check selection (#93 consumer bridge). `lib.checksFor { pkgs, src, fragments }` returns an attrset of pinned check derivations matching the given fragments. CI-gate counterpart to `materializationFor`. Scaffold uses `checksFor` instead of manual `mk*Check` wiring. Nix checks: per-fragment verification, subset property, empty-fragment handling | I.checksFor,V42,I.materializationFor,V41 |
 | T75 | x | `apps.migrate` (#96) -- mechanical, deterministic, idempotent, non-LLM, confirmator-gated vendored->referenced transform. `lib/migrate.sh` (detect state / strip vendored artifacts / plant seed #95 / confirm-equivalence) + `lib/app-migrate.sh` (`--detect`/`--dry-run`/`--help`) + `apps.migrate`. Safety net: referenced effective check-set (pinned `checksFor` UNION all fragment lefthook commands) MUST cover the vendored `lefthook.yml` check-set; a dropped check ⇒ refuse. Nix checks over vendored / partial / bare / already-referenced fixtures + dropped-check rejection; bats for the core logic + CLI. HOLD (V189): tool lands, fleet run is human-gated | I.migrate,I.mkSeed,I.mkConfirm,V43,C7 |
 | T76 | x | `mkSetting-init` seeds a titled README skeleton with canonical CI/license/NixOS badges and an explicit default MIT license. Both are skip-existing; badge and holder/year placeholders remain available for repo-birth substitution; `readme = false` and `license = null` opt out. (#235) | I.mkSetting,V22,V26 |
+| T77 | x | Leaf `seed` substitutes README owner/repo and license holder/year from CLI or `TRIP_*` repo-birth inputs, falls back to GitHub `origin`, and otherwise preserves placeholders plus the fill-in note. Existing README/LICENSE files remain untouched. (#235) | I.apps,I.mkSeed,T76 |
 
 ## §B Bugs
 

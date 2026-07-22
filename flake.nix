@@ -3414,6 +3414,8 @@
                 runtimeInputs = [
                   pkgs.coreutils
                   pkgs.findutils
+                  pkgs.git
+                  pkgs.gnused
                 ];
                 text = ''
                   export SEED_SRC="${self.lib.mkSeed { inherit pkgs; }}"
