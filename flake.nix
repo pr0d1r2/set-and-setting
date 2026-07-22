@@ -2831,6 +2831,10 @@
             test -f ${seed}/flake.nix || { echo "FAIL: flake.nix missing"; exit 1; }
             test -f ${seed}/.gitignore || { echo "FAIL: .gitignore missing"; exit 1; }
             test -f ${seed}/.github/workflows/ci.yml || { echo "FAIL: ci.yml missing"; exit 1; }
+            test -f ${seed}/README.md || { echo "FAIL: README.md missing"; exit 1; }
+            test -f ${seed}/LICENSE || { echo "FAIL: LICENSE missing"; exit 1; }
+            grep -q '__OWNER__/__REPO__' ${seed}/README.md || { echo "FAIL: README placeholders missing"; exit 1; }
+            grep -q '__YEAR__ __HOLDER__' ${seed}/LICENSE || { echo "FAIL: LICENSE placeholders missing"; exit 1; }
             test ! -f ${seed}/.github/workflows/auto-update.yml || { echo "FAIL: obsolete auto-update.yml present"; exit 1; }
             # Verify .gitignore ignores materialized artifacts
             grep -q "lefthook.yml" ${seed}/.gitignore || { echo "FAIL: .gitignore should ignore lefthook.yml"; exit 1; }
@@ -2997,7 +3001,7 @@
         migrate-rejects-dropped-check =
           let
             # A vendored lefthook with a standard-fragment check
-            # (markdownlint) that the reduced universe does NOT cover.
+            # (shellcheck) that the reduced universe does NOT cover.
             # Repo-local checks get carried through (#126), so we must
             # test with a standard-fragment check to exercise rejection.
             vendoredLefthook = pkgs.writeText "vendored-lefthook.yml" ''
@@ -3006,17 +3010,17 @@
                 commands:
                   nixfmt:
                     run: nixfmt --check {staged_files}
-                  markdownlint:
-                    run: markdownlint {staged_files}
+                  shellcheck:
+                    run: shellcheck {staged_files}
             '';
-            # Exclude the markdown fragment so markdownlint is genuinely
+            # Exclude the shell fragment so shellcheck is genuinely
             # uncovered -- carry-through classifies it as standard (not
             # repo-local), so it stays dropped and triggers rejection.
             reducedFragments = [
               "base"
               "nix"
-              "shell"
               "ascii"
+              "markdown"
               "yaml"
               "set"
             ];
