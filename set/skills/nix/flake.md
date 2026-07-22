@@ -6,7 +6,7 @@ Extract embedded shell into nix/dev/shell.sh.
 
 Keep a thin leaf flake in one file. When independent, same-shaped outputs
 start repeating or one output type dominates the file, modularize it with
-the method in [flake/structure.md](flake/structure.md).
+the method in the "Nix flake: structure" section.
 
 Treat `flake.nix` as a manifest: keep only `description`, `nixConfig`,
 literal `inputs`, and a one-line output import:

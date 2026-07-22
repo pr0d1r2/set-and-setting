@@ -10,5 +10,5 @@ sibling module. If two modules need the same logic, extract that logic into
 a common library and import it once at the assembly boundary.
 
 For flake output modules, follow the concrete split, discovery, library,
-and contract rules in [flake/structure.md](flake/structure.md). Threading
+and contract rules in the "Nix flake: structure" section. Threading
 `self` into independent leaves is assembly, not module-to-module coupling.
