@@ -577,6 +577,7 @@
         mkSetting = import ./setting/lib/mk-setting.nix { inherit (nixpkgs) lib; };
         mkDriftCheck = import ./lib/mk-drift-check.nix;
         mkSettingDriftCheck = import ./lib/mk-setting-drift-check.nix;
+        mkConsumerFlake = import ./set/lib/mk-consumer-flake.nix { inherit supportedSystems; };
         mkMaterializeCheck = import ./lib/mk-materialize-check.nix { inherit (nixpkgs) lib; };
         mkDepGraphCheck = import ./lib/mk-dep-graph-check.nix;
         mkConfirm = import ./lib/mk-confirm.nix;
@@ -2658,6 +2659,60 @@
               ]
             )}
             echo "PASS: shell fragment returns all expected checks"
+            touch $out
+          '';
+
+        mkConsumerFlake-outputs =
+          let
+            consumer = self.lib.mkConsumerFlake {
+              inherit self nixpkgs;
+              set-and-setting = self;
+              description = "consumer fixture";
+              fragments = [ "base" ];
+              extraFragments = [ "shell" ];
+              src = ./.;
+              extraPackages = _pkgs: { fixture = pkgs.hello; };
+              extraChecks = _pkgs: { fixture = pkgs.hello; };
+              extraApps = _pkgs: {
+                fixture = {
+                  type = "app";
+                  program = "${pkgs.hello}/bin/hello";
+                };
+              };
+            };
+            system = pkgs.stdenv.hostPlatform.system;
+            packageNames = builtins.attrNames consumer.packages.${system};
+            checkNames = builtins.attrNames consumer.checks.${system};
+            appNames = builtins.attrNames consumer.apps.${system};
+            outputNames = builtins.attrNames consumer;
+          in
+          pkgs.runCommand "mkConsumerFlake-outputs" { } ''
+            ${
+              assert
+                outputNames == [
+                  "apps"
+                  "checks"
+                  "description"
+                  "devShells"
+                  "packages"
+                ];
+              assert builtins.all (name: builtins.elem name packageNames) [
+                "fixture"
+                "setting"
+              ];
+              assert builtins.all (name: builtins.elem name checkNames) [
+                "default"
+                "dep-graph"
+                "fixture"
+                "setting-drift"
+                "shellcheck"
+              ];
+              assert builtins.all (name: builtins.elem name appNames) [
+                "confirm"
+                "fixture"
+              ];
+              ""
+            }
             touch $out
           '';
 
