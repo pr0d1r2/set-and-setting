@@ -29,8 +29,7 @@ teardown() {
     run bash "$SCRIPT" --help
     [ "$status" -eq 0 ]
     [[ "$output" == *"Usage: seed"* ]]
-    [[ "$output" == *"committed minimum"* ]]
-    [[ "$output" == *"flake.nix"* ]]
+    [[ "$output" == *"canonical repository tree"* ]]
 }
 
 @test "--list shows seed files" {
@@ -84,6 +83,21 @@ teardown() {
     ! grep -q '__OWNER__\|__REPO__\|Fill in' "$TARGET/README.md"
     grep -q 'Copyright (c) 2025 The Octocat' "$TARGET/LICENSE"
     ! grep -q '__YEAR__\|__HOLDER__' "$TARGET/LICENSE"
+}
+
+@test "canonical mode substitutes SPEC description and installs hooks" {
+    printf '%s\n' '# SPEC -- __REPO__' '__DESCRIPTION__' >"$SEED_SRC/SPEC.md"
+    mkdir -p "$TARGET/bin"
+    printf '%s\n' '#!/usr/bin/env bash' 'echo installed > .hook-installed' >"$TARGET/bin/lefthook"
+    chmod +x "$TARGET/bin/lefthook"
+    git init --quiet
+    run env PATH="$TARGET/bin:$PATH" CANON_APP_NAME=mkCanon CANON_APP_LABEL=canon \
+        CANON_INSTALL_HOOKS=1 bash "$SCRIPT" --repo project --description "A useful project."
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"canon complete"* ]]
+    grep -q '^# SPEC -- project$' SPEC.md
+    grep -q '^A useful project\.$' SPEC.md
+    [ -f .hook-installed ]
 }
 
 @test "trip environment coordinates are accepted" {
