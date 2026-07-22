@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- Add the self-contained five-lens `accord` merge-gate set and expose it as
+  `packages.accord-set` through named-set materialization. (#190)
+
 - Add `canonFor` and `mkCanon`: fragment-selected canon units now compose the
   thin seed, docs, governance, development environment, and CAVEKIT SPEC into
   one deterministic referenced-repository tree. Migration backfills the same

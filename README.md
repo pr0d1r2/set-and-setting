@@ -313,6 +313,16 @@ lib.mkSet {
 }
 ```
 
+A self-contained named review set can be materialized without agent-specific
+wrapping. `packages.accord-set` is built this way:
+
+```nix
+lib.mkSet {
+  inherit pkgs;
+  name = "accord";
+}
+```
+
 Output layout (Claude default):
 
 - `.claude/rules/set/<category>.md` -- topic core (verbatim + `paths:`)
