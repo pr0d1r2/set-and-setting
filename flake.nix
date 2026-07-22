@@ -2662,59 +2662,9 @@
             touch $out
           '';
 
-        mkConsumerFlake-outputs =
-          let
-            consumer = self.lib.mkConsumerFlake {
-              inherit self nixpkgs;
-              set-and-setting = self;
-              description = "consumer fixture";
-              fragments = [ "base" ];
-              extraFragments = [ "shell" ];
-              src = ./.;
-              extraPackages = _pkgs: { fixture = pkgs.hello; };
-              extraChecks = _pkgs: { fixture = pkgs.hello; };
-              extraApps = _pkgs: {
-                fixture = {
-                  type = "app";
-                  program = "${pkgs.hello}/bin/hello";
-                };
-              };
-            };
-            system = pkgs.stdenv.hostPlatform.system;
-            packageNames = builtins.attrNames consumer.packages.${system};
-            checkNames = builtins.attrNames consumer.checks.${system};
-            appNames = builtins.attrNames consumer.apps.${system};
-            outputNames = builtins.attrNames consumer;
-          in
-          pkgs.runCommand "mkConsumerFlake-outputs" { } ''
-            ${
-              assert
-                outputNames == [
-                  "apps"
-                  "checks"
-                  "description"
-                  "devShells"
-                  "packages"
-                ];
-              assert builtins.all (name: builtins.elem name packageNames) [
-                "fixture"
-                "setting"
-              ];
-              assert builtins.all (name: builtins.elem name checkNames) [
-                "default"
-                "dep-graph"
-                "fixture"
-                "setting-drift"
-                "shellcheck"
-              ];
-              assert builtins.all (name: builtins.elem name appNames) [
-                "confirm"
-                "fixture"
-              ];
-              ""
-            }
-            touch $out
-          '';
+        mkConsumerFlake-outputs = import ./lib/mk-consumer-flake-check.nix {
+          inherit self nixpkgs pkgs;
+        };
 
         checksFor-subset =
           let
@@ -2944,8 +2894,12 @@
             fi
             # Verify leaf flake references set-and-setting
             grep -q "set-and-setting" ${seed}/flake.nix || { echo "FAIL: flake.nix should reference set-and-setting"; exit 1; }
-            grep -q "checksFor" ${seed}/flake.nix || { echo "FAIL: flake.nix should use checksFor"; exit 1; }
-            grep -q "assemble-lefthook.sh" ${seed}/flake.nix || { echo "FAIL: flake.nix should assemble lefthook.yml at runtime"; exit 1; }
+            grep -q "mkConsumerFlake" ${seed}/flake.nix || { echo "FAIL: flake.nix should use mkConsumerFlake"; exit 1; }
+            if grep -q "assemble-lefthook.sh" ${seed}/flake.nix; then
+              echo "FAIL: leaf seed should not inline lefthook assembly"; exit 1
+            fi
+            grep -q "assemble-lefthook.sh" ${./set/lib/mk-consumer-flake.nix} \
+              || { echo "FAIL: mkConsumerFlake should assemble lefthook.yml at runtime"; exit 1; }
             echo "PASS: seed layout verified"
             touch $out
           '';
@@ -3096,7 +3050,7 @@
 
             # vendored flake replaced by the referenced (thin) seed flake
             grep -q 'set-and-setting' flake.nix || { echo "FAIL: flake not referenced"; exit 1; }
-            grep -q 'checksFor' flake.nix || { echo "FAIL: flake missing checksFor"; exit 1; }
+            grep -q 'mkConsumerFlake' flake.nix || { echo "FAIL: flake missing mkConsumerFlake"; exit 1; }
             grep -q 'guardrails.yml' .github/workflows/ci.yml || { echo "FAIL: ci not caller"; exit 1; }
             grep -qxF 'lefthook.yml' .gitignore || { echo "FAIL: lefthook not gitignored"; exit 1; }
 
@@ -3290,7 +3244,7 @@
             grep -q 'my-overlay.url' flake.nix || { echo "FAIL: custom input lost"; exit 1; }
             grep -q 'my-overlay,' flake.nix || { echo "FAIL: custom input not in args"; exit 1; }
             grep -q 'set-and-setting' flake.nix || { echo "FAIL: no set-and-setting"; exit 1; }
-            grep -q 'checksFor' flake.nix || { echo "FAIL: no checksFor"; exit 1; }
+            grep -q 'mkConsumerFlake' flake.nix || { echo "FAIL: no mkConsumerFlake"; exit 1; }
             echo "PASS: migrate custom-inputs -> reconciled"
             touch $out
           '';

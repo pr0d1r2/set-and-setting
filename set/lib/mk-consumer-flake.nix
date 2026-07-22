@@ -35,7 +35,7 @@ in
   devShells = forAllSystems (
     pkgs:
     let
-      system = pkgs.stdenv.hostPlatform.system;
+      inherit (pkgs.stdenv.hostPlatform) system;
       materialization = set-and-setting.lib.materializationFor {
         inherit pkgs;
         fragments = allFragments;
@@ -60,7 +60,7 @@ in
   checks = forAllSystems (
     pkgs:
     let
-      system = pkgs.stdenv.hostPlatform.system;
+      inherit (pkgs.stdenv.hostPlatform) system;
       standardChecks =
         (set-and-setting.lib.checksFor {
           inherit pkgs src;
