@@ -577,6 +577,7 @@
         mkSetting = import ./setting/lib/mk-setting.nix { inherit (nixpkgs) lib; };
         mkDriftCheck = import ./lib/mk-drift-check.nix;
         mkSettingDriftCheck = import ./lib/mk-setting-drift-check.nix;
+        mkConsumerFlake = import ./set/lib/mk-consumer-flake.nix { inherit supportedSystems; };
         mkMaterializeCheck = import ./lib/mk-materialize-check.nix { inherit (nixpkgs) lib; };
         mkDepGraphCheck = import ./lib/mk-dep-graph-check.nix;
         mkConfirm = import ./lib/mk-confirm.nix;
@@ -2661,6 +2662,10 @@
             touch $out
           '';
 
+        mkConsumerFlake-outputs = import ./lib/mk-consumer-flake-check.nix {
+          inherit self nixpkgs pkgs;
+        };
+
         checksFor-subset =
           let
             full = self.lib.checksFor {
@@ -2888,9 +2893,15 @@
               echo "FAIL: seed ci.yml has skip-lefthook: true (#69/T62)"; exit 1
             fi
             # Verify leaf flake references set-and-setting
+            grep -q '^  description = "CHANGEME";' ${seed}/flake.nix \
+              || { echo "FAIL: leaf seed should keep the flake description at top level"; exit 1; }
             grep -q "set-and-setting" ${seed}/flake.nix || { echo "FAIL: flake.nix should reference set-and-setting"; exit 1; }
-            grep -q "checksFor" ${seed}/flake.nix || { echo "FAIL: flake.nix should use checksFor"; exit 1; }
-            grep -q "assemble-lefthook.sh" ${seed}/flake.nix || { echo "FAIL: flake.nix should assemble lefthook.yml at runtime"; exit 1; }
+            grep -q "mkConsumerFlake" ${seed}/flake.nix || { echo "FAIL: flake.nix should use mkConsumerFlake"; exit 1; }
+            if grep -q "assemble-lefthook.sh" ${seed}/flake.nix; then
+              echo "FAIL: leaf seed should not inline lefthook assembly"; exit 1
+            fi
+            grep -q "assemble-lefthook.sh" ${./set/lib/mk-consumer-flake.nix} \
+              || { echo "FAIL: mkConsumerFlake should assemble lefthook.yml at runtime"; exit 1; }
             echo "PASS: seed layout verified"
             touch $out
           '';
@@ -3041,7 +3052,7 @@
 
             # vendored flake replaced by the referenced (thin) seed flake
             grep -q 'set-and-setting' flake.nix || { echo "FAIL: flake not referenced"; exit 1; }
-            grep -q 'checksFor' flake.nix || { echo "FAIL: flake missing checksFor"; exit 1; }
+            grep -q 'mkConsumerFlake' flake.nix || { echo "FAIL: flake missing mkConsumerFlake"; exit 1; }
             grep -q 'guardrails.yml' .github/workflows/ci.yml || { echo "FAIL: ci not caller"; exit 1; }
             grep -qxF 'lefthook.yml' .gitignore || { echo "FAIL: lefthook not gitignored"; exit 1; }
 
@@ -3235,7 +3246,7 @@
             grep -q 'my-overlay.url' flake.nix || { echo "FAIL: custom input lost"; exit 1; }
             grep -q 'my-overlay,' flake.nix || { echo "FAIL: custom input not in args"; exit 1; }
             grep -q 'set-and-setting' flake.nix || { echo "FAIL: no set-and-setting"; exit 1; }
-            grep -q 'checksFor' flake.nix || { echo "FAIL: no checksFor"; exit 1; }
+            grep -q 'mkConsumerFlake' flake.nix || { echo "FAIL: no mkConsumerFlake"; exit 1; }
             echo "PASS: migrate custom-inputs -> reconciled"
             touch $out
           '';

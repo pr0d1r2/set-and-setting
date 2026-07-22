@@ -137,45 +137,24 @@ Pin the version in your flake and sync after each update.
 
 ```nix
 {
+  description = "My project";
+
   inputs.set-and-setting.url = "github:pr0d1r2/set-and-setting";
 
   outputs = { self, nixpkgs, set-and-setting, ... }:
-    let forAllSystems = ...; in
-    {
-      packages = forAllSystems (pkgs: {
-        set = set-and-setting.lib.mkSet { inherit pkgs; };
-        setting = (set-and-setting.lib.mkSetting { inherit pkgs; }).materialized;
-      });
-
-      devShells = forAllSystems (pkgs:
-        let sys = pkgs.stdenv.hostPlatform.system; in
-        set-and-setting.lib.mkDevShells {
-          inherit pkgs;
-          basePackages = [ ... ];
-          defaultShellHook = ''
-            ${self.packages.${sys}.setting}/bin/sync-setting .
-          '';
-          agenticShellHook = ''
-            ${self.packages.${sys}.setting}/bin/sync-setting .
-            ${self.packages.${sys}.set}/bin/sync-set .
-          '';
-        }
-      );
-
-      checks = forAllSystems (pkgs: {
-        dep-graph = set-and-setting.lib.mkDepGraphCheck {
-          inherit pkgs;
-          projectRoot = ./.;
-        };
-      });
+    set-and-setting.lib.mkConsumerFlake {
+      inherit self nixpkgs set-and-setting;
+      fragments = [ "base" "nix" ];
+      src = ./.;
     };
 }
 ```
 
-The `defaultShellHook` syncs materialized configs so lefthook hooks
-find them. The `agenticShellHook` additionally syncs skills for the
-AI agent. Stacked shells (T59): `default` = CI + non-LLM tooling,
-`agentic` = default + LLM.
+`mkConsumerFlake` returns the standard `packages`, `devShells`, `checks`, and
+`apps` outputs. It centralizes setting sync, runtime lefthook assembly, pinned
+fragment checks, setting and dependency drift checks, and the `confirm` app.
+Extend it with `extraFragments` or per-system functions named `extraPackages`,
+`extraChecks`, and `extraApps`.
 
 See `setting/scaffold/component-flake.txt` for a complete consumer
 flake template (scaffolded by `mkScaffold`).

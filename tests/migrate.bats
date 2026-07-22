@@ -29,49 +29,9 @@ setup() {
     # a leaf seed (SEED_SRC): thin referenced flake + gitignore + CI caller
     SEED_SRC="$(mktemp -d)"
     mkdir -p "$SEED_SRC/.github/workflows"
-    # a referenced (thin) flake: names set-and-setting + the materialization
-    # helpers (checksFor / materializationFor) that mark it as referenced.
-    # Structure mirrors leaf-flake.txt with injection points for reconciliation:
-    # set-and-setting.url (custom inputs), set-and-setting, (output args),
-    # closing    }; (custom outputs), a fragments declaration, and an inner
-    # let...in (devShells) to verify let-binding injection targets only the
-    # outer let block.
-    printf '%s\n' \
-        "{" \
-        "  inputs = {" \
-        "    nixpkgs-lock.url = \"github:pr0d1r2/nixpkgs-lock\";" \
-        "    nixpkgs.follows = \"nixpkgs-lock/nixpkgs\";" \
-        "" \
-        "    set-and-setting.url = \"github:pr0d1r2/set-and-setting\";" \
-        "  };" \
-        "" \
-        "  outputs =" \
-        "    {" \
-        "      self," \
-        "      nixpkgs," \
-        "      set-and-setting," \
-        "      ..." \
-        "    }:" \
-        "    let" \
-        "      fragments = [" \
-        "        \"base\"" \
-        "        \"nix\"" \
-        "      ];" \
-        "    in" \
-        "    {" \
-        "      packages = forAllSystems (pkgs: {" \
-        "        setting = (set-and-setting.lib.mkSetting { inherit pkgs; }).materialized;" \
-        "      });" \
-        "" \
-        "      checks = checksFor { };" \
-        "      devShells =" \
-        "        let" \
-        "          mat = materializationFor { };" \
-        "        in" \
-        "        mkDevShells { packages = mat.packages; };" \
-        "    };" \
-        "}" \
-        >"$SEED_SRC/flake.nix"
+    # Use the real leaf seed so migration compatibility tests exercise the
+    # current mkConsumerFlake structure and its reconciliation escape hatches.
+    cp "$REPO_ROOT/setting/scaffold/leaf-flake.txt" "$SEED_SRC/flake.nix"
     printf '%s\n' ".direnv/" "result" ".markdownlint.yml" ".yamllint.yml" "lefthook.yml" >"$SEED_SRC/.gitignore"
     printf '%s\n' "jobs:" "  guardrails:" "    uses: pr0d1r2/set-and-setting/.github/workflows/guardrails.yml@main" >"$SEED_SRC/.github/workflows/ci.yml"
     export SEED_SRC
@@ -269,7 +229,7 @@ write_vendored_lefthook_with_remotes() {
     grep -q 'my-overlay,' flake.nix
     # standard infrastructure present
     grep -q 'set-and-setting' flake.nix
-    grep -q 'checksFor' flake.nix
+    grep -q 'mkConsumerFlake' flake.nix
 }
 
 @test "custom flake with overlays as outputs is reconciled (#127)" {
@@ -290,7 +250,7 @@ write_vendored_lefthook_with_remotes() {
     grep -q 'overlays.default' flake.nix
     # standard infrastructure present
     grep -q 'set-and-setting' flake.nix
-    grep -q 'checksFor' flake.nix
+    grep -q 'mkConsumerFlake' flake.nix
 }
 
 @test "custom flake with extra outputs is reconciled (#127)" {
@@ -311,7 +271,7 @@ write_vendored_lefthook_with_remotes() {
     grep -q 'nixosConfigurations.test' flake.nix
     # standard infrastructure present
     grep -q 'set-and-setting' flake.nix
-    grep -q 'checksFor' flake.nix
+    grep -q 'mkConsumerFlake' flake.nix
 }
 
 @test "custom flake with inputs + outputs is fully reconciled (#127)" {
@@ -339,8 +299,7 @@ write_vendored_lefthook_with_remotes() {
     grep -q 'homeConfigurations.user' flake.nix
     # standard infrastructure present
     grep -q 'set-and-setting' flake.nix
-    grep -q 'checksFor' flake.nix
-    grep -q 'materializationFor' flake.nix
+    grep -q 'mkConsumerFlake' flake.nix
 }
 
 @test "un-reconcilable: overlays applied to pkgs emits MIGRATE-FAIL (#127)" {
@@ -460,7 +419,7 @@ write_vendored_lefthook_with_remotes() {
     [[ "$output" == *"PASS: equivalence"* ]]
     # thin referenced flake planted
     grep -q "set-and-setting" flake.nix
-    grep -q "checksFor" flake.nix
+    grep -q "mkConsumerFlake" flake.nix
     # ci.yml replaced by guardrails caller
     grep -q "guardrails.yml" .github/workflows/ci.yml
     # lefthook.yml now gitignored, no longer tracked
@@ -848,7 +807,7 @@ write_vendored_lefthook_with_remotes() {
     grep -q 'my-src,' flake.nix
     # standard infrastructure present
     grep -q 'set-and-setting' flake.nix
-    grep -q 'checksFor' flake.nix
+    grep -q 'mkConsumerFlake' flake.nix
 }
 
 # ======== #149: syntax-error repo shapes (input not leaked into outputs) ========
@@ -897,7 +856,7 @@ write_vendored_lefthook_with_remotes() {
     echo "$inputs_block" | run ! grep -q 'nixosModules'
     # standard infrastructure present
     grep -q 'set-and-setting' flake.nix
-    grep -q 'checksFor' flake.nix
+    grep -q 'mkConsumerFlake' flake.nix
 }
 
 @test "block-style input with nixosModules usage does not produce syntax error (#149)" {
@@ -933,20 +892,15 @@ write_vendored_lefthook_with_remotes() {
     grep -q 'nixosConfigurations.builder' flake.nix
     # standard infrastructure present
     grep -q 'set-and-setting' flake.nix
-    grep -q 'checksFor' flake.nix
+    grep -q 'mkConsumerFlake' flake.nix
 }
 
-# ======== #149: fidelity -- seed template assembles at runtime ========
+# ======== #191: fidelity -- seed references centralized assembly ========
 
-@test "fidelity: seed template uses runtime assembly (settingHook not store copy)" {
-    # Verify the seed template uses settingHook (runtime assembly) not
-    # defaultShellHook with cp from store -- ensures lefthook-repo.yml is
-    # picked up and fidelity check passes for repos with repo-local checks.
+@test "fidelity: seed template delegates consumer wiring to mkConsumerFlake" {
     local seed_flake="$BATS_TEST_DIRNAME/../setting/scaffold/leaf-flake.txt"
-    grep -q 'settingHook' "$seed_flake"
-    grep -q 'assemble-lefthook.sh' "$seed_flake"
-    # must NOT have `cp -f ${mat.files}/lefthook.yml` (store copy)
-    run ! grep -q 'mat\.files.*lefthook\.yml' "$seed_flake"
+    grep -q 'mkConsumerFlake' "$seed_flake"
+    run ! grep -qE 'settingHook|assemble-lefthook\.sh|confirm\.sh' "$seed_flake"
 }
 
 # ======== #150: content-aware-leaf archetype ========
@@ -999,7 +953,7 @@ write_vendored_lefthook_with_remotes() {
     run ! grep -q 'nix-lefthook-statix-src' flake.nix
     # standard infrastructure present
     grep -q 'set-and-setting' flake.nix
-    grep -q 'checksFor' flake.nix
+    grep -q 'mkConsumerFlake' flake.nix
 }
 
 @test "content-aware-leaf: leaf with own source input preserves it (#150)" {
@@ -1045,7 +999,7 @@ write_vendored_lefthook_with_remotes() {
     run ! grep -q 'nix-lefthook-nixfmt-src' flake.nix
     # standard infrastructure present
     grep -q 'set-and-setting' flake.nix
-    grep -q 'checksFor' flake.nix
+    grep -q 'mkConsumerFlake' flake.nix
 }
 
 @test "content-aware-leaf: forAllSystems pattern extracts default (#150)" {
@@ -1095,7 +1049,7 @@ write_vendored_lefthook_with_remotes() {
     run ! grep -q 'nix-lefthook-nixfmt-src' flake.nix
     # standard infrastructure present
     grep -q 'set-and-setting' flake.nix
-    grep -q 'checksFor' flake.nix
+    grep -q 'mkConsumerFlake' flake.nix
 }
 
 @test "content-aware-leaf: lib false positive does not trigger unreconcilable (#150)" {

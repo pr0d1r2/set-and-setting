@@ -158,7 +158,7 @@ if [ "$flake_present" -eq 1 ] && grep -q 'set-and-setting' flake.nix; then
 fi
 
 uses_materialization=0
-if [ "$flake_present" -eq 1 ] && grep -qE 'materializationFor|checksFor' flake.nix; then
+if [ "$flake_present" -eq 1 ] && grep -qE 'mkConsumerFlake|materializationFor|checksFor' flake.nix; then
   uses_materialization=1
 fi
 
@@ -705,8 +705,9 @@ if [ "$reconcile_flake" -eq 1 ]; then
           }
           skip = 1
         }
-        if (!skip && !let_injected && lines[i] ~ /^[[:space:]]*in[[:space:]]*$/ && custom_let != "") {
+        if (!skip && !let_injected && lines[i] ~ /set-and-setting\.lib\.mkConsumerFlake/ && custom_let != "") {
           let_injected = 1
+          print "    let"
           n_let = split(custom_let, let_lines, "\n")
           min_let_indent = 9999
           for (j = 1; j <= n_let; j++) {
@@ -715,16 +716,17 @@ if [ "$reconcile_flake" -eq 1 ]; then
             if (RLENGTH < min_let_indent) min_let_indent = RLENGTH
           }
           if (min_let_indent == 9999) min_let_indent = 0
-          print ""
           for (j = 1; j <= n_let; j++) {
             if (let_lines[j] == "") continue
             stripped = substr(let_lines[j], min_let_indent + 1)
             print "      " stripped
           }
+          print "    in"
         }
-        # inject leaf package into the packages block (#150)
-        if (!skip && !pkg_injected && leaf_pkg != "" && lines[i] ~ /setting[[:space:]]*=.*mkSetting/) {
+        # Preserve a leaf product through the mkConsumerFlake package escape hatch.
+        if (!skip && !pkg_injected && leaf_pkg != "" && lines[i] ~ /^[[:space:]]*src[[:space:]]*=/) {
           pkg_injected = 1
+          print "      extraPackages = pkgs: {"
           n_pkg = split(leaf_pkg, pkg_lines, "\n")
           min_pkg_indent = 9999
           for (j = 1; j <= n_pkg; j++) {
@@ -738,28 +740,14 @@ if [ "$reconcile_flake" -eq 1 ]; then
             stripped = substr(pkg_lines[j], min_pkg_indent + 1)
             print "        " stripped
           }
+          print "      };"
         }
         if (!skip && i == last_close) {
-          # leaf package fallback: inject as packages.default if not merged (#150)
-          if (!pkg_injected && leaf_pkg != "") {
-            pkg_injected = 1
-            print ""
-            print "      packages.default ="
-            n_pkg = split(leaf_pkg, pkg_lines, "\n")
-            min_pkg_indent = 9999
-            for (j = 1; j <= n_pkg; j++) {
-              if (pkg_lines[j] == "") continue
-              match(pkg_lines[j], /^[[:space:]]*/)
-              if (RLENGTH < min_pkg_indent) min_pkg_indent = RLENGTH
-            }
-            if (min_pkg_indent == 9999) min_pkg_indent = 0
-            for (j = 1; j <= n_pkg; j++) {
-              if (pkg_lines[j] == "") continue
-              stripped = substr(pkg_lines[j], min_pkg_indent + 1)
-              print "        " stripped
-            }
-          }
           if (custom_outputs != "") {
+            # Close the helper call without its semicolon, then merge preserved
+            # non-standard top-level outputs into the returned output set.
+            sub(/;[[:space:]]*$/, "", lines[i])
+            print lines[i] " // {"
             print ""
             n_out = split(custom_outputs, out_lines, "\n")
             min_indent = 9999
@@ -774,6 +762,8 @@ if [ "$reconcile_flake" -eq 1 ]; then
               stripped = substr(out_lines[j], min_indent + 1)
               print "      " stripped
             }
+            print "    };"
+            skip = 1
           }
         }
         if (!skip) print lines[i]
