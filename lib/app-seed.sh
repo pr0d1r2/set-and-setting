@@ -62,13 +62,13 @@ while [ $# -gt 0 ]; do
 done
 
 case "$owner$repo" in
-  *[!A-Za-z0-9._-]* )
+  *[!A-Za-z0-9._-]*)
     echo "error: owner and repo may contain only letters, numbers, dot, underscore, and hyphen" >&2
     exit 1
     ;;
 esac
 case "$year" in
-  *[!0-9]* | "" )
+  *[!0-9]* | "")
     echo "error: year must contain only digits" >&2
     exit 1
     ;;
@@ -100,15 +100,15 @@ if { [ -z "$owner" ] || [ -z "$repo" ]; } && git remote get-url origin >/dev/nul
   remote="$(git remote get-url origin)"
   remote="${remote%.git}"
   case "$remote" in
-    git@*:* ) coordinates="${remote#*:}" ;;
-    *github.com/* ) coordinates="${remote#*github.com/}" ;;
-    * ) coordinates="" ;;
+    git@*:*) coordinates="${remote#*:}" ;;
+    *github.com/*) coordinates="${remote#*github.com/}" ;;
+    *) coordinates="" ;;
   esac
   if [ -n "$coordinates" ] && [ "${coordinates#*/}" != "$coordinates" ]; then
     inferred_owner="${coordinates%%/*}"
     inferred_repo="${coordinates#*/}"
     case "$inferred_owner$inferred_repo" in
-      *[!A-Za-z0-9._-]* ) ;;
+      *[!A-Za-z0-9._-]*) ;;
       *)
         [ -n "$owner" ] || owner="$inferred_owner"
         [ -n "$repo" ] || repo="$inferred_repo"
