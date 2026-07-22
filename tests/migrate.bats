@@ -905,6 +905,43 @@ write_vendored_lefthook_with_remotes() {
 
 # ======== #150: content-aware-leaf archetype ========
 
+@test "consumer packages: default and named products survive without scaffolding (#192)" {
+    printf '%s\n' \
+        "{" \
+        "  inputs.nixpkgs.url = \"github:NixOS/nixpkgs\";" \
+        "  outputs = { self, nixpkgs }:" \
+        "    let" \
+        "      forAllSystems = f: nixpkgs.lib.genAttrs [ \"x86_64-linux\" ] (system: f nixpkgs.legacyPackages.\${system});" \
+        "    in" \
+        "    {" \
+        "      packages = forAllSystems (pkgs: {" \
+        "        default = pkgs.writeShellApplication {" \
+        "          name = \"lefthook-typos\";" \
+        "          runtimeInputs = [ pkgs.typos ];" \
+        "          text = builtins.readFile ./lefthook-typos.sh;" \
+        "        };" \
+        "        docs = pkgs.runCommand \"lefthook-typos-docs\" { } \"touch \$out\";" \
+        "      });" \
+        "    };" \
+        "}" \
+        >flake.nix
+    echo "#!/usr/bin/env bash" >lefthook-typos.sh
+    write_vendored_lefthook
+    _init_repo
+
+    run bash "$MIGRATE_SCRIPT"
+
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"consumer packages detected"* ]]
+    [[ "$output" == *"PASS: equivalence"* ]]
+    grep -q 'extraPackages = pkgs:' flake.nix
+    grep -q 'default = pkgs.writeShellApplication' flake.nix
+    grep -q 'runtimeInputs = \[ pkgs.typos \]' flake.nix
+    grep -q 'docs = pkgs.runCommand' flake.nix
+    grep -q 'mkConsumerFlake' flake.nix
+    nix-instantiate --parse flake.nix >/dev/null
+}
+
 @test "content-aware-leaf: packages.default preserved, scaffolding stripped (#150)" {
     # A typical nix-lefthook-yamllint leaf: packages.default = writeShellApplication
     # + nix-lefthook-*-src flake=false inputs (standard CI scaffolding)

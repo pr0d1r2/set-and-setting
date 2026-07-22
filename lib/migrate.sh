@@ -226,6 +226,16 @@ if [ "$flake_present" -eq 1 ] && [ "$references_sns" -eq 0 ]; then
     has_extra_outputs=1
   fi
 
+  # Any consumer package is first-party output and must survive migration.
+  # Detect it independently of the content-aware-leaf archetype: ordinary
+  # packages, named packages, and leaves without old scaffolding inputs are
+  # just as much part of the consumer's public interface.
+  has_consumer_packages=0
+  if grep -qE 'packages\.([a-zA-Z0-9_-]+\.)?[a-zA-Z0-9_-]+[[:space:]]*=' flake.nix 2>/dev/null ||
+    grep -qE '^[[:space:]]*packages[[:space:]]*=' flake.nix 2>/dev/null; then
+    has_consumer_packages=1
+  fi
+
   # --- content-aware-leaf archetype detection (#150) ---
   # A leaf flake has: packages.default = writeShellApplication reading a local
   # script (the leaf product) + vendored nix-lefthook-*-src flake=false inputs
@@ -234,8 +244,7 @@ if [ "$flake_present" -eq 1 ] && [ "$references_sns" -eq 0 ]; then
   is_leaf_archetype=0
   leaf_product_inputs=""
   if grep -qE 'writeShellApplication' flake.nix 2>/dev/null &&
-    { grep -qE 'packages\.(default|[a-z0-9_-]+\.default)[[:space:]]*=' flake.nix 2>/dev/null ||
-      grep -qE 'packages[[:space:]]*=' flake.nix 2>/dev/null; }; then
+    [ "$has_consumer_packages" -eq 1 ]; then
     scaffolding_inputs=""
     leaf_inputs=""
     for inp in $extra_inputs; do
@@ -253,13 +262,15 @@ if [ "$flake_present" -eq 1 ] && [ "$references_sns" -eq 0 ]; then
     fi
   fi
 
-  if [ -n "$extra_inputs" ] || [ "$has_overlays" -eq 1 ] || [ "$has_extra_outputs" -eq 1 ] || [ "$is_leaf_archetype" -eq 1 ]; then
+  if [ -n "$extra_inputs" ] || [ "$has_overlays" -eq 1 ] || [ "$has_extra_outputs" -eq 1 ] ||
+    [ "$has_consumer_packages" -eq 1 ]; then
     has_custom_flake=1
     details=""
     [ -n "$extra_inputs" ] && details="extra inputs: $extra_inputs"
     [ -n "$leaf_product_inputs" ] && details="${details:+$details; }leaf scaffolding inputs (stripped): $leaf_product_inputs"
     [ "$has_overlays" -eq 1 ] && details="${details:+$details; }overlays detected"
     [ "$has_extra_outputs" -eq 1 ] && details="${details:+$details; }extra outputs detected"
+    [ "$has_consumer_packages" -eq 1 ] && details="${details:+$details; }consumer packages detected"
     [ "$is_leaf_archetype" -eq 1 ] && details="${details:+$details; }archetype: content-aware-leaf"
     custom_flake_details="$details"
   fi
@@ -371,16 +382,15 @@ if [ "$has_custom_flake" -eq 1 ]; then
     fi
   fi
 
-  # --- content-aware-leaf: extract packages.default as preserved output (#150) ---
-  # The leaf product (packages.default = writeShellApplication { ... }) must
-  # survive migration. Extract the inner `default = ...;` assignment; it is
-  # injected into the seed template's packages block (not as a top-level output).
+  # Extract every consumer package as preserved output. The assignments are
+  # injected through mkConsumerFlake's extraPackages function, so the helper's
+  # setting package is added alongside them rather than replacing them.
   reconciled_leaf_package=""
-  if [ -z "$unreconcilable" ] && [ "${is_leaf_archetype:-0}" -eq 1 ]; then
-    # try flat format: packages.default = ... or packages.<sys>.default = ...
+  if [ -z "$unreconcilable" ] && [ "${has_consumer_packages:-0}" -eq 1 ]; then
+    # Try flat format: packages.<name> or packages.<system>.<name>.
     reconciled_leaf_package="$(awk '
       BEGIN { cap=0; depth=0; buf=""; result="" }
-      !cap && /^[[:space:]]*packages\.(default|[a-zA-Z0-9_-]+\.default)[[:space:]]*=/ {
+      !cap && /^[[:space:]]*packages\.([a-zA-Z0-9_-]+\.)?[a-zA-Z0-9_-]+[[:space:]]*=/ {
         cap=1; depth=0; buf=""
       }
       cap {
@@ -399,17 +409,27 @@ if [ "$has_custom_flake" -eq 1 ]; then
       END { printf "%s", result }
     ' flake.nix)"
     if [ -n "$reconciled_leaf_package" ]; then
-      # normalize flat packages.default or packages.<sys>.default to just default
+      # Normalize packages.<name> or packages.<system>.<name> to <name>.
       # shellcheck disable=SC2001
       reconciled_leaf_package="$(echo "$reconciled_leaf_package" | sed 's/^[[:space:]]*packages\.\([a-zA-Z0-9_-]*\.\)\?//')"
     fi
     if [ -z "$reconciled_leaf_package" ]; then
-      # forAllSystems pattern: extract the `default = ...;` from inside the block
+      # forAllSystems pattern: extract all assignments in the returned package
+      # attrset. Package entries share one indentation level, which excludes
+      # preceding let-bindings and nested derivation attributes.
       reconciled_leaf_package="$(awk '
-        BEGIN { in_pkg=0; cap=0; depth=0; buf=""; result="" }
-        /^[[:space:]]*packages[[:space:]]*=/ { in_pkg=1 }
-        in_pkg && !cap && /[[:space:]]*default[[:space:]]*=/ {
-          cap=1; depth=0; buf=""
+        BEGIN { in_pkg=0; in_attrset=0; cap=0; depth=0; entry_indent=-1; buf=""; result="" }
+        /^[[:space:]]*packages[[:space:]]*=/ {
+          in_pkg=1
+          if (/\{[[:space:]]*$/) in_attrset=1
+          next
+        }
+        in_pkg && !in_attrset && /^[[:space:]]*\{[[:space:]]*$/ { in_attrset=1; next }
+        in_attrset && !cap && /^[[:space:]]*[a-zA-Z_][a-zA-Z0-9_-]*[[:space:]]*=/ {
+          match($0, /^[[:space:]]*/)
+          indent = RLENGTH
+          if (entry_indent < 0 || indent < entry_indent) entry_indent = indent
+          if (indent == entry_indent) { cap=1; depth=0; buf="" }
         }
         cap {
           buf = buf $0 "\n"
