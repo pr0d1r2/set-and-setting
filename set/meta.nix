@@ -189,6 +189,22 @@ let
         "blocked"
       ];
     };
+    "principles/process.md" = {
+      keywords = [
+        "process"
+        "five-step-process"
+        "goals"
+        "problems"
+        "diagnosis"
+        "root-cause"
+        "design"
+        "task-plan"
+        "execution"
+        "iteration"
+        "spec-driven-development"
+        "backprop"
+      ];
+    };
     "principles/believability.md" = {
       keywords = [
         "believability"

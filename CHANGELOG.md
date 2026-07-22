@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- Add the `process` principle: follow the iterative five-step sequence from
+  goals through problems, root-cause diagnosis, design, and execution without
+  skipping steps. (#183)
+
 - Add the `ownership` principle: own outcomes end-to-end, drive pull
   requests through green checks, accord, and merge, and finish work or mark
   its evidence-backed blocker explicitly. (#182)
