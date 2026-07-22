@@ -449,12 +449,15 @@ if [ "$has_custom_flake" -eq 1 ]; then
     fi
   fi
 
-  # extract let-bindings referenced by custom outputs (#149)
-  # When an output references a binding (e.g. `overlays.default = myOverlay;`),
-  # the binding must also be extracted or the reconciled flake has dangling refs.
+  # Extract let-bindings referenced by custom outputs or consumer packages
+  # (#149/#192). When an assignment references a binding (for example,
+  # `overlays.default = myOverlay;` or `default = consumerPackage;`), the
+  # binding must also be extracted or the reconciled flake has dangling refs.
   reconciled_let_bindings=""
-  if [ -z "$unreconcilable" ] && [ -n "$reconciled_outputs" ]; then
-    reconciled_let_bindings="$(awk -v outputs="$reconciled_outputs" '
+  reconciled_binding_users="${reconciled_outputs}${reconciled_outputs:+
+}${reconciled_leaf_package:-}"
+  if [ -z "$unreconcilable" ] && [ -n "$reconciled_binding_users" ]; then
+    reconciled_let_bindings="$(awk -v outputs="$reconciled_binding_users" '
       BEGIN {
         # collect identifiers used in outputs (RHS of = assignments)
         n_out = split(outputs, out_lines, "\n")

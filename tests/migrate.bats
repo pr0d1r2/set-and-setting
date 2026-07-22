@@ -942,6 +942,31 @@ write_vendored_lefthook_with_remotes() {
     nix-instantiate --parse flake.nix >/dev/null
 }
 
+@test "consumer packages: referenced top-level let bindings survive (#192)" {
+    printf '%s\n' \
+        "{" \
+        "  inputs.nixpkgs.url = \"github:NixOS/nixpkgs\";" \
+        "  outputs = { self, nixpkgs }:" \
+        "    let" \
+        "      consumerPackage = nixpkgs.legacyPackages.x86_64-linux.hello;" \
+        "    in" \
+        "    {" \
+        "      packages.x86_64-linux.default = consumerPackage;" \
+        "    };" \
+        "}" \
+        >flake.nix
+    write_vendored_lefthook
+    _init_repo
+
+    run bash "$MIGRATE_SCRIPT"
+
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"PASS: equivalence"* ]]
+    grep -q 'consumerPackage = nixpkgs.legacyPackages.x86_64-linux.hello' flake.nix
+    grep -q 'default = consumerPackage' flake.nix
+    nix-instantiate --parse flake.nix >/dev/null
+}
+
 @test "content-aware-leaf: packages.default preserved, scaffolding stripped (#150)" {
     # A typical nix-lefthook-yamllint leaf: packages.default = writeShellApplication
     # + nix-lefthook-*-src flake=false inputs (standard CI scaffolding)
