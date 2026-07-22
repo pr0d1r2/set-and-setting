@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- Add the `meritocracy` principle: let the best-supported idea win regardless
+  of who holds it by combining truth, transparency, believability weighting,
+  and openness across every agent decision. (#185)
+
 - Add the `process` principle: follow the iterative five-step sequence from
   goals through problems, root-cause diagnosis, design, and execution without
   skipping steps. (#183)

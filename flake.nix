@@ -1379,6 +1379,7 @@
             meta = import ./set/meta.nix { inherit (nixpkgs) lib; };
             r = meta.resolve;
             evolve = builtins.readFile ./set/skills/principles/evolve.md;
+            meritocracy = builtins.readFile ./set/skills/principles/meritocracy.md;
             ownership = builtins.readFile ./set/skills/principles/ownership.md;
             process = builtins.readFile ./set/skills/principles/process.md;
             sync = builtins.readFile ./set/skills/principles/sync.md;
@@ -1402,6 +1403,17 @@
               assert nixpkgs.lib.hasInfix "Everything improves through continuous adaptation" evolve;
               assert nixpkgs.lib.hasInfix "See also [[machine]] and" evolve;
               assert nixpkgs.lib.hasInfix "[[progress]]" evolve;
+              assert builtins.elem "meritocracy" (r "principles/meritocracy.md").keywords;
+              assert builtins.elem "best-of-n" (r "principles/meritocracy.md").keywords;
+              assert builtins.elem "judge-panel" (r "principles/meritocracy.md").keywords;
+              assert (r "principles/meritocracy.md").paths == [ "**/*" ];
+              assert nixpkgs.lib.hasInfix "let the best idea win regardless of who holds it" meritocracy;
+              assert nixpkgs.lib.hasInfix "junior brain's better-verified idea" meritocracy;
+              assert nixpkgs.lib.hasInfix "Use judge panels or best-of-N synthesis" meritocracy;
+              assert nixpkgs.lib.hasInfix "Apply this principle to everything the agent does" meritocracy;
+              assert nixpkgs.lib.hasInfix "radical [[truth]], radical [[transparency]]" meritocracy;
+              assert nixpkgs.lib.hasInfix "[[believability]]-weighted" meritocracy;
+              assert nixpkgs.lib.hasInfix "[[openness]]" meritocracy;
               assert builtins.elem "ownership" (r "principles/ownership.md").keywords;
               assert builtins.elem "end-to-end" (r "principles/ownership.md").keywords;
               assert (r "principles/ownership.md").paths == [ "**/*" ];
