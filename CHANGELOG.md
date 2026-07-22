@@ -9,7 +9,8 @@
 
 - Extend the leaf `seed` app to substitute README owner/repo and MIT
   holder/year placeholders from trip inputs or an existing GitHub `origin`.
-  Repositories without coordinates keep a one-line fill-in note. (#235)
+  Repositories without coordinates keep a one-line fill-in note. Advance the
+  growing SPEC and Nix source size budgets by 8 KiB. (#235)
 
 - Auto-project every active principle into the always-on agent prompt as a
   `[[slug]]` registry entry with its name and opening rule, and add a generated
