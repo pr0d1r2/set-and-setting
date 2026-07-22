@@ -51,7 +51,7 @@ and dogfoods both.
 
 ## §I Interfaces
 
-- I.flake: `flake.nix` -- main entry. Exposes `sets`, `drafts`, `settings`, `lib.mkSet`, `lib.mkSetting`, `lib.mkDriftCheck`, `lib.mkDepGraphCheck`, `lib.mkMaterializeCheck`, `lib.mkDevShells`, `lib.checksFor`, `packages.set`, `packages.setting`, `checks`.
+- I.flake: `flake.nix` -- main entry. Exposes `sets`, `drafts`, `settings`, `lib.mkSet`, `lib.mkSetting`, `lib.canonFor`, `lib.mkCanonDriftCheck`, `lib.mkDriftCheck`, `lib.mkDepGraphCheck`, `lib.mkMaterializeCheck`, `lib.mkDevShells`, `lib.checksFor`, `packages.set`, `packages.setting`, `checks`.
 - I.mkSet: `set/lib/mk-set.nix` -- single skill emitter. It mirrors agnostic
   markdown into per-agent rule and portable-skill channels. Every
   `principlesDir/*.md` also projects its name, opening rule, `[[slug]]`, and
@@ -174,6 +174,21 @@ and dogfoods both.
   hooks needing git context, test runners, and `nix-flake-check` stay
   lefthook-local-only. Check names validated against `check-fragment-map.nix`
   (#168). Args: `pkgs`, `src`, `fragments`. Exposed as `lib.checksFor`.
+- I.canonFor: `lib/canon-for.nix` -- canonical referenced-repository tree for
+  a declared fragment set. It always includes the thin pinned `mkSeed` unit and
+  selects `canonDocs`, `canonGovernance`, `canonDevEnv`, and `canonSpec` through
+  `check-fragment-map.nix`. Units stay independently buildable and reusable by
+  birth and repair paths. Args: `pkgs`, `fragments`. Exposed as
+  `lib.canonFor`. `apps.mkCanon` installs the composed tree with runtime
+  owner/repo/description/license substitutions, skips repo-owned existing
+  files, and installs lefthook when run inside a Git repository. `apps.seed`
+  deliberately remains the thin three-file repair primitive; `mkScaffold`
+  remains the legacy vendored-repo rescue path.
+- I.mkCanonDriftCheck: `lib/mk-canon-drift-check.nix` -- compares the pinned
+  canon paths (thin flake, gitignore, CI caller) with a consumer checkout by
+  using the shared drift comparator. Seeded docs and governance are repo-owned
+  and excluded. Missing expected inputs are `UNKNOWN` and fail, never pass as a
+  fixed point. Args: `pkgs`, `canon`, `projectRoot`.
 - I.sync-set: CLI script in mkSet output. Copies skills+concepts+set.md to consumer repo target dir.
 - I.sync-setting: CLI script in mkSetting output. Copies dotfiles to consumer repo root.
 - I.sets: Attrset of raw paths to each skill category dir.
@@ -524,11 +539,19 @@ and dogfoods both.
   authority from an unmarked task, and stop at every `HUMAN-GATED` task
   until a human approves it in the current session. Changing the envelope
   or either classification is itself human-gated.
+- V45: Canon is deterministic by fragment set and shared by birth and repair.
+  `canonFor` composes named units rather than owning their contents. Reordering
+  the same fragment set produces an identical tree. Seeded repo-owned files are
+  preserved after emission; pinned canon files are compared exactly and drift
+  fails. Detection may walk an explicit source tree before `git init`, where it
+  must not infer absent fragments. A missing expected path is unknown state and
+  fails rather than being reported as convergence.
 
 ## §T Tasks
 
 | id  | s | description                                          | cites     |
 |-----|---|------------------------------------------------------|-----------|
+| T78 | x | Compose `canonFor` and `apps.mkCanon` from thin `mkSeed`, named docs/governance/dev-env/SPEC units, and the shared fragment map; reuse the canon in migrate, add pre-Git source-tree fragment detection, runtime substitutions, hook install, deterministic/subset checks, and pinned drift rejection. Keep `seed` thin and `mkScaffold` as legacy rescue. (#246) | I.canonFor,I.mkCanonDriftCheck,I.checkFragmentMap,V45 |
 | T77 | x | HOOTL-ELIGIBLE — check-fragment-map: single source of truth for check-name-to-fragment mapping (#168). `lib/check-fragment-map.nix` replaces hardcoded case statements in `migrate.sh` with a nix-generated `CHECK_FRAGMENT_MAP` env var. Completeness nix check validates against `checksFor` + lefthook fragment YAML. Adding a new check = add it to the map; migrate.sh auto-discovers it. | I.checkFragmentMap,I.checksFor,V41,V42,V43 |
 | T76 | x | HOOTL-ELIGIBLE — add the autonomous-loop skill, pair it with HITL in the opt-in ops bundle, and verify both SPEC task anchors survive materialization. #154 | C10,I.loop-anchors,V44 |
 | T63 | x | `@`-ref matcher -- pure shell scanner that emits ONLY real `@`-references from a markdown file: leading-token `@set/...`, `@concepts/...`, or relative `@<category>/<file>.md`. SKIPS code spans/fences + block HTML comments (V29 parse rules) and non-ref `@` tokens (email `@example.com`, git SHAs `@fbeb9d9`, prose `@include`/`@main`/`@v4`/`@privileged`/`@system-service`). No repo-wide gate; bats over fixtures. The false-positive filter that blocked T58 | V12,V29,T58 |

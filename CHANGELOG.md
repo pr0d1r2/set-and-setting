@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+- Add `canonFor` and `mkCanon`: fragment-selected canon units now compose the
+  thin seed, docs, governance, development environment, and CAVEKIT SPEC into
+  one deterministic referenced-repository tree. Migration backfills the same
+  tree, pinned seed drift is checkable, and missing comparator inputs fail
+  loudly instead of reading as convergence. (#246)
+
 - Seed skip-existing `README.md` and `LICENSE` files from `mkSetting-init`.
   The README carries the canonical CI/license/NixOS badge block and repository
   placeholders; MIT is the explicit default and can be disabled with

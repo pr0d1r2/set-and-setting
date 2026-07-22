@@ -116,6 +116,8 @@ nix run github:pr0d1r2/set-and-setting#mkScaffold
 | `mkSetting` | Materialize unified configs (always overwrites) |
 | `mkSetting-init` | Scaffold repo starters (skips files that exist) |
 | `mkScaffold` | Scaffold flake.nix, lefthook.yml, CI workflow (skips files that exist) |
+| `mkCanon` | Compose and emit the canonical referenced-repo tree |
+| `seed` | Emit only the three pinned infrastructure files used by repair tooling |
 | `bootstrap` | All four in one command |
 | `seed` | Emit a thin leaf repo; substitutes README/license placeholders from trip coordinates or `origin` |
 
