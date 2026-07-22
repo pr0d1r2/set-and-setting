@@ -14,6 +14,8 @@ setup() {
     echo "gitignore" >"$SEED_SRC/.gitignore"
     mkdir -p "$SEED_SRC/config/lefthook"
     echo "limits" >"$SEED_SRC/config/lefthook/file_size_limits.yml"
+    printf '%s\n' '# __REPO__' 'https://github.com/__OWNER__/__REPO__' >"$SEED_SRC/README.md"
+    printf '%s\n' 'Copyright (c) __YEAR__ __HOLDER__' >"$SEED_SRC/LICENSE"
     export SEED_SRC
 }
 
@@ -57,6 +59,18 @@ teardown() {
     [ -f "$TARGET/.gitattributes" ]
     [ -f "$TARGET/.gitignore" ]
     [ -f "$TARGET/config/lefthook/file_size_limits.yml" ]
+    [ "$(head -1 "$TARGET/README.md")" = "# ${TARGET##*/}" ]
+    grep -q '__OWNER__/__REPO__' "$TARGET/README.md"
+    grep -q '__YEAR__ __HOLDER__' "$TARGET/LICENSE"
+}
+
+@test "skips existing README and LICENSE" {
+    echo "custom readme" >"$TARGET/README.md"
+    echo "custom license" >"$TARGET/LICENSE"
+    run bash -c "cd '$TARGET' && bash '$SCRIPT'"
+    [ "$status" -eq 0 ]
+    [ "$(cat "$TARGET/README.md")" = "custom readme" ]
+    [ "$(cat "$TARGET/LICENSE")" = "custom license" ]
 }
 
 @test "skips files that already exist" {

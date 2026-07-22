@@ -24,7 +24,8 @@ owns unified config -- shareable configs (e.g. `.markdownlint.yml`,
 `packages.setting`, materialized and gitignored. Repo-specific files (`.gitattributes`, `.editorconfig`,
 `config/lefthook/file_size_limits.yml`, `.narrow-language-*.dic`,
 `.nix-embedded-shell-allowlist`) are scaffolded once in a seed/init
-phase, then tracked and owned by the consumer. This repo is consumer #0
+  phase, then tracked and owned by the consumer. This includes a README
+  skeleton and an explicit, opt-out-able MIT license seed. This repo is consumer #0
 and dogfoods both.
 
 ## §C Constraints
@@ -61,7 +62,8 @@ and dogfoods both.
   unified config. Two outputs: (1) seed/init -- repo-specific starters
   scaffolded once then tracked & repo-owned: `.gitignore`,
   `.gitattributes`, `.editorconfig`, `config/lefthook/file_size_limits.yml`,
-  `.narrow-language-*.dic`, `.nix-embedded-shell-allowlist`; (2)
+  `.narrow-language-*.dic`, `.nix-embedded-shell-allowlist`, `README.md`,
+  `LICENSE`; (2)
   materialized -- unified configs always synced & gitignored:
   `.markdownlint.yml`, `.yamllint.yml`, `.claude/` commands/allowances.
   The app (`app-mk-setting.sh`) also assembles a content-aware
@@ -186,7 +188,7 @@ and dogfoods both.
   with `packages.set`. Seed/init scaffold is separate
   (`bin/sync-setting-init`), not in this package.
 - I.sync-target: `sync-set`/`sync-setting` take a target dir arg; default preserves prior behavior.
-- I.apps: `apps.<sys>.{mkSet,mkSetting,mkSetting-init,bootstrap,graduate,branch-protection}`
+- I.apps: `apps.<sys>.{mkSet,mkSetting,mkSetting-init,bootstrap,seed,graduate,branch-protection}`
   -- runnable installers for the zero-dependency delivery path (C9).
   `nix run github:pr0d1r2/set-and-setting#mkSet [cats|--all|--all-except
   a b]` materializes skills into `./.claude/rules/set/` at the CWD.
@@ -197,7 +199,8 @@ and dogfoods both.
   `bootstrap` = mkSet core + mkSetting + mkSetting-init in one. Each
   supports `--list`/`--help`/`--dry-run`. `confirm` (#94) runs the
   post-materialization acceptance suite; `seed` (#95) emits the leaf
-  committed-minimum; `migrate` (#96) runs the vendored->referenced
+  committed-minimum and substitutes README/license placeholders from
+  explicit trip coordinates or an inferred GitHub `origin`; `migrate` (#96) runs the vendored->referenced
   transform (I.migrate).
 - I.migrate: `lib/migrate.sh` (core) + `lib/app-migrate.sh` (CLI) +
   `apps.migrate` -- the mechanical, deterministic, idempotent, non-LLM
@@ -511,7 +514,7 @@ and dogfoods both.
   patterns (overlays applied to pkgs, non-extractable output blocks) ⇒
   MIGRATE-FAIL with actionable detail. The migrator
   writes the committed minimum (thin flake, guardrails CI caller,
-  gitignored materialized artifacts); the FULL confirmator (#94) +
+  README/license seeds, gitignored materialized artifacts); the FULL confirmator (#94) +
   `nix flake check` gate the mechanical PR in CI once `flake.lock`
   exists. Tested on vendored / partial / bare / already-referenced
   fixtures + a dropped-check rejection + custom-flake reconciliation +
@@ -604,6 +607,8 @@ and dogfoods both.
 | T73 | x | materialization primitive (#92) -- `lib.materializationFor { pkgs, fragments }` returns `{ files, packages }` as one atom: assembled lefthook.yml + fragment-mapped wrapper derivations. `wrappersForFragment` is the single source for both `materializationFor` and `lefthookWrappersFor` (no duplication). Coherence check (by construction + nix check). Reuses `assemble-lefthook.sh`. Fragments are a committed declaration (pure eval) | I.materializationFor,V40,V41,I.detectFragments |
 | T74 | x | checksFor -- fragment-driven check selection (#93 consumer bridge). `lib.checksFor { pkgs, src, fragments }` returns an attrset of pinned check derivations matching the given fragments. CI-gate counterpart to `materializationFor`. Scaffold uses `checksFor` instead of manual `mk*Check` wiring. Nix checks: per-fragment verification, subset property, empty-fragment handling | I.checksFor,V42,I.materializationFor,V41 |
 | T75 | x | `apps.migrate` (#96) -- mechanical, deterministic, idempotent, non-LLM, confirmator-gated vendored->referenced transform. `lib/migrate.sh` (detect state / strip vendored artifacts / plant seed #95 / confirm-equivalence) + `lib/app-migrate.sh` (`--detect`/`--dry-run`/`--help`) + `apps.migrate`. Safety net: referenced effective check-set (pinned `checksFor` UNION all fragment lefthook commands) MUST cover the vendored `lefthook.yml` check-set; a dropped check ⇒ refuse. Nix checks over vendored / partial / bare / already-referenced fixtures + dropped-check rejection; bats for the core logic + CLI. HOLD (V189): tool lands, fleet run is human-gated | I.migrate,I.mkSeed,I.mkConfirm,V43,C7 |
+| T76 | x | `mkSetting-init` seeds a titled README skeleton with canonical CI/license/NixOS badges and an explicit default MIT license. Both are skip-existing; badge and holder/year placeholders remain available for repo-birth substitution; `readme = false` and `license = null` opt out. (#235) | I.mkSetting,V22,V26 |
+| T77 | x | Leaf `seed` substitutes README owner/repo and license holder/year from CLI or `TRIP_*` repo-birth inputs, falls back to GitHub `origin`, and otherwise preserves placeholders plus the fill-in note. Existing README/LICENSE files remain untouched. (#235) | I.apps,I.mkSeed,T76 |
 
 ## §B Bugs
 
@@ -639,6 +644,8 @@ and dogfoods both.
 | B28 | 2026-07-15 | `guardrails / check` CI failed: `checks.file-size-check` red because `tests/migrate.bats` grew to 22526 bytes, exceeding the 20480-byte `.bats` file-size limit in `file_size_limits.yml`. Same class as B6/B14/B20 -- test file grew with new coverage from #126 (repo-local checks in apps.migrate). All other checks passed; the cascade in the log (`error: build of ...`) is nix's standard all-or-nothing `nix flake check` behavior. | fixed: bumped `.bats` limit from 20480 to 24576 (24 KiB) in `config/lefthook/file_size_limits.yml`. |
 | B29 | 2026-07-15 | `guardrails / check` CI still red after B28: `checks.migrate-rejects-dropped-check` failed. The nix check's vendored lefthook fixture included `super-special-check` (a repo-local check), expecting migration to reject it. But #126 carry-through now correctly rescues repo-local checks into `lefthook-repo.yml`, so migration succeeded and the test (which expected failure) failed. The test was written pre-#126 and never updated for the carry-through feature. | fixed: redesigned the fixture to use `markdownlint` (a standard-fragment check) with a reduced universe excluding the `markdown` fragment. Carry-through classifies `markdownlint` as standard (not repo-local), so it stays dropped and triggers the rejection the test expects. `nix flake check` green. |
 | B30 | 2026-07-15 | `guardrails / check` CI still red after B29: `checks.file-size-check` red because `SPEC.md` grew to 73776 bytes, exceeding the 73728-byte `.md` file-size limit in `file_size_limits.yml`. Same class as B6/B14/B20/B28 -- SPEC.md grows with each bug entry added by prior fix rounds (B28, B29 entries pushed it 48 bytes over). The `confirm-rejects-broken` output in the log (6 passed, 3 failed) is a negative test that PASSED -- the 3 failures are the confirmator correctly rejecting a broken fixture. Only `file-size-check-check.drv` actually failed. | fixed: bumped `.md` limit from 73728 to 81920 (80 KiB) in `config/lefthook/file_size_limits.yml`. |
+| B31 | 2026-07-22 | Issue #235's required emitter assertions and SPEC interface/task coverage pushed `flake.nix` and `SPEC.md` just beyond their size budgets. | fixed: advanced the `.nix` and `.md` limits by one 8 KiB step to 151552 and 90112 bytes. |
+| B32 | 2026-07-22 | Adding README to the leaf seed made migration fixtures detect the markdown fragment, invalidating the dropped-markdown negative proof. | fixed: retargeted the proof to a dropped shell check, whose fragment the leaf seed does not activate. |
 | B31 | 2026-07-15 | `guardrails / check` CI failed: `checks.file-size-check` red because `lib/migrate.sh` (26062 bytes) and `tests/migrate.bats` (26940 bytes) both exceeded the 24576-byte `.sh`/`.bats` file-size limits in `file_size_limits.yml`. Same class as B6/B14/B20/B28/B30 -- files grew with B23 functionless rewrite (migrate.sh) and B22/B29 test additions (migrate.bats). All other checks passed; the cascade in the log is nix's all-or-nothing `nix flake check` behavior. | fixed: bumped `.sh` and `.bats` limits from 24576 to 32768 (32 KiB) in `config/lefthook/file_size_limits.yml`. |
 <!-- markdownlint-disable MD013 MD038 MD056 -->
 | B32 | 2026-07-15 | `guardrails / check` CI failed: `checks.confirm-self-test` red because `detect-fragments.sh` used `printf '%s\n' "$tracked" | grep -qE PATTERN` with `set -o pipefail`. On CI runners, `grep -q` exits immediately on match, closing the pipe before `printf` finishes writing, causing SIGPIPE (exit 141). With `pipefail`, the pipeline returns 141, making the `if` condition false and silently dropping the `yaml` fragment. The re-assembled `lefthook.yml` (built from detected fragments "base nix shell ascii markdown") then differed from the fixture's (built with all 6 fragments including `yaml`). Passed locally due to timing differences (small file list completes before `grep -q` closes the pipe). Same pattern in `lib/migrate.sh` was also vulnerable. | fixed: replaced all `printf '%s\n' "$tracked" \| grep -qE` pipelines with `grep -qE PATTERN <<<"$tracked"` (here-strings) in both `detect-fragments.sh` and `migrate.sh`. Here-strings feed stdin from a temporary file, not a pipe, eliminating the SIGPIPE race entirely. |

@@ -19,6 +19,8 @@
     "other"
   ],
   nixEmbeddedShellAllowlist ? true,
+  readme ? true,
+  license ? "MIT",
 }:
 
 let
@@ -48,7 +50,9 @@ let
       )
     )
     ++ map (lang: pkgs.writeTextDir ".narrow-language-${lang}.dic" "") narrowLanguageDics
-    ++ lib.optional nixEmbeddedShellAllowlist (pkgs.writeTextDir ".nix-embedded-shell-allowlist" "");
+    ++ lib.optional nixEmbeddedShellAllowlist (pkgs.writeTextDir ".nix-embedded-shell-allowlist" "")
+    ++ lib.optional readme (pkgs.writeTextDir "README.md" (readFile ../scaffold/README.md))
+    ++ lib.optional (license == "MIT") (pkgs.writeTextDir "LICENSE" (readFile ../scaffold/LICENSE));
 
   seedBundle = pkgs.symlinkJoin {
     name = "agent-setting-seed";
@@ -79,6 +83,10 @@ let
     + readFile ./sync-setting-init.sh;
   };
 in
+assert lib.assertOneOf "mkSetting license" license [
+  "MIT"
+  null
+];
 pkgs.symlinkJoin {
   name = "agent-setting";
   paths = [

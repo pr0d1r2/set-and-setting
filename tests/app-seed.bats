@@ -13,6 +13,8 @@ setup() {
     echo "leaf gitignore" >"$SEED_SRC/.gitignore"
     mkdir -p "$SEED_SRC/.github/workflows"
     printf '%s\n' "jobs:" "  guardrails:" "    uses: pr0d1r2/set-and-setting/.github/workflows/guardrails.yml@main" >"$SEED_SRC/.github/workflows/ci.yml"
+    printf '%s\n' '# __REPO__' 'https://github.com/__OWNER__/__REPO__' '<!-- Fill in __OWNER__ and __REPO__ in the badge URLs when the repository coordinates are known. -->' >"$SEED_SRC/README.md"
+    echo 'Copyright (c) __YEAR__ __HOLDER__' >"$SEED_SRC/LICENSE"
 
     cd "$TARGET" || exit 1
     export SEED_SRC
@@ -37,6 +39,8 @@ teardown() {
     [[ "$output" == *"flake.nix"* ]]
     [[ "$output" == *".gitignore"* ]]
     [[ "$output" == *".github/workflows/ci.yml"* ]]
+    [[ "$output" == *"README.md"* ]]
+    [[ "$output" == *"LICENSE"* ]]
     [[ "$output" != *"auto-update"* ]]
 }
 
@@ -66,13 +70,47 @@ teardown() {
     [ -f "$TARGET/.github/workflows/ci.yml" ]
     grep -q "guardrails" "$TARGET/.github/workflows/ci.yml"
     [ ! -f "$TARGET/.github/workflows/auto-update.yml" ]
+    [ "$(head -1 "$TARGET/README.md")" = "# ${TARGET##*/}" ]
+    grep -q '__OWNER__/__REPO__' "$TARGET/README.md"
+    grep -q 'Fill in __OWNER__ and __REPO__' "$TARGET/README.md"
+    grep -q "Copyright (c) $(date -u +%Y) __HOLDER__" "$TARGET/LICENSE"
+}
+
+@test "explicit trip coordinates substitute README and LICENSE placeholders" {
+    run bash "$SCRIPT" --owner octocat --repo hello-world --holder "The Octocat" --year 2025
+    [ "$status" -eq 0 ]
+    [ "$(head -1 "$TARGET/README.md")" = "# hello-world" ]
+    grep -q 'github.com/octocat/hello-world' "$TARGET/README.md"
+    ! grep -q '__OWNER__\|__REPO__\|Fill in' "$TARGET/README.md"
+    grep -q 'Copyright (c) 2025 The Octocat' "$TARGET/LICENSE"
+    ! grep -q '__YEAR__\|__HOLDER__' "$TARGET/LICENSE"
+}
+
+@test "trip environment coordinates are accepted" {
+    TRIP_OWNER=octocat TRIP_REPO=env-repo TRIP_YEAR=2024 run bash "$SCRIPT"
+    [ "$status" -eq 0 ]
+    grep -q 'github.com/octocat/env-repo' "$TARGET/README.md"
+    grep -q 'Copyright (c) 2024 octocat' "$TARGET/LICENSE"
+}
+
+@test "origin coordinates are inferred when explicit coordinates are absent" {
+    git init -q
+    git remote add origin git@github.com:octocat/remote-repo.git
+    run bash "$SCRIPT"
+    [ "$status" -eq 0 ]
+    grep -q 'github.com/octocat/remote-repo' "$TARGET/README.md"
+    grep -q 'Copyright (c) .* octocat' "$TARGET/LICENSE"
 }
 
 @test "skips files that already exist" {
     echo "custom flake" >"$TARGET/flake.nix"
+    echo "custom readme" >"$TARGET/README.md"
+    echo "custom license" >"$TARGET/LICENSE"
     run bash "$SCRIPT"
     [ "$status" -eq 0 ]
     [ "$(cat "$TARGET/flake.nix")" = "custom flake" ]
+    [ "$(cat "$TARGET/README.md")" = "custom readme" ]
+    [ "$(cat "$TARGET/LICENSE")" = "custom license" ]
     [ -f "$TARGET/.gitignore" ]
     [ -f "$TARGET/.github/workflows/ci.yml" ]
 }

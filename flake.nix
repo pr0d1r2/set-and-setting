@@ -1707,6 +1707,11 @@
           let
             mkSetting = import ./setting/lib/mk-setting.nix { inherit (nixpkgs) lib; };
             full = mkSetting { inherit pkgs; };
+            noDocs = mkSetting {
+              inherit pkgs;
+              readme = false;
+              license = null;
+            };
           in
           pkgs.runCommand "compose-setting-check" { } ''
             # materialized files present in full output
@@ -1720,6 +1725,14 @@
             [ -e "${full}/config/lefthook/file_size_limits.yml" ] || { echo "FAIL: no file_size_limits.yml"; exit 1; }
             [ -e "${full}/.narrow-language-nix.dic" ] || { echo "FAIL: no nix.dic"; exit 1; }
             [ -e "${full}/.nix-embedded-shell-allowlist" ] || { echo "FAIL: no allowlist"; exit 1; }
+            [ -e "${full}/README.md" ] || { echo "FAIL: no README.md"; exit 1; }
+            [ -e "${full}/LICENSE" ] || { echo "FAIL: no LICENSE"; exit 1; }
+            grep -q '__OWNER__/__REPO__' "${full}/README.md" \
+              || { echo "FAIL: README badge placeholders missing"; exit 1; }
+            grep -q '__YEAR__ __HOLDER__' "${full}/LICENSE" \
+              || { echo "FAIL: license placeholders missing"; exit 1; }
+            [ ! -e "${noDocs}/README.md" ] || { echo "FAIL: opted-out README present"; exit 1; }
+            [ ! -e "${noDocs}/LICENSE" ] || { echo "FAIL: opted-out LICENSE present"; exit 1; }
 
             # sync scripts present and executable
             [ -x "${full}/bin/sync-setting" ] || { echo "FAIL: no sync-setting"; exit 1; }
@@ -1733,6 +1746,9 @@
             fi
             if [ -e "${full.materialized}/.gitignore" ]; then
               echo "FAIL: pkg has seed .gitignore"; exit 1
+            fi
+            if [ -e "${full.materialized}/README.md" ] || [ -e "${full.materialized}/LICENSE" ]; then
+              echo "FAIL: pkg has documentation seeds"; exit 1
             fi
 
             # gitignore includes materialized file entries (setting fragment)
@@ -2815,6 +2831,10 @@
             test -f ${seed}/flake.nix || { echo "FAIL: flake.nix missing"; exit 1; }
             test -f ${seed}/.gitignore || { echo "FAIL: .gitignore missing"; exit 1; }
             test -f ${seed}/.github/workflows/ci.yml || { echo "FAIL: ci.yml missing"; exit 1; }
+            test -f ${seed}/README.md || { echo "FAIL: README.md missing"; exit 1; }
+            test -f ${seed}/LICENSE || { echo "FAIL: LICENSE missing"; exit 1; }
+            grep -q '__OWNER__/__REPO__' ${seed}/README.md || { echo "FAIL: README placeholders missing"; exit 1; }
+            grep -q '__YEAR__ __HOLDER__' ${seed}/LICENSE || { echo "FAIL: LICENSE placeholders missing"; exit 1; }
             test ! -f ${seed}/.github/workflows/auto-update.yml || { echo "FAIL: obsolete auto-update.yml present"; exit 1; }
             # Verify .gitignore ignores materialized artifacts
             grep -q "lefthook.yml" ${seed}/.gitignore || { echo "FAIL: .gitignore should ignore lefthook.yml"; exit 1; }
@@ -2981,7 +3001,7 @@
         migrate-rejects-dropped-check =
           let
             # A vendored lefthook with a standard-fragment check
-            # (markdownlint) that the reduced universe does NOT cover.
+            # (shellcheck) that the reduced universe does NOT cover.
             # Repo-local checks get carried through (#126), so we must
             # test with a standard-fragment check to exercise rejection.
             vendoredLefthook = pkgs.writeText "vendored-lefthook.yml" ''
@@ -2990,17 +3010,17 @@
                 commands:
                   nixfmt:
                     run: nixfmt --check {staged_files}
-                  markdownlint:
-                    run: markdownlint {staged_files}
+                  shellcheck:
+                    run: shellcheck {staged_files}
             '';
-            # Exclude the markdown fragment so markdownlint is genuinely
+            # Exclude the shell fragment so shellcheck is genuinely
             # uncovered -- carry-through classifies it as standard (not
             # repo-local), so it stays dropped and triggers rejection.
             reducedFragments = [
               "base"
               "nix"
-              "shell"
               "ascii"
+              "markdown"
               "yaml"
               "set"
             ];
@@ -3398,6 +3418,8 @@
                 runtimeInputs = [
                   pkgs.coreutils
                   pkgs.findutils
+                  pkgs.git
+                  pkgs.gnused
                 ];
                 text = ''
                   export SEED_SRC="${self.lib.mkSeed { inherit pkgs; }}"
