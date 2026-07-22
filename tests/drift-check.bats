@@ -49,7 +49,8 @@ teardown() {
     [ "$status" -eq 1 ]
 }
 
-@test "ignores expected paths that do not exist in EXPECTED" {
+@test "fails loud when an expected path cannot be evaluated" {
     REL_PATHS="absent.md" run bash "$SCRIPT"
-    [ "$status" -eq 0 ]
+    [ "$status" -eq 1 ]
+    [[ "$output" == *"UNKNOWN"* ]]
 }

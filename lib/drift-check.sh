@@ -11,7 +11,11 @@ drift=0
 
 for rel in "${paths[@]:-}"; do
   [ -n "$rel" ] || continue
-  [ -e "$EXPECTED/$rel" ] || continue
+  if [ ! -e "$EXPECTED/$rel" ]; then
+    echo "UNKNOWN: canonical path is absent: $rel -- $SYNC_HINT"
+    drift=1
+    continue
+  fi
   if [ ! -e "$ACTUAL/$rel" ]; then
     echo "MISSING: $rel -- $SYNC_HINT"
     drift=1

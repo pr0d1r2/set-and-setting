@@ -120,4 +120,12 @@
     yaml = [ ];
     set = [ ];
   };
+
+  # Canon files that remain standard-owned after emission. Drift is an error;
+  # docs and governance files are intentionally repo-owned after seeding.
+  pinnedCanonPaths = [
+    "flake.nix"
+    ".gitignore"
+    ".github/workflows/ci.yml"
+  ];
 }

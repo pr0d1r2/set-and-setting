@@ -2930,6 +2930,44 @@
             touch $out
           '';
 
+        canon-pinned-drift-clean =
+          let
+            canon = self.lib.canonFor {
+              inherit pkgs;
+              fragments = [ "base" ];
+            };
+          in
+          self.lib.mkCanonDriftCheck {
+            inherit pkgs canon;
+            projectRoot = canon;
+          };
+
+        canon-pinned-drift-rejects =
+          let
+            canon = self.lib.canonFor {
+              inherit pkgs;
+              fragments = [ "base" ];
+            };
+          in
+          pkgs.runCommand "canon-pinned-drift-rejects"
+            {
+              nativeBuildInputs = [ pkgs.diffutils ];
+              EXPECTED = canon;
+              REL_PATHS = builtins.concatStringsSep " " cfm.pinnedCanonPaths;
+              SYNC_HINT = "restore pinned files";
+            }
+            ''
+              cp -r "$EXPECTED" actual
+              chmod -R u+w actual
+              printf '\n# drift\n' >> actual/.gitignore
+              export ACTUAL="$PWD/actual"
+              if bash ${./lib/drift-check.sh}; then
+                echo "FAIL: changed pinned canon was accepted"
+                exit 1
+              fi
+              touch $out
+            '';
+
         # --- apps.migrate: vendored->referenced transform (#96) ---
         # Fixture repos for each state; all share migrateFixtureEnv.
         migrate-vendored =
