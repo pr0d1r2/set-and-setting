@@ -1,5 +1,5 @@
 {
-  description = "CHANGEME";
+  description = "Set and Setting -- deterministic agent mindset and environment";
 
   nixConfig = {
     extra-substituters = [ "https://pr0d1r2.cachix.org" ];
