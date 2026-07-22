@@ -92,11 +92,12 @@ teardown() {
     chmod +x "$TARGET/bin/lefthook"
     git init --quiet
     run env PATH="$TARGET/bin:$PATH" CANON_APP_NAME=mkCanon CANON_APP_LABEL=canon \
-        CANON_INSTALL_HOOKS=1 bash "$SCRIPT" --repo project --description "A useful project."
+        CANON_INSTALL_HOOKS=1 bash "$SCRIPT" --repo project \
+        --description "A useful Nix/Linux project."
     [ "$status" -eq 0 ]
     [[ "$output" == *"canon complete"* ]]
     grep -q '^# SPEC -- project$' SPEC.md
-    grep -q '^A useful project\.$' SPEC.md
+    grep -q '^A useful Nix/Linux project\.$' SPEC.md
     [ -f .hook-installed ]
 }
 

@@ -135,8 +135,8 @@ find -L "$SEED_SRC" -type f | sort | while read -r f; do
   cp "$f" "$rel"
   if grep -q '__REPO__\|__DESCRIPTION__' "$rel"; then
     repo_title="${repo:-${PWD##*/}}"
-    escaped_repo="$(printf '%s' "$repo_title" | sed 's#[\\&]#\\&#g')"
-    escaped_description="$(printf '%s' "$description" | sed 's#[\\&]#\\&#g')"
+    escaped_repo="$(printf '%s' "$repo_title" | sed 's#[\\&/]#\\&#g')"
+    escaped_description="$(printf '%s' "$description" | sed 's#[\\&/]#\\&#g')"
     sed -e "s/__DESCRIPTION__/$escaped_description/g" \
       -e "1s/__REPO__/$escaped_repo/" "$rel" >"$rel.tmp"
     mv "$rel.tmp" "$rel"

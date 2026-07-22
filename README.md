@@ -119,7 +119,6 @@ nix run github:pr0d1r2/set-and-setting#mkScaffold
 | `mkCanon` | Compose and emit the canonical referenced-repo tree |
 | `seed` | Emit only the three pinned infrastructure files used by repair tooling |
 | `bootstrap` | All four in one command |
-| `seed` | Emit a thin leaf repo; substitutes README/license placeholders from trip coordinates or `origin` |
 
 For repo-birth automation, pass `--owner OWNER --repo REPO`; the trip harness
 can equivalently set `TRIP_OWNER` and `TRIP_REPO`. The copyright holder defaults
