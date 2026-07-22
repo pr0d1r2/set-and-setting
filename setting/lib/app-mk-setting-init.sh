@@ -41,6 +41,14 @@ find -L "$SEED_SRC" -type f | sort | while read -r f; do
   fi
   mkdir -p "$(dirname "$rel")"
   cp "$f" "$rel"
+  if [ "$rel" = "README.md" ]; then
+    repo_name="${PWD##*/}"
+    {
+      printf '# %s\n' "$repo_name"
+      tail -n +2 "$rel"
+    } >"$rel.tmp"
+    mv "$rel.tmp" "$rel"
+  fi
   echo "scaffolded: $rel"
 done
 echo "synced setting-init -> ."

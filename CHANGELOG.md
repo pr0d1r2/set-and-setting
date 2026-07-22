@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+- Seed skip-existing `README.md` and `LICENSE` files from `mkSetting-init`.
+  The README carries the canonical CI/license/NixOS badge block and repository
+  placeholders; MIT is the explicit default and can be disabled with
+  `license = null`. (#235)
+
 - Auto-project every active principle into the always-on agent prompt as a
   `[[slug]]` registry entry with its name and opening rule, and add a generated
   believability-weighted `principles` accord lens for pre-merge review. (#187)

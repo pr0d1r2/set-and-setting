@@ -1707,6 +1707,11 @@
           let
             mkSetting = import ./setting/lib/mk-setting.nix { inherit (nixpkgs) lib; };
             full = mkSetting { inherit pkgs; };
+            noDocs = mkSetting {
+              inherit pkgs;
+              readme = false;
+              license = null;
+            };
           in
           pkgs.runCommand "compose-setting-check" { } ''
             # materialized files present in full output
@@ -1720,6 +1725,14 @@
             [ -e "${full}/config/lefthook/file_size_limits.yml" ] || { echo "FAIL: no file_size_limits.yml"; exit 1; }
             [ -e "${full}/.narrow-language-nix.dic" ] || { echo "FAIL: no nix.dic"; exit 1; }
             [ -e "${full}/.nix-embedded-shell-allowlist" ] || { echo "FAIL: no allowlist"; exit 1; }
+            [ -e "${full}/README.md" ] || { echo "FAIL: no README.md"; exit 1; }
+            [ -e "${full}/LICENSE" ] || { echo "FAIL: no LICENSE"; exit 1; }
+            grep -q '__OWNER__/__REPO__' "${full}/README.md" \
+              || { echo "FAIL: README badge placeholders missing"; exit 1; }
+            grep -q '__YEAR__ __HOLDER__' "${full}/LICENSE" \
+              || { echo "FAIL: license placeholders missing"; exit 1; }
+            [ ! -e "${noDocs}/README.md" ] || { echo "FAIL: opted-out README present"; exit 1; }
+            [ ! -e "${noDocs}/LICENSE" ] || { echo "FAIL: opted-out LICENSE present"; exit 1; }
 
             # sync scripts present and executable
             [ -x "${full}/bin/sync-setting" ] || { echo "FAIL: no sync-setting"; exit 1; }
@@ -1733,6 +1746,9 @@
             fi
             if [ -e "${full.materialized}/.gitignore" ]; then
               echo "FAIL: pkg has seed .gitignore"; exit 1
+            fi
+            if [ -e "${full.materialized}/README.md" ] || [ -e "${full.materialized}/LICENSE" ]; then
+              echo "FAIL: pkg has documentation seeds"; exit 1
             fi
 
             # gitignore includes materialized file entries (setting fragment)

@@ -334,6 +334,8 @@ lib.mkSetting {
   markdownlint = true;
   yamllint = true;
   fileSizeLimits = true;
+  readme = true;
+  license = "MIT"; # Set to null to opt out.
 }
 ```
 
@@ -343,7 +345,10 @@ lib.mkSetting {
 **Seed/init** (scaffolded once, then repo-owned): `.editorconfig`,
 `.gitattributes`, `.gitignore`,
 `config/lefthook/file_size_limits.yml`, `.narrow-language-*.dic`,
-`.nix-embedded-shell-allowlist`.
+`.nix-embedded-shell-allowlist`, `README.md`, `LICENSE`. The README uses the
+directory name as its title and leaves repository-coordinate placeholders for
+later substitution. The default MIT license leaves year and holder
+placeholders; set `license = null` to opt out.
 
 Two scripts: `bin/sync-setting` (materialize, always overwrites) and
 `bin/sync-setting-init` (scaffold, skips files that exist).

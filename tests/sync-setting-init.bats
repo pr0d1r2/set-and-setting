@@ -15,6 +15,8 @@ setup() {
     echo "gitignore" >"$SRC/.gitignore"
     mkdir -p "$SRC/config/lefthook"
     echo "limits" >"$SRC/config/lefthook/file_size_limits.yml"
+    printf '%s\n' '# __REPO__' 'https://github.com/__OWNER__/__REPO__' >"$SRC/README.md"
+    echo 'Copyright (c) __YEAR__ __HOLDER__' >"$SRC/LICENSE"
 }
 
 teardown() {
@@ -30,6 +32,18 @@ teardown() {
     [ -f "$TARGET/.gitattributes" ]
     [ -f "$TARGET/.gitignore" ]
     [ -f "$TARGET/config/lefthook/file_size_limits.yml" ]
+    [ "$(head -1 "$TARGET/README.md")" = "# ${TARGET##*/}" ]
+    grep -q '__OWNER__/__REPO__' "$TARGET/README.md"
+    grep -q '__YEAR__ __HOLDER__' "$TARGET/LICENSE"
+}
+
+@test "skips existing README and LICENSE" {
+    echo "custom readme" >"$TARGET/README.md"
+    echo "custom license" >"$TARGET/LICENSE"
+    run bash "$WRAPPER" "$TARGET"
+    [ "$status" -eq 0 ]
+    [ "$(cat "$TARGET/README.md")" = "custom readme" ]
+    [ "$(cat "$TARGET/LICENSE")" = "custom license" ]
 }
 
 @test "defaults to cwd when no target argument" {

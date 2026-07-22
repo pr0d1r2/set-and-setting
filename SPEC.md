@@ -24,7 +24,8 @@ owns unified config -- shareable configs (e.g. `.markdownlint.yml`,
 `packages.setting`, materialized and gitignored. Repo-specific files (`.gitattributes`, `.editorconfig`,
 `config/lefthook/file_size_limits.yml`, `.narrow-language-*.dic`,
 `.nix-embedded-shell-allowlist`) are scaffolded once in a seed/init
-phase, then tracked and owned by the consumer. This repo is consumer #0
+  phase, then tracked and owned by the consumer. This includes a README
+  skeleton and an explicit, opt-out-able MIT license seed. This repo is consumer #0
 and dogfoods both.
 
 ## §C Constraints
@@ -61,7 +62,8 @@ and dogfoods both.
   unified config. Two outputs: (1) seed/init -- repo-specific starters
   scaffolded once then tracked & repo-owned: `.gitignore`,
   `.gitattributes`, `.editorconfig`, `config/lefthook/file_size_limits.yml`,
-  `.narrow-language-*.dic`, `.nix-embedded-shell-allowlist`; (2)
+  `.narrow-language-*.dic`, `.nix-embedded-shell-allowlist`, `README.md`,
+  `LICENSE`; (2)
   materialized -- unified configs always synced & gitignored:
   `.markdownlint.yml`, `.yamllint.yml`, `.claude/` commands/allowances.
   The app (`app-mk-setting.sh`) also assembles a content-aware
@@ -604,6 +606,7 @@ and dogfoods both.
 | T73 | x | materialization primitive (#92) -- `lib.materializationFor { pkgs, fragments }` returns `{ files, packages }` as one atom: assembled lefthook.yml + fragment-mapped wrapper derivations. `wrappersForFragment` is the single source for both `materializationFor` and `lefthookWrappersFor` (no duplication). Coherence check (by construction + nix check). Reuses `assemble-lefthook.sh`. Fragments are a committed declaration (pure eval) | I.materializationFor,V40,V41,I.detectFragments |
 | T74 | x | checksFor -- fragment-driven check selection (#93 consumer bridge). `lib.checksFor { pkgs, src, fragments }` returns an attrset of pinned check derivations matching the given fragments. CI-gate counterpart to `materializationFor`. Scaffold uses `checksFor` instead of manual `mk*Check` wiring. Nix checks: per-fragment verification, subset property, empty-fragment handling | I.checksFor,V42,I.materializationFor,V41 |
 | T75 | x | `apps.migrate` (#96) -- mechanical, deterministic, idempotent, non-LLM, confirmator-gated vendored->referenced transform. `lib/migrate.sh` (detect state / strip vendored artifacts / plant seed #95 / confirm-equivalence) + `lib/app-migrate.sh` (`--detect`/`--dry-run`/`--help`) + `apps.migrate`. Safety net: referenced effective check-set (pinned `checksFor` UNION all fragment lefthook commands) MUST cover the vendored `lefthook.yml` check-set; a dropped check ⇒ refuse. Nix checks over vendored / partial / bare / already-referenced fixtures + dropped-check rejection; bats for the core logic + CLI. HOLD (V189): tool lands, fleet run is human-gated | I.migrate,I.mkSeed,I.mkConfirm,V43,C7 |
+| T76 | x | `mkSetting-init` seeds a titled README skeleton with canonical CI/license/NixOS badges and an explicit default MIT license. Both are skip-existing; badge and holder/year placeholders remain available for repo-birth substitution; `readme = false` and `license = null` opt out. (#235) | I.mkSetting,V22,V26 |
 
 ## §B Bugs
 
