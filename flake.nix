@@ -1381,6 +1381,7 @@
             evolve = builtins.readFile ./set/skills/principles/evolve.md;
             ownership = builtins.readFile ./set/skills/principles/ownership.md;
             process = builtins.readFile ./set/skills/principles/process.md;
+            sync = builtins.readFile ./set/skills/principles/sync.md;
             ok =
               # category fallback: domain category gets its narrow globs
               assert (r "nix/flake.md").channel == "domain";
@@ -1415,6 +1416,16 @@
               assert nixpkgs.lib.hasInfix "5. Do." process;
               assert nixpkgs.lib.hasInfix "The process is a loop, not a one-way checklist" process;
               assert nixpkgs.lib.hasInfix "[[rootcause]], [[reality]], and [[ownership]]" process;
+              assert builtins.elem "sync" (r "principles/sync.md").keywords;
+              assert builtins.elem "accord-review" (r "principles/sync.md").keywords;
+              assert builtins.elem "consumer-compatibility" (r "principles/sync.md").keywords;
+              assert (r "principles/sync.md").paths == [ "**/*" ];
+              assert nixpkgs.lib.hasInfix "A persistent disagreement left unresolved is a hidden defect" sync;
+              assert nixpkgs.lib.hasInfix "Check stability, maintainability, and" sync;
+              assert nixpkgs.lib.hasInfix "consumer compatibility independently" sync;
+              assert nixpkgs.lib.hasInfix "Reconcile consumer needs with the shared standard explicitly" sync;
+              assert nixpkgs.lib.hasInfix "See also [[openness]]" sync;
+              assert nixpkgs.lib.hasInfix "and [[believability]]" sync;
               # deep path still resolves via category fallback (core + broad)
               assert (r "generic/skill/interchange.md").always;
               assert (r "generic/skill/interchange.md").paths == [ "**/*" ];

@@ -205,6 +205,18 @@ let
         "backprop"
       ];
     };
+    "principles/sync.md" = {
+      keywords = [
+        "sync"
+        "alignment"
+        "accord-review"
+        "disagreement"
+        "stability"
+        "maintainability"
+        "consumer-compatibility"
+        "consumer-standard-tension"
+      ];
+    };
     "principles/believability.md" = {
       keywords = [
         "believability"
