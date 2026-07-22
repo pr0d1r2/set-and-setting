@@ -3147,10 +3147,7 @@
           );
           mkSettingFull = import ./setting/lib/mk-setting.nix { inherit lib; } { inherit pkgs; };
 
-          # Every pinned flake check the referenced architecture provides
-          # (checksFor over all fragments). Post-#93 FLIP these -- not lefthook
-          # commands -- are the real guardrails, so the migrate equivalence
-          # gate treats them as part of the referenced effective check-set.
+          # Pinned checks in the referenced effective check-set.
           checksUniverse = builtins.attrNames (
             self.lib.checksFor {
               inherit pkgs;
@@ -3178,6 +3175,7 @@
               export CONCEPTS_DIR="${./set/concepts}"
               export MK_SET_SCRIPT="${./set/lib/mk-set.sh}"
               export EMIT_SCRIPT="${./set/lib/emit-skill.sh}"
+              export EMIT_PRINCIPLES_SCRIPT="${./set/lib/emit-principles.sh}"
               export EMIT_RULE_SCRIPT="${./set/lib/emit-rule.sh}"
               export EMIT_SKILLMD_SCRIPT="${./set/lib/emit-skillmd.sh}"
               export APPLICABILITY_SCRIPT="${./set/lib/applicability.sh}"

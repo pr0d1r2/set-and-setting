@@ -51,15 +51,12 @@ and dogfoods both.
 ## §I Interfaces
 
 - I.flake: `flake.nix` -- main entry. Exposes `sets`, `drafts`, `settings`, `lib.mkSet`, `lib.mkSetting`, `lib.mkDriftCheck`, `lib.mkDepGraphCheck`, `lib.mkMaterializeCheck`, `lib.mkDevShells`, `lib.checksFor`, `packages.set`, `packages.setting`, `checks`.
-- I.mkSet: `set/lib/mk-set.nix` -- the skill-set emitter and single
-  source of truth for skills. Mirrors agnostic `set/skills/` markdown 1:1
-  into `<dir>/set/` as **path-scoped rules**: each source file copied
-  verbatim with its category `paths:` prepended (domains narrow, core/
-  universal broad). No `SKILL.md`, no derived name/description, no `@`.
-  Args: `pkgs`, `categories`, `concepts`, `exclude`, `agent ? claude`
-  where `agent = { dir, condField }` (default `.claude/rules/set`,
-  `paths`). Outputs: the emitted rules tree + `bin/sync-set` (target-arg).
-  Agent format lives only here (C2/V17).
+- I.mkSet: `set/lib/mk-set.nix` -- single skill emitter. It mirrors agnostic
+  markdown into per-agent rule and portable-skill channels. Every
+  `principlesDir/*.md` also projects its name, opening rule, `[[slug]]`, and
+  accord lens always-on; empty is a no-op. Args: `pkgs`, `categories`,
+  `concepts`, `exclude`, `principlesDir`, `agent`. Output includes the emitted
+  tree and `bin/sync-set`.
 - I.mkSetting: `setting/lib/mk-setting.nix` -- single source of truth for
   unified config. Two outputs: (1) seed/init -- repo-specific starters
   scaffolded once then tracked & repo-owned: `.gitignore`,
@@ -310,6 +307,9 @@ and dogfoods both.
   Claude `CLAUDE.md` `@`-manifest, compiled to an inline gitignored
   `AGENTS.md` (V29) for opencode/others. Keep it small (initial context
   is the enemy).
+- V18a: Every `principlesDir/*.md` auto-enrolls always-on by lowercase one-word
+  filename `[[slug]]`, H1 name, and opening rule, with a principles accord lens.
+  Empty registry means no projection.
 - V19: Conditional domains (channel b) load only when relevant. The
   mechanism is agent-specific and only Claude has a deterministic one:
   path-scoped `.claude/rules/` (`paths`) load on matching-file read

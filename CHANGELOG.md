@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- Auto-project every active principle into the always-on agent prompt as a
+  `[[slug]]` registry entry with its name and opening rule, and add a generated
+  believability-weighted `principles` accord lens for pre-merge review. (#187)
+
 - Add the `meritocracy` principle: let the best-supported idea win regardless
   of who holds it by combining truth, transparency, believability weighting,
   and openness across every agent decision. (#185)

@@ -9,6 +9,7 @@ setup() {
     out="$(mktemp -d)"
     SKILLS_DIR="$(mktemp -d)"
     CONCEPTS_DIR="$(mktemp -d)"
+    PRINCIPLES_DIR="$(mktemp -d)"
     SCRIPT="$BATS_TEST_DIRNAME/../set/lib/mk-set.sh"
     EMIT="$BATS_TEST_DIRNAME/../set/lib/emit-skill.sh"
     EMIT_RULE="$BATS_TEST_DIRNAME/../set/lib/emit-rule.sh"
@@ -18,7 +19,9 @@ setup() {
     printf '# Demo\n\nDemo rule.\n' >"$SKILLS_DIR/demo.md"
     printf '# Demo: sub\n\nSub rule.\n' >"$SKILLS_DIR/demo/sub.md"
 
-    export out SKILLS_DIR CONCEPTS_DIR EMIT EMIT_RULE SYNC_SRC
+    EMIT_PRINCIPLES="$BATS_TEST_DIRNAME/../set/lib/emit-principles.sh"
+    export out SKILLS_DIR CONCEPTS_DIR PRINCIPLES_DIR EMIT EMIT_RULE
+    export EMIT_PRINCIPLES SYNC_SRC
     export DIR=".claude/rules/set"
     export COND_FIELD="paths"
     export CONCEPTS="0"
@@ -27,7 +30,7 @@ setup() {
 }
 
 teardown() {
-    rm -rf "$out" "$SKILLS_DIR" "$CONCEPTS_DIR"
+    rm -rf "$out" "$SKILLS_DIR" "$CONCEPTS_DIR" "$PRINCIPLES_DIR"
 }
 
 @test "emits category files as path-scoped rules" {
@@ -91,6 +94,29 @@ teardown() {
     run bash "$SCRIPT"
     [ "$status" -eq 0 ]
     run ! ls "$out/$DIR"/concepts-*.md 2>/dev/null
+}
+
+@test "principles project into the always-on prompt regardless of categories" {
+    printf '# Truth\n\nReport failures without hiding them.\n' \
+        >"$PRINCIPLES_DIR/truth.md"
+    export CATEGORIES="" GLOBS_MAP="" CONCEPTS="0"
+    run bash "$SCRIPT"
+    [ "$status" -eq 0 ]
+    [ -f "$out/$DIR/principles-projection.md" ]
+    grep -q '\[\[truth\]\].*Report failures without hiding them' \
+        "$out/$DIR/principles-projection.md"
+    grep -q '^@set/principles-projection.md$' \
+        "$out/.claude/rules/set.md"
+    grep -q '^@\./.claude/rules/set/principles-projection.md$' \
+        "$out/index.md"
+}
+
+@test "empty principles registry adds no projection" {
+    export CATEGORIES="" GLOBS_MAP="" CONCEPTS="0"
+    run bash "$SCRIPT"
+    [ "$status" -eq 0 ]
+    [ ! -e "$out/$DIR/principles-projection.md" ]
+    run ! grep -q 'principles-projection' "$out/index.md"
 }
 
 @test "installs bin/sync-set from SYNC_SRC" {

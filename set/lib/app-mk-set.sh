@@ -3,7 +3,7 @@
 # app-mk-set.sh -- runnable installer for mkSet (C9/V28).
 # Writes .mkset.json manifest for smart re-run (I.manifest/T37).
 # Supports --agent flag for agent seam passthrough (T39/V21/V23).
-# Env in: SKILLS_DIR, CONCEPTS_DIR, MK_SET_SCRIPT, EMIT_SCRIPT,
+# Env in: SKILLS_DIR, CONCEPTS_DIR, PRINCIPLES_DIR, MK_SET_SCRIPT, EMIT_SCRIPT,
 #   SYNC_SCRIPT, ALL_CATEGORIES, CORE_CATEGORIES, GLOBS_MAP,
 #   AGENT_SEAMS (agent=dir,condField,skillDir,...;...),
 #   RESOLVE_AGENT_SCRIPT, MKSET_REV (optional)
@@ -278,6 +278,10 @@ export out
 export SKILLS_DIR CONCEPTS_DIR
 export EMIT="$EMIT_SCRIPT"
 export EMIT_RULE="$EMIT_RULE_SCRIPT"
+if [ -n "${EMIT_PRINCIPLES_SCRIPT:-}" ]; then
+  export PRINCIPLES_DIR="${PRINCIPLES_DIR:-$SKILLS_DIR/principles}"
+  export EMIT_PRINCIPLES="$EMIT_PRINCIPLES_SCRIPT"
+fi
 export SYNC_SRC="$SYNC_SCRIPT"
 export DIR="$agent_dir"
 export COND_FIELD="$agent_cond_field"
