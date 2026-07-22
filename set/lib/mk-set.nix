@@ -17,6 +17,9 @@ in
 
 {
   pkgs,
+  # A named set is a self-contained skill directory materialized verbatim.
+  # Omit this to use the multi-channel category emitter below.
+  name ? null,
   categories ? cats.all,
   concepts ? true,
   # Skill filenames to omit from the emitted output (e.g. "rtk.md").
@@ -33,6 +36,8 @@ in
 let
   ag = agents.claude // agent;
 
+  namedSource = skillsDir + "/${name}";
+
   categoryGlobs = cats.globs;
 
   globsMap = lib.concatStringsSep ";" (
@@ -45,37 +50,42 @@ let
     map (c: "${c}=${lib.concatStringsSep "," (meta.resolve c).keywords}") categories
   );
 in
-pkgs.runCommand "agent-set"
-  {
-    SKILLS_DIR = skillsDir;
-    PRINCIPLES_DIR = if principlesDir == null then "${skillsDir}/principles" else principlesDir;
-    CONCEPTS_DIR = ../concepts;
-    CONCEPTS = if concepts then "1" else "0";
-    DIR = ag.dir;
-    COND_FIELD = ag.condField;
-    CATEGORIES = lib.concatStringsSep " " categories;
-    GLOBS_MAP = globsMap;
-    EXCLUDE = lib.concatStringsSep " " exclude;
-    CORE = lib.concatStringsSep " " cats.core;
-    OVERRIDES = meta.channelOverrides;
-    SKILL_DIR = ag.skill.dir;
-    SKILL_DISABLE_INVOCATION = if ag.skill.disableModelInvocation or false then "1" else "0";
-    KEYWORDS_MAP = keywordsMap;
-    # Always-on channel (V18/V29/V39): "inline" import => compile set.md to
-    # an inline AGENTS.md (universal core only). "opencode.json-instructions"
-    # => also emit an opencode.json listing only the always-on file.
-    ALWAYSON_IMPORT = ag.alwaysOn.import;
-    ALWAYSON_FILE = ag.alwaysOn.file;
-    CONDITIONAL_MECHANISM = ag.conditional.mechanism;
-    RENAMES_MAP = renames.serialized;
-    COMPILER = ../../lib/agents-md-compile.sh;
-    EMIT = ./emit-skill.sh;
-    EMIT_RULE = ./emit-rule.sh;
-    EMIT_SKILLMD = ./emit-skillmd.sh;
-    EMIT_PRINCIPLES = ./emit-principles.sh;
-    RENAME_PROPAGATE = ./rename-propagate.sh;
-    SYNC_SRC = ./sync-set.sh;
-  }
+if name != null then
+  pkgs.runCommand "${name}-set" { } ''
+    cp -R ${namedSource} $out
   ''
-    bash ${./mk-set.sh}
-  ''
+else
+  pkgs.runCommand "agent-set"
+    {
+      SKILLS_DIR = skillsDir;
+      PRINCIPLES_DIR = if principlesDir == null then "${skillsDir}/principles" else principlesDir;
+      CONCEPTS_DIR = ../concepts;
+      CONCEPTS = if concepts then "1" else "0";
+      DIR = ag.dir;
+      COND_FIELD = ag.condField;
+      CATEGORIES = lib.concatStringsSep " " categories;
+      GLOBS_MAP = globsMap;
+      EXCLUDE = lib.concatStringsSep " " exclude;
+      CORE = lib.concatStringsSep " " cats.core;
+      OVERRIDES = meta.channelOverrides;
+      SKILL_DIR = ag.skill.dir;
+      SKILL_DISABLE_INVOCATION = if ag.skill.disableModelInvocation or false then "1" else "0";
+      KEYWORDS_MAP = keywordsMap;
+      # Always-on channel (V18/V29/V39): "inline" import => compile set.md to
+      # an inline AGENTS.md (universal core only). "opencode.json-instructions"
+      # => also emit an opencode.json listing only the always-on file.
+      ALWAYSON_IMPORT = ag.alwaysOn.import;
+      ALWAYSON_FILE = ag.alwaysOn.file;
+      CONDITIONAL_MECHANISM = ag.conditional.mechanism;
+      RENAMES_MAP = renames.serialized;
+      COMPILER = ../../lib/agents-md-compile.sh;
+      EMIT = ./emit-skill.sh;
+      EMIT_RULE = ./emit-rule.sh;
+      EMIT_SKILLMD = ./emit-skillmd.sh;
+      EMIT_PRINCIPLES = ./emit-principles.sh;
+      RENAME_PROPAGATE = ./rename-propagate.sh;
+      SYNC_SRC = ./sync-set.sh;
+    }
+    ''
+      bash ${./mk-set.sh}
+    ''

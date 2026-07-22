@@ -934,6 +934,10 @@
       };
 
       packages = forAllSystems (pkgs: {
+        accord-set = import ./set/lib/mk-set.nix { inherit (nixpkgs) lib; } {
+          inherit pkgs;
+          name = "accord";
+        };
         set = import ./set/lib/mk-set.nix { inherit (nixpkgs) lib; } { inherit pkgs; };
         setting =
           (import ./setting/lib/mk-setting.nix { inherit (nixpkgs) lib; } { inherit pkgs; }).materialized;
@@ -1338,6 +1342,27 @@
           inherit pkgs;
           categories = [ "generic" ];
         };
+
+        accord-set =
+          let
+            accord = import ./set/lib/mk-set.nix { inherit (nixpkgs) lib; } {
+              inherit pkgs;
+              name = "accord";
+            };
+          in
+          pkgs.runCommand "accord-set-check" { } ''
+            expected='SET.md consumer-compat.md maintainability.md spec-fidelity.md stability.md test-accord.md'
+            actual="$(${pkgs.findutils}/bin/find ${accord} -mindepth 1 -maxdepth 1 -type f -printf '%f\n' | sort | tr '\n' ' ' | sed 's/ $//')"
+            test "$actual" = "$expected"
+            test -z "$(${pkgs.findutils}/bin/find ${accord} -mindepth 1 -type d -print -quit)"
+            grep -q 'overall `PASS` only when all five lenses accord' ${accord}/SET.md
+            grep -q 'timing-dependent correctness' ${accord}/stability.md
+            grep -q 'simplest form' ${accord}/maintainability.md
+            grep -q 'coverage is theater' ${accord}/test-accord.md
+            grep -q 'silent breaking change' ${accord}/consumer-compat.md
+            grep -q 'requirement-to-diff map' ${accord}/spec-fidelity.md
+            touch $out
+          '';
 
         # T12/V11: drafts categories build without error.
         # Drafts live at set/drafts/ (V11), outside set/skills/ (the default
