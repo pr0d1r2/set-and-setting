@@ -5,6 +5,7 @@
 {
   all = [
     "generic"
+    "adage"
     "architecture"
     "ci"
     "cli"
@@ -53,6 +54,7 @@
       ".github/**/*.yaml"
     ];
     # Core/universal: broad (V20)
+    adage = [ "**/*" ];
     design = [ "**/*" ];
     generic = [ "**/*" ];
     integration = [ "**/*" ];
