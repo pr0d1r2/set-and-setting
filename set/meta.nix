@@ -327,6 +327,19 @@ let
         "inspection"
       ];
     };
+    "principles/nih.md" = {
+      keywords = [
+        "nih"
+        "not-invented-here"
+        "reuse"
+        "open-source"
+        "prior-art"
+        "library-evaluation"
+        "dependency-selection"
+        "reinventing-the-wheel"
+        "build-vs-buy"
+      ];
+    };
     "security/hardening.md" = {
       paths = [ "**/*.nix" ];
       content = [

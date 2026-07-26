@@ -1291,6 +1291,7 @@ in
         ownership = builtins.readFile ../set/skills/principles/ownership.md;
         process = builtins.readFile ../set/skills/principles/process.md;
         sync = builtins.readFile ../set/skills/principles/sync.md;
+        nih = builtins.readFile ../set/skills/principles/nih.md;
         ok =
           # category fallback: domain category gets its narrow globs
           assert (r "nix/flake.md").channel == "domain";
@@ -1346,6 +1347,13 @@ in
           assert nixpkgs.lib.hasInfix "Reconcile consumer needs with the shared standard explicitly" sync;
           assert nixpkgs.lib.hasInfix "See also [[openness]]" sync;
           assert nixpkgs.lib.hasInfix "and [[believability]]" sync;
+          assert builtins.elem "nih" (r "principles/nih.md").keywords;
+          assert builtins.elem "reuse" (r "principles/nih.md").keywords;
+          assert builtins.elem "open-source" (r "principles/nih.md").keywords;
+          assert (r "principles/nih.md").paths == [ "**/*" ];
+          assert nixpkgs.lib.hasInfix "Look for a well-maintained open-source solution" nih;
+          assert nixpkgs.lib.hasInfix "Evaluate candidates on evidence" nih;
+          assert nixpkgs.lib.hasInfix "Reuse is a preference, not an automatic choice" nih;
           # deep path still resolves via category fallback (core + broad)
           assert (r "generic/skill/interchange.md").always;
           assert (r "generic/skill/interchange.md").paths == [ "**/*" ];
