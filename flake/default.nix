@@ -204,10 +204,6 @@ let
   # does not catch -- so it reads as "not agentic" and every file, including
   # this repo's SPEC.md and CLAUDE.md, gets the strict ruleset.
   #
-  # The agentic wrapper is deliberately left on plain `wrap`: at the pinned
-  # rev its script does not call the helper, and its config placeholder
-  # substitutes to a relative path that no consumer provides. That half needs
-  # an input bump or a materialized config, not a local patch.
   markdownlintWrapperFor =
     pkgs:
     wrap pkgs "lefthook-markdownlint" nix-lefthook-markdownlint-src {
@@ -215,6 +211,28 @@ let
         pkgs.markdownlint-cli
         (wrap pkgs "is-markdown-agentic" nix-lefthook-markdownlint-src { })
       ];
+    };
+
+  # #310: `wrap` cannot build the agentic wrapper, because upstream's flake
+  # substitutes the config path into the script at build time. A plain
+  # readFile leaves `--config @MARKDOWNLINT_AGENTIC_CONFIG@` in the emitted
+  # wrapper, which fails the moment the job runs -- it has not, only because
+  # the missing helper above meant nothing was ever classified agentic.
+  # Mirror upstream's replaceStrings against the pinned source's own config
+  # so the emitted wrapper carries a real store path.
+  markdownlintAgenticWrapperFor =
+    pkgs:
+    pkgs.writeShellApplication {
+      name = "lefthook-markdownlint-agentic";
+      runtimeInputs = [
+        pkgs.markdownlint-cli
+        (wrap pkgs "is-markdown-agentic" nix-lefthook-markdownlint-agentic-src { })
+      ];
+      text =
+        builtins.replaceStrings
+          [ "@MARKDOWNLINT_AGENTIC_CONFIG@" ]
+          [ "${nix-lefthook-markdownlint-agentic-src}/.markdownlint-agentic.yml" ]
+          (builtins.readFile "${nix-lefthook-markdownlint-agentic-src}/lefthook-markdownlint-agentic.sh");
     };
 
   # #99 (part of #93): the nix linters tier's pinned wrappers, each built
@@ -389,9 +407,7 @@ let
       ];
       markdown = [
         (markdownlintWrapperFor pkgs)
-        (w "lefthook-markdownlint-agentic" nix-lefthook-markdownlint-agentic-src {
-          runtimeInputs = [ pkgs.markdownlint-cli ];
-        })
+        (markdownlintAgenticWrapperFor pkgs)
       ];
       yaml = [
         (w "lefthook-yamllint" nix-lefthook-yamllint-src {
