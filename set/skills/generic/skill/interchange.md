@@ -1,6 +1,6 @@
 # Skill: interchange
 
-Skills are portable across repos that share the `agent/set/skills/`
+Skills are portable across repos that share the `set/skills/`
 convention. When a skill applies to multiple projects, keep its content
 identical in all of them -- divergence means one copy improves while
 others rot.
@@ -27,7 +27,7 @@ others rot.
 
 ## Interchange workflow
 
-1. List skills across repos: `find agent/set/skills/ -type f` in each.
+1. List skills across repos: `find set/skills/ -type f` in each.
 2. Diff common skills: content should be identical for generic ones.
 3. For each divergence: merge into superset, copy to all repos.
 4. For skills only in one repo: decide if generic (copy to others) or

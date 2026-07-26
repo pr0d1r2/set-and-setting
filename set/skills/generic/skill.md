@@ -1,11 +1,11 @@
 # Skill
 
-The `agent/set/skills/` tree holds this project's behavioral rules,
+The `set/skills/` tree holds this project's behavioral rules,
 one concept per file. It is structured, not flat: a top-level
 `<topic>.md` captures the core rule for a topic, and
 `<topic>/<aspect>.md` captures a specific facet of it (e.g. `sh.md` +
 `sh/modularity.md`, `lefthook.md` + `lefthook/{nix,sh,xml}.md`). The
-structure itself is informative -- `find agent/set/skills/ -type f`
+structure itself is informative -- `find set/skills/ -type f`
 lists every rule the project cares about.
 
 Some aspects are cross-cutting and recur under multiple topics -- for
@@ -21,11 +21,12 @@ same way.
 
 When adding a new skill:
 
-- Put a single-topic rule at `agent/set/skills/<topic>.md`.
+- Put a single-topic rule at `set/skills/<topic>.md`.
 - Put a narrower facet of an existing topic at
-  `agent/set/skills/<topic>/<aspect>.md`.
-- Add the new file as an import line in the chain-loading manifest so
-  it loads automatically.
+  `set/skills/<topic>/<aspect>.md`.
+- Do not hand-edit any manifest to wire the skill in. The always-on
+  manifest and the rule tree are emitted from `set/` and gitignored;
+  an edit there is overwritten by the next sync.
 - Always run `markdownlint` on the new or changed skill file before
   considering the change complete.
 
