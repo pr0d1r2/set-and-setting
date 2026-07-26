@@ -33,3 +33,29 @@ code. When distilling SPEC.md:
 - **New interface:** when a new command or external touchpoint is added
 - **Task status:** mark done when implementation is complete
 - **Bug entry:** when a bug is found and fixed, add with date and cause
+
+## Backprop targets
+
+A fixed bug has two possible durable homes, and they catch different
+things. Ask about both, and record the answer in the bug entry so a
+later reader can tell the question was asked.
+
+| target | catches | misses |
+| ------ | ------- | ------ |
+| Invariant plus check | the failing **state**, mechanically, once it exists | a decision not yet made |
+| Skill | the failing **choice**, before it is made | anything not expressible as guidance |
+
+Choose by asking what would have prevented this:
+
+- **Invariant** when the failure is a state a check can assert -- a
+  file over a limit, a dangling reference, a missing required context.
+- **Skill** when the failure is a choice the agent makes -- adopting a
+  design, editing a generated file, preferring a tool. No check can
+  assert that a choice was not made; by the time one can see it, the
+  result already exists.
+- **Both** when the choice is available and its result is also
+  assertable. These are not alternatives.
+
+A bug whose lesson lives only in the bug table will be relearned. The
+skill set is a backprop target alongside invariants, not a separate
+concern.
