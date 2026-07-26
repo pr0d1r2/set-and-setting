@@ -195,6 +195,28 @@ let
       runtimeInputs = [ pkgs.typos ];
     };
 
+  # #310: the markdownlint wrapper calls `is-markdown-agentic` to decide
+  # whether a file is agentic (agent/, .claude/, files/commands/, SPEC.md,
+  # CLAUDE.md, PROMPT.md) and therefore exempt from the strict ruleset. The
+  # helper ships as `is-markdown-agentic.sh` in the same pinned source, so it
+  # builds with the same `wrap` pattern and goes on the wrapper's PATH.
+  # Without it the call returns 127 inside an `if` -- which `set -o errexit`
+  # does not catch -- so it reads as "not agentic" and every file, including
+  # this repo's SPEC.md and CLAUDE.md, gets the strict ruleset.
+  #
+  # The agentic wrapper is deliberately left on plain `wrap`: at the pinned
+  # rev its script does not call the helper, and its config placeholder
+  # substitutes to a relative path that no consumer provides. That half needs
+  # an input bump or a materialized config, not a local patch.
+  markdownlintWrapperFor =
+    pkgs:
+    wrap pkgs "lefthook-markdownlint" nix-lefthook-markdownlint-src {
+      runtimeInputs = [
+        pkgs.markdownlint-cli
+        (wrap pkgs "is-markdown-agentic" nix-lefthook-markdownlint-src { })
+      ];
+    };
+
   # #99 (part of #93): the nix linters tier's pinned wrappers, each built
   # from its own pinned flake input. Shared, like nixfmtWrapperFor, by the
   # devShell wrapper list and the hermetic `checks.<sys>.<tool>` derivation
@@ -366,9 +388,7 @@ let
         })
       ];
       markdown = [
-        (w "lefthook-markdownlint" nix-lefthook-markdownlint-src {
-          runtimeInputs = [ pkgs.markdownlint-cli ];
-        })
+        (markdownlintWrapperFor pkgs)
         (w "lefthook-markdownlint-agentic" nix-lefthook-markdownlint-agentic-src {
           runtimeInputs = [ pkgs.markdownlint-cli ];
         })
