@@ -76,6 +76,22 @@ let
       ];
     };
 
+    # streamline states interface principles -- one command per
+    # operation, zero setup, no tool leakage, fail with guidance. Once
+    # #293 removed its binding to one command runner, nothing in it is
+    # specific to a language, tool, or repo layout, so it meets the V38
+    # bar for always-on. Recorded as a decision rather than inherited
+    # from the generic category fallback (#294).
+    "generic/streamline.md" = {
+      channel = "core";
+      keywords = [
+        "streamline"
+        "entrypoint"
+        "usability"
+        "discoverability"
+      ];
+    };
+
     # High-value facets (V34/V35): narrow paths (also tighten the rule
     # globs) + content signals so smart materialization (T53) installs
     # them only when the feature is actually used. The qemu subtree shares
