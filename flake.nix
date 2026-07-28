@@ -1,5 +1,5 @@
 {
-  description = "Set and Setting -- deterministic agent mindset and environment";
+  description = "CHANGEME";
 
   nixConfig = {
     extra-substituters = [ "https://pr0d1r2.cachix.org" ];
@@ -10,21 +10,30 @@
     nixpkgs-lock.url = "github:pr0d1r2/nixpkgs-lock";
     nixpkgs.follows = "nixpkgs-lock/nixpkgs";
 
+    set-and-setting.url = "github:pr0d1r2/set-and-setting";
+
     nix-lefthook = {
       url = "github:pr0d1r2/nix-lefthook";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-
+    nix-lefthook-ascii-only-src = {
+      url = "github:pr0d1r2/nix-lefthook-ascii-only";
+      flake = false;
+    };
+    nix-lefthook-bats-parse-src = {
+      url = "github:pr0d1r2/nix-lefthook-bats-parse";
+      flake = false;
+    };
+    nix-lefthook-bats-unit-src = {
+      url = "github:pr0d1r2/nix-lefthook-bats-unit";
+      flake = false;
+    };
     nix-lefthook-changelog-touched-src = {
       url = "github:pr0d1r2/nix-lefthook-changelog-touched";
       flake = false;
     };
     nix-lefthook-commit-msg-lint-src = {
       url = "github:pr0d1r2/nix-lefthook-commit-msg-lint";
-      flake = false;
-    };
-    nix-lefthook-ascii-only-src = {
-      url = "github:pr0d1r2/nix-lefthook-ascii-only";
       flake = false;
     };
     nix-lefthook-deadnix-src = {
@@ -47,20 +56,20 @@
       url = "github:pr0d1r2/nix-lefthook-git-conflict-markers";
       flake = false;
     };
-    nix-lefthook-git-no-local-paths-src = {
-      url = "github:pr0d1r2/nix-lefthook-git-no-local-paths";
-      flake = false;
-    };
     nix-lefthook-gitleaks-src = {
       url = "github:pr0d1r2/nix-lefthook-gitleaks";
       flake = false;
     };
-    nix-lefthook-markdownlint-src = {
-      url = "github:pr0d1r2/nix-lefthook-markdownlint";
+    nix-lefthook-git-no-local-paths-src = {
+      url = "github:pr0d1r2/nix-lefthook-git-no-local-paths";
       flake = false;
     };
     nix-lefthook-markdownlint-agentic-src = {
       url = "github:pr0d1r2/nix-lefthook-markdownlint-agentic";
+      flake = false;
+    };
+    nix-lefthook-markdownlint-src = {
+      url = "github:pr0d1r2/nix-lefthook-markdownlint";
       flake = false;
     };
     nix-lefthook-missing-final-newline-src = {
@@ -79,6 +88,14 @@
       url = "github:pr0d1r2/nix-lefthook-nix-flake-eval";
       flake = false;
     };
+    nix-lefthook-nixfmt-src = {
+      url = "github:pr0d1r2/nix-lefthook-nixfmt";
+      flake = false;
+    };
+    nix-lefthook-nix-no-embedded-shell-src = {
+      url = "github:pr0d1r2/nix-lefthook-nix-no-embedded-shell";
+      flake = false;
+    };
     nix-lefthook-no-shell-functions-src = {
       url = "github:pr0d1r2/nix-lefthook-no-shell-functions";
       flake = false;
@@ -91,14 +108,6 @@
       url = "github:pr0d1r2/nix-lefthook-shfmt";
       flake = false;
     };
-    nix-lefthook-nix-no-embedded-shell-src = {
-      url = "github:pr0d1r2/nix-lefthook-nix-no-embedded-shell";
-      flake = false;
-    };
-    nix-lefthook-nixfmt-src = {
-      url = "github:pr0d1r2/nix-lefthook-nixfmt";
-      flake = false;
-    };
     nix-lefthook-statix-src = {
       url = "github:pr0d1r2/nix-lefthook-statix";
       flake = false;
@@ -107,27 +116,41 @@
       url = "github:pr0d1r2/nix-lefthook-trailing-whitespace";
       flake = false;
     };
-    nix-lefthook-unicode-lint-src = {
-      url = "github:pr0d1r2/nix-lefthook-unicode-lint";
-      flake = false;
-    };
     nix-lefthook-typos-src = {
       url = "github:pr0d1r2/nix-lefthook-typos";
+      flake = false;
+    };
+    nix-lefthook-unicode-lint-src = {
+      url = "github:pr0d1r2/nix-lefthook-unicode-lint";
       flake = false;
     };
     nix-lefthook-yamllint-src = {
       url = "github:pr0d1r2/nix-lefthook-yamllint";
       flake = false;
     };
-    nix-lefthook-bats-parse-src = {
-      url = "github:pr0d1r2/nix-lefthook-bats-parse";
-      flake = false;
-    };
-    nix-lefthook-bats-unit-src = {
-      url = "github:pr0d1r2/nix-lefthook-bats-unit";
-      flake = false;
-    };
   };
 
-  outputs = inputs: import ./flake inputs;
+  outputs =
+    {
+      self,
+      nixpkgs,
+      set-and-setting,
+      ...
+    }:
+    (import ./set/lib/mk-consumer-flake.nix {
+      supportedSystems = (import ./flake/systems.nix { inherit nixpkgs; }).supported;
+    })
+      {
+        inherit self nixpkgs set-and-setting;
+        fragments = [
+          "base"
+          "nix"
+          "shell"
+          "ascii"
+          "markdown"
+          "yaml"
+          "set"
+        ];
+        src = ./.;
+      };
 }

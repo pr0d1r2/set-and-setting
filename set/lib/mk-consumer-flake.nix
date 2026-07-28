@@ -82,6 +82,12 @@ in
 
   apps = forAllSystems (
     pkgs:
+    let
+      materialization = set-and-setting.lib.materializationFor {
+        inherit pkgs;
+        fragments = allFragments;
+      };
+    in
     (extraApps pkgs)
     // {
       confirm = {
@@ -96,7 +102,8 @@ in
               pkgs.gawk
               pkgs.git
               pkgs.gnugrep
-            ];
+            ]
+            ++ materialization.packages;
             text = ''
               export FRAGMENTS_DIR="${set-and-setting}/setting/integrations/lefthook"
               export ASSEMBLE_SCRIPT="${set-and-setting}/setting/lib/assemble-lefthook.sh"
