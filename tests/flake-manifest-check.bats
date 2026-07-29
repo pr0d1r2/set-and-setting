@@ -88,7 +88,26 @@ EOF
     [[ "$output" == *"PASS"* ]]
 }
 
-# --- monolith (let-body) fails -----------------------------------------------
+@test "let-block that delegates passes" {
+    # A let that binds helpers then delegates (in <import>/<call>) is a thin
+    # manifest, not a monolith -- this is the repo's own bootstrap shape (B41).
+    cat > "$ROOT/flake.nix" <<'EOF'
+{
+    outputs = { self, nixpkgs, set-and-setting, ... }:
+        let
+            sasLib = set-and-setting.lib or set-and-setting.inputs.set-and-setting.lib;
+        in
+        (import ./set/lib/mk-consumer-flake.nix { })
+            { inherit self nixpkgs set-and-setting; lib = sasLib; }
+        // { inherit (set-and-setting) lib; };
+}
+EOF
+    run bash "$SCRIPT" "$ROOT/flake.nix"
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"PASS"* ]]
+}
+
+# --- monolith (let ... in attrset) fails -------------------------------------
 
 @test "let-body with destructured args fails" {
     cat > "$ROOT/flake.nix" <<'EOF'
@@ -119,23 +138,6 @@ EOF
         {
             packages.x86_64-linux.default = pkgs.hello;
         };
-}
-EOF
-    run bash "$SCRIPT" "$ROOT/flake.nix"
-    [ "$status" -eq 1 ]
-    [[ "$output" == *"FAIL"* ]]
-    [[ "$output" == *"let-block"* ]]
-}
-
-@test "let-body even with import delegation fails" {
-    cat > "$ROOT/flake.nix" <<'EOF'
-{
-    outputs = { self, nixpkgs, set-and-setting, ... }:
-        let
-            sasLib = set-and-setting.lib;
-        in
-        (import ./set/lib/mk-consumer-flake.nix { })
-            { inherit self nixpkgs set-and-setting; lib = sasLib; };
 }
 EOF
     run bash "$SCRIPT" "$ROOT/flake.nix"
