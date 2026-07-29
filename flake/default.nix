@@ -259,6 +259,22 @@ let
       + builtins.readFile "${nix-lefthook-nix-no-embedded-shell-src}/lefthook-nix-no-embedded-shell.sh";
     };
 
+  # #200: flake-manifest structural guard. No external wrapper repo needed;
+  # the check logic lives in lib/flake-manifest-check.sh (local to this
+  # repo). The wrapper wraps it into a writeShellApplication for use in
+  # both the devShell (lefthook-flake-manifest) and the pinned flake check.
+  flakeManifestWrapperFor =
+    pkgs:
+    pkgs.writeShellApplication {
+      name = "lefthook-flake-manifest";
+      runtimeInputs = [
+        pkgs.gnugrep
+        pkgs.gnused
+        pkgs.coreutils
+      ];
+      text = builtins.readFile ../lib/flake-manifest-check.sh;
+    };
+
   # #101 (part of #93): the git/security tier's pinned wrappers, each
   # built from its own pinned flake input. Shared, like nixfmtWrapperFor,
   # by the devShell wrapper list and the hermetic `checks.<sys>.<tool>`
@@ -384,6 +400,7 @@ let
         (statixWrapperFor pkgs)
         (deadnixWrapperFor pkgs)
         (nixNoEmbeddedShellWrapperFor pkgs)
+        (flakeManifestWrapperFor pkgs)
         (w "lefthook-nix-flake-check" nix-lefthook-nix-flake-check-src {
           runtimeInputs = [ pkgs.nix ];
         })
@@ -695,6 +712,37 @@ in
         touch $out
       '';
 
+    # #200: flake-manifest structural guard. Asserts flake.nix is a thin
+    # manifest (outputs body delegates via import or function call, no
+    # let-block or inline attrset). Filters src to only flake.nix; skips
+    # repos with no flake.nix.
+    # Args: pkgs, src (repo root to lint), name ? "flake-manifest".
+    mkFlakeManifestCheck =
+      {
+        pkgs,
+        src,
+        name ? "flake-manifest",
+      }:
+      let
+        inherit (pkgs) lib;
+        wrapper = flakeManifestWrapperFor pkgs;
+        filteredSrc = lib.sources.cleanSourceWith {
+          inherit src;
+          filter = path: _type: builtins.baseNameOf path == "flake.nix";
+        };
+      in
+      pkgs.runCommand "${name}-check" { } ''
+        cd ${filteredSrc}
+        if [ ! -f flake.nix ]; then
+          echo "${name}: no flake.nix, nothing to check"
+          touch $out
+          exit 0
+        fi
+        ${lib.getExe wrapper} flake.nix
+        echo "${name}: PASS"
+        touch $out
+      '';
+
     # #101 (part of #93): the git/security tier's convenience helpers,
     # each closing over set-and-setting's OWN pinned wrapper input (like
     # mkNixfmtCheck). A consumer's check tracks the upstream tool rev via
@@ -824,6 +872,7 @@ in
           mkStatixCheck
           mkDeadnixCheck
           mkNixNoEmbeddedShellCheck
+          mkFlakeManifestCheck
           mkGitleaksCheck
           mkGitConflictMarkersCheck
           mkGitNoLocalPathsCheck
@@ -1127,6 +1176,98 @@ in
           echo "FAIL: nix-no-embedded-shell accepted embedded shell"; exit 1
         fi
         echo "PASS: pinned nix-no-embedded-shell rejects a violation"
+        touch $out
+      '';
+
+    # #200: flake-manifest structural guard as a PINNED hermetic check.
+    # Asserts flake.nix is a thin manifest. The check runs over flake.nix
+    # only; repos without one skip cleanly (PASS).
+    flake-manifest = self.lib.mkFlakeManifestCheck {
+      inherit pkgs;
+      src = ../.;
+    };
+
+    # #200: prove the pinned flake-manifest check REJECTS a let-body
+    # monolith (acceptance: "a monolith fails it").
+    flake-manifest-catches-let-body =
+      let
+        wrapper = flakeManifestWrapperFor pkgs;
+      in
+      pkgs.runCommand "flake-manifest-catches-let-body" { } ''
+        cat > flake.nix <<'FLAKEEOF'
+        {
+          outputs = { self, nixpkgs, ... }:
+            let
+              forAllSystems = nixpkgs.lib.genAttrs [ "x86_64-linux" ];
+            in
+            {
+              checks = forAllSystems (system: { });
+              packages = forAllSystems (system: { });
+            };
+        }
+        FLAKEEOF
+        if ${pkgs.lib.getExe wrapper} flake.nix; then
+          echo "FAIL: flake-manifest accepted a let-body monolith"; exit 1
+        fi
+        echo "PASS: pinned flake-manifest rejects a let-body monolith"
+        touch $out
+      '';
+
+    # #200: prove the pinned flake-manifest check REJECTS an inline
+    # attrset monolith.
+    flake-manifest-catches-inline-attrset =
+      let
+        wrapper = flakeManifestWrapperFor pkgs;
+      in
+      pkgs.runCommand "flake-manifest-catches-inline-attrset" { } ''
+        cat > flake.nix <<'FLAKEEOF'
+        {
+          outputs = { self, nixpkgs, ... }: {
+            checks = { };
+            packages = { };
+          };
+        }
+        FLAKEEOF
+        if ${pkgs.lib.getExe wrapper} flake.nix; then
+          echo "FAIL: flake-manifest accepted an inline attrset monolith"; exit 1
+        fi
+        echo "PASS: pinned flake-manifest rejects an inline attrset monolith"
+        touch $out
+      '';
+
+    # #200: prove the pinned flake-manifest check ACCEPTS a manifest
+    # (import delegation).
+    flake-manifest-passes-manifest =
+      let
+        wrapper = flakeManifestWrapperFor pkgs;
+      in
+      pkgs.runCommand "flake-manifest-passes-manifest" { } ''
+        cat > flake.nix <<'FLAKEEOF'
+        {
+          outputs = inputs: import ./flake inputs;
+        }
+        FLAKEEOF
+        ${pkgs.lib.getExe wrapper} flake.nix
+        echo "PASS: pinned flake-manifest accepts a manifest (import delegation)"
+        touch $out
+      '';
+
+    # #200: prove the pinned flake-manifest check ACCEPTS a consumer
+    # (mkConsumerFlake delegation).
+    flake-manifest-passes-consumer =
+      let
+        wrapper = flakeManifestWrapperFor pkgs;
+      in
+      pkgs.runCommand "flake-manifest-passes-consumer" { } ''
+        cat > flake.nix <<'FLAKEEOF'
+        {
+          outputs = { self, nixpkgs, set-and-setting, ... }:
+            (import ./set/lib/mk-consumer-flake.nix { })
+              { inherit self nixpkgs set-and-setting; };
+        }
+        FLAKEEOF
+        ${pkgs.lib.getExe wrapper} flake.nix
+        echo "PASS: pinned flake-manifest accepts a consumer (mkConsumerFlake)"
         touch $out
       '';
 

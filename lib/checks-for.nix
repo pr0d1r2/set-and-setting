@@ -39,6 +39,7 @@
   mkGitNoLocalPathsCheck,
   mkExecutePermissionsCheck,
   mkFileSizeCheckCheck,
+  mkFlakeManifestCheck,
 }:
 
 let
@@ -63,6 +64,7 @@ let
       statix = mkStatixCheck { inherit pkgs src; };
       deadnix = mkDeadnixCheck { inherit pkgs src; };
       nix-no-embedded-shell = mkNixNoEmbeddedShellCheck { inherit pkgs src; };
+      flake-manifest = mkFlakeManifestCheck { inherit pkgs src; };
     };
     shell = {
       shellcheck = mkShellcheckCheck { inherit pkgs src; };

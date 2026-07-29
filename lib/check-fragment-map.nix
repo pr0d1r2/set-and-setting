@@ -37,6 +37,7 @@
       "statix"
       "deadnix"
       "nix-no-embedded-shell"
+      "flake-manifest"
     ];
     shell = [
       "shellcheck"
@@ -81,6 +82,7 @@
       "statix"
       "deadnix"
       "nix-no-embedded-shell"
+      "flake-manifest"
     ];
     shell = [
       "shellcheck"
