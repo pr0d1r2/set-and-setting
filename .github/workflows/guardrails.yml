@@ -45,7 +45,7 @@ jobs:
       # `_nixbld` group on the macos-latest image instead of erroring with
       # `dscl ... eDSRecordAlreadyExists` (-14135) the way the older
       # cachix/install-nix-action shell installer does (B26).
-      - uses: DeterminateSystems/nix-installer-action@main
+      - uses: DeterminateSystems/nix-installer-action@v22
       - name: Materialize configs
         run: |
           setting_pkg="$(nix build .#setting --print-out-paths --no-link)"
