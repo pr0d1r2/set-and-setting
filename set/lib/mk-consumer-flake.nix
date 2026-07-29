@@ -9,6 +9,7 @@
   set-and-setting,
   fragments,
   src,
+  lib ? set-and-setting.lib,
   extraFragments ? [ ],
   extraPackages ? (_pkgs: { }),
   extraChecks ? (_pkgs: { }),
@@ -25,7 +26,7 @@ in
     pkgs:
     (extraPackages pkgs)
     // {
-      setting = (set-and-setting.lib.mkSetting { inherit pkgs; }).materialized;
+      setting = (lib.mkSetting { inherit pkgs; }).materialized;
     }
   );
 
@@ -33,12 +34,12 @@ in
     pkgs:
     let
       inherit (pkgs.stdenv.hostPlatform) system;
-      materialization = set-and-setting.lib.materializationFor {
+      materialization = lib.materializationFor {
         inherit pkgs;
         fragments = allFragments;
       };
     in
-    set-and-setting.lib.mkDevShells {
+    lib.mkDevShells {
       inherit pkgs;
       basePackages = materialization.packages;
       settingHook = ''
@@ -59,16 +60,16 @@ in
     let
       inherit (pkgs.stdenv.hostPlatform) system;
       standardChecks =
-        (set-and-setting.lib.checksFor {
+        (lib.checksFor {
           inherit pkgs src;
           fragments = allFragments;
         })
         // {
-          dep-graph = set-and-setting.lib.mkDepGraphCheck {
+          dep-graph = lib.mkDepGraphCheck {
             inherit pkgs;
             projectRoot = src;
           };
-          setting-drift = set-and-setting.lib.mkSettingDriftCheck {
+          setting-drift = lib.mkSettingDriftCheck {
             inherit pkgs;
             settingSet = self.packages.${system}.setting;
             projectRoot = src;
@@ -83,7 +84,7 @@ in
   apps = forAllSystems (
     pkgs:
     let
-      materialization = set-and-setting.lib.materializationFor {
+      materialization = lib.materializationFor {
         inherit pkgs;
         fragments = allFragments;
       };

@@ -137,11 +137,15 @@
       set-and-setting,
       ...
     }:
+    let
+      sasLib = set-and-setting.lib or set-and-setting.inputs.set-and-setting.lib;
+    in
     (import ./set/lib/mk-consumer-flake.nix {
       supportedSystems = (import ./flake/systems.nix { inherit nixpkgs; }).supported;
     })
       {
         inherit self nixpkgs set-and-setting;
+        lib = sasLib;
         fragments = [
           "base"
           "nix"
@@ -152,5 +156,8 @@
           "set"
         ];
         src = ./.;
-      };
+      }
+    // {
+      lib = sasLib;
+    };
 }
