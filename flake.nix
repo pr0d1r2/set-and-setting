@@ -1,5 +1,5 @@
 {
-  description = "CHANGEME";
+  description = "Set and Setting -- deterministic agent mindset and environment";
 
   nixConfig = {
     extra-substituters = [ "https://pr0d1r2.cachix.org" ];
@@ -10,10 +10,16 @@
     nixpkgs-lock.url = "github:pr0d1r2/nixpkgs-lock";
     nixpkgs.follows = "nixpkgs-lock/nixpkgs";
 
-    set-and-setting.url = "github:pr0d1r2/set-and-setting";
-
     nix-lefthook = {
-      url = "github:pr0d1r2/nix-lefthook";
+      # TEMPORARY PIN. nix-lefthook was itself templated into a leaf by its
+      # own hallucinogen/migrate (nix-lefthook#32, 2026-07-29T04:50Z), which
+      # dropped packages.<sys>.default and all 39 lefthook-* wrappers -- it
+      # now publishes only packages.<sys>.setting. ./flake needs `default`
+      # (flake/default.nix:860, devShells). The pin was bumped past that
+      # regression while ./flake was dark, so nothing caught it.
+      # Rev 694b2e9f is the last one publishing the full 40 packages.
+      # REMOVE this pin once nix-lefthook's own outputs are restored.
+      url = "github:pr0d1r2/nix-lefthook/694b2e9f2ef2b25d7a46a7ec5686ab18097cbf29";
       inputs.nixpkgs.follows = "nixpkgs";
     };
     nix-lefthook-ascii-only-src = {
@@ -130,34 +136,5 @@
     };
   };
 
-  outputs =
-    {
-      self,
-      nixpkgs,
-      set-and-setting,
-      ...
-    }:
-    let
-      sasLib = set-and-setting.lib or set-and-setting.inputs.set-and-setting.lib;
-    in
-    (import ./set/lib/mk-consumer-flake.nix {
-      supportedSystems = (import ./flake/systems.nix { inherit nixpkgs; }).supported;
-    })
-      {
-        inherit self nixpkgs set-and-setting;
-        lib = sasLib;
-        fragments = [
-          "base"
-          "nix"
-          "shell"
-          "ascii"
-          "markdown"
-          "yaml"
-          "set"
-        ];
-        src = ./.;
-      }
-    // {
-      lib = sasLib;
-    };
+  outputs = inputs: import ./flake inputs;
 }
