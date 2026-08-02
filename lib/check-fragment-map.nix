@@ -12,6 +12,7 @@
     "nix"
     "shell"
     "rubocop"
+    "rspec"
     "ascii"
     "markdown"
     "yaml"
@@ -47,6 +48,9 @@
     ];
     rubocop = [
       "rubocop"
+    ];
+    rspec = [
+      "rspec"
     ];
     ascii = [
       "ascii-only"
@@ -94,6 +98,7 @@
       "no-shell-functions"
     ];
     rubocop = [ ];
+    rspec = [ ];
     ascii = [
       "ascii-only"
     ];
@@ -109,6 +114,7 @@
     nix = "tracked *.nix files";
     shell = "tracked *.sh/*.bash files";
     rubocop = "tracked .rubocop.yml or *.gemspec files";
+    rspec = "tracked spec/ files or .rspec";
     markdown = "tracked *.md files";
     yaml = "tracked *.yml/*.yaml files";
     set = "tracked set/*.md files";
@@ -124,6 +130,7 @@
     nix = [ "canonDevEnv" ];
     shell = [ ];
     rubocop = [ ];
+    rspec = [ ];
     ascii = [ ];
     markdown = [ "canonSpec" ];
     yaml = [ ];

@@ -33,6 +33,11 @@ setup() {
 
     {
         printf '%s\n' "---"
+        write_commands pre-push rspec "**/*_spec.rb" push_files
+    } >"$FRAGMENTS_DIR/rspec.yml"
+
+    {
+        printf '%s\n' "---"
         write_commands pre-commit ascii-check "*.nix" staged_files
         write_commands pre-push ascii-check "*.nix" push_files
     } >"$FRAGMENTS_DIR/ascii.yml"
@@ -110,7 +115,7 @@ teardown() {
 }
 
 @test "fragments without commands do not add empty sections" {
-    for name in ascii markdown yaml rubocop; do
+    for name in ascii markdown yaml rubocop rspec; do
         printf '%s\n' "---" >"$FRAGMENTS_DIR/$name.yml"
     done
     printf '%s\n' "---" >"$FRAGMENTS_DIR/set.yml"
@@ -136,6 +141,8 @@ teardown() {
     grep -q 'set-ref-resolution:' "$out/lefthook.yml"
     grep -q 'set-bundle-content:' "$out/lefthook.yml"
     grep -q 'rubocop:' "$out/lefthook.yml"
+    grep -q 'rspec:' "$out/lefthook.yml"
+    grep -q 'bundle exec rspec' "$out/lefthook.yml"
     grep -q 'bundle exec rubocop --fail-fast --force-exclusion {staged_files}' \
         "$out/lefthook.yml"
 }
@@ -184,6 +191,14 @@ teardown() {
 @test "FRAGMENTS=base+rubocop includes only rubocop commands" {
     FRAGMENTS="base rubocop" bash "$SCRIPT"
     grep -q 'rubocop:' "$out/lefthook.yml"
+    run ! grep -q 'mdlint' "$out/lefthook.yml"
+    run ! grep -q 'yamllint' "$out/lefthook.yml"
+}
+
+@test "FRAGMENTS=base+rspec includes only rspec commands" {
+    FRAGMENTS="base rspec" bash "$SCRIPT"
+    grep -q 'rspec:' "$out/lefthook.yml"
+    run ! grep -q 'rubocop' "$out/lefthook.yml"
     run ! grep -q 'mdlint' "$out/lefthook.yml"
     run ! grep -q 'yamllint' "$out/lefthook.yml"
 }
@@ -278,7 +293,7 @@ teardown() {
 
 @test "repo-local fragment alone creates hook sections" {
     # All standard fragments empty -- repo-local is the only source
-    for name in base nix shell rubocop ascii markdown yaml set; do
+    for name in base nix shell rubocop rspec ascii markdown yaml set; do
         printf '%s\n' "---" >"$FRAGMENTS_DIR/$name.yml"
     done
     local workdir

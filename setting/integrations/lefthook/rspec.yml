@@ -1,0 +1,7 @@
+---
+
+pre-push:
+  commands:
+    rspec:
+      run: bundle exec rspec
+      timeout: 5m

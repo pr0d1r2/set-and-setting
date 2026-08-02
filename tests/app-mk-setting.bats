@@ -135,6 +135,19 @@ teardown() {
         "$TARGET/lefthook.yml"
 }
 
+@test "content-aware: ruby repo with spec directory assembles rspec hook" {
+    mkdir -p "$TARGET/spec"
+    printf '%s\n' 'RSpec.describe "example"' >"$TARGET/spec/example_spec.rb"
+    git -C "$TARGET" add spec/example_spec.rb
+
+    run bash "$SCRIPT"
+
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"rspec"* ]]
+    grep -q 'rspec:' "$TARGET/lefthook.yml"
+    grep -q 'bundle exec rspec' "$TARGET/lefthook.yml"
+}
+
 @test "output message includes detected fragments" {
     printf '' >"$TARGET/test.nix"
     git -C "$TARGET" add test.nix
