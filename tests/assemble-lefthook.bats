@@ -165,6 +165,13 @@ teardown() {
     grep -q 'bundle exec rspec' "$out/lefthook.yml"
     grep -q 'bundle exec rubocop --fail-fast --force-exclusion {staged_files}' \
         "$out/lefthook.yml"
+    run grep -F 'run: bundle exec reek {staged_files}' "$out/lefthook.yml"
+    [ "$status" -eq 0 ]
+    [ "$output" = '      run: bundle exec reek {staged_files}' ]
+    run grep -F 'run: bundle exec bundle-audit check --update' "$out/lefthook.yml"
+    [ "$status" -eq 0 ]
+    [ "${lines[0]}" = '      run: bundle exec bundle-audit check --update' ]
+    [ "${lines[1]}" = '      run: bundle exec bundle-audit check --update' ]
 }
 
 @test "FRAGMENTS=base+reek includes only reek commands" {

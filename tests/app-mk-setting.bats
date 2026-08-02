@@ -161,9 +161,10 @@ teardown() {
     [[ "$output" == *"reek"* ]]
     [[ "$output" == *"brakeman"* ]]
     [[ "$output" == *"bundle-audit"* ]]
-    grep -q 'bundle exec reek {staged_files}' "$TARGET/lefthook.yml"
+    grep -Fxq '      run: bundle exec reek {staged_files}' "$TARGET/lefthook.yml"
     grep -q 'bundle exec brakeman --no-pager -q' "$TARGET/lefthook.yml"
-    grep -q 'bundle exec bundle-audit check --update' "$TARGET/lefthook.yml"
+    [ "$(grep -Fxc '      run: bundle exec bundle-audit check --update' \
+        "$TARGET/lefthook.yml")" -eq 2 ]
 }
 
 @test "output message includes detected fragments" {
