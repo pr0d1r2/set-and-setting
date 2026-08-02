@@ -93,6 +93,14 @@ teardown() {
     [ ! -f "$TARGET/.github/workflows/auto-update.yml" ]
 }
 
+@test "scaffolded flake is a thin consumer manifest" {
+    cp "$BATS_TEST_DIRNAME/../setting/scaffold/component-flake.txt" "$SCAFFOLD_SRC/flake.nix"
+    bash "$SCRIPT"
+    run bash "$BATS_TEST_DIRNAME/../nix-lefthook-flake-manifest/lefthook-flake-manifest.sh" flake.nix
+    [ "$status" -eq 0 ]
+    grep -q 'includeSet = true' flake.nix
+}
+
 @test "lefthook.yml is assembled from fragments, not bundled copy" {
     bash "$SCRIPT"
     [ "$(cat "$TARGET/lefthook.yml")" != "bundled lefthook" ]

@@ -1,4 +1,4 @@
-# All nix linters (nixfmt, statix, deadnix, nix-no-embedded-shell,
+# All nix linters (flake-manifest, nixfmt, statix, deadnix, nix-no-embedded-shell,
 # nix-flake-check) are delivered as PINNED flake `checks.<sys>.<tool>`
 # (#97 nixfmt, #99 the rest), replacing their runtime `remotes:` git_urls
 # with offline-runnable, cache-warm checks. No nix remotes remain.

@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+- Add the reusable `nix-lefthook-flake-manifest` structural guard and enable
+  its pinned `flake-manifest` check for the Nix fragment. It accepts import and
+  `mkConsumerFlake` delegations, rejects top-level/outputs `let` logic and
+  inline output attrsets independent of file size, skips missing flakes, and
+  supports strictness configuration. The standard and component scaffold now
+  seed a strict config and a thin consumer manifest. (#200)
+
 - Add the `surgical` and `assumptions` principles. `surgical` keeps a change
   scoped to the reported problem and pushes refactors, reformatting, and
   unrequested extras into commits of their own. `assumptions` requires the

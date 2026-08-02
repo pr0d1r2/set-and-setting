@@ -14,6 +14,7 @@
   extraPackages ? (_pkgs: { }),
   extraChecks ? (_pkgs: { }),
   extraApps ? (_pkgs: { }),
+  includeSet ? false,
 }:
 
 let
@@ -25,6 +26,9 @@ in
   packages = forAllSystems (
     pkgs:
     (extraPackages pkgs)
+    // nixpkgs.lib.optionalAttrs includeSet {
+      set = lib.mkSet { inherit pkgs; };
+    }
     // {
       setting = (lib.mkSetting { inherit pkgs; }).materialized;
     }
@@ -51,6 +55,9 @@ in
           bash "${set-and-setting}/setting/lib/assemble-lefthook.sh"
         cp -f "$_setting_lefthook_out/lefthook.yml" lefthook.yml
         rm -rf "$_setting_lefthook_out"
+      '';
+      agenticShellHook = nixpkgs.lib.optionalString includeSet ''
+        ${self.packages.${system}.set}/bin/sync-set .
       '';
     }
   );

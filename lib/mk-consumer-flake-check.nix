@@ -19,12 +19,14 @@ let
         program = "${pkgs.hello}/bin/hello";
       };
     };
+    includeSet = true;
   };
   inherit (pkgs.stdenv.hostPlatform) system;
   names = output: builtins.attrNames output.${system};
   packageNames = names consumer.packages;
   checkNames = names consumer.checks;
   appNames = names consumer.apps;
+  agenticShellHook = consumer.devShells.${system}.agentic.shellHook;
 in
 pkgs.runCommand "mkConsumerFlake-outputs" { } ''
   ${
@@ -37,6 +39,7 @@ pkgs.runCommand "mkConsumerFlake-outputs" { } ''
       ];
     assert builtins.all (name: builtins.elem name packageNames) [
       "fixture"
+      "set"
       "setting"
     ];
     assert builtins.all (name: builtins.elem name checkNames) [
@@ -50,6 +53,7 @@ pkgs.runCommand "mkConsumerFlake-outputs" { } ''
       "confirm"
       "fixture"
     ];
+    assert pkgs.lib.hasInfix "/bin/sync-set ." agenticShellHook;
     ""
   }
   touch $out

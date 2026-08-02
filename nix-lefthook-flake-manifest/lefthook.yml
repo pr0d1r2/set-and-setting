@@ -1,0 +1,13 @@
+---
+
+pre-commit:
+  commands:
+    flake-manifest:
+      glob: "flake.nix"
+      run: lefthook-flake-manifest-wrapper
+
+pre-push:
+  commands:
+    flake-manifest:
+      glob: "flake.nix"
+      run: lefthook-flake-manifest-wrapper

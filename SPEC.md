@@ -141,7 +141,9 @@ and dogfoods both.
   `lib.mkGitConflictMarkersCheck`, `lib.mkExecutePermissionsCheck`,
   `lib.mkFileSizeCheckCheck` (glob-less whole-tree, no check flag),
   `lib.mkGitNoLocalPathsCheck` (custom derivation excluding
-  `flake.nix`/`flake.lock`).
+  `flake.nix`/`flake.lock`). #200 adds `lib.mkFlakeManifestCheck`, a custom
+  single-file derivation that enforces V46 through the pinned
+  `nix-lefthook-flake-manifest` source.
 - I.materializationFor: `setting/lib/mk-materialization.nix` -- the
   materialization primitive (#92). Given a committed fragment list, returns
   `{ files, packages }` as ONE ATOM: `files` is a derivation containing
@@ -540,6 +542,11 @@ and dogfoods both.
   until a human approves it in the current session. Changing the envelope
   or either classification is itself human-gated.
 - V45: Canon is deterministic by fragment set and shared by birth and repair.
+- V46: `flake.nix` is a manifest. Its top-level body contains only
+  `description`, `nixConfig`, literal `inputs`, and `outputs`; `outputs` is a
+  function whose body delegates to an import or helper call, never a `let`
+  expression or inline output attrset. `flake-manifest` enforces structure
+  independently of the complementary byte-size limit. Missing flakes skip.
   `canonFor` composes named units rather than owning their contents. Reordering
   the same fragment set produces an identical tree. Seeded repo-owned files are
   preserved after emission; pinned canon files are compared exactly and drift
@@ -633,6 +640,7 @@ and dogfoods both.
 | T75 | x | `apps.migrate` (#96) -- mechanical, deterministic, idempotent, non-LLM, confirmator-gated vendored->referenced transform. `lib/migrate.sh` (detect state / strip vendored artifacts / plant seed #95 / confirm-equivalence) + `lib/app-migrate.sh` (`--detect`/`--dry-run`/`--help`) + `apps.migrate`. Safety net: referenced effective check-set (pinned `checksFor` UNION all fragment lefthook commands) MUST cover the vendored `lefthook.yml` check-set; a dropped check ⇒ refuse. Nix checks over vendored / partial / bare / already-referenced fixtures + dropped-check rejection; bats for the core logic + CLI. HOLD (V189): tool lands, fleet run is human-gated | I.migrate,I.mkSeed,I.mkConfirm,V43,C7 |
 | T76 | x | `mkSetting-init` seeds a titled README skeleton with canonical CI/license/NixOS badges and an explicit default MIT license. Both are skip-existing; badge and holder/year placeholders remain available for repo-birth substitution; `readme = false` and `license = null` opt out. (#235) | I.mkSetting,V22,V26 |
 | T77 | x | Leaf `seed` substitutes README owner/repo and license holder/year from CLI or `TRIP_*` repo-birth inputs, falls back to GitHub `origin`, and otherwise preserves placeholders plus the fill-in note. Existing README/LICENSE files remain untouched. (#235) | I.apps,I.mkSeed,T76 |
+| T78 | x | Flake-manifest structural guard (#200) -- add the reusable `nix-lefthook-flake-manifest` leaf, strict/let-only/off configuration, manifest/helper/monolith/missing-flake bats proofs, pinned `lib.mkFlakeManifestCheck`, Nix-fragment registry propagation through `checksFor`/`materializationFor`, strict standard, thin component scaffold, and a self-hosting negative check | I.mkLefthookCheck,I.checksFor,V41,V46 |
 
 ## §B Bugs
 
