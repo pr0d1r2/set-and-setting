@@ -34,6 +34,7 @@
   mkStatixCheck,
   mkDeadnixCheck,
   mkNixNoEmbeddedShellCheck,
+  mkFlakeManifestCheck,
   mkGitleaksCheck,
   mkGitConflictMarkersCheck,
   mkGitNoLocalPathsCheck,
@@ -59,6 +60,7 @@ let
       typos = mkTyposCheck { inherit pkgs src; };
     };
     nix = {
+      flake-manifest = mkFlakeManifestCheck { inherit pkgs src; };
       nixfmt = mkNixfmtCheck { inherit pkgs src; };
       statix = mkStatixCheck { inherit pkgs src; };
       deadnix = mkDeadnixCheck { inherit pkgs src; };

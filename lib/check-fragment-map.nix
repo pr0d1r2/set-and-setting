@@ -33,6 +33,7 @@
       "typos"
     ];
     nix = [
+      "flake-manifest"
       "nixfmt"
       "statix"
       "deadnix"
@@ -77,6 +78,7 @@
       "typos"
     ];
     nix = [
+      "flake-manifest"
       "nixfmt"
       "statix"
       "deadnix"

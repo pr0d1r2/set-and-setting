@@ -14,6 +14,7 @@ setup() {
     echo "gitignore" >"$SEED_SRC/.gitignore"
     mkdir -p "$SEED_SRC/config/lefthook"
     echo "limits" >"$SEED_SRC/config/lefthook/file_size_limits.yml"
+    echo "strictness: strict" >"$SEED_SRC/config/lefthook/flake_manifest.yml"
     printf '%s\n' '# __REPO__' 'https://github.com/__OWNER__/__REPO__' >"$SEED_SRC/README.md"
     printf '%s\n' 'Copyright (c) __YEAR__ __HOLDER__' >"$SEED_SRC/LICENSE"
     export SEED_SRC
@@ -59,6 +60,7 @@ teardown() {
     [ -f "$TARGET/.gitattributes" ]
     [ -f "$TARGET/.gitignore" ]
     [ -f "$TARGET/config/lefthook/file_size_limits.yml" ]
+    [ -f "$TARGET/config/lefthook/flake_manifest.yml" ]
     [ "$(head -1 "$TARGET/README.md")" = "# ${TARGET##*/}" ]
     grep -q '__OWNER__/__REPO__' "$TARGET/README.md"
     grep -q '__YEAR__ __HOLDER__' "$TARGET/LICENSE"

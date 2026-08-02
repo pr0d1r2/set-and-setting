@@ -12,6 +12,7 @@
   markdownlint ? true,
   yamllint ? true,
   fileSizeLimits ? true,
+  flakeManifest ? true,
   narrowLanguageDics ? [
     "nix"
     "shell"
@@ -47,6 +48,11 @@ let
     ++ lib.optional fileSizeLimits (
       pkgs.writeTextDir "config/lefthook/file_size_limits.yml" (
         readFile "${std}/lefthook/file_size_limits.yml"
+      )
+    )
+    ++ lib.optional flakeManifest (
+      pkgs.writeTextDir "config/lefthook/flake_manifest.yml" (
+        readFile "${std}/lefthook/flake_manifest.yml"
       )
     )
     ++ map (lang: pkgs.writeTextDir ".narrow-language-${lang}.dic" "") narrowLanguageDics

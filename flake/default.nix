@@ -307,6 +307,23 @@ let
         pkgs.coreutils
       ];
     };
+  flakeManifestSrc = ../nix-lefthook-flake-manifest;
+  flakeManifestWrapperFor =
+    pkgs:
+    let
+      checker = wrap pkgs "lefthook-flake-manifest" flakeManifestSrc {
+        runtimeInputs = [ pkgs.gawk ];
+      };
+      strictness = wrap pkgs "get-flake-manifest-strictness" flakeManifestSrc {
+        runtimeInputs = [ pkgs.gawk ];
+      };
+    in
+    wrap pkgs "lefthook-flake-manifest-wrapper" flakeManifestSrc {
+      runtimeInputs = [
+        checker
+        strictness
+      ];
+    };
 
   wrappersForFragment =
     pkgs:
@@ -380,6 +397,7 @@ let
         })
       ];
       nix = [
+        (flakeManifestWrapperFor pkgs)
         (nixfmtWrapperFor pkgs)
         (statixWrapperFor pkgs)
         (deadnixWrapperFor pkgs)
@@ -694,6 +712,29 @@ in
         echo "${name}: PASS (''${#matches[@]} files)"
         touch $out
       '';
+    mkFlakeManifestCheck =
+      {
+        pkgs,
+        src,
+        name ? "flake-manifest",
+      }:
+      let
+        inherit (pkgs) lib;
+        wrapper = flakeManifestWrapperFor pkgs;
+        filteredSrc = lib.sources.cleanSourceWith {
+          inherit src;
+          filter =
+            path: type:
+            type == "directory"
+            || builtins.baseNameOf path == "flake.nix"
+            || lib.hasSuffix "/config/lefthook/flake_manifest.yml" path;
+        };
+      in
+      pkgs.runCommand "${name}-check" { } ''
+        cd ${filteredSrc}
+        ${lib.getExe wrapper}
+        touch $out
+      '';
 
     # #101 (part of #93): the git/security tier's convenience helpers,
     # each closing over set-and-setting's OWN pinned wrapper input (like
@@ -824,6 +865,7 @@ in
           mkStatixCheck
           mkDeadnixCheck
           mkNixNoEmbeddedShellCheck
+          mkFlakeManifestCheck
           mkGitleaksCheck
           mkGitConflictMarkersCheck
           mkGitNoLocalPathsCheck
@@ -1078,6 +1120,10 @@ in
       inherit pkgs;
       src = ../.;
     };
+    flake-manifest = self.lib.mkFlakeManifestCheck {
+      inherit pkgs;
+      src = ../.;
+    };
     nix-flake-check = pkgs.runCommand "nix-flake-check" { } ''
       echo "nix-flake-check: the old remote ran nix flake check --"
       echo "which IS this CI mechanism. All individual checks are"
@@ -1127,6 +1173,24 @@ in
           echo "FAIL: nix-no-embedded-shell accepted embedded shell"; exit 1
         fi
         echo "PASS: pinned nix-no-embedded-shell rejects a violation"
+        touch $out
+      '';
+    flake-manifest-catches-violation =
+      let
+        wrapper = flakeManifestWrapperFor pkgs;
+      in
+      pkgs.runCommand "flake-manifest-catches-violation" { } ''
+        cat > flake.nix <<'NIXEOF'
+        {
+          outputs = inputs: let
+            systems = [ "x86_64-linux" ];
+          in { checks = systems; };
+        }
+        NIXEOF
+        if ${pkgs.lib.getExe wrapper}; then
+          echo "FAIL: flake-manifest accepted inline output logic"; exit 1
+        fi
+        echo "PASS: flake-manifest rejects inline output logic"
         touch $out
       '';
 
@@ -2157,26 +2221,13 @@ in
         [ ! -f "${scaffold}/.github/workflows/auto-update.yml" ] \
           || { echo "FAIL: obsolete auto-update.yml present"; exit 1; }
 
-        # flake.nix is a valid nix expression (has description)
+        # #200: the scaffold is a thin manifest delegating all standard
+        # outputs and wrapper/check wiring through mkConsumerFlake.
         grep -q 'description' "${scaffold}/flake.nix" \
           || { echo "FAIL: flake.nix missing description"; exit 1; }
-        grep -q 'devShells' "${scaffold}/flake.nix" \
-          || { echo "FAIL: flake.nix missing devShells"; exit 1; }
-        grep -q 'lefthookWrappersFor' "${scaffold}/flake.nix" \
-          || { echo "FAIL: flake.nix missing lefthookWrappersFor"; exit 1; }
-
-        # T59: stacked shells via mkDevShells -- default + agentic, no ci
-        grep -q 'agentic' "${scaffold}/flake.nix" \
-          || { echo "FAIL: flake.nix missing agentic shell"; exit 1; }
-        grep -q 'mkDevShells' "${scaffold}/flake.nix" \
-          || { echo "FAIL: flake.nix missing mkDevShells (stacked shell)"; exit 1; }
-        if grep -qE '^\s+ci\s*=' "${scaffold}/flake.nix"; then
-          echo "FAIL: scaffold still has ci devShell"; exit 1
-        fi
-
-        # #93: scaffold uses checksFor for fragment-driven pinned checks
-        grep -q 'checksFor' "${scaffold}/flake.nix" \
-          || { echo "FAIL: scaffold flake.nix missing checksFor"; exit 1; }
+        grep -q 'set-and-setting.lib.mkConsumerFlake' "${scaffold}/flake.nix" \
+          || { echo "FAIL: flake.nix does not delegate to mkConsumerFlake"; exit 1; }
+        ${pkgs.lib.getExe (flakeManifestWrapperFor pkgs)} "${scaffold}/flake.nix"
 
         # T59/B17: scaffold ci.yml must specify devshell: "default"
         # (the CI action defaults to "ci" which no longer exists)
@@ -2209,19 +2260,9 @@ in
         grep -q 'github:' "${scaffold}/flake.nix" \
           || { echo "FAIL: scaffold flake.nix has no github: URLs"; exit 1; }
 
-        # T33: consumer wiring -- set-and-setting input + packages
+        # T33: consumer wiring is delegated through set-and-setting.
         grep -q 'set-and-setting' "${scaffold}/flake.nix" \
           || { echo "FAIL: scaffold flake.nix missing set-and-setting input (T33)"; exit 1; }
-        grep -q 'packages' "${scaffold}/flake.nix" \
-          || { echo "FAIL: scaffold flake.nix missing packages output (T33)"; exit 1; }
-        grep -q 'mkDepGraphCheck' "${scaffold}/flake.nix" \
-          || { echo "FAIL: scaffold flake.nix missing dep-graph check (T33)"; exit 1; }
-
-        # T33: consumer wiring -- sync hooks in devShell
-        grep -q 'sync-setting' "${scaffold}/flake.nix" \
-          || { echo "FAIL: scaffold flake.nix missing sync-setting hook (T33)"; exit 1; }
-        grep -q 'sync-set' "${scaffold}/flake.nix" \
-          || { echo "FAIL: scaffold flake.nix missing sync-set hook (T33)"; exit 1; }
 
         # T33: CI sync pre-step -- materialized configs synced before hooks
         grep -q 'Sync materialized configs' "${scaffold}/.github/workflows/ci.yml" \

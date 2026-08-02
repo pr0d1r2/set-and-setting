@@ -15,6 +15,7 @@ setup() {
     echo "gitignore" >"$SRC/.gitignore"
     mkdir -p "$SRC/config/lefthook"
     echo "limits" >"$SRC/config/lefthook/file_size_limits.yml"
+    echo "strictness: strict" >"$SRC/config/lefthook/flake_manifest.yml"
     printf '%s\n' '# __REPO__' 'https://github.com/__OWNER__/__REPO__' >"$SRC/README.md"
     echo 'Copyright (c) __YEAR__ __HOLDER__' >"$SRC/LICENSE"
 }
@@ -32,6 +33,7 @@ teardown() {
     [ -f "$TARGET/.gitattributes" ]
     [ -f "$TARGET/.gitignore" ]
     [ -f "$TARGET/config/lefthook/file_size_limits.yml" ]
+    [ -f "$TARGET/config/lefthook/flake_manifest.yml" ]
     [ "$(head -1 "$TARGET/README.md")" = "# ${TARGET##*/}" ]
     grep -q '__OWNER__/__REPO__' "$TARGET/README.md"
     grep -q '__YEAR__ __HOLDER__' "$TARGET/LICENSE"
@@ -65,6 +67,7 @@ teardown() {
     [ "$status" -eq 0 ]
     [ -d "$TARGET/config/lefthook" ]
     [ -f "$TARGET/config/lefthook/file_size_limits.yml" ]
+    [ -f "$TARGET/config/lefthook/flake_manifest.yml" ]
 }
 
 @test "scaffolds narrow-language dics" {

@@ -13,7 +13,7 @@ setup() {
     DETECT_SCRIPT="$BATS_TEST_DIRNAME/../setting/lib/detect-fragments.sh"
     COVERAGE_SCRIPT="$BATS_TEST_DIRNAME/../lib/check-coverage.sh"
     FRAGMENTS_DIR="$BATS_TEST_DIRNAME/../setting/integrations/lefthook"
-    CHECKS_UNIVERSE="gitleaks git-conflict-markers git-no-local-paths execute-permissions file-size-check trailing-whitespace missing-final-newline editorconfig-checker typos nixfmt statix deadnix nix-no-embedded-shell shellcheck shfmt no-shell-functions ascii-only"
+    CHECKS_UNIVERSE="gitleaks git-conflict-markers git-no-local-paths execute-permissions file-size-check trailing-whitespace missing-final-newline editorconfig-checker typos flake-manifest nixfmt statix deadnix nix-no-embedded-shell shellcheck shfmt no-shell-functions ascii-only"
 
     echo "markdownlint config" >"$SETTING_SRC/.markdownlint.yml"
     echo "yamllint config" >"$SETTING_SRC/.yamllint.yml"
