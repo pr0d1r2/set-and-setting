@@ -343,10 +343,11 @@ lib.mkSetting {
 **Seed/init** (scaffolded once, then repo-owned): `.editorconfig`,
 `.gitattributes`, `.gitignore`,
 `config/lefthook/file_size_limits.yml`, `.narrow-language-*.dic`,
-`.nix-embedded-shell-allowlist`, `README.md`, `LICENSE`. The README uses the
-directory name as its title and leaves repository-coordinate placeholders for
-later substitution. The default MIT license leaves year and holder
-placeholders; set `license = null` to opt out.
+`.nix-embedded-shell-allowlist`, `README.md`, `LICENSE`. The standard Nix
+limit is a fleet-wide one-way ratchet: split growing Nix modules instead of
+raising it. The README uses the directory name as its title and leaves
+repository-coordinate placeholders for later substitution. The default MIT
+license leaves year and holder placeholders; set `license = null` to opt out.
 
 Two scripts: `bin/sync-setting` (materialize, always overwrites) and
 `bin/sync-setting-init` (scaffold, skips files that exist).

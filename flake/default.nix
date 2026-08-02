@@ -1777,6 +1777,10 @@ in
         # packages.setting (materialized) has configs but not seeds
         [ -e "${full.materialized}/.markdownlint.yml" ] || { echo "FAIL: pkg no markdownlint"; exit 1; }
         [ -e "${full.materialized}/.yamllint.yml" ] || { echo "FAIL: pkg no yamllint"; exit 1; }
+        grep -q '^  nix: 8192$' "${full}/config/lefthook/file_size_limits.yml" \
+          || { echo "FAIL: propagated nix cap is not 8192"; exit 1; }
+        grep -q 'only lower this cap' "${full}/config/lefthook/file_size_limits.yml" \
+          || { echo "FAIL: nix cap ratchet is undocumented"; exit 1; }
         if [ -e "${full.materialized}/.editorconfig" ]; then
           echo "FAIL: pkg has seed .editorconfig"; exit 1
         fi

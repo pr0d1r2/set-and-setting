@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- Ratchet the fleet-wide Nix file-size cap from 16 KiB to 8 KiB after the
+  manifest migration gate. New standard settings inherit the lower ceiling;
+  future Nix growth must extract modules rather than raise the cap. (#204)
+
 - Add the reusable `nix-lefthook-flake-manifest` structural guard and enable
   its pinned `flake-manifest` check for the Nix fragment. It accepts import and
   `mkConsumerFlake` delegations, rejects top-level/outputs `let` logic and
