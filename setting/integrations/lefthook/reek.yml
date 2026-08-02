@@ -1,0 +1,14 @@
+---
+
+pre-commit:
+  commands:
+    reek:
+      glob: "**/*.rb"
+      run: bundle exec reek {staged_files} || true
+      timeout: 30s
+
+pre-push:
+  commands:
+    reek:
+      run: bundle exec reek app/ lib/ || true
+      timeout: 30s

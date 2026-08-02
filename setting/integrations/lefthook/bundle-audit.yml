@@ -1,0 +1,14 @@
+---
+
+pre-commit:
+  commands:
+    bundle-audit:
+      glob: "{Gemfile,Gemfile.lock}"
+      run: bundle exec bundle-audit check --update || true
+      timeout: 60s
+
+pre-push:
+  commands:
+    bundle-audit:
+      run: bundle exec bundle-audit check --update || true
+      timeout: 60s

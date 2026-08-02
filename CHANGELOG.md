@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- Extend Ruby guardrails with Reek, Brakeman, and bundle-audit lefthook
+  fragments, detected from `.reek.yml`, `config/brakeman.yml`, and
+  `Gemfile.lock`, respectively. (#226)
+
 - Add an RSpec lefthook fragment backed by the Ruby devShell, detected from
   tracked `spec/` files or `.rspec`. (#225)
 

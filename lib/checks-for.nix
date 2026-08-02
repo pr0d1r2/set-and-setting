@@ -73,6 +73,9 @@ let
     };
     rubocop = { };
     rspec = { };
+    reek = { };
+    brakeman = { };
+    bundle-audit = { };
     ascii = {
       ascii-only = mkAsciiOnlyCheck { inherit pkgs src; };
     };

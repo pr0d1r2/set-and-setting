@@ -38,6 +38,23 @@ setup() {
 
     {
         printf '%s\n' "---"
+        write_commands pre-commit reek "**/*.rb" staged_files
+        write_commands pre-push reek "**/*.rb" push_files
+    } >"$FRAGMENTS_DIR/reek.yml"
+
+    {
+        printf '%s\n' "---"
+        write_commands pre-push brakeman "**/*.rb" push_files
+    } >"$FRAGMENTS_DIR/brakeman.yml"
+
+    {
+        printf '%s\n' "---"
+        write_commands pre-commit bundle-audit "Gemfile.lock" staged_files
+        write_commands pre-push bundle-audit "Gemfile.lock" push_files
+    } >"$FRAGMENTS_DIR/bundle-audit.yml"
+
+    {
+        printf '%s\n' "---"
         write_commands pre-commit ascii-check "*.nix" staged_files
         write_commands pre-push ascii-check "*.nix" push_files
     } >"$FRAGMENTS_DIR/ascii.yml"
@@ -115,7 +132,7 @@ teardown() {
 }
 
 @test "fragments without commands do not add empty sections" {
-    for name in ascii markdown yaml rubocop rspec; do
+    for name in ascii markdown yaml rubocop rspec reek brakeman bundle-audit; do
         printf '%s\n' "---" >"$FRAGMENTS_DIR/$name.yml"
     done
     printf '%s\n' "---" >"$FRAGMENTS_DIR/set.yml"
@@ -142,9 +159,33 @@ teardown() {
     grep -q 'set-bundle-content:' "$out/lefthook.yml"
     grep -q 'rubocop:' "$out/lefthook.yml"
     grep -q 'rspec:' "$out/lefthook.yml"
+    grep -q 'reek:' "$out/lefthook.yml"
+    grep -q 'brakeman:' "$out/lefthook.yml"
+    grep -q 'bundle-audit:' "$out/lefthook.yml"
     grep -q 'bundle exec rspec' "$out/lefthook.yml"
     grep -q 'bundle exec rubocop --fail-fast --force-exclusion {staged_files}' \
         "$out/lefthook.yml"
+}
+
+@test "FRAGMENTS=base+reek includes only reek commands" {
+    FRAGMENTS="base reek" bash "$SCRIPT"
+    grep -q 'reek:' "$out/lefthook.yml"
+    run ! grep -q 'brakeman' "$out/lefthook.yml"
+    run ! grep -q 'bundle-audit' "$out/lefthook.yml"
+}
+
+@test "FRAGMENTS=base+brakeman includes only brakeman commands" {
+    FRAGMENTS="base brakeman" bash "$SCRIPT"
+    grep -q 'brakeman:' "$out/lefthook.yml"
+    run ! grep -q 'reek' "$out/lefthook.yml"
+    run ! grep -q 'bundle-audit' "$out/lefthook.yml"
+}
+
+@test "FRAGMENTS=base+bundle-audit includes only bundle-audit commands" {
+    FRAGMENTS="base bundle-audit" bash "$SCRIPT"
+    grep -q 'bundle-audit:' "$out/lefthook.yml"
+    run ! grep -q 'reek' "$out/lefthook.yml"
+    run ! grep -q 'brakeman' "$out/lefthook.yml"
 }
 
 @test "FRAGMENTS restricts included fragments" {
@@ -293,7 +334,7 @@ teardown() {
 
 @test "repo-local fragment alone creates hook sections" {
     # All standard fragments empty -- repo-local is the only source
-    for name in base nix shell rubocop rspec ascii markdown yaml set; do
+    for name in base nix shell rubocop rspec reek brakeman bundle-audit ascii markdown yaml set; do
         printf '%s\n' "---" >"$FRAGMENTS_DIR/$name.yml"
     done
     local workdir

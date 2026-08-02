@@ -21,7 +21,7 @@ if [ -z "$tracked" ] && [ -n "${DETECT_ROOT:-}" ]; then
 fi
 
 if [ -z "$tracked" ]; then
-  echo "base nix shell rubocop rspec ascii markdown yaml set"
+  echo "base nix shell rubocop rspec reek brakeman bundle-audit ascii markdown yaml set"
   exit 0
 fi
 
@@ -41,6 +41,18 @@ fi
 
 if grep -qE '(^|/)spec/|(^|/)\.rspec$' <<<"$tracked"; then
   result="$result rspec"
+fi
+
+if grep -qE '(^|/)\.reek\.yml$' <<<"$tracked"; then
+  result="$result reek"
+fi
+
+if grep -qE '(^|/)config/brakeman\.yml$' <<<"$tracked"; then
+  result="$result brakeman"
+fi
+
+if grep -qE '(^|/)Gemfile\.lock$' <<<"$tracked"; then
+  result="$result bundle-audit"
 fi
 
 result="$result ascii"

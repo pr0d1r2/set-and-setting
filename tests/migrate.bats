@@ -17,8 +17,8 @@ setup() {
     export CONFIRM_SCRIPT="$REPO_ROOT/lib/confirm.sh"
     export CONFIRM_REV="test-rev"
     export CHECKS_UNIVERSE="flake-manifest nixfmt statix deadnix shellcheck gitleaks shfmt typos ascii-only editorconfig-checker execute-permissions file-size-check git-conflict-markers git-no-local-paths missing-final-newline nix-no-embedded-shell no-shell-functions trailing-whitespace"
-    export CHECK_FRAGMENT_MAP="gitleaks=base git-conflict-markers=base git-no-local-paths=base execute-permissions=base file-size-check=base trailing-whitespace=base missing-final-newline=base editorconfig-checker=base typos=base flake-manifest=nix nixfmt=nix statix=nix deadnix=nix nix-no-embedded-shell=nix shellcheck=shell shfmt=shell no-shell-functions=shell rubocop=rubocop rspec=rspec ascii-only=ascii markdownlint=markdown markdownlint-agentic=markdown yamllint=yaml set-skill-extension=set set-skill-size=set set-ref-resolution=set set-bundle-content=set"
-    export FRAGMENT_TRIGGERS="base=always active|nix=tracked *.nix files|shell=tracked *.sh/*.bash files|rubocop=tracked .rubocop.yml or *.gemspec files|rspec=tracked spec/ files or .rspec|ascii=always active|markdown=tracked *.md files|yaml=tracked *.yml/*.yaml files|set=tracked set/*.md files"
+    export CHECK_FRAGMENT_MAP="gitleaks=base git-conflict-markers=base git-no-local-paths=base execute-permissions=base file-size-check=base trailing-whitespace=base missing-final-newline=base editorconfig-checker=base typos=base flake-manifest=nix nixfmt=nix statix=nix deadnix=nix nix-no-embedded-shell=nix shellcheck=shell shfmt=shell no-shell-functions=shell rubocop=rubocop rspec=rspec reek=reek brakeman=brakeman bundle-audit=bundle-audit ascii-only=ascii markdownlint=markdown markdownlint-agentic=markdown yamllint=yaml set-skill-extension=set set-skill-size=set set-ref-resolution=set set-bundle-content=set"
+    export FRAGMENT_TRIGGERS="base=always active|nix=tracked *.nix files|shell=tracked *.sh/*.bash files|rubocop=tracked .rubocop.yml or *.gemspec files|rspec=tracked spec/ files or .rspec|reek=tracked .reek.yml|brakeman=tracked config/brakeman.yml|bundle-audit=tracked Gemfile.lock|ascii=always active|markdown=tracked *.md files|yaml=tracked *.yml/*.yaml files|set=tracked set/*.md files"
 
     # a materialized config bundle (SETTING_SRC)
     SETTING_SRC="$(mktemp -d)"
@@ -38,7 +38,7 @@ setup() {
 
     # FULL_LEFTHOOK: assembled from all fragments (command-name universe)
     FULL_DIR="$(mktemp -d)"
-    FRAGMENTS="base nix shell rubocop rspec ascii markdown yaml set" out="$FULL_DIR" \
+    FRAGMENTS="base nix shell rubocop rspec reek brakeman bundle-audit ascii markdown yaml set" out="$FULL_DIR" \
         bash "$ASSEMBLE_SCRIPT"
     export FULL_LEFTHOOK="$FULL_DIR/lefthook.yml"
 

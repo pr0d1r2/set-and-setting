@@ -76,7 +76,8 @@ and dogfoods both.
   (`setting/integrations/lefthook/*.yml`) apply: `base`+`ascii` always,
   `nix` if `*.nix`, `shell` if `*.sh`/`*.bash`, `markdown` if `*.md`,
   `yaml` if `*.yml`/`*.yaml`, `rubocop` if `.rubocop.yml` or `*.gemspec`,
-  `rspec` if `spec/` or `.rspec`.
+  `rspec` if `spec/` or `.rspec`, `reek` if `.reek.yml`, `brakeman` if
+  `config/brakeman.yml`, and `bundle-audit` if `Gemfile.lock`.
   Bare repos (no tracked files) default to all fragments. Output:
   deterministic space-separated fragment list.
 - I.mkDriftCheck: `lib/mk-drift-check.nix` -- compares synced set files against built derivation. Args: `pkgs`, `skillSet`, `projectRoot`, `setPath`. Fails with exit 1 on drift.
@@ -157,8 +158,9 @@ and dogfoods both.
   `materializationFor` and `lefthookWrappersFor` (no duplication).
   Coherence (every tool in emitted lefthook.yml is in packages) holds by
   construction. Args: `pkgs`, `fragments` (list of fragment names).
-  Valid fragments: `base`, `nix`, `shell`, `rubocop`, `rspec`, `ascii`,
-  `markdown`, `yaml`, `set`. Unknown fragment -> error with guidance. Exposed as
+  Valid fragments: `base`, `nix`, `shell`, `rubocop`, `rspec`, `reek`,
+  `brakeman`, `bundle-audit`, `ascii`, `markdown`, `yaml`, `set`. Unknown
+  fragment -> error with guidance. Exposed as
   `lib.materializationFor`.
 - I.checkFragmentMap: `lib/check-fragment-map.nix` -- single source of
   truth for check-name-to-fragment mapping (#168). Pure data (no

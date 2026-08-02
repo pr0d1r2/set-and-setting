@@ -13,6 +13,9 @@
     "shell"
     "rubocop"
     "rspec"
+    "reek"
+    "brakeman"
+    "bundle-audit"
     "ascii"
     "markdown"
     "yaml"
@@ -52,6 +55,9 @@
     rspec = [
       "rspec"
     ];
+    reek = [ "reek" ];
+    brakeman = [ "brakeman" ];
+    bundle-audit = [ "bundle-audit" ];
     ascii = [
       "ascii-only"
     ];
@@ -99,6 +105,9 @@
     ];
     rubocop = [ ];
     rspec = [ ];
+    reek = [ ];
+    brakeman = [ ];
+    bundle-audit = [ ];
     ascii = [
       "ascii-only"
     ];
@@ -115,6 +124,9 @@
     shell = "tracked *.sh/*.bash files";
     rubocop = "tracked .rubocop.yml or *.gemspec files";
     rspec = "tracked spec/ files or .rspec";
+    reek = "tracked .reek.yml";
+    brakeman = "tracked config/brakeman.yml";
+    bundle-audit = "tracked Gemfile.lock";
     markdown = "tracked *.md files";
     yaml = "tracked *.yml/*.yaml files";
     set = "tracked set/*.md files";
@@ -131,6 +143,9 @@
     shell = [ ];
     rubocop = [ ];
     rspec = [ ];
+    reek = [ ];
+    brakeman = [ ];
+    bundle-audit = [ ];
     ascii = [ ];
     markdown = [ "canonSpec" ];
     yaml = [ ];
