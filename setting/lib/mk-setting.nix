@@ -6,7 +6,6 @@
   gitattributes ? true,
   gitignore ? [
     "nix"
-    "ruby"
     "claude"
     "setting"
   ],

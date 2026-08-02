@@ -1779,6 +1779,8 @@ in
         for entry in vendor/bundle .bundle coverage tmp '*.gem' .rspec_status; do
           grep -qxF "$entry" "${ruby}/.gitignore" \
             || { echo "FAIL: Ruby gitignore missing $entry"; exit 1; }
+          ! grep -qxF "$entry" "${full}/.gitignore" \
+            || { echo "FAIL: opt-in Ruby gitignore entry present by default: $entry"; exit 1; }
         done
 
         # sync scripts present and executable
