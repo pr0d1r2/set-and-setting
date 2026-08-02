@@ -121,6 +121,20 @@ teardown() {
     run ! grep -q 'nix-lefthook-shellcheck' "$TARGET/lefthook.yml"
 }
 
+@test "content-aware: ruby repo with .rubocop.yml assembles rubocop hook" {
+    printf '%s\n' 'AllCops:' >"$TARGET/.rubocop.yml"
+    printf '%s\n' 'puts "hello"' >"$TARGET/example.rb"
+    git -C "$TARGET" add .rubocop.yml example.rb
+
+    run bash "$SCRIPT"
+
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"rubocop"* ]]
+    grep -q 'rubocop:' "$TARGET/lefthook.yml"
+    grep -q 'bundle exec rubocop --fail-fast --force-exclusion {staged_files}' \
+        "$TARGET/lefthook.yml"
+}
+
 @test "output message includes detected fragments" {
     printf '' >"$TARGET/test.nix"
     git -C "$TARGET" add test.nix

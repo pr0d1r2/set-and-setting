@@ -75,8 +75,9 @@ and dogfoods both.
   `git ls-files` and determines which integration fragments
   (`setting/integrations/lefthook/*.yml`) apply: `base`+`ascii` always,
   `nix` if `*.nix`, `shell` if `*.sh`/`*.bash`, `markdown` if `*.md`,
-  `yaml` if `*.yml`/`*.yaml`. Bare repos (no tracked files) default to
-  all fragments. Output: deterministic space-separated fragment list.
+  `yaml` if `*.yml`/`*.yaml`, `rubocop` if `.rubocop.yml` or `*.gemspec`.
+  Bare repos (no tracked files) default to all fragments. Output:
+  deterministic space-separated fragment list.
 - I.mkDriftCheck: `lib/mk-drift-check.nix` -- compares synced set files against built derivation. Args: `pkgs`, `skillSet`, `projectRoot`, `setPath`. Fails with exit 1 on drift.
 - I.mkSettingDriftCheck: `lib/mk-setting-drift-check.nix` -- compares synced
   dotfiles against mkSetting output. When `devShells` is provided, also
@@ -155,8 +156,8 @@ and dogfoods both.
   `materializationFor` and `lefthookWrappersFor` (no duplication).
   Coherence (every tool in emitted lefthook.yml is in packages) holds by
   construction. Args: `pkgs`, `fragments` (list of fragment names).
-  Valid fragments: `base`, `nix`, `shell`, `ascii`, `markdown`, `yaml`,
-  `set`. Unknown fragment -> error with guidance. Exposed as
+  Valid fragments: `base`, `nix`, `shell`, `rubocop`, `ascii`, `markdown`,
+  `yaml`, `set`. Unknown fragment -> error with guidance. Exposed as
   `lib.materializationFor`.
 - I.checkFragmentMap: `lib/check-fragment-map.nix` -- single source of
   truth for check-name-to-fragment mapping (#168). Pure data (no
