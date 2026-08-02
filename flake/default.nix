@@ -1748,6 +1748,10 @@ in
           readme = false;
           license = null;
         };
+        ruby = mkSetting {
+          inherit pkgs;
+          gitignore = [ "ruby" ];
+        };
       in
       pkgs.runCommand "compose-setting-check" { } ''
         # materialized files present in full output
@@ -1769,6 +1773,13 @@ in
           || { echo "FAIL: license placeholders missing"; exit 1; }
         [ ! -e "${noDocs}/README.md" ] || { echo "FAIL: opted-out README present"; exit 1; }
         [ ! -e "${noDocs}/LICENSE" ] || { echo "FAIL: opted-out LICENSE present"; exit 1; }
+
+        # #223: selecting the Ruby gitignore fragment materializes every
+        # standard Ruby build, test, and package artifact entry.
+        for entry in vendor/bundle .bundle coverage tmp '*.gem' .rspec_status; do
+          grep -qxF "$entry" "${ruby}/.gitignore" \
+            || { echo "FAIL: Ruby gitignore missing $entry"; exit 1; }
+        done
 
         # sync scripts present and executable
         [ -x "${full}/bin/sync-setting" ] || { echo "FAIL: no sync-setting"; exit 1; }
