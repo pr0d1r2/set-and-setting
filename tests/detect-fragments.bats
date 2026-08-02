@@ -41,7 +41,7 @@ teardown() {
 @test "empty repo defaults to all fragments" {
     run bash "$SCRIPT"
     [ "$status" -eq 0 ]
-    [ "$output" = "base nix shell ascii markdown yaml set" ]
+    [ "$output" = "base nix shell rubocop ascii markdown yaml set" ]
 }
 
 @test "nix-only repo detects nix" {
@@ -66,6 +66,30 @@ teardown() {
     run bash "$SCRIPT"
     [ "$status" -eq 0 ]
     [ "$output" = "base shell ascii" ]
+}
+
+@test ".rubocop.yml detects rubocop" {
+    printf '%s\n' 'AllCops:' >.rubocop.yml
+    git add .rubocop.yml
+    run bash "$SCRIPT"
+    [ "$status" -eq 0 ]
+    [ "$output" = "base rubocop ascii yaml" ]
+}
+
+@test "gemspec detects rubocop" {
+    printf '%s\n' 'Gem::Specification.new' >example.gemspec
+    git add example.gemspec
+    run bash "$SCRIPT"
+    [ "$status" -eq 0 ]
+    [ "$output" = "base rubocop ascii" ]
+}
+
+@test "ruby source alone does not detect rubocop" {
+    printf '%s\n' 'puts "hello"' >example.rb
+    git add example.rb
+    run bash "$SCRIPT"
+    [ "$status" -eq 0 ]
+    [ "$output" = "base ascii" ]
 }
 
 @test "markdown-only repo detects markdown" {

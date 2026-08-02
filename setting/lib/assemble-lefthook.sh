@@ -5,13 +5,13 @@
 # No remotes: block -- all linters are pinned flake checks (#102 FLIP).
 # Env in: FRAGMENTS_DIR, out
 #   FRAGMENTS (optional): space-separated fragment names to include.
-#     Defaults to all: "base nix shell ascii markdown yaml set".
+#     Defaults to all: "base nix shell rubocop ascii markdown yaml set".
 # shellcheck disable=SC2154
 set -euo pipefail
 
 mkdir -p "$out"
 
-ordered="${FRAGMENTS:-base nix shell ascii markdown yaml set}"
+ordered="${FRAGMENTS:-base nix shell rubocop ascii markdown yaml set}"
 
 {
   printf '%s\n' '---'
