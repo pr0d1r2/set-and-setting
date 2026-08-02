@@ -2227,6 +2227,8 @@ in
           || { echo "FAIL: flake.nix missing description"; exit 1; }
         grep -q 'set-and-setting.lib.mkConsumerFlake' "${scaffold}/flake.nix" \
           || { echo "FAIL: flake.nix does not delegate to mkConsumerFlake"; exit 1; }
+        grep -q 'includeSet = true' "${scaffold}/flake.nix" \
+          || { echo "FAIL: flake.nix does not preserve set package and sync"; exit 1; }
         ${pkgs.lib.getExe (flakeManifestWrapperFor pkgs)} "${scaffold}/flake.nix"
 
         # T59/B17: scaffold ci.yml must specify devshell: "default"

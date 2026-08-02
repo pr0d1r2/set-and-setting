@@ -27,6 +27,7 @@
         "shell"
         "ascii"
       ];
+      includeSet = true;
       src = ./.;
     };
 }

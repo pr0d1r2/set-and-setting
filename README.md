@@ -154,7 +154,8 @@ Pin the version in your flake and sync after each update.
 `apps` outputs. It centralizes setting sync, runtime lefthook assembly, pinned
 fragment checks, setting and dependency drift checks, and the `confirm` app.
 Extend it with `extraFragments` or per-system functions named `extraPackages`,
-`extraChecks`, and `extraApps`.
+`extraChecks`, and `extraApps`. Set `includeSet = true` to expose
+`packages.<system>.set` and sync it when the agentic shell starts.
 
 See `setting/scaffold/component-flake.txt` for a complete consumer
 flake template (scaffolded by `mkScaffold`).
