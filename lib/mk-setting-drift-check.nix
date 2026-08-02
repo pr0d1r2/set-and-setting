@@ -2,8 +2,8 @@
 # files are consumer-owned after scaffolding so they are not checked
 # here. Drift logic lives in ./drift-check.sh (nix/modularity).
 # When devShells is provided, also enforces the stacked-shell invariant
-# (T60): shells named default/agentic only, agentic >= default, no
-# CI skip-lefthook.
+# (T60): default/agentic shells exist, agentic >= default, no CI
+# skip-lefthook. Additional toolchain shells are allowed.
 {
   pkgs,
   settingSet,
@@ -17,11 +17,8 @@ let
       true
     else
       assert
-        builtins.attrNames devShells == [
-          "agentic"
-          "default"
-        ]
-        || builtins.throw "devShells: expected exactly 'default' and 'agentic', got: ${builtins.concatStringsSep " " (builtins.attrNames devShells)}";
+        builtins.hasAttr "default" devShells && builtins.hasAttr "agentic" devShells
+        || builtins.throw "devShells: expected 'default' and 'agentic', got: ${builtins.concatStringsSep " " (builtins.attrNames devShells)}";
       assert
         builtins.all (
           p: builtins.elem p devShells.agentic.nativeBuildInputs

@@ -80,8 +80,8 @@ and dogfoods both.
 - I.mkDriftCheck: `lib/mk-drift-check.nix` -- compares synced set files against built derivation. Args: `pkgs`, `skillSet`, `projectRoot`, `setPath`. Fails with exit 1 on drift.
 - I.mkSettingDriftCheck: `lib/mk-setting-drift-check.nix` -- compares synced
   dotfiles against mkSetting output. When `devShells` is provided, also
-  enforces the stacked-shell invariant (T60): shells named `default`/
-  `agentic` only, `agentic.packages ⊇ default.packages`, CI must not set
+  enforces the stacked-shell invariant (T60): shells named `default` and
+  `agentic` must exist, `agentic.packages ⊇ default.packages`, CI must not set
   `skip-lefthook: true`. Nix-level assertions (names, superset) fire at
   eval time; CI check runs at build time via `devshells-drift-check.sh`.
   Args: `pkgs`, `settingSet`, `projectRoot`, `devShells ? null`. Fails
@@ -105,10 +105,11 @@ and dogfoods both.
 - I.mkDevShells: `setting/lib/mk-dev-shells.nix` -- stacked devShell
   emitter (T59). Args: `pkgs`, `basePackages`, optional
   `agenticPackages`, `defaultShellHook`, `agenticShellHook`. Returns
-  `{ default, agentic }` where `agentic` stacks on `default` via
-  `inputsFrom` (packages inherited, no duplication). Both shells get
+  `{ default, agentic, ruby }` where `agentic` and `ruby` stack on `default` via
+  `inputsFrom` (packages inherited, no duplication). All shells get
   `NIX_CONFIG` and lefthook install. `default` = CI + non-LLM full
-  tooling; `agentic` = default + LLM. Emitted from mkSetting
+  tooling; `agentic` = default + LLM; `ruby` = default + Ruby and Bundler.
+  Emitted from mkSetting
   (passthru) so refresh propagates via `nix flake update` (C7). Also
   exposed as `lib.mkDevShells`.
 - I.mkLefthookCheck: `lib/mk-lefthook-check.nix` -- the checks->pinned

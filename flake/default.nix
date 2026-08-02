@@ -1801,7 +1801,7 @@ in
         touch $out
       '';
 
-    # T59: mkDevShells emits stacked default + agentic shells
+    # T59: mkDevShells emits stacked default, agentic, and toolchain shells
     mkDevShells-check =
       let
         shells = import ../setting/lib/mk-dev-shells.nix {
@@ -1819,6 +1819,7 @@ in
           # both shells exist and carry NIX_CONFIG
           assert shells.default.NIX_CONFIG == "experimental-features = nix-command flakes";
           assert shells.agentic.NIX_CONFIG == "experimental-features = nix-command flakes";
+          assert shells.ruby.NIX_CONFIG == "experimental-features = nix-command flakes";
           # agentic inherits base packages via inputsFrom (nativeBuildInputs
           # includes coreutils from default + git from agenticPackages)
           assert builtins.length shells.agentic.nativeBuildInputs >= 2;
@@ -1826,6 +1827,11 @@ in
           # in both default AND agentic (inherited via inputsFrom)
           assert builtins.elem pkgs.asciinema shells.default.nativeBuildInputs;
           assert builtins.elem pkgs.asciinema shells.agentic.nativeBuildInputs;
+          # #222: Ruby consumers get ruby and bundler in a shell that also
+          # inherits the default shell's hook tooling.
+          assert builtins.elem pkgs.coreutils shells.ruby.nativeBuildInputs;
+          assert builtins.elem pkgs.ruby shells.ruby.nativeBuildInputs;
+          assert builtins.elem pkgs.bundler shells.ruby.nativeBuildInputs;
           true;
       in
       pkgs.runCommand "mk-dev-shells-check" { inherit ok; } ''
@@ -1833,20 +1839,16 @@ in
         touch $out
       '';
 
-    # T60: stacked-shell drift check -- shells named default/agentic
-    # only, agentic >= default, CI != skip-lefthook
+    # T60: stacked-shell drift check -- default/agentic are mandatory,
+    # agentic >= default, CI != skip-lefthook
     devshells-drift-check =
       let
         sys = pkgs.stdenv.hostPlatform.system;
         shells = self.devShells.${sys};
-        names = builtins.attrNames shells;
         ok =
           assert
-            names == [
-              "agentic"
-              "default"
-            ]
-            || builtins.throw "devShells: expected 'default'+'agentic', got: ${builtins.concatStringsSep " " names}";
+            builtins.hasAttr "default" shells && builtins.hasAttr "agentic" shells
+            || builtins.throw "devShells: expected 'default'+'agentic', got: ${builtins.concatStringsSep " " (builtins.attrNames shells)}";
           assert
             builtins.all (p: builtins.elem p shells.agentic.nativeBuildInputs) shells.default.nativeBuildInputs
             || builtins.throw "agentic.packages must be a superset of default.packages";
@@ -1913,6 +1915,8 @@ in
           || { echo "FAIL: mkSetting.mkDevShells default missing"; exit 1; }
         [ -n "${shells.agentic}" ] \
           || { echo "FAIL: mkSetting.mkDevShells agentic missing"; exit 1; }
+        [ -n "${shells.ruby}" ] \
+          || { echo "FAIL: mkSetting.mkDevShells ruby missing"; exit 1; }
         echo PASS
         touch $out
       '';

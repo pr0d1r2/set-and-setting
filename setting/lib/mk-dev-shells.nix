@@ -32,4 +32,13 @@ in
     packages = agenticPackages;
     shellHook = baseShellHook + agenticShellHook;
   };
+  ruby = pkgs.mkShell {
+    inputsFrom = [ defaultShell ];
+    NIX_CONFIG = "experimental-features = nix-command flakes";
+    packages = [
+      pkgs.ruby
+      pkgs.bundler
+    ];
+    shellHook = baseShellHook + defaultShellHook;
+  };
 }
