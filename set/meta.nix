@@ -356,6 +356,30 @@ let
         "build-vs-buy"
       ];
     };
+    "principles/surgical.md" = {
+      keywords = [
+        "surgical"
+        "minimal-diff"
+        "scope"
+        "drive-by-refactor"
+        "style-drift"
+        "reformat"
+        "unrelated-change"
+        "review-cost"
+      ];
+    };
+    "principles/assumptions.md" = {
+      keywords = [
+        "assumptions"
+        "ambiguity"
+        "clarify"
+        "interpretation"
+        "unstated"
+        "requirements"
+        "scope"
+        "surface-tradeoffs"
+      ];
+    };
     "security/hardening.md" = {
       paths = [ "**/*.nix" ];
       content = [

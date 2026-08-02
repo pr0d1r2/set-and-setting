@@ -1328,6 +1328,8 @@ in
         process = builtins.readFile ../set/skills/principles/process.md;
         sync = builtins.readFile ../set/skills/principles/sync.md;
         nih = builtins.readFile ../set/skills/principles/nih.md;
+        surgical = builtins.readFile ../set/skills/principles/surgical.md;
+        assumptions = builtins.readFile ../set/skills/principles/assumptions.md;
         ok =
           # category fallback: domain category gets its narrow globs
           assert (r "nix/flake.md").channel == "domain";
@@ -1390,6 +1392,24 @@ in
           assert nixpkgs.lib.hasInfix "Look for a well-maintained open-source solution" nih;
           assert nixpkgs.lib.hasInfix "Evaluate candidates on evidence" nih;
           assert nixpkgs.lib.hasInfix "Reuse is a preference, not an automatic choice" nih;
+          assert builtins.elem "surgical" (r "principles/surgical.md").keywords;
+          assert builtins.elem "drive-by-refactor" (r "principles/surgical.md").keywords;
+          assert builtins.elem "style-drift" (r "principles/surgical.md").keywords;
+          assert (r "principles/surgical.md").paths == [ "**/*" ];
+          assert nixpkgs.lib.hasInfix "Change only what the task requires" surgical;
+          assert nixpkgs.lib.hasInfix "Match the surrounding style" surgical;
+          assert nixpkgs.lib.hasInfix "Keep refactors separate" surgical;
+          assert nixpkgs.lib.hasInfix "whitespace-only or reformatting hunks" surgical;
+          assert nixpkgs.lib.hasInfix "[[consequences]], [[kiss]], and [[transparency]]" surgical;
+          assert builtins.elem "assumptions" (r "principles/assumptions.md").keywords;
+          assert builtins.elem "ambiguity" (r "principles/assumptions.md").keywords;
+          assert builtins.elem "interpretation" (r "principles/assumptions.md").keywords;
+          assert (r "principles/assumptions.md").paths == [ "**/*" ];
+          assert nixpkgs.lib.hasInfix "Surface the assumptions a request forces you to make" assumptions;
+          assert nixpkgs.lib.hasInfix "Settle by evidence whatever evidence can settle" assumptions;
+          assert nixpkgs.lib.hasInfix "routine judgment call from the material fork" assumptions;
+          assert nixpkgs.lib.hasInfix "proceeding under a stated assumption over blocking" assumptions;
+          assert nixpkgs.lib.hasInfix "[[reality]], [[transparency]], and [[kiss]]" assumptions;
           # deep path still resolves via category fallback (core + broad)
           assert (r "generic/skill/interchange.md").always;
           assert (r "generic/skill/interchange.md").paths == [ "**/*" ];

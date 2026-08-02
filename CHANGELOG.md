@@ -2,6 +2,14 @@
 
 ## Unreleased
 
+- Add the `surgical` and `assumptions` principles. `surgical` keeps a change
+  scoped to the reported problem and pushes refactors, reformatting, and
+  unrequested extras into commits of their own. `assumptions` requires the
+  undetermined parts of a request to be named and the chosen reading stated,
+  while preferring a flagged assumption over a blocking question. Their
+  anti-patterns stay in each file's `Signals of violation` section rather than
+  a parallel tree, so there is one source per rule.
+
 - Add the self-contained five-lens `accord` merge-gate set and expose it as
   `packages.accord-set` through named-set materialization. (#190)
 
