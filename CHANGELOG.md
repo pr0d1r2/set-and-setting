@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- Add an RSpec lefthook fragment backed by the Ruby devShell, detected from
+  tracked `spec/` files or `.rspec`. (#225)
+
 - Ratchet the fleet-wide Nix file-size cap from 16 KiB to 8 KiB after the
   manifest migration gate. New standard settings inherit the lower ceiling;
   future Nix growth must extract modules rather than raise the cap. (#204)

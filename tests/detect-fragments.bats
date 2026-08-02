@@ -41,7 +41,7 @@ teardown() {
 @test "empty repo defaults to all fragments" {
     run bash "$SCRIPT"
     [ "$status" -eq 0 ]
-    [ "$output" = "base nix shell rubocop ascii markdown yaml set" ]
+    [ "$output" = "base nix shell rubocop rspec ascii markdown yaml set" ]
 }
 
 @test "nix-only repo detects nix" {
@@ -85,6 +85,31 @@ teardown() {
 }
 
 @test "ruby source alone does not detect rubocop" {
+    printf '%s\n' 'puts "hello"' >example.rb
+    git add example.rb
+    run bash "$SCRIPT"
+    [ "$status" -eq 0 ]
+    [ "$output" = "base ascii" ]
+}
+
+@test "spec directory detects rspec" {
+    mkdir -p spec/models
+    printf '%s\n' 'RSpec.describe "example"' >spec/models/example_spec.rb
+    git add spec/models/example_spec.rb
+    run bash "$SCRIPT"
+    [ "$status" -eq 0 ]
+    [ "$output" = "base rspec ascii" ]
+}
+
+@test ".rspec detects rspec" {
+    printf '%s\n' '--format documentation' >.rspec
+    git add .rspec
+    run bash "$SCRIPT"
+    [ "$status" -eq 0 ]
+    [ "$output" = "base rspec ascii" ]
+}
+
+@test "ruby source alone does not detect rspec" {
     printf '%s\n' 'puts "hello"' >example.rb
     git add example.rb
     run bash "$SCRIPT"

@@ -73,6 +73,7 @@ let
         "nix"
         "shell"
         "rubocop"
+        "rspec"
         "ascii"
         "markdown"
         "yaml"
@@ -418,6 +419,9 @@ let
       # RuboCop is project-bundled and runs through Ruby/Bundler from the
       # ruby devShell, so this lefthook-only fragment needs no Nix wrapper.
       rubocop = [ ];
+      # RSpec is project-bundled and runs through Ruby/Bundler from the ruby
+      # devShell, so this lefthook-only fragment needs no Nix wrapper.
+      rspec = [ ];
       ascii = [
         (asciiOnlyWrapperFor pkgs)
         (w "lefthook-unicode-lint" nix-lefthook-unicode-lint-src {
@@ -449,6 +453,7 @@ let
       "nix"
       "shell"
       "rubocop"
+      "rspec"
       "ascii"
       "markdown"
       "yaml"
@@ -2503,6 +2508,7 @@ in
             "nix"
             "shell"
             "rubocop"
+            "rspec"
             "ascii"
             "markdown"
             "yaml"
@@ -2534,6 +2540,7 @@ in
             "nix"
             "shell"
             "rubocop"
+            "rspec"
             "ascii"
             "markdown"
             "yaml"
@@ -2546,6 +2553,7 @@ in
             "nix"
             "shell"
             "rubocop"
+            "rspec"
             "ascii"
             "markdown"
             "yaml"
@@ -2568,6 +2576,7 @@ in
             "nix"
             "shell"
             "rubocop"
+            "rspec"
             "ascii"
             "markdown"
             "yaml"
@@ -2676,6 +2685,7 @@ in
             "nix"
             "shell"
             "rubocop"
+            "rspec"
             "ascii"
           ];
         };
@@ -2703,6 +2713,7 @@ in
             "markdown"
             "yaml"
             "rubocop"
+            "rspec"
             "set"
           ];
         };
@@ -2710,7 +2721,7 @@ in
       pkgs.runCommand "checksFor-empty-fragments" { } ''
         count=${toString (builtins.length (builtins.attrNames result))}
         [ "$count" -eq 0 ] \
-          || { echo "FAIL: markdown/yaml/rubocop/set should produce 0 checks, got $count"; exit 1; }
+          || { echo "FAIL: markdown/yaml/rubocop/rspec/set should produce 0 checks, got $count"; exit 1; }
         echo "PASS: fragments with no pinned checks return empty attrset"
         touch $out
       '';
@@ -2795,6 +2806,7 @@ in
             "nix"
             "shell"
             "rubocop"
+            "rspec"
             "ascii"
             "markdown"
             "yaml"
@@ -2806,7 +2818,8 @@ in
           cp ${mkSettingFull.configFiles}/.markdownlint.yml $out/.markdownlint.yml
           cp ${mkSettingFull.configFiles}/.yamllint.yml $out/.yamllint.yml
           # create files for each fragment to trigger detection
-          touch $out/dummy.nix $out/dummy.sh $out/dummy.md $out/dummy.yml $out/.rubocop.yml
+          mkdir -p $out/spec
+          touch $out/dummy.nix $out/dummy.sh $out/dummy.md $out/dummy.yml $out/.rubocop.yml $out/spec/example_spec.rb
           printf '{}' > $out/flake.lock
         '';
       in

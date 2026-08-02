@@ -21,7 +21,7 @@ if [ -z "$tracked" ] && [ -n "${DETECT_ROOT:-}" ]; then
 fi
 
 if [ -z "$tracked" ]; then
-  echo "base nix shell rubocop ascii markdown yaml set"
+  echo "base nix shell rubocop rspec ascii markdown yaml set"
   exit 0
 fi
 
@@ -37,6 +37,10 @@ fi
 
 if grep -qE '(^|/)\.rubocop\.yml$|\.gemspec$' <<<"$tracked"; then
   result="$result rubocop"
+fi
+
+if grep -qE '(^|/)spec/|(^|/)\.rspec$' <<<"$tracked"; then
+  result="$result rspec"
 fi
 
 result="$result ascii"

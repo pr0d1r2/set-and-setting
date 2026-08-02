@@ -72,6 +72,7 @@ let
       no-shell-functions = mkNoShellFunctionsCheck { inherit pkgs src; };
     };
     rubocop = { };
+    rspec = { };
     ascii = {
       ascii-only = mkAsciiOnlyCheck { inherit pkgs src; };
     };
