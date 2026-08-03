@@ -293,6 +293,16 @@ let
         "isoImage"
       ];
     };
+    "test/not-believing.md" = {
+      keywords = [
+        "not-believing"
+        "test-first"
+        "red-green"
+        "false-positive"
+        "regression-test"
+        "test-validation"
+      ];
+    };
     "design/paradigm" = {
       keywords = [
         "design"
