@@ -50,10 +50,12 @@ pkgs.runCommand "mkConsumerFlake-outputs" { } ''
       "shellcheck"
     ];
     assert builtins.all (name: builtins.elem name appNames) [
+      "bootstrap-hooks"
       "confirm"
       "fixture"
     ];
     assert pkgs.lib.hasInfix "/bin/sync-set ." agenticShellHook;
+    assert pkgs.lib.hasInfix "lefthook install" consumer.devShells.${system}.default.shellHook;
     ""
   }
   touch $out
