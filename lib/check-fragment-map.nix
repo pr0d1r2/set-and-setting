@@ -152,7 +152,7 @@
     brakeman = [ ];
     bundle-audit = [ ];
     ascii = [ ];
-    markdown = [ "canonSpec" ];
+    markdown = [ ];
     yaml = [ ];
     set = [ ];
   };

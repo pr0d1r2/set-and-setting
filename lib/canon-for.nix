@@ -27,6 +27,9 @@ pkgs.symlinkJoin {
   name = "canon-repo";
   paths = [
     (import ./mk-seed.nix { inherit pkgs scaffoldDir; })
+    # SPEC.md is the enrollment floor for every canonical repository. It is
+    # independent of whether that repository enables Markdown linting.
+    units.canonSpec
   ]
   ++ map (name: units.${name}) unitNames;
 }
