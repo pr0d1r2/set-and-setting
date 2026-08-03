@@ -71,6 +71,7 @@ let
       shfmt = mkShfmtCheck { inherit pkgs src; };
       no-shell-functions = mkNoShellFunctionsCheck { inherit pkgs src; };
     };
+    ruby = { };
     rubocop = { };
     rspec = { };
     reek = { };

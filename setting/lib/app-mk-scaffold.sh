@@ -4,17 +4,61 @@
 # Scaffolds repo infrastructure files into CWD (skip-if-exists).
 # Constructs lefthook.yml from detected repo content (content-aware).
 # Env in: SCAFFOLD_SRC (path to scaffold bundle),
-#         FRAGMENTS_DIR, ASSEMBLE_SCRIPT, DETECT_SCRIPT
+#         RUBY_SCAFFOLD_SRC, FRAGMENTS_DIR, ASSEMBLE_SCRIPT, DETECT_SCRIPT
 set -euo pipefail
 
-detected="$(bash "$DETECT_SCRIPT")"
+archetype=""
+mode="apply"
+while [ "$#" -gt 0 ]; do
+  case "$1" in
+    --archetype)
+      [ "$#" -ge 2 ] || {
+        echo "mkScaffold: --archetype requires a value" >&2
+        exit 2
+      }
+      archetype="$2"
+      shift 2
+      ;;
+    --help)
+      mode="help"
+      shift
+      ;;
+    --list)
+      mode="list"
+      shift
+      ;;
+    --dry-run)
+      mode="dry-run"
+      shift
+      ;;
+    *)
+      echo "mkScaffold: unknown argument: $1" >&2
+      exit 2
+      ;;
+  esac
+done
+
+if [ -z "$archetype" ]; then
+  archetype="$(DETECT_ARCHETYPE=1 bash "$DETECT_SCRIPT")"
+fi
+case "$archetype" in
+  default) detected="$(bash "$DETECT_SCRIPT")" ;;
+  ruby)
+    SCAFFOLD_SRC="$RUBY_SCAFFOLD_SRC"
+    detected="base ruby rubocop rspec"
+    ;;
+  *)
+    echo "mkScaffold: unknown archetype: $archetype (expected default or ruby)" >&2
+    exit 2
+    ;;
+esac
 
 assemble_out="$(mktemp -d)"
 trap 'rm -rf "$assemble_out"' EXIT
 FRAGMENTS="$detected" out="$assemble_out" bash "$ASSEMBLE_SCRIPT"
 
-if [ "${1:-}" = "--help" ]; then
-  echo "Usage: mkScaffold [--help] [--list] [--dry-run]"
+if [ "$mode" = "help" ]; then
+  echo "Usage: mkScaffold [--archetype default|ruby] [--help] [--list] [--dry-run]"
   echo ""
   echo "Scaffold repo infrastructure files into CWD."
   echo "Emits flake.nix (nix-lefthook devShell), lefthook.yml"
@@ -24,8 +68,8 @@ if [ "${1:-}" = "--help" ]; then
   exit 0
 fi
 
-if [ "${1:-}" = "--list" ]; then
-  echo "Scaffold files:"
+if [ "$mode" = "list" ]; then
+  echo "Scaffold files (archetype: $archetype):"
   find -L "$SCAFFOLD_SRC" -type f | sort | while read -r f; do
     rel="${f#"$SCAFFOLD_SRC/"}"
     [ "$rel" = "lefthook.yml" ] && continue
@@ -35,8 +79,9 @@ if [ "${1:-}" = "--list" ]; then
   exit 0
 fi
 
-if [ "${1:-}" = "--dry-run" ]; then
+if [ "$mode" = "dry-run" ]; then
   echo "Would scaffold into CWD (skip existing):"
+  echo "Archetype: $archetype"
   echo "Detected fragments: $detected"
   find -L "$SCAFFOLD_SRC" -type f | sort | while read -r f; do
     rel="${f#"$SCAFFOLD_SRC/"}"

@@ -9,6 +9,7 @@
 setup() {
     bats_require_minimum_version 1.5.0
     SCAFFOLD_SRC="$(mktemp -d)"
+    RUBY_SCAFFOLD_SRC="$(mktemp -d)"
     TARGET="$(mktemp -d)"
     SCRIPT="$BATS_TEST_DIRNAME/../setting/lib/app-mk-scaffold.sh"
     ASSEMBLE_SCRIPT="$BATS_TEST_DIRNAME/../setting/lib/assemble-lefthook.sh"
@@ -19,18 +20,26 @@ setup() {
     echo "bundled lefthook" >"$SCAFFOLD_SRC/lefthook.yml"
     mkdir -p "$SCAFFOLD_SRC/.github/workflows"
     echo "ci content" >"$SCAFFOLD_SRC/.github/workflows/ci.yml"
+    cp -R "$SCAFFOLD_SRC/." "$RUBY_SCAFFOLD_SRC/"
+    echo "ruby flake" >"$RUBY_SCAFFOLD_SRC/flake.nix"
+    echo 'source "https://rubygems.org"' >"$RUBY_SCAFFOLD_SRC/Gemfile"
+    echo "Gem::Specification.new" >"$RUBY_SCAFFOLD_SRC/project.gemspec"
+    echo "AllCops:" >"$RUBY_SCAFFOLD_SRC/.rubocop.yml"
+    mkdir -p "$RUBY_SCAFFOLD_SRC/spec" "$RUBY_SCAFFOLD_SRC/lib"
+    echo 'require "project"' >"$RUBY_SCAFFOLD_SRC/spec/spec_helper.rb"
+    echo "module Project; end" >"$RUBY_SCAFFOLD_SRC/lib/project.rb"
 
     cd "$TARGET" || exit 1
     git init --quiet
     git config user.email "test@test.com"
     git config user.name "Test"
 
-    export SCAFFOLD_SRC ASSEMBLE_SCRIPT DETECT_SCRIPT FRAGMENTS_DIR
+    export SCAFFOLD_SRC RUBY_SCAFFOLD_SRC ASSEMBLE_SCRIPT DETECT_SCRIPT FRAGMENTS_DIR
 }
 
 teardown() {
     cd /
-    rm -rf "$SCAFFOLD_SRC" "$TARGET"
+    rm -rf "$SCAFFOLD_SRC" "$RUBY_SCAFFOLD_SRC" "$TARGET"
 }
 
 @test "--help shows usage and exits 0" {
@@ -178,4 +187,33 @@ teardown() {
     # Commands are still present (wrapper binaries from devShell).
     grep -q 'markdownlint:' "$TARGET/lefthook.yml"
     grep -q 'yamllint:' "$TARGET/lefthook.yml"
+}
+
+@test "--archetype ruby scaffolds the Ruby repository skeleton" {
+    run bash "$SCRIPT" --archetype ruby
+    [ "$status" -eq 0 ]
+    [ "$(cat "$TARGET/flake.nix")" = "ruby flake" ]
+    [ -f "$TARGET/Gemfile" ]
+    [ -f "$TARGET/project.gemspec" ]
+    [ -f "$TARGET/.rubocop.yml" ]
+    [ -f "$TARGET/spec/spec_helper.rb" ]
+    [ -f "$TARGET/lib/project.rb" ]
+    grep -q 'rubocop:' "$TARGET/lefthook.yml"
+    grep -q 'rspec:' "$TARGET/lefthook.yml"
+}
+
+@test "Gemfile auto-selects the Ruby archetype" {
+    echo 'source "https://rubygems.org"' >"$TARGET/Gemfile"
+    git -C "$TARGET" add Gemfile
+    run bash "$SCRIPT"
+    [ "$status" -eq 0 ]
+    [ "$(cat "$TARGET/flake.nix")" = "ruby flake" ]
+    [[ "$output" == *"detected: base ruby rubocop rspec"* ]]
+}
+
+@test "unknown archetype fails without writing files" {
+    run bash "$SCRIPT" --archetype elixir
+    [ "$status" -eq 2 ]
+    [[ "$output" == *"unknown archetype"* ]]
+    [ ! -f "$TARGET/flake.nix" ]
 }

@@ -39,6 +39,7 @@ let
         "base"
         "nix"
         "shell"
+        "ruby"
         "rubocop"
         "rspec"
         "reek"
@@ -118,7 +119,7 @@ let
     + builtins.readFile ../../setting/lib/app-mk-setting-init.sh;
   };
 
-  mkScaffoldBundle = import ../../setting/lib/mk-scaffold.nix { inherit pkgs; };
+  mkScaffoldBundles = import ../../setting/lib/mk-scaffold.nix { inherit pkgs; };
   mkScaffoldApp = pkgs.writeShellApplication {
     name = "mkScaffold";
     runtimeInputs = [
@@ -129,7 +130,8 @@ let
       pkgs.gnugrep
     ];
     text = ''
-      export SCAFFOLD_SRC="${mkScaffoldBundle}"
+      export SCAFFOLD_SRC="${mkScaffoldBundles.default}"
+      export RUBY_SCAFFOLD_SRC="${mkScaffoldBundles.ruby}"
       export FRAGMENTS_DIR="${../../setting/integrations/lefthook}"
       export ASSEMBLE_SCRIPT="${../../setting/lib/assemble-lefthook.sh}"
       export DETECT_SCRIPT="${../../setting/lib/detect-fragments.sh}"
@@ -230,6 +232,7 @@ let
             "base"
             "nix"
             "shell"
+            "ruby"
             "rubocop"
             "rspec"
             "reek"

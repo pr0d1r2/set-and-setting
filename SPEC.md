@@ -75,7 +75,8 @@ and dogfoods both.
   `git ls-files` and determines which integration fragments
   (`setting/integrations/lefthook/*.yml`) apply: `base`+`ascii` always,
   `nix` if `*.nix`, `shell` if `*.sh`/`*.bash`, `markdown` if `*.md`,
-  `yaml` if `*.yml`/`*.yaml`, `rubocop` if `.rubocop.yml` or `*.gemspec`,
+  `yaml` if `*.yml`/`*.yaml`, `ruby` if `Gemfile` or `*.gemspec`,
+  `rubocop` if `.rubocop.yml` or `*.gemspec`,
   `rspec` if `spec/` or `.rspec`, `reek` if `.reek.yml`, `brakeman` if
   `config/brakeman.yml`, and `bundle-audit` if `Gemfile.lock`.
   Bare repos (no tracked files) default to all fragments. Output:
@@ -158,7 +159,7 @@ and dogfoods both.
   `materializationFor` and `lefthookWrappersFor` (no duplication).
   Coherence (every tool in emitted lefthook.yml is in packages) holds by
   construction. Args: `pkgs`, `fragments` (list of fragment names).
-  Valid fragments: `base`, `nix`, `shell`, `rubocop`, `rspec`, `reek`,
+  Valid fragments: `base`, `nix`, `shell`, `ruby`, `rubocop`, `rspec`, `reek`,
   `brakeman`, `bundle-audit`, `ascii`, `markdown`, `yaml`, `set`. Unknown
   fragment -> error with guidance. Exposed as
   `lib.materializationFor`.
@@ -462,8 +463,8 @@ and dogfoods both.
   `mkScaffold` apps assemble `lefthook.yml` at runtime from detected repo
   content (I.detectFragments): `detect-fragments.sh` examines tracked
   files via `git ls-files`, selects applicable integration fragments
-  (`base`+`ascii` always; `nix`/`shell`/`markdown`/`yaml` conditional on
-  file types), and `assemble-lefthook.sh` merges them into a single
+  (`base`+`ascii` always; `nix`/`shell`/`ruby`/`markdown`/`yaml` conditional
+  on file types), and `assemble-lefthook.sh` merges them into a single
   `lefthook.yml`. Bare repos default to all fragments. The nix derivation
   (`mk-scaffold.nix`) still pre-builds an all-fragment reference for CI
   checks; the apps override at runtime for content-awareness.

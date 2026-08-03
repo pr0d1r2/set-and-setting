@@ -3,6 +3,7 @@
 # Examines tracked files in CWD (via git ls-files), or a source tree supplied
 # through DETECT_ROOT, to determine which fragments apply.
 # Stdout: space-separated ordered fragment names.
+# With DETECT_ARCHETYPE=1, stdout is the detected scaffold archetype.
 # If no tracked files found (bare repo), defaults to all fragments.
 # shellcheck disable=SC2154
 set -euo pipefail
@@ -15,13 +16,22 @@ else
   tracked=""
 fi
 
+if [ "${DETECT_ARCHETYPE:-0}" = "1" ]; then
+  if grep -qE '(^|/)Gemfile$|\.gemspec$' <<<"$tracked"; then
+    echo "ruby"
+  else
+    echo "default"
+  fi
+  exit 0
+fi
+
 if [ -z "$tracked" ] && [ -n "${DETECT_ROOT:-}" ]; then
   echo "base ascii"
   exit 0
 fi
 
 if [ -z "$tracked" ]; then
-  echo "base nix shell rubocop rspec reek brakeman bundle-audit ascii markdown yaml set"
+  echo "base nix shell ruby rubocop rspec reek brakeman bundle-audit ascii markdown yaml set"
   exit 0
 fi
 
@@ -33,6 +43,10 @@ fi
 
 if grep -qE '\.(sh|bash)$' <<<"$tracked"; then
   result="$result shell"
+fi
+
+if grep -qE '(^|/)Gemfile$|\.gemspec$' <<<"$tracked"; then
+  result="$result ruby"
 fi
 
 if grep -qE '(^|/)\.rubocop\.yml$|\.gemspec$' <<<"$tracked"; then

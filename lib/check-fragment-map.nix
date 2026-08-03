@@ -11,6 +11,7 @@
     "base"
     "nix"
     "shell"
+    "ruby"
     "rubocop"
     "rspec"
     "reek"
@@ -49,6 +50,7 @@
       "shfmt"
       "no-shell-functions"
     ];
+    ruby = [ ];
     rubocop = [
       "rubocop"
     ];
@@ -103,6 +105,7 @@
       "shfmt"
       "no-shell-functions"
     ];
+    ruby = [ ];
     rubocop = [ ];
     rspec = [ ];
     reek = [ ];
@@ -122,6 +125,7 @@
     ascii = "always active";
     nix = "tracked *.nix files";
     shell = "tracked *.sh/*.bash files";
+    ruby = "tracked Gemfile or *.gemspec files";
     rubocop = "tracked .rubocop.yml or *.gemspec files";
     rspec = "tracked spec/ files or .rspec";
     reek = "tracked .reek.yml";
@@ -141,6 +145,7 @@
     ];
     nix = [ "canonDevEnv" ];
     shell = [ ];
+    ruby = [ ];
     rubocop = [ ];
     rspec = [ ];
     reek = [ ];
