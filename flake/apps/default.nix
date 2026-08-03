@@ -139,6 +139,15 @@ let
     + builtins.readFile ../../setting/lib/app-mk-scaffold.sh;
   };
 
+  bootstrapHooksApp = pkgs.writeShellApplication {
+    name = "bootstrap-hooks";
+    runtimeInputs = [
+      pkgs.git
+      nix-lefthook.packages.${pkgs.stdenv.hostPlatform.system}.default
+    ];
+    text = builtins.readFile ../../setting/lib/app-bootstrap-hooks.sh;
+  };
+
   bootstrapApp = pkgs.writeShellApplication {
     name = "bootstrap";
     text = ''
@@ -146,6 +155,7 @@ let
       export MKSETTING_APP="${mkSettingApp}/bin/mkSetting"
       export MKSETTING_INIT_APP="${mkSettingInitApp}/bin/mkSetting-init"
       export MKSCAFFOLD_APP="${mkScaffoldApp}/bin/mkScaffold"
+      export BOOTSTRAP_HOOKS_APP="${bootstrapHooksApp}/bin/bootstrap-hooks"
     ''
     + builtins.readFile ../../set/lib/app-bootstrap.sh;
   };
@@ -291,6 +301,10 @@ in
   bootstrap = {
     type = "app";
     program = "${bootstrapApp}/bin/bootstrap";
+  };
+  "bootstrap-hooks" = {
+    type = "app";
+    program = "${bootstrapHooksApp}/bin/bootstrap-hooks";
   };
   graduate = {
     type = "app";

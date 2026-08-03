@@ -42,6 +42,11 @@ nix develop .#ci --command bash -c 'nixfmt *.nix && git add -A && lefthook insta
 gh repo create owner/repo --public --source . --remote origin --push
 ```
 
+Entering the default dev shell installs hooks idempotently. Non-interactive
+bootstrap and autonomous loops must run `nix run .#bootstrap-hooks` after
+materialization, then make commits through `nix develop --command git commit`
+so lefthook and every hook command remain available on `PATH`.
+
 ## Branch protection
 
 ```bash

@@ -98,6 +98,26 @@ in
     in
     (extraApps pkgs)
     // {
+      bootstrap-hooks = {
+        type = "app";
+        program = "${
+          pkgs.writeShellApplication {
+            name = "bootstrap-hooks";
+            runtimeInputs = materialization.packages;
+            text = ''
+              ${self.packages.${pkgs.stdenv.hostPlatform.system}.setting}/bin/sync-setting .
+              _setting_lefthook_out="$(mktemp -d)"
+              trap 'rm -rf "$_setting_lefthook_out"' EXIT
+              FRAGMENTS="${builtins.concatStringsSep " " allFragments}" \
+                out="$_setting_lefthook_out" \
+                FRAGMENTS_DIR="${set-and-setting}/setting/integrations/lefthook" \
+                bash "${set-and-setting}/setting/lib/assemble-lefthook.sh"
+              cp -f "$_setting_lefthook_out/lefthook.yml" lefthook.yml
+              bash "${set-and-setting}/setting/lib/app-bootstrap-hooks.sh"
+            '';
+          }
+        }/bin/bootstrap-hooks";
+      };
       confirm = {
         type = "app";
         program = "${

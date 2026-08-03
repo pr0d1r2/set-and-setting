@@ -8,6 +8,8 @@ Actions via `nix-lefthook-ci-action`).
 - Lefthook pre-push hooks enforce the same checks as hosted CI
 - `lefthook.yml` is the single source of truth for all checks
 - Developers must be in `nix develop` shell for hooks to work
+- Autonomous agents must run `nix run .#bootstrap-hooks` after clone or
+  materialization, then commit through `nix develop --command git commit ...`
 
 ## Hosted CI with nix-lefthook-ci-action
 

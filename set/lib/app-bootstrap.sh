@@ -3,7 +3,8 @@
 # app-bootstrap.sh -- combined installer: mkSet core + mkSetting +
 # mkSetting-init + mkScaffold (C9). Equivalent to running all four
 # in sequence. Passes --agent and --dry-run through to mkSet (T39).
-# Env in: MKSET_APP, MKSETTING_APP, MKSETTING_INIT_APP, MKSCAFFOLD_APP
+# Env in: MKSET_APP, MKSETTING_APP, MKSETTING_INIT_APP, MKSCAFFOLD_APP,
+#         BOOTSTRAP_HOOKS_APP
 set -euo pipefail
 
 if [ "${1:-}" = "--help" ]; then
@@ -19,11 +20,13 @@ fi
 
 mkset_args=()
 other_args=()
+dry_run=0
 while [ $# -gt 0 ]; do
   case "$1" in
     --dry-run)
       mkset_args+=("--dry-run")
       other_args+=("--dry-run")
+      dry_run=1
       shift
       ;;
     --agent)
@@ -45,3 +48,6 @@ done
 "$MKSETTING_APP" "${other_args[@]+"${other_args[@]}"}"
 "$MKSETTING_INIT_APP" "${other_args[@]+"${other_args[@]}"}"
 "$MKSCAFFOLD_APP" "${other_args[@]+"${other_args[@]}"}"
+if [ "$dry_run" -eq 0 ]; then
+  "$BOOTSTRAP_HOOKS_APP"
+fi
