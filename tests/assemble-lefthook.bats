@@ -185,6 +185,7 @@ teardown() {
     grep -q '^pre-commit:' "$out/lefthook.yml"
     grep -q '^pre-push:' "$out/lefthook.yml"
     grep -q 'markdownlint:' "$out/lefthook.yml"
+    run ! grep -q 'exclude:.*SPEC' "$out/lefthook.yml"
     grep -q 'yamllint:' "$out/lefthook.yml"
     grep -q 'set-ref-resolution:' "$out/lefthook.yml"
     grep -q 'set-bundle-content:' "$out/lefthook.yml"
