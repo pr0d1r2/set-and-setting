@@ -375,6 +375,17 @@ let
         "introspect"
       ];
     };
+    "principles/virtuous.md" = {
+      keywords = [
+        "virtuous-circle"
+        "virtuous-cycle"
+        "beneficial-feedback-loop"
+        "positive-feedback"
+        "reinforcement"
+        "compounding"
+        "systems-thinking"
+      ];
+    };
     "principles/evolve.md" = {
       keywords = [
         "evolve"
