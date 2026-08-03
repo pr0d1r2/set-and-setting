@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- Add a not-believing testing skill that requires observing a test fail for the
+  intended reason before trusting it as evidence, including safe regression
+  verification and green-commit guidance. (#276)
+
 - Add a Stroop Effect psychology skill for recognizing interference between
   conflicting cues, selecting the task-relevant dimension, and verifying it
   independently before acting. (#274)
