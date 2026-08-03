@@ -37,13 +37,13 @@ For a problem whose solution is not yet known, write five lines:
 
 1. **Target** -- What exact, finite outcome would count as success?
 2. **Generator** -- Which candidates can the search produce, and which can it
-   never produce?
+    never produce?
 3. **Oracle** -- What repeatable check distinguishes success from plausible
-   noise?
+    noise?
 4. **Budget** -- How many attempts, how much time, and how much review can the
-   search spend?
+    search spend?
 5. **Learning** -- How will each result change the distribution of later
-   attempts?
+    attempts?
 
 Run a small batch. Compare blind sampling with feedback-guided sampling using
 the same oracle and budget. Keep the less complex strategy when both perform
