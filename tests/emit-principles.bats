@@ -66,6 +66,16 @@ teardown() {
         "$DEST"
 }
 
+@test "Heaps's Law auto-enrolls with its citation slug" {
+    cp "$BATS_TEST_DIRNAME/../set/skills/principles/heaps.md" \
+        "$PRINCIPLES_DIR/heaps.md"
+
+    run bash "$SCRIPT"
+    [ "$status" -eq 0 ]
+    grep -q "\[\[heaps\]\].*Heaps's Law.*Distinct information grows" \
+        "$DEST"
+}
+
 @test "empty principle directory is a no-op" {
     run bash "$SCRIPT"
     [ "$status" -eq 0 ]
