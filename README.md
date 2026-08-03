@@ -116,11 +116,11 @@ nix run .#bootstrap-hooks
 | --- | ------------ |
 | `mkSet` | Materialize skills into `.claude/rules/set/` (3-channel layout) |
 | `mkSetting` | Materialize unified configs (always overwrites) |
-| `mkSetting-init` | Scaffold repo starters (skips files that exist) |
+| `mkSetting-init` | Scaffold the canon plus setting-specific starters (skips existing files) |
 | `mkScaffold` | Scaffold a detected or explicit repo archetype (use `--archetype ruby` for Ruby) |
 | `bootstrap-hooks` | Materialize guardrail config and install git hooks without entering a shell |
 | `mkCanon` | Compose and emit the canonical referenced-repo tree |
-| `seed` | Emit only the three pinned infrastructure files used by repair tooling |
+| `seed` | Emit only the three pinned infrastructure files used by repair tooling (intentionally thin) |
 | `bootstrap` | All four in one command, then install git hooks |
 
 For repo-birth automation, pass `--owner OWNER --repo REPO`; the trip harness

@@ -17,6 +17,9 @@ setup() {
     echo "strictness: strict" >"$SEED_SRC/config/lefthook/flake_manifest.yml"
     printf '%s\n' '# __REPO__' 'https://github.com/__OWNER__/__REPO__' >"$SEED_SRC/README.md"
     printf '%s\n' 'Copyright (c) __YEAR__ __HOLDER__' >"$SEED_SRC/LICENSE"
+    touch "$SEED_SRC/CHANGELOG.md" "$SEED_SRC/CONTRIBUTING.md"
+    touch "$SEED_SRC/ATTRIBUTION.md" "$SEED_SRC/HARDENING.md"
+    touch "$SEED_SRC/.envrc" "$SEED_SRC/SPEC.md"
     export SEED_SRC
 }
 
@@ -35,6 +38,7 @@ teardown() {
     [ "$status" -eq 0 ]
     [[ "$output" == *".editorconfig"* ]]
     [[ "$output" == *".gitattributes"* ]]
+    [[ "$output" == *"SPEC.md"* ]]
 }
 
 @test "--dry-run shows what would be scaffolded without writing" {
@@ -64,6 +68,12 @@ teardown() {
     [ "$(head -1 "$TARGET/README.md")" = "# ${TARGET##*/}" ]
     grep -q '__OWNER__/__REPO__' "$TARGET/README.md"
     grep -q '__YEAR__ __HOLDER__' "$TARGET/LICENSE"
+    [ -f "$TARGET/CHANGELOG.md" ]
+    [ -f "$TARGET/CONTRIBUTING.md" ]
+    [ -f "$TARGET/ATTRIBUTION.md" ]
+    [ -f "$TARGET/HARDENING.md" ]
+    [ -f "$TARGET/.envrc" ]
+    [ -f "$TARGET/SPEC.md" ]
 }
 
 @test "skips existing README and LICENSE" {
