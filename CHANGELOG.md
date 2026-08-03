@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- Add the `finagle` principle: account for credible failures occurring at the
+  worst possible moment by identifying critical timing, preserving recovery
+  margin, and testing combined stress at consequential boundaries. (#261)
+
 - Add an experimental Infinite Monkey skill to the opt-in
   `drafts/philosophy` category. It uses the theorem as a stress test for search
   strategies while requiring finite budgets, reachable targets, and reliable

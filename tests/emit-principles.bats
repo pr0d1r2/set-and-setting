@@ -47,6 +47,15 @@ teardown() {
     grep -q "\[\[parkinson\]\].*Parkinson's Law.*Work expands" "$DEST"
 }
 
+@test "Finagle's Law auto-enrolls with its citation slug" {
+    cp "$BATS_TEST_DIRNAME/../set/skills/principles/finagle.md" \
+        "$PRINCIPLES_DIR/finagle.md"
+
+    run bash "$SCRIPT"
+    [ "$status" -eq 0 ]
+    grep -q "\[\[finagle\]\].*Finagle's Law.*worst possible moment" "$DEST"
+}
+
 @test "empty principle directory is a no-op" {
     run bash "$SCRIPT"
     [ "$status" -eq 0 ]

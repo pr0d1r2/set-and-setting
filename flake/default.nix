@@ -1486,6 +1486,7 @@ in
         evolve = builtins.readFile ../set/skills/principles/evolve.md;
         meritocracy = builtins.readFile ../set/skills/principles/meritocracy.md;
         murphy = builtins.readFile ../set/skills/principles/murphy.md;
+        finagle = builtins.readFile ../set/skills/principles/finagle.md;
         ownership = builtins.readFile ../set/skills/principles/ownership.md;
         process = builtins.readFile ../set/skills/principles/process.md;
         sync = builtins.readFile ../set/skills/principles/sync.md;
@@ -1534,6 +1535,16 @@ in
           assert nixpkgs.lib.hasInfix "[[kiss]] and" murphy;
           assert nixpkgs.lib.hasInfix "[[yagni]]" murphy;
           assert nixpkgs.lib.hasInfix "[[consequences]]" murphy;
+          assert builtins.elem "finagle" (r "principles/finagle.md").keywords;
+          assert builtins.elem "worst-moment" (r "principles/finagle.md").keywords;
+          assert builtins.elem "timing-risk" (r "principles/finagle.md").keywords;
+          assert (r "principles/finagle.md").paths == [ "**/*" ];
+          assert nixpkgs.lib.hasInfix "at the worst possible moment" finagle;
+          assert nixpkgs.lib.hasInfix "Identify critical moments as well as failure modes" finagle;
+          assert nixpkgs.lib.hasInfix "Test at the worst credible boundary" finagle;
+          assert nixpkgs.lib.hasInfix "[[consequences]]" finagle;
+          assert nixpkgs.lib.hasInfix "[[murphy]]" finagle;
+          assert nixpkgs.lib.hasInfix "[[parkinson]]" finagle;
           assert builtins.elem "ownership" (r "principles/ownership.md").keywords;
           assert builtins.elem "end-to-end" (r "principles/ownership.md").keywords;
           assert (r "principles/ownership.md").paths == [ "**/*" ];
