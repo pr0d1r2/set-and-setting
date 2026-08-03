@@ -2580,6 +2580,12 @@ in
           || { echo "FAIL: lefthook.yml missing markdownlint"; exit 1; }
         grep -q 'yamllint' "${mat.files}/lefthook.yml" \
           || { echo "FAIL: lefthook.yml missing yamllint"; exit 1; }
+        grep -q 'gitleaks' "${mat.files}/lefthook.yml" \
+          || { echo "FAIL: lefthook.yml missing gitleaks"; exit 1; }
+        grep -q 'git-conflict-markers' "${mat.files}/lefthook.yml" \
+          || { echo "FAIL: lefthook.yml missing git-conflict-markers"; exit 1; }
+        grep -q 'git-no-local-paths' "${mat.files}/lefthook.yml" \
+          || { echo "FAIL: lefthook.yml missing git-no-local-paths"; exit 1; }
         [ -x "${allBins}/bin/lefthook-markdownlint" ] \
           || { echo "FAIL: packages missing lefthook-markdownlint"; exit 1; }
         [ -x "${allBins}/bin/lefthook-yamllint" ] \
@@ -2939,7 +2945,7 @@ in
               /^[a-z]/ && !/^    / { c=0 }
             ' "$frag" | sort -u)"
             for cmd in $cmds; do
-              if ! echo "$MAP_CHECKS" | grep -qx "$cmd"; then
+              if ! grep -qx "$cmd" <<<"$MAP_CHECKS"; then
                 echo "FAIL: lefthook fragment $fname has command '$cmd' not in check-fragment-map.nix"
                 fail=1
               fi
@@ -3223,8 +3229,8 @@ in
 
         out1="$(bash "$MIGRATE_SCRIPT")"
         echo "$out1"
-        echo "$out1" | grep -q 'state=vendored' || { echo "FAIL: not vendored"; exit 1; }
-        echo "$out1" | grep -q 'PASS: equivalence' || { echo "FAIL: no equivalence"; exit 1; }
+        grep -q 'state=vendored' <<<"$out1" || { echo "FAIL: not vendored"; exit 1; }
+        grep -q 'PASS: equivalence' <<<"$out1" || { echo "FAIL: no equivalence"; exit 1; }
 
         # vendored flake replaced by the referenced (thin) seed flake
         grep -q 'set-and-setting' flake.nix || { echo "FAIL: flake not referenced"; exit 1; }
@@ -3242,8 +3248,8 @@ in
         git commit -q -m "migrated" --allow-empty
         out2="$(bash "$MIGRATE_SCRIPT")"
         echo "$out2"
-        echo "$out2" | grep -q 'state=referenced' || { echo "FAIL: 2nd not referenced"; exit 1; }
-        echo "$out2" | grep -q 'no-op' || { echo "FAIL: 2nd not no-op"; exit 1; }
+        grep -q 'state=referenced' <<<"$out2" || { echo "FAIL: 2nd not referenced"; exit 1; }
+        grep -q 'no-op' <<<"$out2" || { echo "FAIL: 2nd not no-op"; exit 1; }
         flake_hash2="$(sha256sum flake.nix | cut -d' ' -f1)"
         [ "$flake_hash" = "$flake_hash2" ] || { echo "FAIL: not idempotent"; exit 1; }
 
@@ -3266,8 +3272,8 @@ in
           before="$(sha256sum flake.nix | cut -d' ' -f1)"
           result="$(bash "$MIGRATE_SCRIPT")"
           echo "$result"
-          echo "$result" | grep -q 'state=referenced' || { echo "FAIL: not referenced"; exit 1; }
-          echo "$result" | grep -q 'no-op' || { echo "FAIL: should be no-op"; exit 1; }
+          grep -q 'state=referenced' <<<"$result" || { echo "FAIL: not referenced"; exit 1; }
+          grep -q 'no-op' <<<"$result" || { echo "FAIL: should be no-op"; exit 1; }
           after="$(sha256sum flake.nix | cut -d' ' -f1)"
           [ "$before" = "$after" ] || { echo "FAIL: no-op mutated flake.nix"; exit 1; }
           echo "PASS: already-referenced is a no-op"
@@ -3282,8 +3288,8 @@ in
       git commit -q -m "initial" --allow-empty
       result="$(bash "$MIGRATE_SCRIPT")"
       echo "$result"
-      echo "$result" | grep -q 'state=bare' || { echo "FAIL: not bare"; exit 1; }
-      echo "$result" | grep -q 'PASS: equivalence' || { echo "FAIL: no equivalence"; exit 1; }
+      grep -q 'state=bare' <<<"$result" || { echo "FAIL: not bare"; exit 1; }
+      grep -q 'PASS: equivalence' <<<"$result" || { echo "FAIL: no equivalence"; exit 1; }
       grep -q 'set-and-setting' flake.nix || { echo "FAIL: seed not planted"; exit 1; }
       echo "PASS: migrate bare -> referenced"
       touch $out
@@ -3315,9 +3321,9 @@ in
         git commit -q -m "initial" --allow-empty
         result="$(bash "$MIGRATE_SCRIPT")"
         echo "$result"
-        echo "$result" | grep -q 'state=partial' || { echo "FAIL: not partial"; exit 1; }
-        echo "$result" | grep -q 'covers all 2 vendored checks' || { echo "FAIL: wrong count"; exit 1; }
-        echo "$result" | grep -q 'PASS: equivalence' || { echo "FAIL: no equivalence"; exit 1; }
+        grep -q 'state=partial' <<<"$result" || { echo "FAIL: not partial"; exit 1; }
+        grep -q 'covers all 2 vendored checks' <<<"$result" || { echo "FAIL: wrong count"; exit 1; }
+        grep -q 'PASS: equivalence' <<<"$result" || { echo "FAIL: no equivalence"; exit 1; }
         # lefthook.yml no longer tracked after the transform
         git ls-files | grep -qxF 'lefthook.yml' && { echo "FAIL: lefthook still tracked"; exit 1; }
         echo "PASS: migrate partial -> referenced"
@@ -3417,8 +3423,8 @@ in
         git commit -q -m "initial" --allow-empty
         result="$(bash "$MIGRATE_SCRIPT")"
         echo "$result"
-        echo "$result" | grep -q 'reconcil' || { echo "FAIL: not reconciled"; exit 1; }
-        echo "$result" | grep -q 'PASS: equivalence' || { echo "FAIL: no equivalence"; exit 1; }
+        grep -q 'reconcil' <<<"$result" || { echo "FAIL: not reconciled"; exit 1; }
+        grep -q 'PASS: equivalence' <<<"$result" || { echo "FAIL: no equivalence"; exit 1; }
         grep -q 'my-overlay.url' flake.nix || { echo "FAIL: custom input lost"; exit 1; }
         grep -q 'my-overlay,' flake.nix || { echo "FAIL: custom input not in args"; exit 1; }
         grep -q 'set-and-setting' flake.nix || { echo "FAIL: no set-and-setting"; exit 1; }

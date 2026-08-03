@@ -114,6 +114,11 @@ teardown() {
     bash "$SCRIPT"
     [ "$(cat "$TARGET/lefthook.yml")" != "bundled lefthook" ]
     grep -q '^---$' "$TARGET/lefthook.yml"
+    grep -Fq 'run: lefthook-gitleaks {staged_files}' "$TARGET/lefthook.yml"
+    grep -Fq 'run: lefthook-git-conflict-markers {staged_files}' \
+        "$TARGET/lefthook.yml"
+    grep -Fq 'run: lefthook-git-no-local-paths {staged_files}' \
+        "$TARGET/lefthook.yml"
     # #102 FLIP: no remotes in emitted lefthook.
     run ! grep -q 'remotes:' "$TARGET/lefthook.yml"
 }

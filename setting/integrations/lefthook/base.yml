@@ -1,10 +1,13 @@
-# gitleaks, git-conflict-markers, git-no-local-paths, execute-permissions,
-# file-size-check (#101), trailing-whitespace, missing-final-newline,
-# editorconfig-checker (#98), and typos (#100) are intentionally absent here:
-# they are delivered as PINNED flake `checks.<sys>.<tool>` (set-and-setting.lib.
-# mk{Gitleaks,GitConflictMarkers,GitNoLocalPaths,ExecutePermissions,
-# FileSizeCheck,TrailingWhitespace,MissingFinalNewline,EditorconfigChecker,
-# Typos}Check), replacing their runtime `remotes:` git_urls with offline-
-# runnable, cache-warm checks. No base remotes remain (#93 strangler-fig
-# complete for this fragment).
 ---
+
+# These fast, staged-file checks prevent secrets and git hygiene violations
+# from entering history. Their pinned flake checks remain the authoritative
+# hermetic full-tree gate.
+pre-commit:
+  commands:
+    gitleaks:
+      run: lefthook-gitleaks {staged_files}
+    git-conflict-markers:
+      run: lefthook-git-conflict-markers {staged_files}
+    git-no-local-paths:
+      run: lefthook-git-no-local-paths {staged_files}
