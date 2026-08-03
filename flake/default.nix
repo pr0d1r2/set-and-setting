@@ -546,6 +546,7 @@ in
     nix = ../set/drafts/nix;
     ops = ../set/drafts/ops;
     context = ../set/drafts/context;
+    philosophy = ../set/drafts/philosophy;
   };
 
   # Setting: project infrastructure standards (raw paths)
@@ -1431,6 +1432,7 @@ in
           "drafts/nix"
           "drafts/ops"
           "drafts/context"
+          "drafts/philosophy"
         ];
         concepts = false;
       };
