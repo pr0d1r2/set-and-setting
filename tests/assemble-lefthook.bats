@@ -95,6 +95,37 @@ teardown() {
     head -1 "$out/lefthook.yml" | grep -q '^---$'
 }
 
+@test "tracked consumer overrides are extended and merged by lefthook" {
+    local workdir
+    workdir="$(mktemp -d)"
+    git -C "$workdir" init -q
+    printf '%s\n' \
+        '---' \
+        'pre-commit:' \
+        '  commands:' \
+        '    mdlint:' \
+        '      # Broken upstream; see https://example.test/upstream/issues/23.' \
+        '      skip: true' >"$workdir/lefthook-overrides.yml"
+    cd "$workdir"
+    FRAGMENTS="markdown" bash "$SCRIPT"
+    cp "$out/lefthook.yml" lefthook.yml
+
+    grep -A1 '^extends:' lefthook.yml | grep -q 'lefthook-overrides.yml'
+    run lefthook dump
+    [ "$status" -eq 0 ]
+    echo "$output" | grep -A3 'mdlint:' | grep -q 'skip: true'
+    rm -rf "$workdir"
+}
+
+@test "generated config has no dangling override reference" {
+    local workdir
+    workdir="$(mktemp -d)"
+    cd "$workdir"
+    bash "$SCRIPT"
+    run ! grep -q '^extends:' "$out/lefthook.yml"
+    rm -rf "$workdir"
+}
+
 @test "no remotes block in output" {
     bash "$SCRIPT"
     run ! grep -q 'remotes:' "$out/lefthook.yml"
