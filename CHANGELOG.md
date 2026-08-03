@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- Add the `heaps` principle: shrink context by removing repetition while
+  preserving rare, decision-relevant facts and retrieval handles, then verify
+  information coverage instead of relying on token count alone. (#269)
+
 - Add the `hofstadter` principle: treat estimates for complex work as uncertain
   forecasts grounded in decomposition, comparable evidence, explicit
   contingency, and re-estimation as unknowns are resolved. (#265)
