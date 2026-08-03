@@ -41,7 +41,31 @@ teardown() {
 @test "empty repo defaults to all fragments" {
     run bash "$SCRIPT"
     [ "$status" -eq 0 ]
-    [ "$output" = "base nix shell rubocop rspec reek brakeman bundle-audit ascii markdown yaml set" ]
+    [ "$output" = "base nix shell ruby rubocop rspec reek brakeman bundle-audit ascii markdown yaml set" ]
+}
+
+@test "Gemfile detects the Ruby fragment" {
+    printf '%s\n' 'source "https://rubygems.org"' >Gemfile
+    git add Gemfile
+    run bash "$SCRIPT"
+    [ "$status" -eq 0 ]
+    [ "$output" = "base ruby ascii" ]
+}
+
+@test "Gemfile selects the Ruby scaffold archetype" {
+    printf '%s\n' 'source "https://rubygems.org"' >Gemfile
+    git add Gemfile
+    run env DETECT_ARCHETYPE=1 bash "$SCRIPT"
+    [ "$status" -eq 0 ]
+    [ "$output" = "ruby" ]
+}
+
+@test "gemspec selects the Ruby scaffold archetype" {
+    printf '%s\n' 'Gem::Specification.new' >example.gemspec
+    git add example.gemspec
+    run env DETECT_ARCHETYPE=1 bash "$SCRIPT"
+    [ "$status" -eq 0 ]
+    [ "$output" = "ruby" ]
 }
 
 @test "nix-only repo detects nix" {
@@ -81,7 +105,7 @@ teardown() {
     git add example.gemspec
     run bash "$SCRIPT"
     [ "$status" -eq 0 ]
-    [ "$output" = "base rubocop ascii" ]
+    [ "$output" = "base ruby rubocop ascii" ]
 }
 
 @test "ruby source alone does not detect rubocop" {

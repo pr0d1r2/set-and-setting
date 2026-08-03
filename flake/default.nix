@@ -72,6 +72,7 @@ let
         "base"
         "nix"
         "shell"
+        "ruby"
         "rubocop"
         "rspec"
         "reek"
@@ -419,6 +420,10 @@ let
         (shfmtWrapperFor pkgs)
         (noShellFunctionsWrapperFor pkgs)
       ];
+      ruby = [
+        pkgs.ruby
+        pkgs.bundler
+      ];
       # RuboCop is project-bundled and runs through Ruby/Bundler from the
       # ruby devShell, so this lefthook-only fragment needs no Nix wrapper.
       rubocop = [ ];
@@ -459,6 +464,7 @@ let
       "base"
       "nix"
       "shell"
+      "ruby"
       "rubocop"
       "rspec"
       "reek"
@@ -2249,7 +2255,7 @@ in
 
     compose-scaffold =
       let
-        scaffold = import ../setting/lib/mk-scaffold.nix { inherit pkgs; };
+        scaffold = (import ../setting/lib/mk-scaffold.nix { inherit pkgs; }).default;
       in
       pkgs.runCommand "compose-scaffold-check" { } ''
         # scaffold produces the repo flake, lefthook config, and CI workflow
@@ -2325,6 +2331,32 @@ in
         fi
 
         echo PASS
+        touch $out
+      '';
+
+    ruby-scaffold-fidelity =
+      let
+        scaffold = (import ../setting/lib/mk-scaffold.nix { inherit pkgs; }).ruby;
+        standard = self.lib.materializationFor {
+          inherit pkgs;
+          fragments = [
+            "base"
+            "ruby"
+            "rubocop"
+            "rspec"
+          ];
+        };
+      in
+      pkgs.runCommand "ruby-scaffold-fidelity-check" { nativeBuildInputs = [ pkgs.diffutils ]; } ''
+        diff -u ${standard.files}/lefthook.yml ${scaffold}/lefthook.yml
+        grep -q '"ruby"' ${scaffold}/flake.nix
+        grep -q '"rubocop"' ${scaffold}/flake.nix
+        grep -q '"rspec"' ${scaffold}/flake.nix
+        test -f ${scaffold}/Gemfile
+        test -f ${scaffold}/project.gemspec
+        test -f ${scaffold}/.rubocop.yml
+        test -f ${scaffold}/spec/spec_helper.rb
+        test -f ${scaffold}/lib/project.rb
         touch $out
       '';
 
@@ -2517,6 +2549,7 @@ in
             "base"
             "nix"
             "shell"
+            "ruby"
             "rubocop"
             "rspec"
             "reek"
@@ -2552,6 +2585,7 @@ in
             "base"
             "nix"
             "shell"
+            "ruby"
             "rubocop"
             "rspec"
             "reek"
@@ -2568,6 +2602,7 @@ in
             "base"
             "nix"
             "shell"
+            "ruby"
             "rubocop"
             "rspec"
             "reek"
@@ -2594,6 +2629,7 @@ in
             "base"
             "nix"
             "shell"
+            "ruby"
             "rubocop"
             "rspec"
             "reek"
@@ -2706,6 +2742,7 @@ in
             "base"
             "nix"
             "shell"
+            "ruby"
             "rubocop"
             "rspec"
             "reek"
@@ -2833,6 +2870,7 @@ in
             "base"
             "nix"
             "shell"
+            "ruby"
             "rubocop"
             "rspec"
             "reek"
