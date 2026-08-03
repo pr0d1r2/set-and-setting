@@ -1471,6 +1471,7 @@ in
         r = meta.resolve;
         evolve = builtins.readFile ../set/skills/principles/evolve.md;
         meritocracy = builtins.readFile ../set/skills/principles/meritocracy.md;
+        murphy = builtins.readFile ../set/skills/principles/murphy.md;
         ownership = builtins.readFile ../set/skills/principles/ownership.md;
         process = builtins.readFile ../set/skills/principles/process.md;
         sync = builtins.readFile ../set/skills/principles/sync.md;
@@ -1508,6 +1509,17 @@ in
           assert nixpkgs.lib.hasInfix "radical [[truth]], radical [[transparency]]" meritocracy;
           assert nixpkgs.lib.hasInfix "[[believability]]-weighted" meritocracy;
           assert nixpkgs.lib.hasInfix "[[openness]]" meritocracy;
+          assert builtins.elem "murphy" (r "principles/murphy.md").keywords;
+          assert builtins.elem "failure-mode" (r "principles/murphy.md").keywords;
+          assert builtins.elem "fault-tolerance" (r "principles/murphy.md").keywords;
+          assert (r "principles/murphy.md").paths == [ "**/*" ];
+          assert nixpkgs.lib.hasInfix "Anything that can go wrong eventually will" murphy;
+          assert nixpkgs.lib.hasInfix "Make the wrong action impossible or obvious" murphy;
+          assert nixpkgs.lib.hasInfix "Exercise failure paths deliberately" murphy;
+          assert nixpkgs.lib.hasInfix "Rank failure modes by likelihood, impact" murphy;
+          assert nixpkgs.lib.hasInfix "[[kiss]] and" murphy;
+          assert nixpkgs.lib.hasInfix "[[yagni]]" murphy;
+          assert nixpkgs.lib.hasInfix "[[consequences]]" murphy;
           assert builtins.elem "ownership" (r "principles/ownership.md").keywords;
           assert builtins.elem "end-to-end" (r "principles/ownership.md").keywords;
           assert (r "principles/ownership.md").paths == [ "**/*" ];

@@ -298,6 +298,18 @@ let
         "seniority"
       ];
     };
+    "principles/murphy.md" = {
+      keywords = [
+        "murphy"
+        "murphys-law"
+        "failure-mode"
+        "fault-tolerance"
+        "defense-in-depth"
+        "negative-testing"
+        "recovery"
+        "risk"
+      ];
+    };
     "principles/progress.md" = {
       keywords = [
         "progress"
