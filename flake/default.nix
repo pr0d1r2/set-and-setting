@@ -1493,6 +1493,7 @@ in
         nih = builtins.readFile ../set/skills/principles/nih.md;
         surgical = builtins.readFile ../set/skills/principles/surgical.md;
         assumptions = builtins.readFile ../set/skills/principles/assumptions.md;
+        brokenwindow = builtins.readFile ../set/skills/principles/brokenwindow.md;
         ok =
           # category fallback: domain category gets its narrow globs
           assert (r "nix/flake.md").channel == "domain";
@@ -1594,6 +1595,13 @@ in
           assert nixpkgs.lib.hasInfix "routine judgment call from the material fork" assumptions;
           assert nixpkgs.lib.hasInfix "proceeding under a stated assumption over blocking" assumptions;
           assert nixpkgs.lib.hasInfix "[[reality]], [[transparency]], and [[kiss]]" assumptions;
+          assert builtins.elem "broken-window" (r "principles/brokenwindow.md").keywords;
+          assert builtins.elem "technical-debt" (r "principles/brokenwindow.md").keywords;
+          assert builtins.elem "opportunity-cost" (r "principles/brokenwindow.md").keywords;
+          assert builtins.elem "carrying-cost" (r "principles/brokenwindow.md").keywords;
+          assert (r "principles/brokenwindow.md").paths == [ "**/*" ];
+          assert nixpkgs.lib.hasInfix "Count the opportunity cost, not only the repair" brokenwindow;
+          assert nixpkgs.lib.hasInfix "Record deferred debt with evidence" brokenwindow;
           # deep path still resolves via category fallback (core + broad)
           assert (r "generic/skill/interchange.md").always;
           assert (r "generic/skill/interchange.md").paths == [ "**/*" ];

@@ -386,6 +386,18 @@ let
         "systems-thinking"
       ];
     };
+    "principles/brokenwindow.md" = {
+      keywords = [
+        "broken-window"
+        "technical-debt"
+        "opportunity-cost"
+        "carrying-cost"
+        "debt-repayment"
+        "maintenance"
+        "root-cause"
+        "regression-prevention"
+      ];
+    };
     "principles/evolve.md" = {
       keywords = [
         "evolve"
