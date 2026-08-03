@@ -108,6 +108,7 @@ nix run github:pr0d1r2/set-and-setting#mkSet -- --all
 nix run github:pr0d1r2/set-and-setting#mkSetting
 nix run github:pr0d1r2/set-and-setting#mkSetting-init
 nix run github:pr0d1r2/set-and-setting#mkScaffold
+nix run github:pr0d1r2/set-and-setting#mkScaffold -- --archetype ruby
 ```
 
 | App | What it does |
@@ -115,7 +116,7 @@ nix run github:pr0d1r2/set-and-setting#mkScaffold
 | `mkSet` | Materialize skills into `.claude/rules/set/` (3-channel layout) |
 | `mkSetting` | Materialize unified configs (always overwrites) |
 | `mkSetting-init` | Scaffold repo starters (skips files that exist) |
-| `mkScaffold` | Scaffold flake.nix, lefthook.yml, CI workflow (skips files that exist) |
+| `mkScaffold` | Scaffold a detected or explicit repo archetype (use `--archetype ruby` for Ruby) |
 | `mkCanon` | Compose and emit the canonical referenced-repo tree |
 | `seed` | Emit only the three pinned infrastructure files used by repair tooling |
 | `bootstrap` | All four in one command |

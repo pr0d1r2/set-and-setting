@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+- Add a first-class Ruby `mkScaffold` archetype with a `base ruby rubocop
+  rspec` consumer flake, Gemfile/gemspec, RuboCop and RSpec configuration,
+  library skeleton, explicit `--archetype ruby` selection, Gemfile/gemspec
+  auto-detection, and a standard-materialization fidelity gate. (#227)
+
 - Extend Ruby guardrails with Reek, Brakeman, and bundle-audit lefthook
   fragments, detected from `.reek.yml`, `config/brakeman.yml`, and
   `Gemfile.lock`, respectively. (#226)
