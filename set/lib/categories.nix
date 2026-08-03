@@ -22,6 +22,7 @@
     "opensource"
     "principles"
     "product"
+    "psychology"
     "security"
     "test"
     "update"
@@ -69,6 +70,7 @@
     opensource = [ "**/*" ];
     principles = [ "**/*" ];
     product = [ "**/*" ];
+    psychology = [ "**/*" ];
     security = [ "**/*" ];
     update = [ "**/*" ];
     "drafts/philosophy" = [ "**/*" ];
