@@ -546,6 +546,7 @@ in
     nix = ../set/drafts/nix;
     ops = ../set/drafts/ops;
     context = ../set/drafts/context;
+    philosophy = ../set/drafts/philosophy;
   };
 
   # Setting: project infrastructure standards (raw paths)
@@ -1421,19 +1422,28 @@ in
           chmod -R u+w $out
           cp -r ${../set/drafts} $out/drafts
         '';
+        emitted = import ../set/lib/mk-set.nix { inherit (nixpkgs) lib; } {
+          inherit pkgs;
+          skillsDir = mergedSkills;
+          categories = [
+            "drafts/skill"
+            "drafts/agent"
+            "drafts/nix"
+            "drafts/ops"
+            "drafts/context"
+            "drafts/philosophy"
+          ];
+          concepts = false;
+        };
       in
-      import ../set/lib/mk-set.nix { inherit (nixpkgs) lib; } {
-        inherit pkgs;
-        skillsDir = mergedSkills;
-        categories = [
-          "drafts/skill"
-          "drafts/agent"
-          "drafts/nix"
-          "drafts/ops"
-          "drafts/context"
-        ];
-        concepts = false;
-      };
+      pkgs.runCommand "mk-set-drafts-check" { } ''
+        rule=${emitted}/.claude/rules/set/drafts/philosophy/solipsism.md
+        skill=${emitted}/.claude/skills/set-drafts/philosophy/SKILL.md
+        grep -A 1 '^paths:$' "$rule" | grep -Fq '  - "**/*"'
+        grep -Fq 'description: "drafts/philosophy: philosophy"' "$skill"
+        grep -A 1 '^paths:$' "$skill" | grep -Fq '  - "**/*"'
+        touch $out
+      '';
 
     # #154: autonomous-loop consumers opt into drafts/ops once and get
     # the paired HOOTL authority + HITL escalation skills and anchors.

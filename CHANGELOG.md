@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- Add an opt-in `drafts/philosophy` category with a Solipsism skill that uses
+  methodological doubt to separate private experience from externally tested
+  claims. (#259)
+
 - Add `lib.confirmAppFor` as the shared fleet-facing constructor for
   confirmation apps, backed by `mkConfirmApp`, and use the shared constructor in
   both `mkConsumerFlake` and this repository's own app. (#245)
