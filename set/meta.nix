@@ -100,6 +100,18 @@ let
       ];
     };
 
+    "principles/hofstadter.md" = {
+      keywords = [
+        "hofstadters-law"
+        "estimation"
+        "forecasting"
+        "planning-fallacy"
+        "schedule-risk"
+        "uncertainty"
+        "time-management"
+      ];
+    };
+
     # subtree: every language/* file inherits these keywords unless it
     # overrides them per-file.
     "language" = {

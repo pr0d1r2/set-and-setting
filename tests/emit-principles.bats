@@ -56,6 +56,16 @@ teardown() {
     grep -q "\[\[finagle\]\].*Finagle's Law.*worst possible moment" "$DEST"
 }
 
+@test "Hofstadter's Law auto-enrolls with its citation slug" {
+    cp "$BATS_TEST_DIRNAME/../set/skills/principles/hofstadter.md" \
+        "$PRINCIPLES_DIR/hofstadter.md"
+
+    run bash "$SCRIPT"
+    [ "$status" -eq 0 ]
+    grep -q "\[\[hofstadter\]\].*Hofstadter's Law.*longer than you expect" \
+        "$DEST"
+}
+
 @test "empty principle directory is a no-op" {
     run bash "$SCRIPT"
     [ "$status" -eq 0 ]
