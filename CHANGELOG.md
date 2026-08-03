@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- Add the `hofstadter` principle: treat estimates for complex work as uncertain
+  forecasts grounded in decomposition, comparable evidence, explicit
+  contingency, and re-estimation as unknowns are resolved. (#265)
+
 - Add a Hindsight Bias skill that preserves contemporaneous evidence,
   reconstructs pre-outcome alternatives, and separates decision quality from
   outcome quality in reviews and retrospectives. (#264)
