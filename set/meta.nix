@@ -87,6 +87,19 @@ let
       ];
     };
 
+    "bias/hindsight.md" = {
+      keywords = [
+        "hindsight-bias"
+        "knew-it-all-along"
+        "creeping-determinism"
+        "outcome-bias"
+        "decision-review"
+        "postmortem"
+        "forecasting"
+        "retrospective"
+      ];
+    };
+
     # subtree: every language/* file inherits these keywords unless it
     # overrides them per-file.
     "language" = {
