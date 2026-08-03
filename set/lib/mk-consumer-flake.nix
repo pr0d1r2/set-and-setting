@@ -120,9 +120,10 @@ in
           }
         }/bin/bootstrap-hooks";
       };
-      confirm = set-and-setting.lib.confirmAppFor {
-        inherit pkgs setting fileClassOverrides;
-        fragments = allFragments;
+      confirm = set-and-setting.lib.mkConfirmApp {
+        inherit pkgs setting materialization;
+        standard = set-and-setting;
+        confirmRev = set-and-setting.rev or set-and-setting.dirtyRev or "unknown";
       };
     }
   );
