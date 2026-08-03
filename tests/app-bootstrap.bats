@@ -69,6 +69,16 @@ teardown() {
     [[ "$output" == *"bootstrap-hooks: installed"* ]]
 }
 
+@test "default mode succeeds when hook activation is deferred" {
+    cat >"$BOOTSTRAP_HOOKS_APP" <<'MOCK'
+#!/usr/bin/env bash
+echo "bootstrap-hooks: deferred (not a git repository)"
+MOCK
+    run bash "$SCRIPT"
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"bootstrap-hooks: deferred (not a git repository)"* ]]
+}
+
 @test "--dry-run passes through to all sub-apps" {
     run bash "$SCRIPT" --dry-run
     [ "$status" -eq 0 ]

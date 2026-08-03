@@ -14,9 +14,9 @@ if [ "$#" -gt 0 ]; then
   exit 2
 fi
 
-if [ ! -d .git ]; then
-  echo "bootstrap-hooks: not a git repository" >&2
-  exit 1
+if ! git rev-parse --git-dir >/dev/null 2>&1; then
+  echo "bootstrap-hooks: deferred (not a git repository)"
+  exit 0
 fi
 
 lefthook install

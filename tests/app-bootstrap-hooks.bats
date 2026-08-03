@@ -25,11 +25,25 @@ teardown() {
     [ "$(cat "$LEFTHOOK_ARGS")" = "install" ]
 }
 
-@test "fails outside a git repository" {
+@test "defers outside a git repository" {
     cd "$TARGET"
     run bash "$SCRIPT"
-    [ "$status" -eq 1 ]
-    [[ "$output" == *"not a git repository"* ]]
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"deferred (not a git repository)"* ]]
+    [ ! -e "$LEFTHOOK_ARGS" ]
+}
+
+@test "installs hooks in a linked git worktree" {
+    local source="$TARGET/source"
+    local worktree="$TARGET/worktree"
+    git init --quiet "$source"
+    git -C "$source" -c user.name=test -c user.email=test@example.com \
+        commit --quiet --allow-empty -m initial
+    git -C "$source" worktree add --quiet "$worktree"
+    cd "$worktree"
+    run bash "$SCRIPT"
+    [ "$status" -eq 0 ]
+    [ "$(cat "$LEFTHOOK_ARGS")" = "install" ]
 }
 
 @test "rejects unknown arguments" {
