@@ -20,7 +20,12 @@ setup() {
     out="$(mktemp -d)"
     SCRIPT="$BATS_TEST_DIRNAME/../setting/lib/assemble-lefthook.sh"
 
-    printf '%s\n' "---" >"$FRAGMENTS_DIR/base.yml"
+    {
+        printf '%s\n' "---"
+        write_commands pre-commit gitleaks "*" staged_files
+        write_commands pre-commit git-conflict-markers "*" staged_files
+        write_commands pre-commit git-no-local-paths "*" staged_files
+    } >"$FRAGMENTS_DIR/base.yml"
 
     printf '%s\n' "---" >"$FRAGMENTS_DIR/nix.yml"
     printf '%s\n' "---" >"$FRAGMENTS_DIR/shell.yml"
@@ -140,6 +145,9 @@ teardown() {
 
 @test "pre-commit merges commands from all fragments" {
     bash "$SCRIPT"
+    grep -q 'gitleaks:' "$out/lefthook.yml"
+    grep -q 'git-conflict-markers:' "$out/lefthook.yml"
+    grep -q 'git-no-local-paths:' "$out/lefthook.yml"
     grep -q 'ascii-check:' "$out/lefthook.yml"
     grep -q 'mdlint:' "$out/lefthook.yml"
     grep -q 'yamllint:' "$out/lefthook.yml"
@@ -163,7 +171,7 @@ teardown() {
 }
 
 @test "fragments without commands do not add empty sections" {
-    for name in ascii markdown yaml rubocop rspec reek brakeman bundle-audit; do
+    for name in base ascii markdown yaml rubocop rspec reek brakeman bundle-audit; do
         printf '%s\n' "---" >"$FRAGMENTS_DIR/$name.yml"
     done
     printf '%s\n' "---" >"$FRAGMENTS_DIR/set.yml"
@@ -185,6 +193,11 @@ teardown() {
     grep -q '^pre-commit:' "$out/lefthook.yml"
     grep -q '^pre-push:' "$out/lefthook.yml"
     grep -q 'markdownlint:' "$out/lefthook.yml"
+    grep -Fq 'run: lefthook-gitleaks {staged_files}' "$out/lefthook.yml"
+    grep -Fq 'run: lefthook-git-conflict-markers {staged_files}' \
+        "$out/lefthook.yml"
+    grep -Fq 'run: lefthook-git-no-local-paths {staged_files}' \
+        "$out/lefthook.yml"
     run ! grep -q 'exclude:.*SPEC' "$out/lefthook.yml"
     grep -q 'yamllint:' "$out/lefthook.yml"
     grep -q 'set-ref-resolution:' "$out/lefthook.yml"
@@ -235,9 +248,12 @@ teardown() {
     run ! grep -q 'set-ref-resolution' "$out/lefthook.yml"
 }
 
-@test "FRAGMENTS=base produces commands-only output" {
+@test "FRAGMENTS=base produces security pre-commit commands" {
     FRAGMENTS="base" bash "$SCRIPT"
-    run ! grep -q '^pre-commit:' "$out/lefthook.yml"
+    grep -q '^pre-commit:' "$out/lefthook.yml"
+    grep -q 'gitleaks:' "$out/lefthook.yml"
+    grep -q 'git-conflict-markers:' "$out/lefthook.yml"
+    grep -q 'git-no-local-paths:' "$out/lefthook.yml"
     run ! grep -q '^pre-push:' "$out/lefthook.yml"
     run ! grep -q 'remotes:' "$out/lefthook.yml"
 }

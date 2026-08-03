@@ -2,6 +2,12 @@
 
 pre-commit:
   commands:
+    gitleaks:
+      run: lefthook-gitleaks {staged_files}
+    git-conflict-markers:
+      run: lefthook-git-conflict-markers {staged_files}
+    git-no-local-paths:
+      run: lefthook-git-no-local-paths {staged_files}
     rubocop:
       glob: "**/*.rb"
       run: bundle exec rubocop --fail-fast --force-exclusion {staged_files}
