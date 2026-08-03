@@ -160,6 +160,11 @@ Extend it with `extraFragments` or per-system functions named `extraPackages`,
 `extraChecks`, and `extraApps`. Set `includeSet = true` to expose
 `packages.<system>.set` and sync it when the agentic shell starts.
 
+Custom output composers can reuse only the confirmation app through
+`lib.confirmAppFor`. Pass the consumer's `pkgs`, materialized `setting`, and
+`fragments`; the helper supplies the executable, fragment-matched runtime tools,
+pinned standard scripts and revision, and CLI wrapper as one app entry.
+
 Markdown checks select their ruleset from the artifact classes declared in
 `set/meta.nix`. Specs, agent commands, and skill files use the agentic profile;
 human documentation and otherwise-unmatched Markdown use the strict prose
