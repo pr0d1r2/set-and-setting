@@ -7,6 +7,7 @@
     "generic"
     "adage"
     "architecture"
+    "bias"
     "ci"
     "cli"
     "design"
@@ -59,6 +60,7 @@
     generic = [ "**/*" ];
     integration = [ "**/*" ];
     architecture = [ "**/*" ];
+    bias = [ "**/*" ];
     git = [ "**/*" ];
     language = [
       "**/*"

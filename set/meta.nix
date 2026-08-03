@@ -74,6 +74,19 @@ let
       ];
     };
 
+    "bias/confirmation.md" = {
+      keywords = [
+        "confirmation-bias"
+        "myside-bias"
+        "hypothesis-testing"
+        "falsification"
+        "disconfirming-evidence"
+        "diagnosis"
+        "debugging"
+        "decision-making"
+      ];
+    };
+
     # subtree: every language/* file inherits these keywords unless it
     # overrides them per-file.
     "language" = {
