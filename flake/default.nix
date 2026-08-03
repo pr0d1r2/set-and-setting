@@ -3160,9 +3160,46 @@ in
       pkgs.runCommand "canon-fragment-subset" { } ''
         test -f ${base}/README.md
         test ! -e ${base}/.envrc
-        test ! -e ${base}/SPEC.md
+        test -f ${base}/SPEC.md
         touch $out
       '';
+
+    canon-spec-floor =
+      let
+        singletonCanons = map (fragment: {
+          inherit fragment;
+          canon = self.lib.canonFor {
+            inherit pkgs;
+            fragments = [ fragment ];
+          };
+        }) cfm.validFragments;
+        assertions = builtins.concatStringsSep "\n" (
+          map (entry: ''
+            test -f ${entry.canon}/SPEC.md \
+              || { echo "FAIL: canon for ${entry.fragment} missing SPEC.md"; exit 1; }
+          '') singletonCanons
+        );
+      in
+      pkgs.runCommand "canon-spec-floor" { } ''
+        ${assertions}
+        touch $out
+      '';
+
+    mk-setting-init-composes-canon =
+      pkgs.runCommand "mk-setting-init-composes-canon"
+        {
+          nativeBuildInputs = [ pkgs.coreutils ];
+        }
+        ''
+          mkdir target
+          cd target
+          ${self.apps.${pkgs.stdenv.hostPlatform.system}."mkSetting-init".program}
+          test -f SPEC.md \
+            || { echo "FAIL: mkSetting-init missing canon SPEC.md"; exit 1; }
+          test -f .editorconfig \
+            || { echo "FAIL: mkSetting-init missing setting starter"; exit 1; }
+          touch $out
+        '';
 
     canon-pinned-drift-clean =
       let

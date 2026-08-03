@@ -218,7 +218,9 @@ and dogfoods both.
   Emit happens at RUN TIME (the app carries agnostic source + emitter
   scripts; no pre-baked per-agent tree), so categories and the `--agent`
   seam are pure runtime flags. `mkSetting` materializes unified config;
-  `mkSetting-init` seeds repo-specific starters (skip-if-exists);
+  `mkSetting-init` seeds the composed canon plus repo-specific setting starters
+  (skip-if-exists); `seed` intentionally emits only the three pinned
+  infrastructure files needed by repair tooling;
   `bootstrap` = mkSet core + mkSetting + mkSetting-init in one. Each
   supports `--list`/`--help`/`--dry-run`. `confirm` (#94) runs the
   post-materialization acceptance suite; `seed` (#95) emits the leaf

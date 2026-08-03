@@ -54,6 +54,10 @@
   tree, pinned seed drift is checkable, and missing comparator inputs fail
   loudly instead of reading as convergence. (#246)
 
+- Make `SPEC.md` the unconditional canon enrollment floor and compose canon
+  into `mkSetting-init`, while preserving its setting-specific starters.
+  Keep `seed` explicitly limited to pinned repair infrastructure. (#249)
+
 - Seed skip-existing `README.md` and `LICENSE` files from `mkSetting-init`.
   The README carries the canonical CI/license/NixOS badge block and repository
   placeholders; MIT is the explicit default and can be disabled with

@@ -29,6 +29,15 @@ let
     map (c: "${c}=${lib.concatStringsSep "," (meta.resolve c).keywords}") cats.all
   );
   mkSettingFull = import ../../setting/lib/mk-setting.nix { inherit lib; } { inherit pkgs; };
+  mkSettingInitSeed = pkgs.symlinkJoin {
+    name = "mk-setting-init-seed";
+    paths = [
+      (migrateSeedFor pkgs)
+      # Retain the setting-specific starters that predate canon composition.
+      # Canon comes first so its README and LICENSE win path collisions.
+      mkSettingFull.seed
+    ];
+  };
 
   # Pinned checks in the referenced effective check-set.
   checksUniverse = builtins.attrNames (
@@ -114,7 +123,7 @@ let
       pkgs.findutils
     ];
     text = ''
-      export SEED_SRC="${mkSettingFull.seed}"
+      export SEED_SRC="${mkSettingInitSeed}"
     ''
     + builtins.readFile ../../setting/lib/app-mk-setting-init.sh;
   };
@@ -304,6 +313,8 @@ in
   };
   seed = {
     type = "app";
+    # Deliberately thin: repair tooling needs the three pinned infrastructure
+    # files without backfilling repo-owned canon documents.
     program = "${
       pkgs.writeShellApplication {
         name = "seed";
