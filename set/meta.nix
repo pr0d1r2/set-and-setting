@@ -126,6 +126,19 @@ let
       ];
     };
 
+    "psychology/simon.md" = {
+      keywords = [
+        "simon-effect"
+        "autonomy"
+        "stimulus-response-compatibility"
+        "spatial-compatibility"
+        "response-selection"
+        "irrelevant-location"
+        "decision-making"
+        "interface-design"
+      ];
+    };
+
     "principles/hofstadter.md" = {
       keywords = [
         "hofstadters-law"
