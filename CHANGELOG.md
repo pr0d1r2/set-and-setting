@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- Add the `sutton` principle: begin diagnosis with the most likely explanation
+  and the cheapest reliable discriminating test, while preserving unlikely
+  alternatives whose consequences justify early investigation. (#273)
+
 - Add the `wiio` principle: design consequential human and agent communication
   for receiver context, damaging ambiguity, closed-loop confirmation, durable
   handoffs, and pressure-tested completeness. (#272)

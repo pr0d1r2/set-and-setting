@@ -76,6 +76,16 @@ teardown() {
         "$DEST"
 }
 
+@test "Sutton's law auto-enrolls with its citation slug" {
+    cp "$BATS_TEST_DIRNAME/../set/skills/principles/sutton.md" \
+        "$PRINCIPLES_DIR/sutton.md"
+
+    run bash "$SCRIPT"
+    [ "$status" -eq 0 ]
+    grep -q "\[\[sutton\]\].*Sutton's law.*first test the most likely" \
+        "$DEST"
+}
+
 @test "empty principle directory is a no-op" {
     run bash "$SCRIPT"
     [ "$status" -eq 0 ]
