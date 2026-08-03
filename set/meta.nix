@@ -386,6 +386,18 @@ let
         "systems-thinking"
       ];
     };
+    "principles/domino.md" = {
+      keywords = [
+        "domino-effect"
+        "cascade"
+        "chain-reaction"
+        "causal-chain"
+        "propagation"
+        "circuit-breaker"
+        "blast-radius"
+        "domino-fallacy"
+      ];
+    };
     "principles/brokenwindow.md" = {
       keywords = [
         "broken-window"
