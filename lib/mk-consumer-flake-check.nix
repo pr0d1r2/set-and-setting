@@ -6,7 +6,8 @@
 
 let
   consumerLib = self.lib // {
-    materializationFor = args:
+    materializationFor =
+      args:
       let
         materialization = self.lib.materializationFor args;
       in
