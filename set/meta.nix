@@ -160,6 +160,20 @@ let
       ];
     };
 
+    "language/zipf.md" = {
+      keywords = [
+        "zipfs-law"
+        "language-optimization"
+        "language-optimisation"
+        "word-frequency"
+        "rank-frequency"
+        "terminology"
+        "vocabulary"
+        "readability"
+        "plain-language"
+      ];
+    };
+
     # rtk is a host-specific proxy, not a universal rule -- keep it a
     # narrow domain even though it sits under the always-on generic core.
     "generic/rtk.md" = {

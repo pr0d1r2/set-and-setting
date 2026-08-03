@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- Add a Zipf's Law language skill that standardizes recurring concepts around
+  familiar terms, preserves rare words that carry precision, and validates
+  changes with the intended audience instead of optimizing word counts. (#271)
+
 - Add the `heaps` principle: shrink context by removing repetition while
   preserving rare, decision-relevant facts and retrieval handles, then verify
   information coverage instead of relying on token count alone. (#269)

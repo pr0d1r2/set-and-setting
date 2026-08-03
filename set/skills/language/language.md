@@ -9,3 +9,4 @@ Language conventions for all written content in this repo.
 @language/anodyne.md
 @language/operator.md
 @language/imperative.md
+@language/zipf.md
