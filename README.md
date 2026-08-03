@@ -109,6 +109,7 @@ nix run github:pr0d1r2/set-and-setting#mkSetting
 nix run github:pr0d1r2/set-and-setting#mkSetting-init
 nix run github:pr0d1r2/set-and-setting#mkScaffold
 nix run github:pr0d1r2/set-and-setting#mkScaffold -- --archetype ruby
+nix run .#bootstrap-hooks
 ```
 
 | App | What it does |
@@ -117,9 +118,10 @@ nix run github:pr0d1r2/set-and-setting#mkScaffold -- --archetype ruby
 | `mkSetting` | Materialize unified configs (always overwrites) |
 | `mkSetting-init` | Scaffold repo starters (skips files that exist) |
 | `mkScaffold` | Scaffold a detected or explicit repo archetype (use `--archetype ruby` for Ruby) |
+| `bootstrap-hooks` | Materialize guardrail config and install git hooks without entering a shell |
 | `mkCanon` | Compose and emit the canonical referenced-repo tree |
 | `seed` | Emit only the three pinned infrastructure files used by repair tooling |
-| `bootstrap` | All four in one command |
+| `bootstrap` | All four in one command, then install git hooks |
 
 For repo-birth automation, pass `--owner OWNER --repo REPO`; the trip harness
 can equivalently set `TRIP_OWNER` and `TRIP_REPO`. The copyright holder defaults

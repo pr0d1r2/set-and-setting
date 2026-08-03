@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- Install lefthook hooks from scaffolded dev shells and the combined
+  `bootstrap` flow, and expose `nix run .#bootstrap-hooks` for unattended
+  materialization and autonomous commit loops. (#228)
+
 - Add a first-class Ruby `mkScaffold` archetype with a `base ruby rubocop
   rspec` consumer flake, Gemfile/gemspec, RuboCop and RSpec configuration,
   library skeleton, explicit `--archetype ruby` selection, Gemfile/gemspec
