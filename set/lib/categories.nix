@@ -69,5 +69,6 @@
     product = [ "**/*" ];
     security = [ "**/*" ];
     update = [ "**/*" ];
+    "drafts/philosophy" = [ "**/*" ];
   };
 }

@@ -57,6 +57,10 @@ let
   # both override the category fallback. Each value is a partial set;
   # unspecified fields fall back.
   overrides = {
+    "drafts/philosophy" = {
+      keywords = [ "philosophy" ];
+    };
+
     "adage/hanlons-razor.md" = {
       keywords = [
         "hanlons-razor"
