@@ -200,7 +200,9 @@ and dogfoods both.
 - I.sync-set: CLI script in mkSet output. Copies skills+concepts+set.md to consumer repo target dir.
 - I.sync-setting: CLI script in mkSetting output. Copies dotfiles to consumer repo root.
 - I.sets: Attrset of raw paths to each skill category dir.
-- I.drafts: Attrset of raw paths to draft category dirs. Opt-in via `categories = [ "drafts/skill" "drafts/agent" ... ]` in mkSet.
+- I.drafts: Attrset of raw paths to draft category dirs, including the
+  experimental `philosophy` category. Opt in via
+  `categories = [ "drafts/skill" "drafts/philosophy" ... ]` in mkSet.
 - I.settings: Attrset of raw paths to each standard dir (editorconfig, gitattributes, gitignore).
 - I.self-wire: `CLAUDE.md` -- this repo dogfoods `packages.set`: it emits own `set/` into a gitignored `.claude/rules/set/` (path-scoped rules), auto-synced on devShell/direnv entry. No `@`-ref duplication of skills.
 - I.set-package: `packages.<sys>.set` -- a default `mkSet` build over all stable categories + concepts. Consumed home-level (`home.file.".claude/rules/set".source`) or per-repo (sync, gitignored).

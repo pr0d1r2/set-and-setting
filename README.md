@@ -320,7 +320,7 @@ Attrset of raw paths to each of 17 skill category directories:
 Attrset of raw paths to draft category directories (opt-in via
 `categories = [ "drafts/skill" ... ]`):
 
-`skill` `agent` `nix` `ops` `context`
+`skill` `agent` `nix` `ops` `context` `philosophy`
 
 ### `settings`
 
