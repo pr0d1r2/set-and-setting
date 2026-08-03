@@ -186,31 +186,12 @@ let
     text = builtins.readFile ../../lib/branch-protection.sh;
   };
 
-  confirmApp = pkgs.writeShellApplication {
-    name = "confirm";
-    # Include the lefthook wrappers so confirm.sh's coherence check
-    # (every `lefthook-*` referenced in lefthook.yml is on PATH) can
-    # resolve them -- this repo's fragments reference lefthook-
-    # markdownlint / -yamllint, which are otherwise absent under
-    # `nix run .#confirm` (fresh PATH, not inside `nix develop`).
-    runtimeInputs = [
-      pkgs.coreutils
-      pkgs.diffutils
-      pkgs.findutils
-      pkgs.gawk
-      pkgs.git
-      pkgs.gnugrep
-    ]
-    ++ lefthookWrappersFor pkgs;
-    text = ''
-      export FRAGMENTS_DIR="${../../setting/integrations/lefthook}"
-      export ASSEMBLE_SCRIPT="${../../setting/lib/assemble-lefthook.sh}"
-      export DETECT_SCRIPT="${../../setting/lib/detect-fragments.sh}"
-      export SETTING_SRC="${mkSettingFull.configFiles}"
-      export CONFIRM_SCRIPT="${../../lib/confirm.sh}"
-      export CONFIRM_REV="${self.rev or self.dirtyRev or "unknown"}"
-    ''
-    + builtins.readFile ../../lib/app-confirm.sh;
+  confirmApp = self.lib.mkConfirmApp {
+    inherit pkgs;
+    standard = ../..;
+    setting = mkSettingFull.configFiles;
+    materialization.packages = lefthookWrappersFor pkgs;
+    confirmRev = self.rev or self.dirtyRev or "unknown";
   };
 
   migrateApp = pkgs.writeShellApplication {
@@ -315,8 +296,7 @@ in
     program = "${branchProtectionApp}/bin/branch-protection";
   };
   confirm = {
-    type = "app";
-    program = "${confirmApp}/bin/confirm";
+    inherit (confirmApp) type program;
   };
   migrate = {
     type = "app";

@@ -564,6 +564,22 @@ in
     mkMaterializeCheck = import ../lib/mk-materialize-check.nix { inherit (nixpkgs) lib; };
     mkDepGraphCheck = import ../lib/mk-dep-graph-check.nix;
     mkConfirm = import ../lib/mk-confirm.nix;
+    mkConfirmApp = import ../lib/mk-confirm-app.nix;
+    confirmAppFor =
+      {
+        pkgs,
+        setting,
+        fragments,
+        fileClassOverrides ? { },
+      }:
+      import ../lib/mk-confirm-app.nix {
+        inherit pkgs setting;
+        standard = self;
+        materialization = self.lib.materializationFor {
+          inherit pkgs fragments fileClassOverrides;
+        };
+        confirmRev = self.rev or self.dirtyRev or "unknown";
+      };
     mkSeed =
       { pkgs }:
       import ../lib/mk-seed.nix {

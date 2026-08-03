@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- Add `lib.confirmAppFor` as the shared fleet-facing constructor for
+  confirmation apps, backed by `mkConfirmApp`, and use the shared constructor in
+  both `mkConsumerFlake` and this repository's own app. (#245)
+
 - Add an optional tracked `lefthook-overrides.yml` channel that generated
   Lefthook configuration extends locally and in CI, allowing consumers to
   temporarily skip or repair broken upstream commands with an audit trail.

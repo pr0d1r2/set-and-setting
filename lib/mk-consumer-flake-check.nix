@@ -27,6 +27,7 @@ let
   checkNames = names consumer.checks;
   appNames = names consumer.apps;
   agenticShellHook = consumer.devShells.${system}.agentic.shellHook;
+  confirmProgram = consumer.apps.${system}.confirm.program;
 in
 pkgs.runCommand "mkConsumerFlake-outputs" { } ''
   ${
@@ -58,5 +59,8 @@ pkgs.runCommand "mkConsumerFlake-outputs" { } ''
     assert pkgs.lib.hasInfix "lefthook install" consumer.devShells.${system}.default.shellHook;
     ""
   }
+  ${confirmProgram} --help > confirm-help
+  grep -q "Usage: confirm" confirm-help
+  grep -q "Post-materialization acceptance suite" confirm-help
   touch $out
 ''

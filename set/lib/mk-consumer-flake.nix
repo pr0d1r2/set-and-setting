@@ -92,6 +92,7 @@ in
   apps = forAllSystems (
     pkgs:
     let
+      inherit (self.packages.${pkgs.stdenv.hostPlatform.system}) setting;
       materialization = lib.materializationFor {
         inherit pkgs fileClassOverrides;
         fragments = allFragments;
@@ -106,7 +107,7 @@ in
             name = "bootstrap-hooks";
             runtimeInputs = materialization.packages;
             text = ''
-              ${self.packages.${pkgs.stdenv.hostPlatform.system}.setting}/bin/sync-setting .
+              ${setting}/bin/sync-setting .
               _setting_lefthook_out="$(mktemp -d)"
               trap 'rm -rf "$_setting_lefthook_out"' EXIT
               FRAGMENTS="${builtins.concatStringsSep " " allFragments}" \
@@ -119,31 +120,9 @@ in
           }
         }/bin/bootstrap-hooks";
       };
-      confirm = {
-        type = "app";
-        program = "${
-          pkgs.writeShellApplication {
-            name = "confirm";
-            runtimeInputs = [
-              pkgs.coreutils
-              pkgs.diffutils
-              pkgs.findutils
-              pkgs.gawk
-              pkgs.git
-              pkgs.gnugrep
-            ]
-            ++ materialization.packages;
-            text = ''
-              export FRAGMENTS_DIR="${set-and-setting}/setting/integrations/lefthook"
-              export ASSEMBLE_SCRIPT="${set-and-setting}/setting/lib/assemble-lefthook.sh"
-              export DETECT_SCRIPT="${set-and-setting}/setting/lib/detect-fragments.sh"
-              export SETTING_SRC="${self.packages.${pkgs.stdenv.hostPlatform.system}.setting}"
-              export CONFIRM_SCRIPT="${set-and-setting}/lib/confirm.sh"
-              export CONFIRM_REV="${set-and-setting.rev or "unknown"}"
-              bash "$CONFIRM_SCRIPT"
-            '';
-          }
-        }/bin/confirm";
+      confirm = set-and-setting.lib.confirmAppFor {
+        inherit pkgs setting fileClassOverrides;
+        fragments = allFragments;
       };
     }
   );
