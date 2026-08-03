@@ -138,6 +138,19 @@ let
       ];
     };
 
+    "principles/wiio.md" = {
+      keywords = [
+        "wiios-laws"
+        "communication"
+        "misunderstanding"
+        "ambiguity"
+        "human-agent-communication"
+        "agent-handoff"
+        "closed-loop-communication"
+        "message-design"
+      ];
+    };
+
     # subtree: every language/* file inherits these keywords unless it
     # overrides them per-file.
     "language" = {

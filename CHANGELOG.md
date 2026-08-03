@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- Add the `wiio` principle: design consequential human and agent communication
+  for receiver context, damaging ambiguity, closed-loop confirmation, durable
+  handoffs, and pressure-tested completeness. (#272)
+
 - Add a Zipf's Law language skill that standardizes recurring concepts around
   familiar terms, preserves rare words that carry precision, and validates
   changes with the intended audience instead of optimizing word counts. (#271)
