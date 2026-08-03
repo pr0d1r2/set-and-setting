@@ -1,0 +1,10 @@
+---
+# Agent-authored specs, skills, and commands favor compact machine-readable
+# notation over human-prose conventions.
+MD013: false
+MD031: false
+MD033: false
+MD034: false
+MD040: false
+MD041: false
+MD060: false

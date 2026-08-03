@@ -15,6 +15,7 @@
   extraChecks ? (_pkgs: { }),
   extraApps ? (_pkgs: { }),
   includeSet ? false,
+  fileClassOverrides ? { },
 }:
 
 let
@@ -39,7 +40,7 @@ in
     let
       inherit (pkgs.stdenv.hostPlatform) system;
       materialization = lib.materializationFor {
-        inherit pkgs;
+        inherit pkgs fileClassOverrides;
         fragments = allFragments;
       };
     in
@@ -92,7 +93,7 @@ in
     pkgs:
     let
       materialization = lib.materializationFor {
-        inherit pkgs;
+        inherit pkgs fileClassOverrides;
         fragments = allFragments;
       };
     in

@@ -23,6 +23,34 @@
 let
   cats = import ./lib/categories.nix;
 
+  # Repository artifact classes. Checks consume these globs to select the
+  # ruleset whose correctness criteria match the file, independently of the
+  # skill channel metadata below. Unmatched Markdown defaults to prose.
+  fileClasses = {
+    agentic = [
+      "SPEC.md"
+      "CLAUDE.md"
+      "PROMPT.md"
+      ".claude/**"
+      "**/.claude/**"
+      ".codex/**"
+      "**/.codex/**"
+      "agent/**"
+      "**/agent/**"
+      "files/commands/**"
+      "**/files/commands/**"
+    ];
+    prose = [
+      "README.md"
+      "CHANGELOG.md"
+      "CONTRIBUTING.md"
+      "ATTRIBUTION.md"
+      "HARDENING.md"
+      "docs/**"
+      "**/docs/**"
+    ];
+  };
+
   # Per-path / per-subtree overrides. Keys are paths relative to
   # set/skills/: a category ("language"), a topic ("language/narrow.md"),
   # or any prefix. A more specific key overrides a less specific one, and
@@ -476,6 +504,7 @@ in
 {
   inherit
     overrides
+    fileClasses
     resolve
     channelOverrides
     signals
