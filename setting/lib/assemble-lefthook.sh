@@ -3,7 +3,7 @@
 # Merges pre-commit + pre-push sections from selected fragment files into
 # a single lefthook.yml. Fragment order is deterministic.
 # No remotes: block -- all linters are pinned flake checks (#102 FLIP).
-# Env in: FRAGMENTS_DIR, out
+# Env in: FRAGMENTS_DIR, out. Reads optional lefthook-overrides.yml from CWD.
 #   FRAGMENTS (optional): space-separated fragment names to include.
 #     Defaults to all Ruby and general-purpose fragments.
 # shellcheck disable=SC2154
@@ -15,6 +15,15 @@ ordered="${FRAGMENTS:-base nix shell ruby rubocop rspec reek brakeman bundle-aud
 
 {
   printf '%s\n' '---'
+
+  # Consumer-owned, tracked overrides must survive both local assembly and
+  # CI's fresh sync-setting pass. Lefthook merges this native config after
+  # the generated commands, so same-named commands can be skipped or tuned
+  # without editing the generated, gitignored lefthook.yml.
+  if [ -f "lefthook-overrides.yml" ]; then
+    printf '\n%s\n' 'extends:'
+    printf '%s\n' '  - lefthook-overrides.yml'
+  fi
 
   has_precommit=0
   for name in $ordered; do

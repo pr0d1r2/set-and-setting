@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- Add an optional tracked `lefthook-overrides.yml` channel that generated
+  Lefthook configuration extends locally and in CI, allowing consumers to
+  temporarily skip or repair broken upstream commands with an audit trail.
+
 - Install lefthook hooks from scaffolded dev shells and the combined
   `bootstrap` flow, and expose `nix run .#bootstrap-hooks` for unattended
   materialization and autonomous commit loops. (#228)
