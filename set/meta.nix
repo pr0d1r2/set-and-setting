@@ -314,6 +314,18 @@ let
         "risk"
       ];
     };
+    "principles/finagle.md" = {
+      keywords = [
+        "finagle"
+        "finagles-law"
+        "worst-moment"
+        "timing-risk"
+        "failure-mode"
+        "contingency"
+        "recovery-margin"
+        "resilience"
+      ];
+    };
     "principles/progress.md" = {
       keywords = [
         "progress"
