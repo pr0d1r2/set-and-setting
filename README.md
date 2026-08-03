@@ -185,6 +185,34 @@ The sync step builds the pinned `packages.setting` and copies configs
 into the workspace. The CI action re-checks-out tracked files but
 preserves untracked (gitignored) files, so synced configs survive.
 
+#### Consumer check overrides
+
+If an upstream Lefthook command is broken for a consumer, commit a
+`lefthook-overrides.yml` with a same-named command override. Generated
+`lefthook.yml` extends this file both in local development and after CI
+materializes fresh settings, so the override is CI-honored. Keep the reason and
+upstream issue beside every override for an auditable removal path:
+
+```yaml
+---
+pre-commit:
+  commands:
+    markdownlint-agentic:
+      # Broken upstream; remove after
+      # https://github.com/example/check/issues/23 is released.
+      skip: true
+pre-push:
+  commands:
+    markdownlint-agentic:
+      skip: true
+```
+
+The file uses native Lefthook configuration, so consumers can also override a
+command's `run`, `timeout`, or other supported fields. It is intentionally
+separate from gitignored `lefthook-local.yml`, which remains personal and is
+not available in CI. Prefer the narrowest temporary override and remove it
+when the pinned upstream revision is healthy.
+
 See `setting/scaffold/ci.yml` for the complete CI template.
 
 ### Path 3 -- home-manager (user-level)
