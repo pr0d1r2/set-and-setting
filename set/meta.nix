@@ -74,6 +74,19 @@ let
       ];
     };
 
+    "adage/brandolinis-law.md" = {
+      keywords = [
+        "brandolinis-law"
+        "bullshit-asymmetry"
+        "misinformation"
+        "fact-checking"
+        "burden-of-proof"
+        "debunking"
+        "evidence"
+        "triage"
+      ];
+    };
+
     "bias/confirmation.md" = {
       keywords = [
         "confirmation-bias"
