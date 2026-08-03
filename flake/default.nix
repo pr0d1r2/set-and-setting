@@ -1422,20 +1422,19 @@ in
           chmod -R u+w $out
           cp -r ${../set/drafts} $out/drafts
         '';
-        emitted =
-          import ../set/lib/mk-set.nix { inherit (nixpkgs) lib; } {
-            inherit pkgs;
-            skillsDir = mergedSkills;
-            categories = [
-              "drafts/skill"
-              "drafts/agent"
-              "drafts/nix"
-              "drafts/ops"
-              "drafts/context"
-              "drafts/philosophy"
-            ];
-            concepts = false;
-          };
+        emitted = import ../set/lib/mk-set.nix { inherit (nixpkgs) lib; } {
+          inherit pkgs;
+          skillsDir = mergedSkills;
+          categories = [
+            "drafts/skill"
+            "drafts/agent"
+            "drafts/nix"
+            "drafts/ops"
+            "drafts/context"
+            "drafts/philosophy"
+          ];
+          concepts = false;
+        };
       in
       pkgs.runCommand "mk-set-drafts-check" { } ''
         rule=${emitted}/.claude/rules/set/drafts/philosophy/solipsism.md
