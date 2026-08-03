@@ -1437,11 +1437,15 @@ in
         };
       in
       pkgs.runCommand "mk-set-drafts-check" { } ''
-        rule=${emitted}/.claude/rules/set/drafts/philosophy/solipsism.md
+        monkeyRule=${emitted}/.claude/rules/set/drafts/philosophy/infinite-monkey.md
+        solipsismRule=${emitted}/.claude/rules/set/drafts/philosophy/solipsism.md
         skill=${emitted}/.claude/skills/set-drafts/philosophy/SKILL.md
-        grep -A 1 '^paths:$' "$rule" | grep -Fq '  - "**/*"'
+        grep -A 1 '^paths:$' "$monkeyRule" | grep -Fq '  - "**/*"'
+        grep -A 1 '^paths:$' "$solipsismRule" | grep -Fq '  - "**/*"'
         grep -Fq 'description: "drafts/philosophy: philosophy"' "$skill"
         grep -A 1 '^paths:$' "$skill" | grep -Fq '  - "**/*"'
+        grep -Fq '## infinite-monkey.md' "$skill"
+        grep -Fq 'Do not use the theorem to justify blind random search.' "$skill"
         touch $out
       '';
 

@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+- Add an experimental Infinite Monkey skill to the opt-in
+  `drafts/philosophy` category. It uses the theorem as a stress test for search
+  strategies while requiring finite budgets, reachable targets, and reliable
+  validation. (#260)
+
 - Add an opt-in `drafts/philosophy` category with a Solipsism skill that uses
   methodological doubt to separate private experience from externally tested
   claims. (#259)
