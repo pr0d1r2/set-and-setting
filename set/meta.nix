@@ -113,6 +113,19 @@ let
       ];
     };
 
+    "psychology/stroop.md" = {
+      keywords = [
+        "stroop-effect"
+        "cognitive-interference"
+        "selective-attention"
+        "automatic-processing"
+        "conflicting-cues"
+        "task-relevant-information"
+        "decision-making"
+        "interface-design"
+      ];
+    };
+
     "principles/hofstadter.md" = {
       keywords = [
         "hofstadters-law"

@@ -534,6 +534,7 @@ in
     opensource = ../set/skills/opensource;
     principles = ../set/skills/principles;
     product = ../set/skills/product;
+    psychology = ../set/skills/psychology;
     security = ../set/skills/security;
     test = ../set/skills/test;
     update = ../set/skills/update;

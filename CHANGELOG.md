@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- Add a Stroop Effect psychology skill for recognizing interference between
+  conflicting cues, selecting the task-relevant dimension, and verifying it
+  independently before acting. (#274)
+
 - Add the `sutton` principle: begin diagnosis with the most likely explanation
   and the cheapest reliable discriminating test, while preserving unlikely
   alternatives whose consequences justify early investigation. (#273)
