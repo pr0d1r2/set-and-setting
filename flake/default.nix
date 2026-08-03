@@ -1493,6 +1493,7 @@ in
         nih = builtins.readFile ../set/skills/principles/nih.md;
         surgical = builtins.readFile ../set/skills/principles/surgical.md;
         assumptions = builtins.readFile ../set/skills/principles/assumptions.md;
+        domino = builtins.readFile ../set/skills/principles/domino.md;
         brokenwindow = builtins.readFile ../set/skills/principles/brokenwindow.md;
         ok =
           # category fallback: domain category gets its narrow globs
@@ -1595,6 +1596,13 @@ in
           assert nixpkgs.lib.hasInfix "routine judgment call from the material fork" assumptions;
           assert nixpkgs.lib.hasInfix "proceeding under a stated assumption over blocking" assumptions;
           assert nixpkgs.lib.hasInfix "[[reality]], [[transparency]], and [[kiss]]" assumptions;
+          assert builtins.elem "domino-effect" (r "principles/domino.md").keywords;
+          assert builtins.elem "cascade" (r "principles/domino.md").keywords;
+          assert builtins.elem "circuit-breaker" (r "principles/domino.md").keywords;
+          assert builtins.elem "domino-fallacy" (r "principles/domino.md").keywords;
+          assert (r "principles/domino.md").paths == [ "**/*" ];
+          assert nixpkgs.lib.hasInfix "Draw the causal chain one link at a time" domino;
+          assert nixpkgs.lib.hasInfix "Keep possibility separate from probability" domino;
           assert builtins.elem "broken-window" (r "principles/brokenwindow.md").keywords;
           assert builtins.elem "technical-debt" (r "principles/brokenwindow.md").keywords;
           assert builtins.elem "opportunity-cost" (r "principles/brokenwindow.md").keywords;
