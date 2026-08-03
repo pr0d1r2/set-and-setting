@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- Add a Hindsight Bias skill that preserves contemporaneous evidence,
+  reconstructs pre-outcome alternatives, and separates decision quality from
+  outcome quality in reviews and retrospectives. (#264)
+
 - Add the `finagle` principle: account for credible failures occurring at the
   worst possible moment by identifying critical timing, preserving recovery
   margin, and testing combined stress at consequential boundaries. (#261)
