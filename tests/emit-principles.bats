@@ -38,6 +38,15 @@ teardown() {
     grep -q '\[\[new\]\]' "$DEST"
 }
 
+@test "Parkinson's Law auto-enrolls with its citation slug" {
+    cp "$BATS_TEST_DIRNAME/../set/skills/principles/parkinson.md" \
+        "$PRINCIPLES_DIR/parkinson.md"
+
+    run bash "$SCRIPT"
+    [ "$status" -eq 0 ]
+    grep -q "\[\[parkinson\]\].*Parkinson's Law.*Work expands" "$DEST"
+}
+
 @test "empty principle directory is a no-op" {
     run bash "$SCRIPT"
     [ "$status" -eq 0 ]
