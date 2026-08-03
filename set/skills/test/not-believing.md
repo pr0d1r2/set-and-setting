@@ -7,8 +7,8 @@ Never trust a spec (test) you never saw failing.
 1. Write the test before the implementation or behavior change.
 2. Run the narrowest relevant test before implementation.
 3. Confirm that it fails for the intended reason: the assertion must expose the
-   missing or incorrect behavior, not a syntax, setup, import, or environment
-   error.
+    missing or incorrect behavior, not a syntax, setup, import, or environment
+    error.
 4. Make the smallest change that should satisfy the test.
 5. Run the narrow test again, then the broader relevant suite.
 
