@@ -160,6 +160,21 @@ Extend it with `extraFragments` or per-system functions named `extraPackages`,
 `extraChecks`, and `extraApps`. Set `includeSet = true` to expose
 `packages.<system>.set` and sync it when the agentic shell starts.
 
+Markdown checks select their ruleset from the artifact classes declared in
+`set/meta.nix`. Specs, agent commands, and skill files use the agentic profile;
+human documentation and otherwise-unmatched Markdown use the strict prose
+profile. A consumer can reclassify exceptional paths without replacing the
+generated hooks:
+
+```nix
+fileClassOverrides = {
+  prose = [ "SPEC.md" ];
+  agentic = [ "docs/generated/**" ];
+};
+```
+
+Consumer overrides take precedence over the upstream defaults.
+
 See `setting/scaffold/component-flake.txt` for a complete consumer
 flake template (scaffolded by `mkScaffold`).
 

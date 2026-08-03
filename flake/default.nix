@@ -146,6 +146,45 @@ let
       // extra
     );
 
+  defaultFileClasses = (import ../set/meta.nix { inherit (nixpkgs) lib; }).fileClasses;
+
+  # Build the classifier from the same metadata used by the set emitters.
+  # Consumer entries are tested first, so adding a glob to the opposite class
+  # reclassifies an upstream default without copying or editing hook YAML.
+  markdownClassifierFor =
+    pkgs: fileClassOverrides:
+    let
+      overrides = {
+        agentic = fileClassOverrides.agentic or [ ];
+        prose = fileClassOverrides.prose or [ ];
+      };
+      lines = xs: builtins.concatStringsSep "\n" xs;
+    in
+    pkgs.writeShellApplication {
+      name = "is-markdown-agentic";
+      text = ''
+        if [ "$#" -ne 1 ]; then exit 1; fi
+        path="''${1#./}"
+        case "/$path/" in */../*) exit 1 ;; esac
+        matches_any() {
+          local pattern
+          while IFS= read -r pattern; do
+            [ -n "$pattern" ] || continue
+            # shellcheck disable=SC2053
+            [[ "$path" == $pattern ]] && return 0
+          done <<< "$1"
+          return 1
+        }
+        override_prose=${nixpkgs.lib.escapeShellArg (lines overrides.prose)}
+        override_agentic=${nixpkgs.lib.escapeShellArg (lines overrides.agentic)}
+        default_agentic=${nixpkgs.lib.escapeShellArg (lines defaultFileClasses.agentic)}
+        matches_any "$override_prose" && exit 1
+        matches_any "$override_agentic" && exit 0
+        matches_any "$default_agentic" && exit 0
+        exit 1
+      '';
+    };
+
   # #97: the pinned nixfmt wrapper, built from the pinned
   # `nix-lefthook-nixfmt-src` flake input. Shared by the devShell wrapper
   # list and the hermetic `checks.<sys>.nixfmt` derivation so both resolve
@@ -211,11 +250,11 @@ let
   # this repo's SPEC.md and CLAUDE.md, gets the strict ruleset.
   #
   markdownlintWrapperFor =
-    pkgs:
+    pkgs: fileClassOverrides:
     wrap pkgs "lefthook-markdownlint" nix-lefthook-markdownlint-src {
       runtimeInputs = [
         pkgs.markdownlint-cli
-        (wrap pkgs "is-markdown-agentic" nix-lefthook-markdownlint-src { })
+        (markdownClassifierFor pkgs fileClassOverrides)
       ];
     };
 
@@ -224,20 +263,21 @@ let
   # readFile leaves `--config @MARKDOWNLINT_AGENTIC_CONFIG@` in the emitted
   # wrapper, which fails the moment the job runs -- it has not, only because
   # the missing helper above meant nothing was ever classified agentic.
-  # Mirror upstream's replaceStrings against the pinned source's own config
-  # so the emitted wrapper carries a real store path.
+  # Replace the placeholder with our class-specific standard. In addition to
+  # the upstream agentic relaxations it permits compact rows, placeholders,
+  # and bare URL-like tokens (MD013/MD033/MD034).
   markdownlintAgenticWrapperFor =
-    pkgs:
+    pkgs: fileClassOverrides:
     pkgs.writeShellApplication {
       name = "lefthook-markdownlint-agentic";
       runtimeInputs = [
         pkgs.markdownlint-cli
-        (wrap pkgs "is-markdown-agentic" nix-lefthook-markdownlint-agentic-src { })
+        (markdownClassifierFor pkgs fileClassOverrides)
       ];
       text =
         builtins.replaceStrings
           [ "@MARKDOWNLINT_AGENTIC_CONFIG@" ]
-          [ "${nix-lefthook-markdownlint-agentic-src}/.markdownlint-agentic.yml" ]
+          [ "${../setting/standards/markdownlint-agentic.yml}" ]
           (builtins.readFile "${nix-lefthook-markdownlint-agentic-src}/lefthook-markdownlint-agentic.sh");
     };
 
@@ -332,7 +372,7 @@ let
     };
 
   wrappersForFragment =
-    pkgs:
+    pkgs: fileClassOverrides:
     let
       w = wrap pkgs;
     in
@@ -444,8 +484,8 @@ let
         })
       ];
       markdown = [
-        (markdownlintWrapperFor pkgs)
-        (markdownlintAgenticWrapperFor pkgs)
+        (markdownlintWrapperFor pkgs fileClassOverrides)
+        (markdownlintAgenticWrapperFor pkgs fileClassOverrides)
       ];
       yaml = [
         (w "lefthook-yamllint" nix-lefthook-yamllint-src {
@@ -458,7 +498,7 @@ let
   lefthookWrappersFor =
     pkgs:
     let
-      wff = wrappersForFragment pkgs;
+      wff = wrappersForFragment pkgs { };
     in
     builtins.concatMap (f: wff.${f}) [
       "base"
@@ -851,6 +891,7 @@ in
       {
         pkgs,
         fragments,
+        fileClassOverrides ? { },
       }:
       import ../setting/lib/mk-materialization.nix {
         inherit pkgs fragments;
@@ -861,7 +902,7 @@ in
           pkgs.git
           nix-lefthook.packages.${pkgs.stdenv.hostPlatform.system}.default
         ];
-        wrappersForFragment = wrappersForFragment pkgs;
+        wrappersForFragment = wrappersForFragment pkgs fileClassOverrides;
       };
 
     # #93: fragment-driven check selection -- the CI-gate counterpart to
@@ -1511,6 +1552,12 @@ in
           # unsigned facet -> no content, paths fall back to category
           assert (r "test/coverage.md").content == [ ];
           assert (r "test/coverage.md").paths == [ "**/*.bats" ];
+          # File classes are declared beside channel metadata, not encoded in
+          # generated hooks or wrapper-specific filename lists.
+          assert builtins.elem "SPEC.md" meta.fileClasses.agentic;
+          assert builtins.elem ".claude/**" meta.fileClasses.agentic;
+          assert builtins.elem "README.md" meta.fileClasses.prose;
+          assert !(builtins.elem "SPEC.md" meta.fileClasses.prose);
           true;
       in
       pkgs.runCommand "meta-resolve-check" { inherit ok; } ''
@@ -2538,6 +2585,48 @@ in
         [ -x "${allBins}/bin/lefthook-yamllint" ] \
           || { echo "FAIL: packages missing lefthook-yamllint"; exit 1; }
         echo "PASS"
+        touch $out
+      '';
+
+    markdown-file-classes =
+      let
+        defaults = self.lib.materializationFor {
+          inherit pkgs;
+          fragments = [ "markdown" ];
+        };
+        overridden = self.lib.materializationFor {
+          inherit pkgs;
+          fragments = [ "markdown" ];
+          fileClassOverrides.prose = [ "SPEC.md" ];
+        };
+        defaultBins = pkgs.symlinkJoin {
+          name = "markdown-file-class-default-bins";
+          paths = defaults.packages;
+        };
+        overrideBins = pkgs.symlinkJoin {
+          name = "markdown-file-class-override-bins";
+          paths = overridden.packages;
+        };
+      in
+      pkgs.runCommand "markdown-file-classes-check" { } ''
+        mkdir default override
+        printf '# Spec\n\n<mac>\nhttps://ollama.com/download\n\n' > default/SPEC.md
+        printf '%s\n' '| key | value |' '| --- | --- |' \
+          "| compact | $(printf 'x%.0s' {1..200}) |" >> default/SPEC.md
+        cp default/SPEC.md override/SPEC.md
+        printf '# Read me\n\nHuman-facing documentation.\n' > default/README.md
+
+        cd default
+        ${defaultBins}/bin/lefthook-markdownlint SPEC.md README.md
+        ${defaultBins}/bin/lefthook-markdownlint-agentic SPEC.md README.md
+
+        cd ../override
+        # A consumer can explicitly make SPEC.md prose. The agentic route
+        # must then skip it and the strict route must observe its violations.
+        ${overrideBins}/bin/lefthook-markdownlint-agentic SPEC.md
+        if ${overrideBins}/bin/lefthook-markdownlint SPEC.md; then
+          echo "FAIL: prose override did not select strict rules"; exit 1
+        fi
         touch $out
       '';
 
