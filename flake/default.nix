@@ -74,6 +74,9 @@ let
         "shell"
         "rubocop"
         "rspec"
+        "reek"
+        "brakeman"
+        "bundle-audit"
         "ascii"
         "markdown"
         "yaml"
@@ -422,6 +425,10 @@ let
       # RSpec is project-bundled and runs through Ruby/Bundler from the ruby
       # devShell, so this lefthook-only fragment needs no Nix wrapper.
       rspec = [ ];
+      # The remaining Ruby tools are project-bundled and need no wrappers.
+      reek = [ ];
+      brakeman = [ ];
+      bundle-audit = [ ];
       ascii = [
         (asciiOnlyWrapperFor pkgs)
         (w "lefthook-unicode-lint" nix-lefthook-unicode-lint-src {
@@ -454,6 +461,9 @@ let
       "shell"
       "rubocop"
       "rspec"
+      "reek"
+      "brakeman"
+      "bundle-audit"
       "ascii"
       "markdown"
       "yaml"
@@ -2509,6 +2519,9 @@ in
             "shell"
             "rubocop"
             "rspec"
+            "reek"
+            "brakeman"
+            "bundle-audit"
             "ascii"
             "markdown"
             "yaml"
@@ -2541,6 +2554,9 @@ in
             "shell"
             "rubocop"
             "rspec"
+            "reek"
+            "brakeman"
+            "bundle-audit"
             "ascii"
             "markdown"
             "yaml"
@@ -2554,6 +2570,9 @@ in
             "shell"
             "rubocop"
             "rspec"
+            "reek"
+            "brakeman"
+            "bundle-audit"
             "ascii"
             "markdown"
             "yaml"
@@ -2577,6 +2596,9 @@ in
             "shell"
             "rubocop"
             "rspec"
+            "reek"
+            "brakeman"
+            "bundle-audit"
             "ascii"
             "markdown"
             "yaml"
@@ -2686,6 +2708,9 @@ in
             "shell"
             "rubocop"
             "rspec"
+            "reek"
+            "brakeman"
+            "bundle-audit"
             "ascii"
           ];
         };
@@ -2714,6 +2739,9 @@ in
             "yaml"
             "rubocop"
             "rspec"
+            "reek"
+            "brakeman"
+            "bundle-audit"
             "set"
           ];
         };
@@ -2721,7 +2749,7 @@ in
       pkgs.runCommand "checksFor-empty-fragments" { } ''
         count=${toString (builtins.length (builtins.attrNames result))}
         [ "$count" -eq 0 ] \
-          || { echo "FAIL: markdown/yaml/rubocop/rspec/set should produce 0 checks, got $count"; exit 1; }
+          || { echo "FAIL: lefthook-only fragments should produce 0 checks, got $count"; exit 1; }
         echo "PASS: fragments with no pinned checks return empty attrset"
         touch $out
       '';
@@ -2807,6 +2835,9 @@ in
             "shell"
             "rubocop"
             "rspec"
+            "reek"
+            "brakeman"
+            "bundle-audit"
             "ascii"
             "markdown"
             "yaml"
@@ -2818,8 +2849,10 @@ in
           cp ${mkSettingFull.configFiles}/.markdownlint.yml $out/.markdownlint.yml
           cp ${mkSettingFull.configFiles}/.yamllint.yml $out/.yamllint.yml
           # create files for each fragment to trigger detection
-          mkdir -p $out/spec
-          touch $out/dummy.nix $out/dummy.sh $out/dummy.md $out/dummy.yml $out/.rubocop.yml $out/spec/example_spec.rb
+          mkdir -p $out/spec $out/config
+          touch $out/dummy.nix $out/dummy.sh $out/dummy.md $out/dummy.yml \
+            $out/.rubocop.yml $out/.reek.yml $out/config/brakeman.yml \
+            $out/Gemfile.lock $out/spec/example_spec.rb
           printf '{}' > $out/flake.lock
         '';
       in

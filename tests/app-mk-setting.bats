@@ -148,6 +148,25 @@ teardown() {
     grep -q 'bundle exec rspec' "$TARGET/lefthook.yml"
 }
 
+@test "content-aware: ruby repo assembles extended guardrails" {
+    mkdir -p "$TARGET/config"
+    printf '%s\n' 'detectors:' >"$TARGET/.reek.yml"
+    printf '%s\n' 'skip_files: []' >"$TARGET/config/brakeman.yml"
+    printf '%s\n' 'GEM' >"$TARGET/Gemfile.lock"
+    git -C "$TARGET" add .reek.yml config/brakeman.yml Gemfile.lock
+
+    run bash "$SCRIPT"
+
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"reek"* ]]
+    [[ "$output" == *"brakeman"* ]]
+    [[ "$output" == *"bundle-audit"* ]]
+    grep -Fxq '      run: bundle exec reek {staged_files}' "$TARGET/lefthook.yml"
+    grep -q 'bundle exec brakeman --no-pager -q' "$TARGET/lefthook.yml"
+    [ "$(grep -Fxc '      run: bundle exec bundle-audit check --update' \
+        "$TARGET/lefthook.yml")" -eq 2 ]
+}
+
 @test "output message includes detected fragments" {
     printf '' >"$TARGET/test.nix"
     git -C "$TARGET" add test.nix

@@ -41,7 +41,7 @@ teardown() {
 @test "empty repo defaults to all fragments" {
     run bash "$SCRIPT"
     [ "$status" -eq 0 ]
-    [ "$output" = "base nix shell rubocop rspec ascii markdown yaml set" ]
+    [ "$output" = "base nix shell rubocop rspec reek brakeman bundle-audit ascii markdown yaml set" ]
 }
 
 @test "nix-only repo detects nix" {
@@ -115,6 +115,31 @@ teardown() {
     run bash "$SCRIPT"
     [ "$status" -eq 0 ]
     [ "$output" = "base ascii" ]
+}
+
+@test ".reek.yml detects reek" {
+    printf '%s\n' 'detectors:' >.reek.yml
+    git add .reek.yml
+    run bash "$SCRIPT"
+    [ "$status" -eq 0 ]
+    [ "$output" = "base reek ascii yaml" ]
+}
+
+@test "config/brakeman.yml detects brakeman" {
+    mkdir -p config
+    printf '%s\n' 'skip_files: []' >config/brakeman.yml
+    git add config/brakeman.yml
+    run bash "$SCRIPT"
+    [ "$status" -eq 0 ]
+    [ "$output" = "base brakeman ascii yaml" ]
+}
+
+@test "Gemfile.lock detects bundle-audit" {
+    printf '%s\n' 'GEM' >Gemfile.lock
+    git add Gemfile.lock
+    run bash "$SCRIPT"
+    [ "$status" -eq 0 ]
+    [ "$output" = "base bundle-audit ascii" ]
 }
 
 @test "markdown-only repo detects markdown" {

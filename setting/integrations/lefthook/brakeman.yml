@@ -1,0 +1,7 @@
+---
+
+pre-push:
+  commands:
+    brakeman:
+      run: bundle exec brakeman --no-pager -q
+      timeout: 2m
