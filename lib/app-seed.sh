@@ -132,7 +132,7 @@ fi
 # Refuse before copying anything, including when coordinates were inferred
 # only from the working-directory name.
 target_repo="${repo:-${PWD##*/}}"
-case "$target_repo" in
+case "${target_repo,,}" in
   set-and-setting | nix-lefthook | nixpkgs-lock)
     echo "error: refusing to seed leaf template into foundation repository: $target_repo" >&2
     exit 1

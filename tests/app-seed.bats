@@ -138,6 +138,22 @@ teardown() {
     [ ! -e "$TARGET/flake.nix" ]
 }
 
+@test "refuses foundation repository names case-insensitively (#339)" {
+    run bash "$SCRIPT" --repo Set-And-Setting
+    [ "$status" -eq 1 ]
+    [[ "$output" == *"refusing to seed leaf template into foundation repository: Set-And-Setting"* ]]
+    [ ! -e "$TARGET/flake.nix" ]
+}
+
+@test "refuses a foundation repository inferred from the working directory (#339)" {
+    mkdir "$TARGET/nix-lefthook"
+    cd "$TARGET/nix-lefthook"
+    run bash "$SCRIPT"
+    [ "$status" -eq 1 ]
+    [[ "$output" == *"refusing to seed leaf template into foundation repository: nix-lefthook"* ]]
+    [ ! -e "$TARGET/nix-lefthook/flake.nix" ]
+}
+
 @test "skips files that already exist" {
     echo "custom flake" >"$TARGET/flake.nix"
     echo "custom readme" >"$TARGET/README.md"
