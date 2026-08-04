@@ -910,11 +910,14 @@ in
         pkgs,
         fragments,
         fileClassOverrides ? { },
+        migrations ? import ../setting/lib/migrations.nix,
       }:
       import ../setting/lib/mk-materialization.nix {
-        inherit pkgs fragments;
+        inherit pkgs fragments migrations;
         fragmentsDir = ../setting/integrations/lefthook;
         assembleScript = ../setting/lib/assemble-lefthook.sh;
+        migrationOverlayDir = ../setting/integrations/lefthook/migrations;
+        migrationOverlayScript = ../setting/lib/assemble-migration-overlay.sh;
         corePackages = [
           pkgs.coreutils
           pkgs.git
@@ -2823,6 +2826,94 @@ in
           echo "FAIL: minimal lefthook.yml should not have markdownlint"; exit 1
         fi
         echo "PASS: fragment subset produces fewer packages"
+        touch $out
+      '';
+
+    # #281: parallel-change migration overlay. With no active migrations
+    # (the default), materializationFor produces lefthook.yml without
+    # migration references. With a synthetic migration, it produces both
+    # lefthook.yml (with skip:true) and lefthook-migration.yml (advisory).
+    materializationFor-migration-inactive =
+      let
+        mat = self.lib.materializationFor {
+          inherit pkgs;
+          fragments = [
+            "base"
+            "markdown"
+          ];
+        };
+      in
+      pkgs.runCommand "materializationFor-migration-inactive" { } ''
+        [ -f "${mat.files}/lefthook.yml" ] \
+          || { echo "FAIL: no lefthook.yml"; exit 1; }
+        if [ -f "${mat.files}/lefthook-migration.yml" ]; then
+          echo "FAIL: migration overlay present without active migrations"; exit 1
+        fi
+        if grep -q 'lefthook-migration.yml' "${mat.files}/lefthook.yml"; then
+          echo "FAIL: migration extends reference without active migrations"; exit 1
+        fi
+        if grep -q 'skip: true' "${mat.files}/lefthook.yml"; then
+          echo "FAIL: skip:true injected without active migrations"; exit 1
+        fi
+        echo "PASS: no migration artifacts when migrations=[]"
+        touch $out
+      '';
+
+    materializationFor-migration-expand =
+      let
+        migrationYaml = pkgs.writeText "base.yml" (
+          builtins.concatStringsSep "\n" [
+            "---"
+            ""
+            "pre-commit:"
+            "  commands:"
+            "    new-gitleaks:"
+            "      run: lefthook-new-gitleaks {staged_files}"
+          ]
+        );
+        migrationDir = pkgs.runCommand "test-migration-fragments" { } ''
+          mkdir -p $out
+          cp ${migrationYaml} $out/base.yml
+        '';
+        mat = import ../setting/lib/mk-materialization.nix {
+          inherit pkgs;
+          fragments = [
+            "base"
+            "markdown"
+          ];
+          fragmentsDir = ../setting/integrations/lefthook;
+          assembleScript = ../setting/lib/assemble-lefthook.sh;
+          migrationOverlayDir = migrationDir;
+          migrationOverlayScript = ../setting/lib/assemble-migration-overlay.sh;
+          corePackages = [
+            pkgs.coreutils
+            pkgs.git
+            nix-lefthook.packages.${pkgs.stdenv.hostPlatform.system}.default
+          ];
+          wrappersForFragment = wrappersForFragment pkgs { };
+          migrations = [
+            {
+              name = "test-migration";
+              skip = [ "gitleaks" ];
+              overlay = "base";
+            }
+          ];
+        };
+      in
+      pkgs.runCommand "materializationFor-migration-expand" { } ''
+        [ -f "${mat.files}/lefthook.yml" ] \
+          || { echo "FAIL: no lefthook.yml"; exit 1; }
+        [ -f "${mat.files}/lefthook-migration.yml" ] \
+          || { echo "FAIL: no lefthook-migration.yml"; exit 1; }
+        grep -q 'lefthook-migration.yml' "${mat.files}/lefthook.yml" \
+          || { echo "FAIL: missing extends reference"; exit 1; }
+        grep -A1 '    gitleaks:$' "${mat.files}/lefthook.yml" | grep -q 'skip: true' \
+          || { echo "FAIL: gitleaks not skipped in main config"; exit 1; }
+        grep -q 'new-gitleaks' "${mat.files}/lefthook-migration.yml" \
+          || { echo "FAIL: new-gitleaks missing from overlay"; exit 1; }
+        grep -q '; true' "${mat.files}/lefthook-migration.yml" \
+          || { echo "FAIL: overlay commands not advisory-wrapped"; exit 1; }
+        echo "PASS: expand phase produces correct artifacts"
         touch $out
       '';
 
