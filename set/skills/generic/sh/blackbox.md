@@ -23,24 +23,24 @@ or calling shell functions within the same file.
 ## Rules
 
 1. One script, one responsibility. If a script needs helper logic,
-   extract it into a separate script and invoke it.
+    extract it into a separate script and invoke it.
 2. No `function` keyword, no `name()` definitions. Inline the logic
-   or call another script.
+    or call another script.
 3. Accept inputs via positional arguments, named flags, environment
-   variables, or stdin. Document which.
+    variables, or stdin. Document which.
 4. Produce structured output on stdout. Reserve stderr for
-   diagnostics only.
+    diagnostics only.
 5. Exit with a meaningful code: 0 for success, non-zero for failure.
 6. Keep scripts small enough that rewriting one to a compiled
-   language is a single-session task.
+    language is a single-session task.
 
 ## Migration path
 
 Shell is the prototyping language. Once a blackbox stabilizes:
 
 1. Its contract (arguments, stdout format, exit code semantics) is
-   already documented and tested.
+    already documented and tested.
 2. Rewrite the internals in Rust (or another compiled language) behind
-   the same contract.
+    the same contract.
 3. Callers are unchanged -- they invoked a process, not a function.
 4. Repeat per-blackbox; the system migrates incrementally.
