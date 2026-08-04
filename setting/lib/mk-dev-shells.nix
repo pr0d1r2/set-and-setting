@@ -13,10 +13,11 @@ let
   # install` -- otherwise lefthook finds no config and writes a default
   # example lefthook.yml (which then fails the confirmator's fidelity
   # check). Runs in BOTH shells (default + agentic) so either entry
-  # materializes.
+  # materializes. Unconditional so stale remote caches are refreshed
+  # (#280).
   baseShellHook = ''
     ${settingHook}
-    [ -f .git/hooks/pre-commit ] || lefthook install
+    lefthook install
   '';
   defaultShell = pkgs.mkShell {
     NIX_CONFIG = "experimental-features = nix-command flakes";
