@@ -1988,6 +1988,9 @@ in
           assert builtins.elem pkgs.coreutils shells.ruby.nativeBuildInputs;
           assert builtins.elem pkgs.ruby shells.ruby.nativeBuildInputs;
           assert builtins.elem pkgs.bundler shells.ruby.nativeBuildInputs;
+          # #280: lefthook install runs unconditionally (no stale-remote guard)
+          assert pkgs.lib.hasInfix "lefthook install" shells.default.shellHook;
+          assert !pkgs.lib.hasInfix ".git/hooks/pre-commit" shells.default.shellHook;
           true;
       in
       pkgs.runCommand "mk-dev-shells-check" { inherit ok; } ''
