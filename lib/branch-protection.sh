@@ -3,8 +3,10 @@
 # Configures GitHub branch protection via gh api. Requires gh auth.
 #
 # Env in (optional):
-#   REQUIRED_STATUS_CONTEXTS  space-separated standard-derived contexts
-#                             (from check-fragment-map.nix via flake wiring)
+#   REQUIRED_STATUS_CONTEXTS  pipe-separated standard-derived contexts
+#                             (from check-fragment-map.nix via flake wiring;
+#                             pipe-separated because each context has spaces,
+#                             e.g. "guardrails / check|guardrails / check-darwin")
 set -euo pipefail
 
 branch="main"
