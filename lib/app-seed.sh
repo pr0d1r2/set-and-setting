@@ -126,6 +126,19 @@ if [ -n "$owner" ] && [ -z "$holder" ]; then
   holder="$owner"
 fi
 
+# The leaf depends on every repository in this foundation set, either
+# directly or transitively. Installing it into one of those repositories
+# would therefore replace the repository's own flake with a self-edge.
+# Refuse before copying anything, including when coordinates were inferred
+# only from the working-directory name.
+target_repo="${repo:-${PWD##*/}}"
+case "${target_repo,,}" in
+  set-and-setting | nix-lefthook | nixpkgs-lock)
+    echo "error: refusing to seed leaf template into foundation repository: $target_repo" >&2
+    exit 1
+    ;;
+esac
+
 find -L "$SEED_SRC" -type f | sort | while read -r f; do
   rel="${f#"$SEED_SRC/"}"
   if [ -e "$rel" ]; then
