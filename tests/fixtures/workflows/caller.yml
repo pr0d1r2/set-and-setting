@@ -1,0 +1,4 @@
+---
+jobs:
+  guardrails:
+    uses: owner/standard/.github/workflows/guardrails.yml@main

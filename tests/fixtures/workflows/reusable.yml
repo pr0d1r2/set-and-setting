@@ -1,0 +1,6 @@
+---
+jobs:
+  check:
+    runs-on: ubuntu-latest
+  check-darwin:
+    runs-on: macos-latest
