@@ -95,6 +95,9 @@ let
     + builtins.readFile ../../set/lib/app-mk-set.sh;
   };
 
+  migrations = import ../../setting/lib/migrations.nix;
+  migrationSkips = lib.concatStringsSep " " (builtins.concatMap (m: m.skip) migrations);
+
   mkSettingApp = pkgs.writeShellApplication {
     name = "mkSetting";
     runtimeInputs = [
@@ -112,6 +115,9 @@ let
       export COVERAGE_SCRIPT="${../../lib/check-coverage.sh}"
       export CHECKS_UNIVERSE="${lib.concatStringsSep " " checksUniverse}"
       export CHECK_FRAGMENT_MAP="${checkFragmentMapStr}"
+      export MIGRATION_OVERLAY_DIR="${../../setting/integrations/lefthook/migrations}"
+      export MIGRATION_OVERLAY_SCRIPT="${../../setting/lib/assemble-migration-overlay.sh}"
+      export MIGRATION_SKIPS="${migrationSkips}"
     ''
     + builtins.readFile ../../setting/lib/app-mk-setting.sh;
   };

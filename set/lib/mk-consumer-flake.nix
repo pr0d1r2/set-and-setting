@@ -47,16 +47,36 @@ in
     lib.mkDevShells {
       inherit pkgs;
       basePackages = materialization.packages;
-      settingHook = ''
-        ${self.packages.${system}.setting}/bin/sync-setting .
-        _setting_lefthook_out="$(mktemp -d)"
-        FRAGMENTS="${builtins.concatStringsSep " " allFragments}" \
-          out="$_setting_lefthook_out" \
-          FRAGMENTS_DIR="${set-and-setting}/setting/integrations/lefthook" \
-          bash "${set-and-setting}/setting/lib/assemble-lefthook.sh"
-        cp -f "$_setting_lefthook_out/lefthook.yml" lefthook.yml
-        rm -rf "$_setting_lefthook_out"
-      '';
+      settingHook =
+        let
+          migrations = import ../../setting/lib/migrations.nix;
+          migrationSkips = builtins.concatStringsSep " " (builtins.concatMap (m: m.skip) migrations);
+          hasMigrations = migrations != [ ];
+        in
+        ''
+          ${self.packages.${system}.setting}/bin/sync-setting .
+          _setting_lefthook_out="$(mktemp -d)"
+          FRAGMENTS="${builtins.concatStringsSep " " allFragments}" \
+            MIGRATION_SKIPS="${migrationSkips}" \
+            MIGRATION_HAS_OVERLAY="${if hasMigrations then "1" else ""}" \
+            out="$_setting_lefthook_out" \
+            FRAGMENTS_DIR="${set-and-setting}/setting/integrations/lefthook" \
+            bash "${set-and-setting}/setting/lib/assemble-lefthook.sh"
+          cp -f "$_setting_lefthook_out/lefthook.yml" lefthook.yml
+          ${
+            if hasMigrations then
+              ''
+                MIGRATION_OVERLAY_DIR="${set-and-setting}/setting/integrations/lefthook/migrations" \
+                  FRAGMENTS="${builtins.concatStringsSep " " allFragments}" \
+                  out="$_setting_lefthook_out" \
+                  bash "${set-and-setting}/setting/lib/assemble-migration-overlay.sh"
+                cp -f "$_setting_lefthook_out/lefthook-migration.yml" lefthook-migration.yml
+              ''
+            else
+              ""
+          }
+          rm -rf "$_setting_lefthook_out"
+        '';
       agenticShellHook = nixpkgs.lib.optionalString includeSet ''
         ${self.packages.${system}.set}/bin/sync-set .
       '';
