@@ -2,10 +2,6 @@
 
 ## Unreleased
 
-- Deduplicate the `nixpkgs-lock` input's `set-and-setting` edge in every
-  consumer template so regenerated locks share the consumer's direct pin.
-  (#338)
-
 - Add a not-believing testing skill that requires observing a test fail for the
   intended reason before trusting it as evidence, including safe regression
   verification and green-commit guidance. (#276)

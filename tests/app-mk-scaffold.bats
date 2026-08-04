@@ -108,7 +108,6 @@ teardown() {
     run bash "$BATS_TEST_DIRNAME/../nix-lefthook-flake-manifest/lefthook-flake-manifest.sh" flake.nix
     [ "$status" -eq 0 ]
     grep -q 'includeSet = true' flake.nix
-    grep -Fq 'nixpkgs-lock.inputs.set-and-setting.follows = "set-and-setting";' flake.nix
 }
 
 @test "lefthook.yml is assembled from fragments, not bundled copy" {
@@ -204,8 +203,6 @@ teardown() {
     [ -f "$TARGET/.rubocop.yml" ]
     [ -f "$TARGET/spec/spec_helper.rb" ]
     [ -f "$TARGET/lib/project.rb" ]
-    grep -Fq 'nixpkgs-lock.inputs.set-and-setting.follows = "set-and-setting";' \
-        "$TARGET/flake.nix"
     grep -q 'rubocop:' "$TARGET/lefthook.yml"
     grep -q 'rspec:' "$TARGET/lefthook.yml"
 }
