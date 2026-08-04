@@ -117,6 +117,27 @@ teardown() {
     grep -q 'Copyright (c) .* octocat' "$TARGET/LICENSE"
 }
 
+@test "refuses to seed set-and-setting without emitting files (#339)" {
+    run bash "$SCRIPT" --repo set-and-setting
+    [ "$status" -eq 1 ]
+    [[ "$output" == *"refusing to seed leaf template into foundation repository: set-and-setting"* ]]
+    [ ! -e "$TARGET/flake.nix" ]
+}
+
+@test "refuses to seed nix-lefthook without emitting files (#339)" {
+    run bash "$SCRIPT" --repo nix-lefthook
+    [ "$status" -eq 1 ]
+    [[ "$output" == *"refusing to seed leaf template into foundation repository: nix-lefthook"* ]]
+    [ ! -e "$TARGET/flake.nix" ]
+}
+
+@test "refuses to seed nixpkgs-lock without emitting files (#339)" {
+    run bash "$SCRIPT" --repo nixpkgs-lock
+    [ "$status" -eq 1 ]
+    [[ "$output" == *"refusing to seed leaf template into foundation repository: nixpkgs-lock"* ]]
+    [ ! -e "$TARGET/flake.nix" ]
+}
+
 @test "skips files that already exist" {
     echo "custom flake" >"$TARGET/flake.nix"
     echo "custom readme" >"$TARGET/README.md"
