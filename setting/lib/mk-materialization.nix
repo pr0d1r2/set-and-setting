@@ -5,6 +5,9 @@
   fragmentsDir,
   assembleScript,
   corePackages,
+  migrations ? [ ],
+  migrationOverlayDir ? null,
+  migrationOverlayScript ? null,
 }:
 
 let
@@ -15,14 +18,30 @@ let
 
   fragmentPackages = builtins.concatMap (f: wrappersForFragment.${f}) fragments;
 
+  hasMigrations = migrations != [ ];
+
+  migrationSkips = builtins.concatStringsSep " " (builtins.concatMap (m: m.skip) migrations);
+
   assembledLefthook =
     pkgs.runCommand "materialization-lefthook"
       {
         FRAGMENTS_DIR = fragmentsDir;
         FRAGMENTS = builtins.concatStringsSep " " fragments;
+        MIGRATION_SKIPS = if hasMigrations then migrationSkips else "";
+        MIGRATION_HAS_OVERLAY = if hasMigrations then "1" else "";
       }
       ''
         bash ${assembleScript}
+        ${
+          if hasMigrations && migrationOverlayDir != null && migrationOverlayScript != null then
+            ''
+              MIGRATION_OVERLAY_DIR="${migrationOverlayDir}" \
+                FRAGMENTS="${builtins.concatStringsSep " " fragments}" \
+                bash ${migrationOverlayScript}
+            ''
+          else
+            ""
+        }
       '';
 in
 assert

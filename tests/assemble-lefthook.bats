@@ -404,3 +404,205 @@ teardown() {
     grep -q 'taplo:' "$out/lefthook.yml"
     rm -rf "$workdir"
 }
+
+# ======== migration overlay (#281) ========
+
+@test "MIGRATION_HAS_OVERLAY adds extends reference for lefthook-migration.yml" {
+    MIGRATION_HAS_OVERLAY=1 bash "$SCRIPT"
+    grep -q '^extends:' "$out/lefthook.yml"
+    grep -q 'lefthook-migration.yml' "$out/lefthook.yml"
+}
+
+@test "MIGRATION_HAS_OVERLAY=1 with overrides emits both extends entries" {
+    local workdir
+    workdir="$(mktemp -d)"
+    printf '%s\n' '---' 'pre-commit:' '  commands:' '    mdlint:' '      skip: true' \
+        >"$workdir/lefthook-overrides.yml"
+    cd "$workdir"
+    MIGRATION_HAS_OVERLAY=1 bash "$SCRIPT"
+    grep -q 'lefthook-overrides.yml' "$out/lefthook.yml"
+    grep -q 'lefthook-migration.yml' "$out/lefthook.yml"
+    rm -rf "$workdir"
+}
+
+@test "no MIGRATION_HAS_OVERLAY means no migration extends reference" {
+    bash "$SCRIPT"
+    run ! grep -q 'lefthook-migration.yml' "$out/lefthook.yml"
+}
+
+@test "MIGRATION_SKIPS injects skip:true for named commands" {
+    MIGRATION_SKIPS="gitleaks" bash "$SCRIPT"
+    # skip:true must appear on the line immediately after gitleaks:
+    grep -A1 '    gitleaks:$' "$out/lefthook.yml" | grep -q 'skip: true'
+}
+
+@test "MIGRATION_SKIPS with multiple commands skips all" {
+    MIGRATION_SKIPS="gitleaks git-conflict-markers" bash "$SCRIPT"
+    grep -A1 '    gitleaks:$' "$out/lefthook.yml" | grep -q 'skip: true'
+    grep -A1 '    git-conflict-markers:$' "$out/lefthook.yml" | grep -q 'skip: true'
+    # Unskipped command should NOT have skip:true
+    ! grep -A1 '    git-no-local-paths:$' "$out/lefthook.yml" | grep -q 'skip: true'
+}
+
+@test "MIGRATION_SKIPS without MIGRATION_HAS_OVERLAY still injects skips" {
+    MIGRATION_SKIPS="gitleaks" bash "$SCRIPT"
+    grep -A1 '    gitleaks:$' "$out/lefthook.yml" | grep -q 'skip: true'
+    run ! grep -q 'lefthook-migration.yml' "$out/lefthook.yml"
+}
+
+@test "empty MIGRATION_SKIPS does not inject any skips" {
+    MIGRATION_SKIPS="" bash "$SCRIPT"
+    run ! grep -q 'skip: true' "$out/lefthook.yml"
+}
+
+# ======== migration overlay assembly (#281) ========
+
+@test "migration overlay assembler produces lefthook-migration.yml" {
+    local overlay_dir
+    overlay_dir="$(mktemp -d)"
+    {
+        printf '%s\n' "---"
+        write_commands pre-commit vulnix-scan "*.nix" staged_files
+    } >"$overlay_dir/nix.yml"
+    MIGRATION_OVERLAY_DIR="$overlay_dir" \
+        FRAGMENTS="nix" \
+        bash "$BATS_TEST_DIRNAME/../setting/lib/assemble-migration-overlay.sh"
+    [ -f "$out/lefthook-migration.yml" ]
+    rm -rf "$overlay_dir"
+}
+
+@test "migration overlay starts with YAML marker and advisory header" {
+    local overlay_dir
+    overlay_dir="$(mktemp -d)"
+    {
+        printf '%s\n' "---"
+        write_commands pre-commit vulnix-scan "*.nix" staged_files
+    } >"$overlay_dir/nix.yml"
+    MIGRATION_OVERLAY_DIR="$overlay_dir" \
+        FRAGMENTS="nix" \
+        bash "$BATS_TEST_DIRNAME/../setting/lib/assemble-migration-overlay.sh"
+    head -1 "$out/lefthook-migration.yml" | grep -q '^---$'
+    grep -q 'advisory' "$out/lefthook-migration.yml"
+    rm -rf "$overlay_dir"
+}
+
+@test "migration overlay wraps run commands with advisory exit" {
+    local overlay_dir
+    overlay_dir="$(mktemp -d)"
+    {
+        printf '%s\n' "---"
+        write_commands pre-commit vulnix-scan "*.nix" staged_files
+    } >"$overlay_dir/nix.yml"
+    MIGRATION_OVERLAY_DIR="$overlay_dir" \
+        FRAGMENTS="nix" \
+        bash "$BATS_TEST_DIRNAME/../setting/lib/assemble-migration-overlay.sh"
+    # The run line should end with "; true" for advisory non-blocking mode
+    grep -q 'run: lefthook-vulnix-scan {staged_files}; true' \
+        "$out/lefthook-migration.yml"
+    rm -rf "$overlay_dir"
+}
+
+@test "migration overlay merges pre-commit and pre-push" {
+    local overlay_dir
+    overlay_dir="$(mktemp -d)"
+    {
+        printf '%s\n' "---"
+        write_commands pre-commit vulnix-scan "*.nix" staged_files
+        write_commands pre-push vulnix-scan "*.nix" push_files
+    } >"$overlay_dir/nix.yml"
+    MIGRATION_OVERLAY_DIR="$overlay_dir" \
+        FRAGMENTS="nix" \
+        bash "$BATS_TEST_DIRNAME/../setting/lib/assemble-migration-overlay.sh"
+    grep -q '^pre-commit:' "$out/lefthook-migration.yml"
+    grep -q '^pre-push:' "$out/lefthook-migration.yml"
+    # Both sections should have advisory wrapping
+    local precommit_run prepush_run
+    precommit_run="$(awk '/^pre-commit:/,/^pre-push:/' "$out/lefthook-migration.yml" | grep 'run:')"
+    prepush_run="$(awk '/^pre-push:/,0' "$out/lefthook-migration.yml" | grep 'run:')"
+    echo "$precommit_run" | grep -q '; true'
+    echo "$prepush_run" | grep -q '; true'
+    rm -rf "$overlay_dir"
+}
+
+@test "migration overlay respects FRAGMENTS filter" {
+    local overlay_dir
+    overlay_dir="$(mktemp -d)"
+    {
+        printf '%s\n' "---"
+        write_commands pre-commit vulnix-scan "*.nix" staged_files
+    } >"$overlay_dir/nix.yml"
+    {
+        printf '%s\n' "---"
+        write_commands pre-commit new-mdlint "*.md" staged_files
+    } >"$overlay_dir/markdown.yml"
+    MIGRATION_OVERLAY_DIR="$overlay_dir" \
+        FRAGMENTS="nix" \
+        bash "$BATS_TEST_DIRNAME/../setting/lib/assemble-migration-overlay.sh"
+    grep -q 'vulnix-scan' "$out/lefthook-migration.yml"
+    run ! grep -q 'new-mdlint' "$out/lefthook-migration.yml"
+    rm -rf "$overlay_dir"
+}
+
+@test "migration overlay skips missing fragment files" {
+    local overlay_dir
+    overlay_dir="$(mktemp -d)"
+    {
+        printf '%s\n' "---"
+        write_commands pre-commit vulnix-scan "*.nix" staged_files
+    } >"$overlay_dir/nix.yml"
+    # No base.yml in overlay -- should not error
+    MIGRATION_OVERLAY_DIR="$overlay_dir" \
+        bash "$BATS_TEST_DIRNAME/../setting/lib/assemble-migration-overlay.sh"
+    [ -f "$out/lefthook-migration.yml" ]
+    grep -q 'vulnix-scan' "$out/lefthook-migration.yml"
+    rm -rf "$overlay_dir"
+}
+
+@test "migration overlay with no matching fragments produces header-only file" {
+    local overlay_dir
+    overlay_dir="$(mktemp -d)"
+    MIGRATION_OVERLAY_DIR="$overlay_dir" \
+        FRAGMENTS="base" \
+        bash "$BATS_TEST_DIRNAME/../setting/lib/assemble-migration-overlay.sh"
+    [ -f "$out/lefthook-migration.yml" ]
+    head -1 "$out/lefthook-migration.yml" | grep -q '^---$'
+    run ! grep -q '^pre-commit:' "$out/lefthook-migration.yml"
+    run ! grep -q '^pre-push:' "$out/lefthook-migration.yml"
+    rm -rf "$overlay_dir"
+}
+
+@test "full expand: main skips + overlay advisory + extends wired" {
+    local overlay_dir
+    overlay_dir="$(mktemp -d)"
+    {
+        printf '%s\n' "---"
+        write_commands pre-commit new-gitleaks "*.nix" staged_files
+    } >"$overlay_dir/base.yml"
+    # Assemble main with skips and overlay reference
+    MIGRATION_SKIPS="gitleaks" \
+        MIGRATION_HAS_OVERLAY=1 \
+        bash "$SCRIPT"
+    # Assemble overlay
+    MIGRATION_OVERLAY_DIR="$overlay_dir" \
+        FRAGMENTS="base" \
+        bash "$BATS_TEST_DIRNAME/../setting/lib/assemble-migration-overlay.sh"
+    # Main: gitleaks skipped, extends migration overlay
+    grep -A1 '    gitleaks:$' "$out/lefthook.yml" | grep -q 'skip: true'
+    grep -q 'lefthook-migration.yml' "$out/lefthook.yml"
+    # Overlay: new-gitleaks advisory
+    grep -q 'new-gitleaks' "$out/lefthook-migration.yml"
+    grep -q '; true' "$out/lefthook-migration.yml"
+    rm -rf "$overlay_dir"
+}
+
+@test "no migration state produces identical output to pre-281 behavior" {
+    # Without any MIGRATION_ env vars, output is unchanged
+    bash "$SCRIPT"
+    local baseline
+    baseline="$(cat "$out/lefthook.yml")"
+    rm -f "$out/lefthook.yml"
+    MIGRATION_SKIPS="" MIGRATION_HAS_OVERLAY="" bash "$SCRIPT"
+    local with_empty
+    with_empty="$(cat "$out/lefthook.yml")"
+    [ "$baseline" = "$with_empty" ]
+}
