@@ -97,7 +97,7 @@ in
             inherit pkgs;
             projectRoot = src;
           };
-          lock-graph = lib.mkLockGraphCheck {
+          lock-graph = (lib.mkLockGraphCheck or set-and-setting.lib.mkLockGraphCheck) {
             inherit pkgs;
             projectRoot = src;
           };
