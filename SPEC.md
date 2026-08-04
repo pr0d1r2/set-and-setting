@@ -96,6 +96,12 @@ and dogfoods both.
   non-github types. Args: `pkgs`, `projectRoot`. Shell logic in
   `lib/dep-graph-check.sh` (nix/modularity). Consumer wiring is one
   line in their `checks` output.
+- I.mkLockGraphCheck: `lib/mk-lock-graph-check.nix` -- rejects duplicate
+  `nixpkgs`, `nixpkgs-lock`, or `set-and-setting` nodes, including a second
+  `nixpkgs` introduced through a check input instead of deduped with `follows`.
+  It also rejects poisoned foundation edges and owner/repository cycles. Args:
+  `pkgs`, `projectRoot`. `mkConsumerFlake` includes it in every consumer's
+  checks.
 - I.mkMaterializeCheck: `lib/mk-materialize-check.nix` -- deterministic
   consumer-side test for skill materialization. Runs mkSet for the
   requested categories (core implied), then asserts the output layout

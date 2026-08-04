@@ -156,6 +156,9 @@ Pin the version in your flake and sync after each update.
 `mkConsumerFlake` returns the standard `packages`, `devShells`, `checks`, and
 `apps` outputs. It centralizes setting sync, runtime lefthook assembly, pinned
 fragment checks, setting and dependency drift checks, and the `confirm` app.
+The dependency checks reject duplicated foundation pins, so transitive check
+inputs must follow the consumer's shared `nixpkgs` instead of adding parallel
+lock trees.
 Extend it with `extraFragments` or per-system functions named `extraPackages`,
 `extraChecks`, and `extraApps`. Set `includeSet = true` to expose
 `packages.<system>.set` and sync it when the agentic shell starts.

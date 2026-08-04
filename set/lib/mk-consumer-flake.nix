@@ -97,6 +97,10 @@ in
             inherit pkgs;
             projectRoot = src;
           };
+          lock-graph = (lib.mkLockGraphCheck or set-and-setting.lib.mkLockGraphCheck) {
+            inherit pkgs;
+            projectRoot = src;
+          };
           setting-drift = lib.mkSettingDriftCheck {
             inherit pkgs;
             settingSet = self.packages.${system}.setting;

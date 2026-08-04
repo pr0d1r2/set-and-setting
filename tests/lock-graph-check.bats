@@ -26,6 +26,14 @@ write_lock() {
     [[ "$output" == *"nixpkgs has 2 lock nodes"* ]]
 }
 
+@test "rejects a check input with its own nixpkgs node" {
+    write_lock '"check":{"locked":{"owner":"pr0d1r2","repo":"nix-lefthook-example"},"inputs":{"nixpkgs":"nixpkgs_2"}},"nixpkgs":{"locked":{"owner":"NixOS","repo":"nixpkgs"}},"nixpkgs_2":{"locked":{"owner":"NixOS","repo":"nixpkgs"}},"root":{"inputs":{"check":"check","nixpkgs":"nixpkgs"}}'
+    FLAKE_LOCK="$TARGET/flake.lock" run bash "$SCRIPT"
+    [ "$status" -eq 1 ]
+    [[ "$output" == *"nixpkgs has 2 lock nodes"* ]]
+    [[ "$output" == *"shared inputs must use follows"* ]]
+}
+
 @test "rejects a poisoned nixpkgs-lock input map" {
     write_lock '"nixpkgs-lock":{"locked":{"owner":"pr0d1r2","repo":"nixpkgs-lock"},"inputs":{"set-and-setting":"setting"}},"setting":{"locked":{"owner":"pr0d1r2","repo":"set-and-setting"}},"root":{"inputs":{}}'
     FLAKE_LOCK="$TARGET/flake.lock" run bash "$SCRIPT"

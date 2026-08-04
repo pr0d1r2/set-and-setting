@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+- Add a consumer lock-graph check that rejects check inputs carrying a second
+  `nixpkgs` node, keeping materialized check pins deduplicated through
+  `follows` and preventing unrelated check bumps from expanding consumer lock
+  churn. (#283)
+
 - Add a not-believing testing skill that requires observing a test fail for the
   intended reason before trusting it as evidence, including safe regression
   verification and green-commit guidance. (#276)
