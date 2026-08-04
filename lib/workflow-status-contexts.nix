@@ -56,10 +56,7 @@ let
           (lines path);
       names = keepCurrent parsed;
     in
-    if names == [ ] then
-      throw "workflow ${toString path} has no top-level jobs"
-    else
-      names;
+    if names == [ ] then throw "workflow ${toString path} has no top-level jobs" else names;
 
   callerJobs = jobNames {
     path = callerWorkflow;
