@@ -108,6 +108,7 @@ teardown() {
     run bash "$BATS_TEST_DIRNAME/../nix-lefthook-flake-manifest/lefthook-flake-manifest.sh" flake.nix
     [ "$status" -eq 0 ]
     grep -q 'includeSet = true' flake.nix
+    grep -Fq 'set-and-setting.inputs.nixpkgs-lock.follows = "nixpkgs-lock";' flake.nix
 }
 
 @test "lefthook.yml is assembled from fragments, not bundled copy" {

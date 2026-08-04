@@ -1,7 +1,6 @@
 {
   self,
   nixpkgs,
-  nix-lefthook,
   nix-lefthook-changelog-touched-src,
   nix-lefthook-commit-msg-lint-src,
   nix-lefthook-ascii-only-src,
@@ -567,6 +566,7 @@ in
     mkConsumerFlake = import ../set/lib/mk-consumer-flake.nix { inherit supportedSystems; };
     mkMaterializeCheck = import ../lib/mk-materialize-check.nix { inherit (nixpkgs) lib; };
     mkDepGraphCheck = import ../lib/mk-dep-graph-check.nix;
+    mkLockGraphCheck = import ../lib/mk-lock-graph-check.nix;
     mkConfirm = import ../lib/mk-confirm.nix;
     mkConfirmApp = import ../lib/mk-confirm-app.nix;
     confirmAppFor =
@@ -923,7 +923,7 @@ in
         corePackages = [
           pkgs.coreutils
           pkgs.git
-          nix-lefthook.packages.${pkgs.stdenv.hostPlatform.system}.default
+          pkgs.lefthook
         ];
         wrappersForFragment = wrappersForFragment pkgs fileClassOverrides;
       };
@@ -989,7 +989,7 @@ in
         pkgs.nix
         pkgs.gh
         pkgs.bats
-        nix-lefthook.packages.${sys}.default
+        pkgs.lefthook
       ];
       # Materialize the gitignored configs (content-aware lefthook.yml,
       # .markdownlint.yml, .yamllint.yml) on devShell entry. Post-migration
@@ -2490,6 +2490,10 @@ in
       inherit pkgs;
       projectRoot = ../.;
     };
+    lock-graph = import ../lib/mk-lock-graph-check.nix {
+      inherit pkgs;
+      projectRoot = ../.;
+    };
 
     # set-skill-extension -- T56/V6/V13: only *.md files in set/skills/
     # and set/drafts/. Pure find + exit-on-non-md.
@@ -2890,7 +2894,7 @@ in
           corePackages = [
             pkgs.coreutils
             pkgs.git
-            nix-lefthook.packages.${pkgs.stdenv.hostPlatform.system}.default
+            pkgs.lefthook
           ];
           wrappersForFragment = wrappersForFragment pkgs { };
           migrations = [
@@ -3684,7 +3688,6 @@ in
       inherit
         self
         nixpkgs
-        nix-lefthook
         pkgs
         checkFragmentMapStr
         fragmentTriggersStr

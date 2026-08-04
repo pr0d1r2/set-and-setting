@@ -10,10 +10,6 @@
     nixpkgs-lock.url = "github:pr0d1r2/nixpkgs-lock";
     nixpkgs.follows = "nixpkgs-lock/nixpkgs";
 
-    nix-lefthook = {
-      url = "github:pr0d1r2/nix-lefthook";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
     nix-lefthook-ascii-only-src = {
       url = "github:pr0d1r2/nix-lefthook-ascii-only";
       flake = false;
