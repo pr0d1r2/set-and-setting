@@ -37,6 +37,7 @@ pre-commit:
 pre-push:
   commands:
     rubocop:
+      glob: "**/*.rb"
       run: bundle exec rubocop --fail-fast
       timeout: 2m
     markdownlint:
