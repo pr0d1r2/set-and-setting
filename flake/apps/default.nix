@@ -1,7 +1,6 @@
 {
   self,
   nixpkgs,
-  nix-lefthook,
   pkgs,
   checkFragmentMapStr,
   fragmentTriggersStr,
@@ -159,7 +158,7 @@ let
     name = "bootstrap-hooks";
     runtimeInputs = [
       pkgs.git
-      nix-lefthook.packages.${pkgs.stdenv.hostPlatform.system}.default
+      pkgs.lefthook
     ];
     text = builtins.readFile ../../setting/lib/app-bootstrap-hooks.sh;
   };
@@ -267,7 +266,7 @@ let
       pkgs.findutils
       pkgs.git
       pkgs.gnused
-      nix-lefthook.packages.${pkgs.stdenv.hostPlatform.system}.default
+      pkgs.lefthook
     ];
     text = ''
       export SEED_SRC="${migrateSeedFor pkgs}"
