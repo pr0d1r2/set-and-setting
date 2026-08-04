@@ -1341,3 +1341,26 @@ write_vendored_lefthook_with_remotes() {
     # markdownlint (not in CHECKS_UNIVERSE, not in empty map) -> repo-local
     [[ "$output" == *"carried-through: markdownlint"* ]]
 }
+
+# ======== branch protection guidance (#282) ========
+
+@test "successful migration emits branch protection guidance" {
+    export REQUIRED_STATUS_CONTEXTS="guardrails / check|guardrails / check-darwin"
+    write_vendored_lefthook
+    _init_repo
+    run bash "$MIGRATE_SCRIPT"
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"branch protection"* ]]
+    [[ "$output" == *"guardrails / check"* ]]
+    [[ "$output" == *"guardrails / check-darwin"* ]]
+    [[ "$output" == *"--from-standard"* ]]
+}
+
+@test "migration without REQUIRED_STATUS_CONTEXTS skips guidance" {
+    unset REQUIRED_STATUS_CONTEXTS
+    write_vendored_lefthook
+    _init_repo
+    run bash "$MIGRATE_SCRIPT"
+    [ "$status" -eq 0 ]
+    ! [[ "$output" == *"branch protection"* ]]
+}

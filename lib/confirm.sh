@@ -174,6 +174,21 @@ if [ -f "lefthook.yml" ]; then
   fi
 fi
 
+# --- ci-contexts: standard CI caller produces the expected status contexts ---
+if [ -n "${REQUIRED_STATUS_CONTEXTS:-}" ] && [ -f ".github/workflows/ci.yml" ]; then
+  _ci_is_guardrails=0
+  grep -q 'guardrails.yml' .github/workflows/ci.yml 2>/dev/null && _ci_is_guardrails=1
+  if [ "$_ci_is_guardrails" -eq 1 ]; then
+    echo "PASS: ci-contexts: CI caller delegates to standard guardrails workflow"
+    pass=$((pass + 1))
+  else
+    echo "FAIL: ci-contexts: CI workflow does not delegate to guardrails.yml"
+    echo "  expected: uses: ...guardrails.yml@main"
+    echo "  required contexts would be: ${REQUIRED_STATUS_CONTEXTS}"
+    fail=$((fail + 1))
+  fi
+fi
+
 # --- summary ---
 total=$((pass + fail))
 echo ""

@@ -164,4 +164,15 @@
     ".gitignore"
     ".github/workflows/ci.yml"
   ];
+
+  # Standard-derived required status check contexts for branch protection.
+  # The leaf consumer CI caller (leaf-ci.yml) names its job "guardrails",
+  # which delegates to guardrails.yml's "check" and "check-darwin" jobs.
+  # GitHub composes these as "guardrails / check" and "guardrails / check-darwin".
+  # Changing job names here is the ONLY step needed; branch-protection.sh,
+  # migrate.sh, and confirm.sh auto-discover via the serialized env var.
+  requiredStatusContexts = [
+    "guardrails / check"
+    "guardrails / check-darwin"
+  ];
 }

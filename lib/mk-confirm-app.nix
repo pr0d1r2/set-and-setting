@@ -10,6 +10,7 @@
 }:
 
 let
+  cfm = import ./check-fragment-map.nix;
   confirm = pkgs.writeShellApplication {
     name = "confirm";
     runtimeInputs = [
@@ -28,6 +29,7 @@ let
       export SETTING_SRC="${setting}"
       export CONFIRM_SCRIPT="${standard}/lib/confirm.sh"
       export CONFIRM_REV="${confirmRev}"
+      export REQUIRED_STATUS_CONTEXTS="${builtins.concatStringsSep "|" cfm.requiredStatusContexts}"
     ''
     + builtins.readFile ./app-confirm.sh;
   };

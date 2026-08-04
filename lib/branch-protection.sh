@@ -1,18 +1,26 @@
 #!/usr/bin/env bash
 # branch-protection.sh -- T19: enable main branch protection requiring PRs.
 # Configures GitHub branch protection via gh api. Requires gh auth.
+#
+# Env in (optional):
+#   REQUIRED_STATUS_CONTEXTS  pipe-separated standard-derived contexts
+#                             (from check-fragment-map.nix via flake wiring;
+#                             pipe-separated because each context has spaces,
+#                             e.g. "guardrails / check|guardrails / check-darwin")
 set -euo pipefail
 
 branch="main"
 repo=""
 dry_run=0
 status_checks=""
+from_standard=0
 
 while [ $# -gt 0 ]; do
   case "$1" in
     --help)
       echo "Usage: branch-protection [--help] [--dry-run] [--repo OWNER/REPO]"
       echo "                         [--branch BRANCH] [--status-checks CHECKS]"
+      echo "                         [--from-standard]"
       echo ""
       echo "Enable branch protection requiring PRs on a GitHub repository."
       echo ""
@@ -23,10 +31,16 @@ while [ $# -gt 0 ]; do
       echo "  --branch BRANCH        Branch to protect (default: main)"
       echo "  --status-checks CHECKS Comma-separated required status checks"
       echo "                         (default: none)"
+      echo "  --from-standard        Use the standard-derived required status"
+      echo "                         contexts (from check-fragment-map.nix)"
       exit 0
       ;;
     --dry-run)
       dry_run=1
+      shift
+      ;;
+    --from-standard)
+      from_standard=1
       shift
       ;;
     --repo)
@@ -63,6 +77,20 @@ while [ $# -gt 0 ]; do
       ;;
   esac
 done
+
+if [ "$from_standard" -eq 1 ] && [ -n "$status_checks" ]; then
+  echo "error: --from-standard and --status-checks are mutually exclusive"
+  exit 1
+fi
+
+if [ "$from_standard" -eq 1 ]; then
+  if [ -z "${REQUIRED_STATUS_CONTEXTS:-}" ]; then
+    echo "error: --from-standard requires REQUIRED_STATUS_CONTEXTS env var"
+    echo "  (set automatically when run via nix run .#branch-protection)"
+    exit 1
+  fi
+  status_checks="$(echo "$REQUIRED_STATUS_CONTEXTS" | tr '|' ',')"
+fi
 
 if [ -z "$repo" ]; then
   if ! git rev-parse --git-dir >/dev/null 2>&1; then

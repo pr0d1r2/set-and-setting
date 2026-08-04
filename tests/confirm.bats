@@ -132,3 +132,48 @@ materialize_basic() {
     [[ "$output" == *"fragments ["* ]]
     [[ "$output" == *"@abc1234"* ]]
 }
+
+@test "ci-contexts: passes when ci.yml delegates to guardrails" {
+    export REQUIRED_STATUS_CONTEXTS="guardrails / check|guardrails / check-darwin"
+    mkdir -p .github/workflows
+    printf '%s\n' \
+        'name: CI' \
+        '"on": { push: { branches: [main] } }' \
+        'jobs:' \
+        '  guardrails:' \
+        '    uses: pr0d1r2/set-and-setting/.github/workflows/guardrails.yml@main' \
+        > .github/workflows/ci.yml
+    materialize_basic
+    run bash "$SCRIPT"
+    [[ "$output" == *"PASS: ci-contexts"* ]]
+}
+
+@test "ci-contexts: fails when ci.yml is not guardrails caller" {
+    export REQUIRED_STATUS_CONTEXTS="guardrails / check|guardrails / check-darwin"
+    mkdir -p .github/workflows
+    printf '%s\n' \
+        'name: CI' \
+        '"on": { push: { branches: [main] } }' \
+        'jobs:' \
+        '  build-linux:' \
+        '    runs-on: ubuntu-latest' \
+        '    steps: [{ uses: "actions/checkout@v4" }]' \
+        > .github/workflows/ci.yml
+    materialize_basic
+    run bash "$SCRIPT"
+    [[ "$output" == *"FAIL: ci-contexts"* ]]
+}
+
+@test "ci-contexts: skipped when no REQUIRED_STATUS_CONTEXTS" {
+    materialize_basic
+    unset REQUIRED_STATUS_CONTEXTS
+    run bash "$SCRIPT"
+    ! [[ "$output" == *"ci-contexts"* ]]
+}
+
+@test "ci-contexts: skipped when no ci.yml" {
+    materialize_basic
+    export REQUIRED_STATUS_CONTEXTS="guardrails / check|guardrails / check-darwin"
+    run bash "$SCRIPT"
+    ! [[ "$output" == *"ci-contexts"* ]]
+}

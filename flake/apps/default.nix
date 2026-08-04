@@ -5,6 +5,7 @@
   pkgs,
   checkFragmentMapStr,
   fragmentTriggersStr,
+  requiredStatusContextsStr,
   migrateSeedFor,
   lefthookWrappersFor,
 }:
@@ -198,7 +199,10 @@ let
       pkgs.gnused
       pkgs.gnugrep
     ];
-    text = builtins.readFile ../../lib/branch-protection.sh;
+    text = ''
+      export REQUIRED_STATUS_CONTEXTS="${requiredStatusContextsStr}"
+    ''
+    + builtins.readFile ../../lib/branch-protection.sh;
   };
 
   confirmApp = self.lib.mkConfirmApp {
@@ -231,6 +235,7 @@ let
       export CHECKS_UNIVERSE="${lib.concatStringsSep " " checksUniverse}"
       export CHECK_FRAGMENT_MAP="${checkFragmentMapStr}"
       export FRAGMENT_TRIGGERS="${fragmentTriggersStr}"
+      export REQUIRED_STATUS_CONTEXTS="${requiredStatusContextsStr}"
       export FULL_LEFTHOOK="${
         (self.lib.materializationFor {
           inherit pkgs;

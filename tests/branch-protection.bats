@@ -135,3 +135,33 @@ teardown() {
     [ "$status" -eq 0 ]
     [[ "$output" == *"owner/repo/main"* ]]
 }
+
+@test "--help shows --from-standard" {
+    run bash "$SCRIPT" --help
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"--from-standard"* ]]
+}
+
+@test "--from-standard uses REQUIRED_STATUS_CONTEXTS" {
+    export REQUIRED_STATUS_CONTEXTS="guardrails / check|guardrails / check-darwin"
+    run bash "$SCRIPT" --dry-run --repo owner/repo --from-standard
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"guardrails / check"* ]]
+    [[ "$output" == *"guardrails / check-darwin"* ]]
+    [[ "$output" == *'"strict": true'* ]]
+}
+
+@test "--from-standard without env var fails" {
+    unset REQUIRED_STATUS_CONTEXTS
+    run bash "$SCRIPT" --dry-run --repo owner/repo --from-standard
+    [ "$status" -eq 1 ]
+    [[ "$output" == *"REQUIRED_STATUS_CONTEXTS"* ]]
+}
+
+@test "--from-standard and --status-checks are mutually exclusive" {
+    export REQUIRED_STATUS_CONTEXTS="guardrails / check|guardrails / check-darwin"
+    run bash "$SCRIPT" --dry-run --repo owner/repo \
+        --from-standard --status-checks "ci-linux"
+    [ "$status" -eq 1 ]
+    [[ "$output" == *"mutually exclusive"* ]]
+}
