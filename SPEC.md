@@ -175,8 +175,10 @@ and dogfoods both.
   `branch-protection.sh` (`--from-standard` derives contexts), and
   `confirm.sh` (ci-contexts self-check).
   Adding a new check = add it here; the map auto-propagates to all
-  consumers. Renaming a CI job = update `requiredStatusContexts` here;
-  `branch-protection.sh --from-standard` and `migrate.sh` auto-propagate.
+  consumers. Required contexts are parsed from the standard-owned caller and
+  reusable workflow job names by `workflow-status-contexts.nix`; renaming a CI
+  job therefore auto-propagates through `branch-protection.sh --from-standard`
+  and `migrate.sh` without a parallel settings edit.
   A nix check (`check-fragment-map-complete`) validates completeness
   against both `checksFor` output and lefthook fragment YAML.
 - I.checksFor: `lib/checks-for.nix` -- fragment-driven check selection
@@ -573,9 +575,10 @@ and dogfoods both.
   must not infer absent fragments. A missing expected path is unknown state and
   fails rather than being reported as convergence.
 - V47: Required status check contexts are derived, not hand-listed (#282).
-  `check-fragment-map.nix` declares `requiredStatusContexts` as the single
-  source of truth for the GitHub status contexts a referenced consumer
-  needs. `branch-protection.sh --from-standard` reads them; `migrate.sh`
+  `workflow-status-contexts.nix` derives `requiredStatusContexts` from the
+  standard-owned caller and reusable workflow job names; the workflow tree is
+  the single source of truth for the GitHub status contexts a referenced
+  consumer needs. `branch-protection.sh --from-standard` reads them; `migrate.sh`
   emits guidance; `confirm.sh` validates the CI caller structure. A CI job
   rename updates the map once and propagates to all three consumers. The
   tree plane (workflow YAML) and settings plane (required contexts) are
@@ -585,7 +588,7 @@ and dogfoods both.
 
 | id  | s | description                                          | cites     |
 |-----|---|------------------------------------------------------|-----------|
-| T80 | x | HOOTL-ELIGIBLE -- derive required status check contexts from the standard's workflow job names (#282). `check-fragment-map.nix` declares `requiredStatusContexts`; `branch-protection.sh --from-standard` reads them; `migrate.sh` emits branch protection guidance after successful migration; `confirm.sh` validates CI caller structure. A CI job rename updates the map once and propagates to all consumers. | I.checkFragmentMap,I.branch-protection,V47 |
+| T80 | x | HOOTL-ELIGIBLE -- derive required status check contexts from the standard's workflow job names (#282). `workflow-status-contexts.nix` parses the caller and reusable job names into `requiredStatusContexts`; `branch-protection.sh --from-standard` reads them; `migrate.sh` emits branch protection guidance after successful migration; `confirm.sh` validates CI caller structure. A CI job rename propagates to all consumers without a second settings edit. | I.checkFragmentMap,I.branch-protection,V47 |
 | T79 | x | HOOTL-ELIGIBLE -- add the `surgical` and `assumptions` principles, covering the two agent failure modes the existing registry left open: widening a diff past the reported problem, and silently resolving an ambiguous request. Anti-patterns stay in each principle's `Signals of violation` section, not a parallel `anti-patterns` tree, so each rule keeps one source. | V18a,I.meta,I.mkSet |
 | T78 | x | Compose `canonFor` and `apps.mkCanon` from thin `mkSeed`, named docs/governance/dev-env/SPEC units, and the shared fragment map; reuse the canon in migrate, add pre-Git source-tree fragment detection, runtime substitutions, hook install, deterministic/subset checks, and pinned drift rejection. Keep `seed` thin and `mkScaffold` as legacy rescue. (#246) | I.canonFor,I.mkCanonDriftCheck,I.checkFragmentMap,V45 |
 | T77 | x | HOOTL-ELIGIBLE — check-fragment-map: single source of truth for check-name-to-fragment mapping (#168). `lib/check-fragment-map.nix` replaces hardcoded case statements in `migrate.sh` with a nix-generated `CHECK_FRAGMENT_MAP` env var. Completeness nix check validates against `checksFor` + lefthook fragment YAML. Adding a new check = add it to the map; migrate.sh auto-discovers it. | I.checkFragmentMap,I.checksFor,V41,V42,V43 |
@@ -725,4 +728,5 @@ and dogfoods both.
 | B45 | 2026-08-03 | `guardrails / check` failed because four continuation lines in the Infinite Monkey draft's numbered experiment used 3-space indentation, which violates the 2-space-multiple rule for Markdown in `.editorconfig`. | fixed: changed the four continuation lines to 4-space indentation, preserving the numbered-list structure while satisfying the repository's editorconfig check. |
 | B46 | 2026-08-03 | `guardrails / check` failed because two continuation lines in the new not-believing testing skill used 3-space indentation, violating the 2-space-multiple rule for Markdown in `.editorconfig`. | fixed: changed both continuation lines to 4-space indentation, preserving the numbered-list structure while satisfying the repository's editorconfig check. |
 | B47 | 2026-08-04 | `guardrails / check` failed: `checks.editorconfig-checker` red because `set/skills/generic/sh/blackbox.md` had seven numbered-list continuation lines using 3-space indentation, violating the 2-space-multiple rule for Markdown in `.editorconfig`. Same class as B35/B45/B46. | fixed: changed all seven continuation lines to 4-space indentation, preserving the numbered-list structure while satisfying the repository's editorconfig check. |
+| B48 | 2026-08-04 | `guardrails / check` failed because `lib/workflow-status-contexts.nix` used a multi-line conditional layout rejected by the pinned nixfmt 1.3.1 check. The apparent `confirm-rejects-broken` failures in the log were expected negative-test output; that check passed. | fixed: reformatted the empty-job-list conditional with the repository's pinned formatter, preserving status-context discovery behavior while satisfying the canonical Nix layout. |
 <!-- markdownlint-enable MD013 MD038 MD056 -->
