@@ -153,6 +153,27 @@ if [ -f "lefthook.yml" ]; then
   fi
 fi
 
+# --- migration overlay: consistency between extends ref and overlay file ---
+if [ -f "lefthook.yml" ]; then
+  _has_migration_ref=""
+  if grep -q 'lefthook-migration.yml' lefthook.yml 2>/dev/null; then
+    _has_migration_ref=1
+  fi
+  if [ -n "$_has_migration_ref" ] && [ -f "lefthook-migration.yml" ]; then
+    echo "PASS: migration: overlay referenced and present"
+    pass=$((pass + 1))
+  elif [ -n "$_has_migration_ref" ] && [ ! -f "lefthook-migration.yml" ]; then
+    echo "FAIL: migration: lefthook.yml extends lefthook-migration.yml but file is missing"
+    fail=$((fail + 1))
+  elif [ -z "$_has_migration_ref" ] && [ ! -f "lefthook-migration.yml" ]; then
+    echo "PASS: migration: no active migration (consistent)"
+    pass=$((pass + 1))
+  else
+    echo "PASS: migration: orphaned lefthook-migration.yml (harmless, clean up when ready)"
+    pass=$((pass + 1))
+  fi
+fi
+
 # --- summary ---
 total=$((pass + fail))
 echo ""
