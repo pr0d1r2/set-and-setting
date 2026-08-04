@@ -1,4 +1,6 @@
 ---
 jobs:
+  setup:
+    runs-on: ubuntu-latest
   guardrails:
     uses: owner/standard/.github/workflows/guardrails.yml@main
