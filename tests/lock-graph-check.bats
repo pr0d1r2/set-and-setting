@@ -39,3 +39,10 @@ write_lock() {
     [ "$status" -eq 1 ]
     [[ "$output" == *"contains a cycle"* ]]
 }
+
+@test "rejects a collapsed cycle whose edge is encoded as a follows path" {
+    write_lock '"a1":{"locked":{"owner":"o","repo":"a"},"inputs":{"b":["b"]}},"b1":{"locked":{"owner":"o","repo":"b"},"inputs":{"a":"a2"}},"a2":{"locked":{"owner":"o","repo":"a"}},"root":{"inputs":{"a":"a1","b":"b1"}}'
+    FLAKE_LOCK="$TARGET/flake.lock" run bash "$SCRIPT"
+    [ "$status" -eq 1 ]
+    [[ "$output" == *"contains a cycle"* ]]
+}

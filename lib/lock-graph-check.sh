@@ -30,13 +30,23 @@ edges="$(mktemp)"
 trap 'rm -f "$edges"' EXIT
 jq -r '
     .nodes as $nodes
-    | $nodes
+    | .root as $root
+    | def resolve($target):
+        if ($target | type) == "string" then
+          $target
+        elif ($target | type) == "array" then
+          reduce $target[] as $input ($root;
+            . as $node | resolve($nodes[$node].inputs[$input]))
+        else
+          empty
+        end;
+    $nodes
     | to_entries[] as $source
     | ($source.value.locked? // null) as $locked
     | select($locked != null and $locked.owner? != null and $locked.repo? != null)
     | ($locked.owner + "/" + $locked.repo) as $from
-    | (($source.value.inputs // {}) | to_entries[] | .value) as $target
-    | select($target | type == "string")
+    | (($source.value.inputs // {}) | to_entries[] | .value) as $input
+    | resolve($input) as $target
     | ($nodes[$target].locked? // null) as $target_locked
     | select($target_locked != null and $target_locked.owner? != null and $target_locked.repo? != null)
     | [$from, ($target_locked.owner + "/" + $target_locked.repo)]
