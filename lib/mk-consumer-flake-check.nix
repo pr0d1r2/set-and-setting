@@ -56,6 +56,7 @@ pkgs.runCommand "mkConsumerFlake-outputs" { } ''
       "default"
       "dep-graph"
       "fixture"
+      "lock-graph"
       "setting-drift"
       "shellcheck"
     ];
