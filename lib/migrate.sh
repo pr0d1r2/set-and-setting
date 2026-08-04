@@ -1013,3 +1013,20 @@ CONFIRM_DRY_RUN=1 bash "$CONFIRM_SCRIPT"
 
 echo ""
 echo "migrate: $state -> referenced complete. Next: nix flake update, commit, open PR."
+
+# --- branch protection guidance (#282) ---
+# Job names change during migration (e.g. build-linux -> guardrails / check).
+# Emit the standard-derived required contexts so the consumer can update
+# branch protection in the same operation (two-plane write).
+if [ -n "${REQUIRED_STATUS_CONTEXTS:-}" ]; then
+  echo ""
+  echo "NOTE: branch protection required status checks must be updated."
+  echo "  The standard CI jobs are now:"
+  while IFS= read -r ctx; do
+    [ -n "$ctx" ] && echo "    - $ctx"
+  done <<<"$(echo "$REQUIRED_STATUS_CONTEXTS" | tr '|' '\n')"
+  echo ""
+  echo "  Update via:  nix run .#branch-protection -- --from-standard"
+  echo "  Or manually:  gh api --method PUT -H 'Accept: application/vnd.github+json' \\"
+  echo "    '/repos/OWNER/REPO/branches/main/protection' --input - <<< <payload>"
+fi

@@ -47,6 +47,7 @@ let
   fragmentTriggersStr = builtins.concatStringsSep "|" (
     map (frag: "${frag}=${cfm.fragmentTriggers.${frag}}") cfm.validFragments
   );
+  requiredStatusContextsStr = builtins.concatStringsSep "|" cfm.requiredStatusContexts;
 
   # --- apps.migrate fixtures (#96): shared derivation environment ---
   # Every migrate state fixture runs the same migrator over a fixture
@@ -133,6 +134,7 @@ let
       CHECKS_UNIVERSE = builtins.concatStringsSep " " checksUniverseChecks;
       CHECK_FRAGMENT_MAP = checkFragmentMapStr;
       FRAGMENT_TRIGGERS = fragmentTriggersStr;
+      REQUIRED_STATUS_CONTEXTS = requiredStatusContextsStr;
       FULL_LEFTHOOK = "${fullLefthookFiles}/lefthook.yml";
     };
 
@@ -3686,6 +3688,7 @@ in
         pkgs
         checkFragmentMapStr
         fragmentTriggersStr
+        requiredStatusContextsStr
         migrateSeedFor
         lefthookWrappersFor
         ;

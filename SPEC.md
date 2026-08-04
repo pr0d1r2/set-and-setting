@@ -167,13 +167,18 @@ and dogfoods both.
   truth for check-name-to-fragment mapping (#168). Pure data (no
   derivations): `checksPerFragment` (all checks per fragment, both pinned
   and lefthook-only), `pinnedChecks` (subset with `mk*Check` equivalents),
-  `validFragments`, `fragmentTriggers`. Consumed by `checksFor` (validates
-  names), `flake.nix` (serializes as `CHECK_FRAGMENT_MAP` and
-  `FRAGMENT_TRIGGERS` env vars for shell scripts), and `migrate.sh`
-  (replaces hardcoded case statements).
+  `validFragments`, `fragmentTriggers`, `requiredStatusContexts` (#282).
+  Consumed by `checksFor` (validates names), `flake.nix` (serializes as
+  `CHECK_FRAGMENT_MAP`, `FRAGMENT_TRIGGERS`, and
+  `REQUIRED_STATUS_CONTEXTS` env vars for shell scripts), `migrate.sh`
+  (replaces hardcoded case statements + emits branch protection guidance),
+  `branch-protection.sh` (`--from-standard` derives contexts), and
+  `confirm.sh` (ci-contexts self-check).
   Adding a new check = add it here; the map auto-propagates to all
-  consumers. A nix check (`check-fragment-map-complete`) validates
-  completeness against both `checksFor` output and lefthook fragment YAML.
+  consumers. Renaming a CI job = update `requiredStatusContexts` here;
+  `branch-protection.sh --from-standard` and `migrate.sh` auto-propagate.
+  A nix check (`check-fragment-map-complete`) validates completeness
+  against both `checksFor` output and lefthook fragment YAML.
 - I.checksFor: `lib/checks-for.nix` -- fragment-driven check selection
   (#93). The CI-gate counterpart to `materializationFor`. Given a
   consumer's declared fragment list, returns an attrset of pinned check
@@ -267,8 +272,12 @@ and dogfoods both.
 - I.branch-protection: `lib/branch-protection.sh` + `apps.branch-protection`
   -- enables GitHub branch protection requiring PRs via `gh api`.
   Configures required status checks, disables force pushes and
-  deletions. Supports `--repo`, `--branch`, `--status-checks`,
-  `--dry-run`, `--help`. Requires `gh auth login`.
+  deletions. `--from-standard` (#282) derives required status contexts
+  from `check-fragment-map.nix` via `REQUIRED_STATUS_CONTEXTS` env var
+  (set automatically by the nix app), eliminating hand-listed contexts
+  that drift when CI job names change. Supports `--repo`, `--branch`,
+  `--status-checks`, `--from-standard`, `--dry-run`, `--help`. Requires
+  `gh auth login`.
 - I.manifest: `./.claude/rules/set/.mkset.json` -- records installed
   categories + upstream rev + agent. Drives smart re-run (bare `mkSet`
   with a manifest refreshes what's installed), update detection, and
@@ -563,11 +572,20 @@ and dogfoods both.
   fails. Detection may walk an explicit source tree before `git init`, where it
   must not infer absent fragments. A missing expected path is unknown state and
   fails rather than being reported as convergence.
+- V47: Required status check contexts are derived, not hand-listed (#282).
+  `check-fragment-map.nix` declares `requiredStatusContexts` as the single
+  source of truth for the GitHub status contexts a referenced consumer
+  needs. `branch-protection.sh --from-standard` reads them; `migrate.sh`
+  emits guidance; `confirm.sh` validates the CI caller structure. A CI job
+  rename updates the map once and propagates to all three consumers. The
+  tree plane (workflow YAML) and settings plane (required contexts) are
+  never one change split across two uncoordinated planes.
 
 ## §T Tasks
 
 | id  | s | description                                          | cites     |
 |-----|---|------------------------------------------------------|-----------|
+| T80 | x | HOOTL-ELIGIBLE -- derive required status check contexts from the standard's workflow job names (#282). `check-fragment-map.nix` declares `requiredStatusContexts`; `branch-protection.sh --from-standard` reads them; `migrate.sh` emits branch protection guidance after successful migration; `confirm.sh` validates CI caller structure. A CI job rename updates the map once and propagates to all consumers. | I.checkFragmentMap,I.branch-protection,V47 |
 | T79 | x | HOOTL-ELIGIBLE -- add the `surgical` and `assumptions` principles, covering the two agent failure modes the existing registry left open: widening a diff past the reported problem, and silently resolving an ambiguous request. Anti-patterns stay in each principle's `Signals of violation` section, not a parallel `anti-patterns` tree, so each rule keeps one source. | V18a,I.meta,I.mkSet |
 | T78 | x | Compose `canonFor` and `apps.mkCanon` from thin `mkSeed`, named docs/governance/dev-env/SPEC units, and the shared fragment map; reuse the canon in migrate, add pre-Git source-tree fragment detection, runtime substitutions, hook install, deterministic/subset checks, and pinned drift rejection. Keep `seed` thin and `mkScaffold` as legacy rescue. (#246) | I.canonFor,I.mkCanonDriftCheck,I.checkFragmentMap,V45 |
 | T77 | x | HOOTL-ELIGIBLE — check-fragment-map: single source of truth for check-name-to-fragment mapping (#168). `lib/check-fragment-map.nix` replaces hardcoded case statements in `migrate.sh` with a nix-generated `CHECK_FRAGMENT_MAP` env var. Completeness nix check validates against `checksFor` + lefthook fragment YAML. Adding a new check = add it to the map; migrate.sh auto-discovers it. | I.checkFragmentMap,I.checksFor,V41,V42,V43 |
