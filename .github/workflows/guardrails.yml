@@ -20,6 +20,13 @@ name: Guardrails
         type: string
         default: "600"
 
+env:
+  # Apply before flake evaluation so transient input and substituter failures
+  # are retried instead of turning one HTTP 5xx into a fleet-wide red check.
+  NIX_CONFIG: |
+    connect-timeout = 15
+    download-attempts = 5
+
 jobs:
   check:
     runs-on: ubuntu-latest

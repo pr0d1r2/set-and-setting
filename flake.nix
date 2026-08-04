@@ -2,6 +2,8 @@
   description = "Set and Setting -- deterministic agent mindset and environment";
 
   nixConfig = {
+    connect-timeout = 15;
+    download-attempts = 5;
     extra-substituters = [ "https://pr0d1r2.cachix.org" ];
     extra-trusted-public-keys = [ "pr0d1r2.cachix.org-1:NfWjbhgAj41byXhCKiaE+av3Vnphm1fTezHXEGsiQIM=" ];
   };
