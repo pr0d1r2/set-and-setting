@@ -6,6 +6,10 @@
 # Env in: FRAGMENTS_DIR, out. Reads optional lefthook-overrides.yml from CWD.
 #   FRAGMENTS (optional): space-separated fragment names to include.
 #     Defaults to all Ruby and general-purpose fragments.
+#   MIGRATION_SKIPS (optional): space-separated command names to mark skip:true
+#     in the assembled config (expand phase of parallel-change migration #281).
+#   MIGRATION_HAS_OVERLAY (optional): when "1", adds extends reference for
+#     lefthook-migration.yml (the advisory overlay emitted separately).
 # shellcheck disable=SC2154
 set -euo pipefail
 
@@ -16,13 +20,18 @@ ordered="${FRAGMENTS:-base nix shell ruby rubocop rspec reek brakeman bundle-aud
 {
   printf '%s\n' '---'
 
-  # Consumer-owned, tracked overrides must survive both local assembly and
-  # CI's fresh sync-setting pass. Lefthook merges this native config after
-  # the generated commands, so same-named commands can be skipped or tuned
-  # without editing the generated, gitignored lefthook.yml.
+  # Conditional extends block for overrides and migration overlay.
+  # Lefthook merges extended configs after the generated commands.
+  _extends=""
   if [ -f "lefthook-overrides.yml" ]; then
+    _extends="${_extends}  - lefthook-overrides.yml\n"
+  fi
+  if [ "${MIGRATION_HAS_OVERLAY:-}" = "1" ]; then
+    _extends="${_extends}  - lefthook-migration.yml\n"
+  fi
+  if [ -n "$_extends" ]; then
     printf '\n%s\n' 'extends:'
-    printf '%s\n' '  - lefthook-overrides.yml'
+    printf '%b' "$_extends"
   fi
 
   has_precommit=0
@@ -73,3 +82,20 @@ ordered="${FRAGMENTS:-base nix shell ruby rubocop rspec reek brakeman bundle-aud
     fi
   fi
 } >"$out/lefthook.yml"
+
+# Inject skip:true for migrating commands (parallel-change expand phase).
+# Each command name in MIGRATION_SKIPS gets a skip:true line inserted after
+# its YAML key line, disabling it in the main config while the migration
+# overlay runs the replacement in advisory mode.
+if [ -n "${MIGRATION_SKIPS:-}" ]; then
+  skip_pattern=""
+  for cmd in ${MIGRATION_SKIPS}; do
+    if [ -n "$skip_pattern" ]; then
+      skip_pattern="${skip_pattern}|"
+    fi
+    skip_pattern="${skip_pattern}^    ${cmd}:\$"
+  done
+  awk "/${skip_pattern}/{print; print \"      skip: true\"; next} {print}" \
+    "$out/lefthook.yml" >"$out/lefthook.yml.tmp"
+  mv "$out/lefthook.yml.tmp" "$out/lefthook.yml"
+fi
