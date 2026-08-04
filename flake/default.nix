@@ -3077,6 +3077,8 @@ in
           ];
           FRAGMENTS_DIR = ../setting/integrations/lefthook;
           MAP_CHECKS = builtins.concatStringsSep "\n" mapChecks;
+          REQUIRED_CALLER_JOB = cfm.requiredWorkflowJobs.caller;
+          REQUIRED_CALLED_JOBS = builtins.concatStringsSep "\n" cfm.requiredWorkflowJobs.called;
         }
         ''
           # 1. Every checksFor name must be in the map
@@ -3118,6 +3120,25 @@ in
             done
           done
           [ "$fail" -eq 0 ] || exit 1
+          # 4. Structured workflow job data must accord with the standard
+          # caller and reusable workflow that actually produce the contexts.
+          grep -q "^  $REQUIRED_CALLER_JOB:$" ${../setting/scaffold/leaf-ci.yml} || {
+            echo "FAIL: leaf CI does not declare caller job '$REQUIRED_CALLER_JOB'"
+            exit 1
+          }
+          actual_called_jobs="$(awk '
+            /^jobs:[[:space:]]*$/ { in_jobs=1; next }
+            in_jobs && /^[^[:space:]]/ { in_jobs=0 }
+            in_jobs && /^  [A-Za-z0-9_-]+:[[:space:]]*$/ {
+              job=$1; sub(/:$/, "", job); print job
+            }
+          ' ${../.github/workflows/guardrails.yml})"
+          if [ "$actual_called_jobs" != "$REQUIRED_CALLED_JOBS" ]; then
+            echo "FAIL: required workflow jobs do not match guardrails.yml"
+            echo "declared:"; echo "$REQUIRED_CALLED_JOBS"
+            echo "actual:"; echo "$actual_called_jobs"
+            exit 1
+          fi
           echo "PASS: check-fragment-map.nix is complete (all checksFor + fragment commands covered)"
           touch $out
         '';

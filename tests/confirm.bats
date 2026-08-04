@@ -164,6 +164,23 @@ materialize_basic() {
     [[ "$output" == *"FAIL: ci-contexts"* ]]
 }
 
+@test "ci-contexts: fails when reusable workflow has the wrong caller job name" {
+    export REQUIRED_STATUS_CONTEXTS="guardrails / check|guardrails / check-darwin"
+    mkdir -p .github/workflows
+    printf '%s\n' \
+        'name: CI' \
+        '"on": { push: { branches: [main] } }' \
+        'jobs:' \
+        '  ci:' \
+        '    uses: pr0d1r2/set-and-setting/.github/workflows/guardrails.yml@main' \
+        > .github/workflows/ci.yml
+    materialize_basic
+    run bash "$SCRIPT"
+    [ "$status" -eq 1 ]
+    [[ "$output" == *"FAIL: ci-contexts"* ]]
+    [[ "$output" == *"expected caller job(s): guardrails"* ]]
+}
+
 @test "ci-contexts: skipped when no REQUIRED_STATUS_CONTEXTS" {
     materialize_basic
     unset REQUIRED_STATUS_CONTEXTS

@@ -6,6 +6,18 @@
 #   - migrate.sh (replaces hardcoded case statements)
 # Adding a new check here + its mk*Check helper (or lefthook fragment command)
 # is the ONLY step needed; migrate.sh auto-discovers it via the env var.
+let
+  # GitHub composes a reusable workflow's status context from the caller job
+  # and the called job: "<caller> / <called>". Keep the job identifiers as
+  # structured data and derive the consumer-facing contexts below.
+  requiredWorkflowJobs = {
+    caller = "guardrails";
+    called = [
+      "check"
+      "check-darwin"
+    ];
+  };
+in
 {
   validFragments = [
     "base"
@@ -165,14 +177,10 @@
     ".github/workflows/ci.yml"
   ];
 
+  inherit requiredWorkflowJobs;
+
   # Standard-derived required status check contexts for branch protection.
-  # The leaf consumer CI caller (leaf-ci.yml) names its job "guardrails",
-  # which delegates to guardrails.yml's "check" and "check-darwin" jobs.
-  # GitHub composes these as "guardrails / check" and "guardrails / check-darwin".
-  # Changing job names here is the ONLY step needed; branch-protection.sh,
-  # migrate.sh, and confirm.sh auto-discover via the serialized env var.
-  requiredStatusContexts = [
-    "guardrails / check"
-    "guardrails / check-darwin"
-  ];
+  requiredStatusContexts = map (
+    calledJob: "${requiredWorkflowJobs.caller} / ${calledJob}"
+  ) requiredWorkflowJobs.called;
 }

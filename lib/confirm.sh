@@ -178,12 +178,26 @@ fi
 if [ -n "${REQUIRED_STATUS_CONTEXTS:-}" ] && [ -f ".github/workflows/ci.yml" ]; then
   _ci_is_guardrails=0
   grep -q 'guardrails.yml' .github/workflows/ci.yml 2>/dev/null && _ci_is_guardrails=1
-  if [ "$_ci_is_guardrails" -eq 1 ]; then
+  _required_callers="$(printf '%s\n' "$REQUIRED_STATUS_CONTEXTS" \
+    | tr '|' '\n' | sed 's| / .*||' | sort -u)"
+  _ci_jobs="$(awk '
+    /^jobs:[[:space:]]*$/ { in_jobs=1; next }
+    in_jobs && /^[^[:space:]]/ { in_jobs=0 }
+    in_jobs && /^  [A-Za-z0-9_-]+:[[:space:]]*$/ {
+      job=$1; sub(/:$/, "", job); print job
+    }
+  ' .github/workflows/ci.yml)"
+  _callers_present=1
+  while IFS= read -r caller; do
+    [ -z "$caller" ] || grep -qxF "$caller" <<<"$_ci_jobs" || _callers_present=0
+  done <<<"$_required_callers"
+  if [ "$_ci_is_guardrails" -eq 1 ] && [ "$_callers_present" -eq 1 ]; then
     echo "PASS: ci-contexts: CI caller delegates to standard guardrails workflow"
     pass=$((pass + 1))
   else
-    echo "FAIL: ci-contexts: CI workflow does not delegate to guardrails.yml"
-    echo "  expected: uses: ...guardrails.yml@main"
+    echo "FAIL: ci-contexts: CI workflow does not produce the required caller contexts"
+    echo "  expected caller job(s): $(tr '\n' ' ' <<<"$_required_callers")"
+    echo "  expected reusable workflow: guardrails.yml"
     echo "  required contexts would be: ${REQUIRED_STATUS_CONTEXTS}"
     fail=$((fail + 1))
   fi
