@@ -3,11 +3,11 @@
 # (lefthook-migration.yml) alongside the main lefthook.yml, implementing the
 # expand/migrate/contract pattern:
 #
-#   EXPAND   — old check stays in lefthook.yml but disabled (skip:true);
+#   EXPAND   -- old check stays in lefthook.yml but disabled (skip:true);
 #              new check lands in lefthook-migration.yml, advisory (non-blocking).
-#   MIGRATE  — fleet validates new check over real PRs. Each consumer diff is
+#   MIGRATE  -- fleet validates new check over real PRs. Each consumer diff is
 #              the overlay only (small, reviewable, reversible).
-#   CONTRACT — new check promoted to lefthook.yml, overlay dropped.
+#   CONTRACT -- new check promoted to lefthook.yml, overlay dropped.
 #
 # Each entry:
 #   name:   migration identifier (informational, for diagnostics)
