@@ -2401,6 +2401,8 @@ in
           || { echo "FAIL: flake.nix does not delegate to mkConsumerFlake"; exit 1; }
         grep -q 'includeSet = true' "${scaffold}/flake.nix" \
           || { echo "FAIL: flake.nix does not preserve set package and sync"; exit 1; }
+        grep -Fq 'nixpkgs-lock.inputs.set-and-setting.follows = "set-and-setting";' "${scaffold}/flake.nix" \
+          || { echo "FAIL: flake.nix does not deduplicate set-and-setting"; exit 1; }
         ${pkgs.lib.getExe (flakeManifestWrapperFor pkgs)} "${scaffold}/flake.nix"
 
         # T59/B17: scaffold ci.yml must specify devshell: "default"
@@ -3245,6 +3247,8 @@ in
           || { echo "FAIL: leaf seed should keep the flake description at top level"; exit 1; }
         grep -q "set-and-setting" ${seed}/flake.nix || { echo "FAIL: flake.nix should reference set-and-setting"; exit 1; }
         grep -q "mkConsumerFlake" ${seed}/flake.nix || { echo "FAIL: flake.nix should use mkConsumerFlake"; exit 1; }
+        grep -Fq 'nixpkgs-lock.inputs.set-and-setting.follows = "set-and-setting";' ${seed}/flake.nix \
+          || { echo "FAIL: leaf seed should deduplicate set-and-setting"; exit 1; }
         if grep -q "assemble-lefthook.sh" ${seed}/flake.nix; then
           echo "FAIL: leaf seed should not inline lefthook assembly"; exit 1
         fi

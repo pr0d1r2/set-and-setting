@@ -8,6 +8,7 @@
 
   inputs = {
     nixpkgs-lock.url = "github:pr0d1r2/nixpkgs-lock";
+    nixpkgs-lock.inputs.set-and-setting.follows = "set-and-setting";
     nixpkgs.follows = "nixpkgs-lock/nixpkgs";
 
     set-and-setting.url = "github:pr0d1r2/set-and-setting";
