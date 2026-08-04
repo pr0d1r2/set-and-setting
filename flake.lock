@@ -195,11 +195,11 @@
     "nix-lefthook-markdownlint-agentic-src": {
       "flake": false,
       "locked": {
-        "lastModified": 1785682093,
-        "narHash": "sha256-MgFJRBdZrZSU5wDJxQYbof1IJMviX+d52rDZDAngb4w=",
+        "lastModified": 1785813447,
+        "narHash": "sha256-bCic1+xWo2QShZCMWHxitNXcvgVGJf3DZY6dPYyYbos=",
         "owner": "pr0d1r2",
         "repo": "nix-lefthook-markdownlint-agentic",
-        "rev": "932c3fbc5cc818542bdf4df6907705168a445b68",
+        "rev": "6d23f70d9d651a8f63da9d2640cd394f342dd211",
         "type": "github"
       },
       "original": {
@@ -211,11 +211,11 @@
     "nix-lefthook-markdownlint-src": {
       "flake": false,
       "locked": {
-        "lastModified": 1785262840,
-        "narHash": "sha256-AMwqYUGMHuTkxMGQHxymR4Sx2w7UgkZPeloaonQJlAU=",
+        "lastModified": 1785843203,
+        "narHash": "sha256-OYpNUG83b61hzRNZZ48JryQIZv8qa1+mkHaTpLu9w6w=",
         "owner": "pr0d1r2",
         "repo": "nix-lefthook-markdownlint",
-        "rev": "2e10223d9481b8c1fc254c1d4b2b0623fb089623",
+        "rev": "ae7cdd51bb6e151f19308989f682bc46341b0ad3",
         "type": "github"
       },
       "original": {
@@ -243,11 +243,11 @@
     "nix-lefthook-narrow-language-src": {
       "flake": false,
       "locked": {
-        "lastModified": 1785684663,
-        "narHash": "sha256-/CvGhq+obGn81FZaoVuassGCX+Yg6w8VyOMqYnjquKc=",
+        "lastModified": 1785799636,
+        "narHash": "sha256-inMuDC/Cto4ghFFkzTXgjz2y34OHNfsUQdXOF2LqjLo=",
         "owner": "pr0d1r2",
         "repo": "nix-lefthook-narrow-language",
-        "rev": "dfe6638dca439c5489f509ee9c9f720bc835f630",
+        "rev": "8b5c4691bfb24c32339196b8579e679832cf3e6c",
         "type": "github"
       },
       "original": {
@@ -291,11 +291,11 @@
     "nix-lefthook-nix-no-embedded-shell-src": {
       "flake": false,
       "locked": {
-        "lastModified": 1785682733,
-        "narHash": "sha256-oSimhKZ+UVzRHHAVDsXcAri+mgbIQmgtrIK3nuJB7Ts=",
+        "lastModified": 1785812297,
+        "narHash": "sha256-RghaC0APJeNfvtdOwx7MJ9/eaNC19ulv5rAcZPu72EY=",
         "owner": "pr0d1r2",
         "repo": "nix-lefthook-nix-no-embedded-shell",
-        "rev": "b289c0b61dfcfc1cccbda451a970b8bc1e7baa78",
+        "rev": "d19fd02acce76e6a10ead6c35ff2512757b7d372",
         "type": "github"
       },
       "original": {
