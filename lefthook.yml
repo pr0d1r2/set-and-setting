@@ -8,6 +8,9 @@ pre-commit:
       run: lefthook-git-conflict-markers {staged_files}
     git-no-local-paths:
       run: lefthook-git-no-local-paths {staged_files}
+    nix-flake-check:
+      glob: "*.nix"
+      run: timeout ${LEFTHOOK_NIX_FLAKE_CHECK_TIMEOUT:-60} nix flake check
     rubocop:
       glob: "**/*.rb"
       run: bundle exec rubocop --fail-fast --force-exclusion {staged_files}
@@ -36,6 +39,9 @@ pre-commit:
 
 pre-push:
   commands:
+    nix-flake-check:
+      glob: "*.nix"
+      run: timeout ${LEFTHOOK_NIX_FLAKE_CHECK_TIMEOUT:-60} nix flake check
     rubocop:
       run: bundle exec rubocop --fail-fast
       timeout: 2m

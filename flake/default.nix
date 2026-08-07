@@ -2669,6 +2669,8 @@ in
           || { echo "FAIL: lefthook.yml missing git-conflict-markers"; exit 1; }
         grep -q 'git-no-local-paths' "${mat.files}/lefthook.yml" \
           || { echo "FAIL: lefthook.yml missing git-no-local-paths"; exit 1; }
+        grep -q 'nix-flake-check' "${mat.files}/lefthook.yml" \
+          || { echo "FAIL: lefthook.yml missing nix-flake-check"; exit 1; }
         [ -x "${allBins}/bin/lefthook-markdownlint" ] \
           || { echo "FAIL: packages missing lefthook-markdownlint"; exit 1; }
         [ -x "${allBins}/bin/lefthook-yamllint" ] \

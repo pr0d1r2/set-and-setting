@@ -25,6 +25,9 @@ setup() {
         write_commands pre-commit gitleaks "*" staged_files
         write_commands pre-commit git-conflict-markers "*" staged_files
         write_commands pre-commit git-no-local-paths "*" staged_files
+        printf '%s\n' '    nix-flake-check:' \
+            '      glob: "*.nix"' \
+            '      run: timeout ${LEFTHOOK_NIX_FLAKE_CHECK_TIMEOUT:-60} nix flake check'
     } >"$FRAGMENTS_DIR/base.yml"
 
     printf '%s\n' "---" >"$FRAGMENTS_DIR/nix.yml"
@@ -148,10 +151,27 @@ teardown() {
     grep -q 'gitleaks:' "$out/lefthook.yml"
     grep -q 'git-conflict-markers:' "$out/lefthook.yml"
     grep -q 'git-no-local-paths:' "$out/lefthook.yml"
+    grep -q 'nix-flake-check:' "$out/lefthook.yml"
     grep -q 'ascii-check:' "$out/lefthook.yml"
     grep -q 'mdlint:' "$out/lefthook.yml"
     grep -q 'yamllint:' "$out/lefthook.yml"
     grep -q 'set-ref-resolution:' "$out/lefthook.yml"
+}
+
+@test "base fragment emits nix-flake-check for pre-commit and pre-push" {
+    local real_dir
+    real_dir="$(cd "$BATS_TEST_DIRNAME/.." && pwd)/setting/integrations/lefthook"
+    FRAGMENTS_DIR="$real_dir"
+    export FRAGMENTS_DIR
+    FRAGMENTS="base" bash "$SCRIPT"
+
+    local precommit_section prepush_section
+    precommit_section="$(awk '/^pre-commit:/,/^pre-push:/' "$out/lefthook.yml")"
+    prepush_section="$(awk '/^pre-push:/,0' "$out/lefthook.yml")"
+    echo "$precommit_section" | grep -q 'nix-flake-check:'
+    echo "$precommit_section" | grep -Fq 'glob: "*.nix"'
+    echo "$prepush_section" | grep -q 'nix-flake-check:'
+    echo "$prepush_section" | grep -Fq 'run: timeout ${LEFTHOOK_NIX_FLAKE_CHECK_TIMEOUT:-60} nix flake check'
 }
 
 @test "has pre-push section with commands" {

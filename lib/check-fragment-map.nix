@@ -43,6 +43,7 @@ in
       "missing-final-newline"
       "editorconfig-checker"
       "typos"
+      "nix-flake-check"
     ];
     nix = [
       "flake-manifest"
