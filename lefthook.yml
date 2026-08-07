@@ -15,6 +15,10 @@ pre-commit:
       glob: "**/*.rb"
       run: bundle exec rubocop --fail-fast --force-exclusion {staged_files}
       timeout: 60s
+    unicode-lint:
+      glob: "*"
+      exclude: '\.(gif|png|jpg|jpeg|ico|webp|bmp|tiff|pdf|woff2?|ttf|eot|mp[34]|wav|ogg|zip|gz|tar|iso)$'
+      run: timeout ${LEFTHOOK_UNICODE_LINT_TIMEOUT:-30} lefthook-unicode-lint {staged_files}
     markdownlint:
       glob: "*.md"
       run: timeout ${LEFTHOOK_MARKDOWNLINT_TIMEOUT:-30} lefthook-markdownlint {staged_files}
