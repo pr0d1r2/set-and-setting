@@ -60,6 +60,20 @@ _init_repo() {
     git commit -q -m "initial" --allow-empty
 }
 
+_assert_fragment_indent() {
+    awk '
+        /fragments = \[/ {
+            found = 1
+            match($0, /^[[:space:]]*/)
+            expected = RLENGTH + 2
+            if (getline <= 0) exit 1
+            match($0, /^[[:space:]]*/)
+            exit RLENGTH == expected ? 0 : 1
+        }
+        END { if (!found) exit 1 }
+    ' flake.nix
+}
+
 # a vendored (pre-FLIP) lefthook: guardrails inline as commands (all covered)
 write_vendored_lefthook() {
     printf '%s\n' \
@@ -230,6 +244,7 @@ write_vendored_lefthook_with_remotes() {
     # standard infrastructure present
     grep -q 'set-and-setting' flake.nix
     grep -q 'mkConsumerFlake' flake.nix
+    _assert_fragment_indent
 }
 
 @test "custom flake with overlays as outputs is reconciled (#127)" {
@@ -420,6 +435,7 @@ write_vendored_lefthook_with_remotes() {
     # thin referenced flake planted
     grep -q "set-and-setting" flake.nix
     grep -q "mkConsumerFlake" flake.nix
+    _assert_fragment_indent
     # ci.yml replaced by guardrails caller
     grep -q "guardrails.yml" .github/workflows/ci.yml
     # lefthook.yml now gitignored, no longer tracked
@@ -460,6 +476,7 @@ write_vendored_lefthook_with_remotes() {
     grep -q '"yaml"' flake.nix
     grep -q '"shell"' flake.nix
     grep -q '"ascii"' flake.nix
+    _assert_fragment_indent
     # "set" excluded (specific to set-and-setting)
     ! grep -q '"set"' flake.nix
 }
