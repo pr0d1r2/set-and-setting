@@ -396,6 +396,23 @@ let
         "scripts"
       ];
     };
+    # Shell facets inherit the same conditional channel and applicability
+    # globs as the category skill. Without this subtree entry, the direct
+    # generic/sh.md decision does not reach generic/sh/* and those facets
+    # silently fall back to the always-on generic category.
+    "generic/sh" = {
+      channel = "domain";
+      always = false;
+      paths = [
+        "**/*.sh"
+        "**/*.bash"
+      ];
+      keywords = [
+        "shell"
+        "bash"
+        "scripts"
+      ];
+    };
     "generic/skill.md" = {
       channel = "core";
       keywords = [
