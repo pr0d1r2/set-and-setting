@@ -1,5 +1,13 @@
 # ascii-only is intentionally absent here: it is delivered as a PINNED flake
 # `checks.<sys>.ascii-only` (set-and-setting.lib.mkAsciiOnlyCheck / #100),
 # replacing the runtime `remotes:` git_url with an offline-runnable,
-# cache-warm check. No ascii remotes remain.
+# cache-warm check. unicode-lint complements ascii-only by checking the
+# character surface for homoglyphs and bidi overrides. No ascii remotes remain.
 ---
+
+pre-commit:
+  commands:
+    unicode-lint:
+      glob: "*"
+      exclude: '\.(gif|png|jpg|jpeg|ico|webp|bmp|tiff|pdf|woff2?|ttf|eot|mp[34]|wav|ogg|zip|gz|tar|iso)$'
+      run: timeout ${LEFTHOOK_UNICODE_LINT_TIMEOUT:-30} lefthook-unicode-lint {staged_files}

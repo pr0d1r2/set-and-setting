@@ -69,6 +69,7 @@ in
     bundle-audit = [ "bundle-audit" ];
     ascii = [
       "ascii-only"
+      "unicode-lint"
     ];
     markdown = [
       "markdownlint"

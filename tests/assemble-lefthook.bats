@@ -227,6 +227,8 @@ teardown() {
     grep -q 'reek:' "$out/lefthook.yml"
     grep -q 'brakeman:' "$out/lefthook.yml"
     grep -q 'bundle-audit:' "$out/lefthook.yml"
+    grep -q 'unicode-lint:' "$out/lefthook.yml"
+    grep -Fq "exclude: '\\.(gif|png|jpg|jpeg|ico|webp|bmp|tiff|pdf|woff2?|ttf|eot|mp[34]|wav|ogg|zip|gz|tar|iso)$'" "$out/lefthook.yml"
     grep -q 'bundle exec rspec' "$out/lefthook.yml"
     grep -q 'bundle exec rubocop --fail-fast --force-exclusion {staged_files}' \
         "$out/lefthook.yml"
