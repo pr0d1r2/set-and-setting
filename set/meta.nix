@@ -254,6 +254,197 @@ let
       ];
     };
 
+    # Generic-core review (#295): every direct generic skill has an
+    # explicit decision. Universal principles stay core; guidance tied to
+    # a tool, file shape, or repository convention is conditional.
+    "generic/direnv.md" = {
+      channel = "domain";
+      always = false;
+      paths = [
+        ".envrc"
+        "flake.nix"
+        "flake.lock"
+        "**/*.nix"
+      ];
+      keywords = [
+        "direnv"
+        "environment"
+        "reload"
+      ];
+    };
+    "generic/dotfile.md" = {
+      channel = "domain";
+      always = false;
+      paths = [ "**/.*" ];
+      keywords = [
+        "dotfile"
+        "keep"
+        "hidden-file"
+      ];
+    };
+    "generic/dry.md" = {
+      channel = "core";
+      keywords = [
+        "dry"
+        "duplication"
+        "single-source-of-truth"
+      ];
+    };
+    "generic/dx.md" = {
+      channel = "core";
+      keywords = [
+        "developer-experience"
+        "agent-experience"
+      ];
+    };
+    "generic/express-intent.md" = {
+      channel = "core";
+      keywords = [
+        "intent"
+        "naming"
+        "contracts"
+      ];
+    };
+    "generic/implementation.md" = {
+      channel = "domain";
+      always = false;
+      paths = [
+        "**/*.nix"
+        "**/*.sh"
+        "**/*.bash"
+        "**/*.py"
+        "**/*.rb"
+        "**/*.js"
+        "**/*.ts"
+        "**/*.go"
+        "**/*.rs"
+        "**/*.el"
+      ];
+      keywords = [
+        "implementation"
+        "code"
+        "testing"
+      ];
+    };
+    "generic/kiss.md" = {
+      channel = "core";
+      keywords = [
+        "kiss"
+        "simplicity"
+        "complexity"
+      ];
+    };
+    "generic/linter.md" = {
+      channel = "domain";
+      always = false;
+      paths = [
+        "lefthook.yml"
+        "lefthook.yaml"
+        "flake.nix"
+        "**/*"
+      ];
+      keywords = [
+        "linter"
+        "lefthook"
+        "devshell"
+      ];
+    };
+    "generic/parallel.md" = {
+      channel = "core";
+      keywords = [
+        "parallelism"
+        "concurrency"
+        "stability"
+      ];
+    };
+    "generic/performance.md" = {
+      channel = "core";
+      keywords = [
+        "performance"
+        "latency"
+        "ux"
+      ];
+    };
+    "generic/portability.md" = {
+      channel = "core";
+      keywords = [
+        "portability"
+        "linux"
+        "macos"
+      ];
+    };
+    "generic/semble.md" = {
+      channel = "domain";
+      always = false;
+      paths = [ "**/*" ];
+      keywords = [
+        "semble"
+        "semantic-search"
+        "code-exploration"
+      ];
+    };
+    "generic/sh.md" = {
+      channel = "domain";
+      always = false;
+      paths = [
+        "**/*.sh"
+        "**/*.bash"
+      ];
+      keywords = [
+        "shell"
+        "bash"
+        "scripts"
+      ];
+    };
+    # Shell facets inherit the same conditional channel and applicability
+    # globs as the category skill. Without this subtree entry, the direct
+    # generic/sh.md decision does not reach generic/sh/* and those facets
+    # silently fall back to the always-on generic category.
+    "generic/sh" = {
+      channel = "domain";
+      always = false;
+      paths = [
+        "**/*.sh"
+        "**/*.bash"
+      ];
+      keywords = [
+        "shell"
+        "bash"
+        "scripts"
+      ];
+    };
+    "generic/skill.md" = {
+      channel = "core";
+      keywords = [
+        "skills"
+        "metadata"
+        "workflow"
+      ];
+    };
+    "generic/tdd.md" = {
+      channel = "core";
+      keywords = [
+        "tdd"
+        "testing"
+        "red-green-refactor"
+      ];
+    };
+    "generic/ux.md" = {
+      channel = "core";
+      keywords = [
+        "ux"
+        "developer-experience"
+      ];
+    };
+    "generic/yagni.md" = {
+      channel = "core";
+      keywords = [
+        "yagni"
+        "scope"
+        "simplicity"
+      ];
+    };
+
     # High-value facets (V34/V35): narrow paths (also tighten the rule
     # globs) + content signals so smart materialization (T53) installs
     # them only when the feature is actually used. The qemu subtree shares
@@ -703,7 +894,12 @@ let
       "${rel}|${lib.concatStringsSep "," r.paths}|${lib.concatStringsSep "," r.content}"
     ) (lib.sort (a: b: a < b) skillFiles)
   );
+  genericSkillFiles = lib.filter (
+    p: lib.hasPrefix "generic/" p && lib.length (lib.splitString "/" p) == 2
+  ) skillFiles;
+  missingGenericDecisions = lib.filter (p: !(overrides ? ${p})) genericSkillFiles;
 in
+assert missingGenericDecisions == [ ];
 {
   inherit
     overrides

@@ -32,11 +32,12 @@ file looks correct and does nothing.
 2. Choose the shape. A core rule is `<topic>.md`; a narrower facet is
   `<topic>/<aspect>.md`. A facet extends its core, so keeping a facet
   pulls its `<topic>.md` in with it.
-3. Add a `set/meta.nix` entry. It decides `channel` (always-on or
+3. Add an exact `set/meta.nix` entry. It decides `channel` (always-on or
   conditional), `paths` (which files trigger a conditional load), and
-  `keywords` (what makes the portable skill discoverable). With no
-  entry the file inherits its category default, so it may load on
-  every turn or never load at all.
+  `keywords` (what makes the portable skill discoverable). Category
+  inheritance is a fallback for established trees, not an approval to
+  add a new skill: validation rejects a direct `generic/*.md` file that
+  has no exact decision.
 4. For a new category only, add it to `set/lib/categories.nix`.
   Without that the category is not emitted.
 5. Verify with `nix flake check`, then confirm the file appears in the
