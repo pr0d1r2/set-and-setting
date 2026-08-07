@@ -110,6 +110,7 @@ let
         pkgs.gawk
         pkgs.git
         pkgs.gnugrep
+        pkgs.nixfmt
       ];
       # The nix build sandbox has no $HOME and no git identity. Point git
       # at empty config files (so it never consults $HOME) and supply the

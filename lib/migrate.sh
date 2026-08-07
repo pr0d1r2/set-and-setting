@@ -837,9 +837,11 @@ if [ -f flake.nix ] && grep -q 'fragments = \[' flake.nix; then
   awk -v frags="$consumer_frags" '
     /fragments = \[/ {
       print
+      match($0, /^[[:space:]]*/)
+      item_indent = substr($0, RSTART, RLENGTH) "  "
       n = split(frags, arr, " ")
       for (i = 1; i <= n; i++) {
-        print "        \"" arr[i] "\""
+        print item_indent "\"" arr[i] "\""
       }
       skip = 1
       next
@@ -848,6 +850,9 @@ if [ -f flake.nix ] && grep -q 'fragments = \[' flake.nix; then
     skip { next }
     { print }
   ' flake.nix >flake.nix.tmp && mv flake.nix.tmp flake.nix
+  if command -v nixfmt >/dev/null 2>&1; then
+    nixfmt flake.nix
+  fi
   git add flake.nix
   echo "fragments: $consumer_frags"
 fi
