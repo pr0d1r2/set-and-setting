@@ -31,11 +31,15 @@ if [ -z "$tracked" ] && [ -n "${DETECT_ROOT:-}" ]; then
 fi
 
 if [ -z "$tracked" ]; then
-  echo "base nix shell ruby rubocop rspec reek brakeman bundle-audit ascii markdown yaml set"
+  echo "base actions nix shell ruby rubocop rspec reek brakeman bundle-audit ascii markdown yaml set"
   exit 0
 fi
 
 result="base"
+
+if grep -qE '(^|/)\.github/workflows/[^/]+\.(yml|yaml)$' <<<"$tracked"; then
+  result="$result actions"
+fi
 
 if grep -qE '\.nix$' <<<"$tracked"; then
   result="$result nix"

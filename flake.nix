@@ -16,6 +16,10 @@
       url = "github:pr0d1r2/nix-lefthook-ascii-only";
       flake = false;
     };
+    nix-lefthook-actionlint-src = {
+      url = "github:pr0d1r2/nix-lefthook-actionlint";
+      flake = false;
+    };
     nix-lefthook-bats-parse-src = {
       url = "github:pr0d1r2/nix-lefthook-bats-parse";
       flake = false;

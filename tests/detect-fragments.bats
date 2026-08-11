@@ -27,7 +27,7 @@ teardown() {
     run env DETECT_ROOT="$source_tree" bash "$SCRIPT"
     rm -rf "$source_tree"
     [ "$status" -eq 0 ]
-    [ "$output" = "base nix ascii markdown yaml" ]
+    [ "$output" = "base actions nix ascii markdown yaml" ]
 }
 
 @test "empty source-tree mode does not over-detect optional fragments" {
@@ -41,7 +41,7 @@ teardown() {
 @test "empty repo defaults to all fragments" {
     run bash "$SCRIPT"
     [ "$status" -eq 0 ]
-    [ "$output" = "base nix shell ruby rubocop rspec reek brakeman bundle-audit ascii markdown yaml set" ]
+    [ "$output" = "base actions nix shell ruby rubocop rspec reek brakeman bundle-audit ascii markdown yaml set" ]
 }
 
 @test "Gemfile detects the Ruby fragment" {
@@ -209,7 +209,7 @@ teardown() {
     git add test.nix test.sh README.md config.yml set/skills/test.md
     run bash "$SCRIPT"
     [ "$status" -eq 0 ]
-    [ "$output" = "base nix shell ascii markdown yaml set" ]
+    [ "$output" = "base actions nix shell ascii markdown yaml set" ]
 }
 
 @test "fragment order is deterministic" {
@@ -222,7 +222,7 @@ teardown() {
     git add config.yml README.md test.sh test.nix set/skills/test.md
     run bash "$SCRIPT"
     [ "$status" -eq 0 ]
-    [ "$output" = "base nix shell ascii markdown yaml set" ]
+    [ "$output" = "base actions nix shell ascii markdown yaml set" ]
 }
 
 @test "base and ascii always present" {

@@ -1,5 +1,21 @@
 {
   "nodes": {
+    "nix-lefthook-actionlint-src": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1786448212,
+        "narHash": "sha256-XFCROBO3hayrJmCTALvKeBdNrkT5Wv5E4X4Uda7KOQ8=",
+        "owner": "pr0d1r2",
+        "repo": "nix-lefthook-actionlint",
+        "rev": "87b9a3c3f611168d80de67a0d4ca1f85045c2ec1",
+        "type": "github"
+      },
+      "original": {
+        "owner": "pr0d1r2",
+        "repo": "nix-lefthook-actionlint",
+        "type": "github"
+      }
+    },
     "nix-lefthook-ascii-only-src": {
       "flake": false,
       "locked": {
@@ -500,6 +516,7 @@
     },
     "root": {
       "inputs": {
+        "nix-lefthook-actionlint-src": "nix-lefthook-actionlint-src",
         "nix-lefthook-ascii-only-src": "nix-lefthook-ascii-only-src",
         "nix-lefthook-bats-parse-src": "nix-lefthook-bats-parse-src",
         "nix-lefthook-bats-unit-src": "nix-lefthook-bats-unit-src",
