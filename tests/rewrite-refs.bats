@@ -16,7 +16,8 @@ setup() {
         "$root/set/skills/language/active.md" "$root/out/.claude/rules/set/language/active.md" \
         "$root/set/concepts/hardware.md" "$root/out/.claude/rules/set/concepts-hardware.md" \
         "$root/set/concepts/hardware/apple/m4.md" "$root/out/.claude/rules/set/concepts-hardware-apple-m4.md" >"$root/map"
-    export REF_MATCH="$BATS_TEST_DIRNAME/../lib/ref-match.sh" REF_MAP="$root/map" SET_ROOT="$root"
+    export REF_MATCH="$BATS_TEST_DIRNAME/../lib/ref-match.sh" REF_MAP="$root/map" SET_ROOT="$root" \
+        SKILLS_DIR="$root/set/skills" CONCEPTS_DIR="$root/set/concepts"
     SCRIPT="$BATS_TEST_DIRNAME/../set/lib/rewrite-refs.sh"
 }
 

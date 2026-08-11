@@ -7,8 +7,10 @@ while IFS= read -r line || [ -n "$line" ]; do
   while IFS= read -r ref; do
     [ -n "$ref" ] || continue
     case "$ref" in
-      @set/*) source="$SET_ROOT/set/${ref#@set/}" ;;
-      @*) source="$SET_ROOT/set/skills/${ref#@}" ;;
+      @set/concepts/*) source="$CONCEPTS_DIR/${ref#@set/concepts/}" ;;
+      @set/skills/*) source="$SKILLS_DIR/${ref#@set/skills/}" ;;
+      @set/*) source="$SET_ROOT/${ref#@set/}" ;;
+      @*) source="$SKILLS_DIR/${ref#@}" ;;
     esac
     target=""
     while IFS='|' read -r map_source map_dest; do
