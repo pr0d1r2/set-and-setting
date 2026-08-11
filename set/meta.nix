@@ -164,6 +164,18 @@ let
       ];
     };
 
+    "principles/rust.md" = {
+      keywords = [
+        "rust-equivalent"
+        "rust"
+        "performance"
+        "benchmarking"
+        "reuse"
+        "implementation-choice"
+        "ecosystem"
+      ];
+    };
+
     "principles/wiio.md" = {
       keywords = [
         "wiios-laws"
