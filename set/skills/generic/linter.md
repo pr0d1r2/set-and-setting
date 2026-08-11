@@ -18,14 +18,16 @@ Two shells, one gate:
 Only LLM-specific tools (claude, trip harness) go in
 `agenticPackages`.
 
-CI runs the same lefthook gate as local hooks — `nix develop .#default`
-with no skip. A commit that passes locally passes CI; a commit that
-fails CI fails locally.
+CI runs the hermetic `nix flake check` gate after materializing the
+consumer configuration. Local Lefthook hooks are an earlier, changed-file
+feedback loop; they can also contain checks that need git context or are
+not pinned flake checks. Keep both gates aligned where they overlap, but do
+not describe them as the same command.
 
 ## Closing gaps
 
-When adding a new file type, close the linter gap in a follow-up
-commit: add the linter tool, configure its check, fix violations.
+When adding a new file type, close the linter gap in the same change: add
+the linter tool, configure its check, and fix violations before committing.
 Do not leave uncovered extensions.
 
 ## How to verify coverage
