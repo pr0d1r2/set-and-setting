@@ -1031,6 +1031,63 @@ in
   );
 
   checks = forAllSystems (pkgs: {
+    # SPEC I.flake is the public contract of this repository. Keep this
+    # assertion in the standard's own check set so replacing the library
+    # flake with a leaf-consumer template cannot silently amputate it.
+    flake-interface =
+      let
+        requiredTopLevel = [
+          "apps"
+          "checks"
+          "drafts"
+          "lib"
+          "packages"
+          "sets"
+          "settings"
+        ];
+        requiredLib = [
+          "canonFor"
+          "checksFor"
+          "mkCanonDriftCheck"
+          "mkDepGraphCheck"
+          "mkDevShells"
+          "mkDriftCheck"
+          "mkMaterializeCheck"
+          "mkSet"
+          "mkSetting"
+        ];
+        requiredApps = [
+          "bootstrap"
+          "bootstrap-hooks"
+          "branch-protection"
+          "confirm"
+          "graduate"
+          "migrate"
+          "mkCanon"
+          "mkScaffold"
+          "mkSet"
+          "mkSetting"
+          "mkSetting-init"
+          "seed"
+        ];
+        requiredPackages = [
+          "set"
+          "setting"
+        ];
+        hasAll = attrs: names: builtins.all (name: builtins.hasAttr name attrs) names;
+        inherit (pkgs.stdenv.hostPlatform) system;
+      in
+      pkgs.runCommand "flake-interface" { } ''
+        ${
+          assert hasAll self requiredTopLevel;
+          assert hasAll self.lib requiredLib;
+          assert hasAll self.apps.${system} requiredApps;
+          assert hasAll self.packages.${system} requiredPackages;
+          ""
+        }
+        touch $out
+      '';
+
     # #97 (part of #93): nixfmt as a PINNED hermetic check, replacing the
     # runtime `remotes:` git_url in lefthook. Resolves the lint via the
     # pinned `nix-lefthook-nixfmt-src` input (nixfmtWrapperFor) -- offline-
