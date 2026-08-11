@@ -127,6 +127,67 @@ in
     set = [ ];
   };
 
+  # File class -> checks that lint it. Classes are extensions without the
+  # leading dot, except where a path shape is the discriminator. `all` is
+  # used for checks that intentionally inspect the whole tree.
+  coveragePerFileClass = {
+    all = [
+      "gitleaks"
+      "git-conflict-markers"
+      "git-no-local-paths"
+      "execute-permissions"
+      "file-size-check"
+      "trailing-whitespace"
+      "missing-final-newline"
+      "editorconfig-checker"
+      "typos"
+      "ascii-only"
+      "unicode-lint"
+    ];
+    nix = [
+      "nix-flake-check"
+      "flake-manifest"
+      "nixfmt"
+      "statix"
+      "deadnix"
+      "nix-no-embedded-shell"
+    ];
+    sh = [
+      "shellcheck"
+      "shfmt"
+      "no-shell-functions"
+    ];
+    rb = [
+      "rubocop"
+      "reek"
+    ];
+    md = [
+      "markdownlint"
+      "markdownlint-agentic"
+    ];
+    yml = [ "yamllint" ];
+    yaml = [ "yamllint" ];
+    ".github/workflows" = [ "yamllint" ];
+    "Gemfile" = [ "bundle-audit" ];
+    "Gemfile.lock" = [ "bundle-audit" ];
+    "set/**/*.md" = [
+      "set-skill-extension"
+      "set-skill-size"
+      "set-ref-resolution"
+      "set-bundle-content"
+    ];
+    "spec/" = [ "rspec" ];
+    ".rubocop.yml" = [ "rubocop" ];
+    ".reek.yml" = [ "reek" ];
+    "config/brakeman.yml" = [ "brakeman" ];
+  };
+
+  # Tracked classes deliberately not linted. These are exclusions from the
+  # coverage invariant, not checks.
+  unlintedFileClasses = {
+    lock = "generated";
+  };
+
   # Human-readable trigger descriptions per fragment (for diagnostics).
   fragmentTriggers = {
     base = "always active";

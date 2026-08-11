@@ -584,6 +584,7 @@ in
   };
 
   lib = {
+    checkFragmentMap = cfm;
     mkSet = import ../set/lib/mk-set.nix { inherit (nixpkgs) lib; };
     mkSetting = import ../setting/lib/mk-setting.nix { inherit (nixpkgs) lib; };
     mkDriftCheck = import ../lib/mk-drift-check.nix;
@@ -3168,6 +3169,9 @@ in
         pinnedMissing = builtins.filter (c: !(builtins.elem c mapChecks)) allChecks;
         mapPinned = builtins.concatLists (map (f: cfm.pinnedChecks.${f}) cfm.validFragments);
         extraPinned = builtins.filter (c: !(builtins.elem c allChecks)) mapPinned;
+        mapCoverage = builtins.concatLists (builtins.attrValues cfm.coveragePerFileClass);
+        coverageUnknown = builtins.filter (c: !(builtins.elem c mapChecks)) mapCoverage;
+        coverageMissing = builtins.filter (c: !(builtins.elem c mapCoverage)) mapChecks;
       in
       pkgs.runCommand "check-fragment-map-complete"
         {
@@ -3218,7 +3222,29 @@ in
             done
           done
           [ "$fail" -eq 0 ] || exit 1
-          echo "PASS: check-fragment-map.nix is complete (all checksFor + fragment commands covered)"
+          # 4. File coverage may only name checks in checksPerFragment, and
+          # every check must be queryable by at least one file class.
+          ${
+            if coverageUnknown != [ ] then
+              ''
+                echo "FAIL: coveragePerFileClass has names not in checksPerFragment:"
+                echo "  ${builtins.concatStringsSep ", " coverageUnknown}"
+                exit 1
+              ''
+            else
+              ""
+          }
+          ${
+            if coverageMissing != [ ] then
+              ''
+                echo "FAIL: checksPerFragment names missing from coveragePerFileClass:"
+                echo "  ${builtins.concatStringsSep ", " coverageMissing}"
+                exit 1
+              ''
+            else
+              ""
+          }
+          echo "PASS: check-fragment-map.nix is complete (checks, commands, and file coverage covered)"
           touch $out
         '';
 
