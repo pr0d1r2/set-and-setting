@@ -19,6 +19,32 @@
 set -euo pipefail
 
 mkdir -p "$out"
+ref_map="$out/.mkset-ref-map"
+: >"$ref_map"
+if [ "$CONCEPTS" = "1" ]; then
+  find "$CONCEPTS_DIR" -name '*.md' | sort | while read -r f; do
+    rel="${f#"$CONCEPTS_DIR"/}"
+    printf '%s|%s\n' "$f" "$out/$DIR/concepts-${rel//\//-}" >>"$ref_map"
+  done
+fi
+read -ra excludes_for_map <<<"${EXCLUDE:-}"
+read -ra cats_for_map <<<"${CATEGORIES:-}"
+for cat in "${cats_for_map[@]:-}"; do
+  core_source="$SKILLS_DIR/$cat.md"
+  if [ -f "$core_source" ] && { [ -z "${KEEP:-}" ] || printf '%s\n' "$KEEP" | grep -qxF "$cat.md"; }; then
+    printf '%s|%s\n' "$core_source" "$out/$DIR/$cat.md" >>"$ref_map"
+  fi
+  if [ -d "$SKILLS_DIR/$cat" ]; then
+    find "$SKILLS_DIR/$cat" -name '*.md' | sort | while read -r f; do
+      rel="${f#"$SKILLS_DIR"/}"
+      excluded=0
+      for e in "${excludes_for_map[@]:-}"; do [ "$(basename "$f")" = "$e" ] && excluded=1; done
+      if [ "$excluded" -eq 0 ] && { [ -z "${KEEP:-}" ] || printf '%s\n' "$KEEP" | grep -qxF "$rel"; }; then
+        printf '%s|%s\n' "$f" "$out/$DIR/$rel" >>"$ref_map"
+      fi
+    done
+  fi
+done
 
 read -ra cats <<<"${CATEGORIES:-}"
 IFS=';' read -ra mapentries <<<"${GLOBS_MAP:-}"
@@ -37,7 +63,7 @@ for cat in "${cats[@]:-}"; do
 
   CAT="$cat" DEST_DIR="$out/$DIR" GLOBS="$globs" COND_FIELD="$COND_FIELD" \
     SKILLS_DIR="$SKILLS_DIR" EXCLUDE="$EXCLUDE" CORE="${CORE:-}" \
-    OVERRIDES="${OVERRIDES:-}" EMIT_RULE="$EMIT_RULE" KEEP="${KEEP:-}" bash "$EMIT"
+    OVERRIDES="${OVERRIDES:-}" EMIT_RULE="$EMIT_RULE" KEEP="${KEEP:-}" REF_MAP="$ref_map" REF_MATCH="${REF_MATCH:-}" SET_ROOT="${SET_ROOT:-}" REWRITE_REFS="${REWRITE_REFS:-}" bash "$EMIT"
 
   # portable SKILL.md channel (V20), if enabled
   if [ -n "${SKILL_DIR:-}" ]; then
@@ -60,7 +86,12 @@ if [ "$CONCEPTS" = "1" ]; then
   mkdir -p "$out/$DIR"
   find "$CONCEPTS_DIR" -name '*.md' | sort | while read -r f; do
     rel="${f#"$CONCEPTS_DIR"/}"
-    cp "$f" "$out/$DIR/concepts-${rel//\//-}"
+    if [ -n "${REF_MATCH:-}" ] && [ -n "${REWRITE_REFS:-}" ]; then
+      SRC="$f" DEST="$out/$DIR/concepts-${rel//\//-}" REF_MAP="$ref_map" \
+        REF_MATCH="$REF_MATCH" SET_ROOT="$SET_ROOT" bash "$REWRITE_REFS" >"$out/$DIR/concepts-${rel//\//-}"
+    else
+      cp "$f" "$out/$DIR/concepts-${rel//\//-}"
+    fi
   done
 fi
 

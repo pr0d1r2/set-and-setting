@@ -85,6 +85,9 @@ else
       EMIT_PRINCIPLES = ./emit-principles.sh;
       RENAME_PROPAGATE = ./rename-propagate.sh;
       SYNC_SRC = ./sync-set.sh;
+      REF_MATCH = ../../lib/ref-match.sh;
+      REWRITE_REFS = ./rewrite-refs.sh;
+      SET_ROOT = "${builtins.dirOf (toString skillsDir)}";
     }
     ''
       bash ${./mk-set.sh}
