@@ -27,6 +27,7 @@
   nix-lefthook-typos-src,
   nix-lefthook-unicode-lint-src,
   nix-lefthook-yamllint-src,
+  nix-lefthook-linter-coverage-src,
   nix-lefthook-bats-parse-src,
   nix-lefthook-bats-unit-src,
   ...
@@ -374,6 +375,15 @@ let
         pkgs.coreutils
       ];
     };
+  linterCoverageWrapperFor =
+    pkgs:
+    wrap pkgs "lefthook-linter-coverage-full" nix-lefthook-linter-coverage-src {
+      runtimeInputs = [
+        pkgs.gawk
+        pkgs.git
+        pkgs.gnused
+      ];
+    };
   flakeManifestSrc = ../nix-lefthook-flake-manifest;
   flakeManifestWrapperFor =
     pkgs:
@@ -416,6 +426,7 @@ let
         (gitNoLocalPathsWrapperFor pkgs)
         (executePermissionsWrapperFor pkgs)
         (fileSizeCheckWrapperFor pkgs)
+        (linterCoverageWrapperFor pkgs)
         (trailingWhitespaceWrapperFor pkgs)
         (missingFinalNewlineWrapperFor pkgs)
         (editorconfigCheckerWrapperFor pkgs)
@@ -932,6 +943,71 @@ in
         wrapper = fileSizeCheckWrapperFor pkgs;
         checkFlag = "";
       };
+    mkLinterCoverageCheck =
+      {
+        pkgs,
+        src,
+        name ? "linter-coverage",
+        asChecker ? false,
+      }:
+      let
+        inherit (pkgs) lib;
+        meta = import ../lib/check-fragment-map.nix;
+        classes = builtins.concatStringsSep "\n" (
+          lib.mapAttrsToList (
+            class: checks: "${class}=${builtins.concatStringsSep "," checks}"
+          ) meta.coveragePerFileClass
+        );
+        checker = pkgs.writeShellScript "${name}-checker" ''
+          cd "$1"
+          classes=${lib.escapeShellArg classes}
+          ledger=config/linter-coverage-exemptions.yml
+          test -f "$ledger" || { echo "linter-coverage: missing $ledger" >&2; exit 1; }
+          mapfile -t exempt < <(awk '/^[[:space:]]*- class:/ { match($0, /"[^"]+"/); c=substr($0, RSTART + 1, RLENGTH - 2) } /^[[:space:]]*ticket:/ { if (c != "") print c "=" $2 }' "$ledger")
+          for entry in "''${exempt[@]}"; do
+            ticket=''${entry#*=}
+            case "$ticket" in ""|*[!0-9]*|0) echo "linter-coverage: invalid ticket in ledger: $entry" >&2; exit 1;; esac
+          done
+          if [ -d .git ]; then mapfile -t files < <(git ls-files); else mapfile -t files < <(find . -type f ! -path './.git/*' -printf '%P\n'); fi
+          for file in "''${files[@]}"; do
+            covered=0
+            while IFS='=' read -r class checks; do
+              [ -n "$class" ] || continue
+              [ "$class" = all ] && [ -n "$checks" ] && covered=1
+              case "$file" in
+                "$class"|$class|*/"$class"|$class/*|*/$class/*) [ -n "$checks" ] && covered=1 ;;
+                *."$class") [ -n "$checks" ] && covered=1 ;;
+              esac
+            done <<< "$classes"
+            [ "$covered" -eq 1 ] && continue
+            base=''${file##*/}; ext=''${base##*.}
+            [ "$base" = "$ext" ] || while IFS='=' read -r class checks; do
+              [ "$class" = "$ext" ] && [ -n "$checks" ] && covered=1
+            done <<< "$classes"
+            [ "$covered" -eq 1 ] && continue
+            found=0
+            for entry in "''${exempt[@]}"; do [ "''${entry%%=*}" = "$file" ] || [ "''${entry%%=*}" = "$ext" ] || [ "''${entry%%=*}" = "$base" ] && found=1; done
+            [ "$found" -eq 1 ] || { echo "linter-coverage: unassigned class for $file" >&2; exit 1; }
+          done
+          echo "linter-coverage: PASS"
+        '';
+      in
+      if asChecker then
+        checker
+      else
+        pkgs.runCommand "${name}-check"
+          {
+            nativeBuildInputs = [
+              pkgs.git
+              pkgs.gawk
+              pkgs.gnugrep
+              pkgs.coreutils
+            ];
+          }
+          ''
+            ${checker} ${src}
+            touch $out
+          '';
 
     materializationFor =
       {
@@ -987,6 +1063,7 @@ in
           mkGitNoLocalPathsCheck
           mkExecutePermissionsCheck
           mkFileSizeCheckCheck
+          mkLinterCoverageCheck
           ;
       };
   };
@@ -1394,6 +1471,10 @@ in
       inherit pkgs;
       src = ../.;
     };
+    linter-coverage = self.lib.mkLinterCoverageCheck {
+      inherit pkgs;
+      src = ../.;
+    };
 
     # #101: prove each pinned git/security check REJECTS a violation
     # (acceptance: a violation fails the check). Runs the same pinned
@@ -1472,6 +1553,28 @@ in
           echo "FAIL: file-size-check accepted an oversized file"; exit 1
         fi
         echo "PASS: pinned file-size-check rejects a violation"
+        touch $out
+      '';
+    linter-coverage-rejects-invalid-ledger =
+      let
+        fixture = pkgs.runCommand "linter-coverage-fixture" { } ''
+          mkdir -p "$out/config"
+          printf '%s\n' 'exempt:' '  - class: "unknown.zzz"' '    ticket: 0' \
+            > "$out/config/linter-coverage-exemptions.yml"
+          printf '%s\n' 'fixture' > "$out/unknown.zzz"
+        '';
+      in
+      pkgs.runCommand "linter-coverage-rejects-invalid-ledger" { } ''
+        if ${
+          self.lib.mkLinterCoverageCheck {
+            inherit pkgs;
+            src = fixture;
+            asChecker = true;
+          }
+        } ${fixture}; then
+          echo "FAIL: linter-coverage accepted an invalid ledger ticket"; exit 1
+        fi
+        echo "PASS: linter-coverage rejects an invalid ledger ticket"
         touch $out
       '';
 
