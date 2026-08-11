@@ -19,6 +19,8 @@ exempt:
     ticket: 337
   - class: ".gitkeep"
     ticket: 338
+  - class: "gitignore"
+    ticket: 339
   - class: ".gitignore"
     ticket: 328
   - class: ".github/workflows"
