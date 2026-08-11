@@ -14,9 +14,15 @@ while IFS= read -r line || [ -n "$line" ]; do
     esac
     target=""
     while IFS='|' read -r map_source map_dest; do
-      if [ "$map_source" = "$source" ]; then target="$map_dest"; break; fi
+      if [ "$map_source" = "$source" ]; then
+        target="$map_dest"
+        break
+      fi
     done <"$REF_MAP"
-    if [ -z "$target" ]; then drop=1; break; fi
+    if [ -z "$target" ]; then
+      drop=1
+      break
+    fi
     relative="$(realpath -m --relative-to="$(dirname "$DEST")" "$target")"
     line="${line//$ref/@$relative}"
   done <<<"$refs"
