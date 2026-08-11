@@ -138,15 +138,30 @@ let
       FULL_LEFTHOOK = "${fullLefthookFiles}/lefthook.yml";
     };
 
+  withWrapperChecks =
+    name: application:
+    application.overrideAttrs (old: {
+      doInstallCheck = true;
+      installCheckPhase = (old.installCheckPhase or "") + ''
+        if grep -qE '@[A-Za-z][A-Za-z0-9_]*@' "$out/bin/${name}"; then
+          echo "${name}: unsubstituted @PLACEHOLDER@ in wrapper" >&2
+          exit 1
+        fi
+      '';
+    });
+
   wrap =
     pkgs: name: src: extra:
-    pkgs.writeShellApplication (
-      {
-        inherit name;
-        text = builtins.readFile "${src}/${name}.sh";
-      }
-      // extra
-    );
+    let
+      application = pkgs.writeShellApplication (
+        {
+          inherit name;
+          text = builtins.readFile "${src}/${name}.sh";
+        }
+        // extra
+      );
+    in
+    withWrapperChecks name application;
 
   defaultFileClasses = (import ../set/meta.nix { inherit (nixpkgs) lib; }).fileClasses;
 
@@ -270,18 +285,20 @@ let
   # and bare URL-like tokens (MD013/MD033/MD034).
   markdownlintAgenticWrapperFor =
     pkgs: fileClassOverrides:
-    pkgs.writeShellApplication {
-      name = "lefthook-markdownlint-agentic";
-      runtimeInputs = [
-        pkgs.markdownlint-cli
-        (markdownClassifierFor pkgs fileClassOverrides)
-      ];
-      text =
-        builtins.replaceStrings
-          [ "@MARKDOWNLINT_AGENTIC_CONFIG@" ]
-          [ "${../setting/standards/markdownlint-agentic.yml}" ]
-          (builtins.readFile "${nix-lefthook-markdownlint-agentic-src}/lefthook-markdownlint-agentic.sh");
-    };
+    withWrapperChecks "lefthook-markdownlint-agentic" (
+      pkgs.writeShellApplication {
+        name = "lefthook-markdownlint-agentic";
+        runtimeInputs = [
+          pkgs.markdownlint-cli
+          (markdownClassifierFor pkgs fileClassOverrides)
+        ];
+        text =
+          builtins.replaceStrings
+            [ "@MARKDOWNLINT_AGENTIC_CONFIG@" ]
+            [ "${../setting/standards/markdownlint-agentic.yml}" ]
+            (builtins.readFile "${nix-lefthook-markdownlint-agentic-src}/lefthook-markdownlint-agentic.sh");
+      }
+    );
 
   # #99 (part of #93): the nix linters tier's pinned wrappers, each built
   # from its own pinned flake input. Shared, like nixfmtWrapperFor, by the
@@ -299,13 +316,15 @@ let
     };
   nixNoEmbeddedShellWrapperFor =
     pkgs:
-    pkgs.writeShellApplication {
-      name = "lefthook-nix-no-embedded-shell";
-      text = ''
-        SCANNER="${nix-lefthook-nix-no-embedded-shell-src}/scan-nix-no-embedded-shell.sh"
-      ''
-      + builtins.readFile "${nix-lefthook-nix-no-embedded-shell-src}/lefthook-nix-no-embedded-shell.sh";
-    };
+    withWrapperChecks "lefthook-nix-no-embedded-shell" (
+      pkgs.writeShellApplication {
+        name = "lefthook-nix-no-embedded-shell";
+        text = ''
+          SCANNER="${nix-lefthook-nix-no-embedded-shell-src}/scan-nix-no-embedded-shell.sh"
+        ''
+        + builtins.readFile "${nix-lefthook-nix-no-embedded-shell-src}/lefthook-nix-no-embedded-shell.sh";
+      }
+    );
 
   # #101 (part of #93): the git/security tier's pinned wrappers, each
   # built from its own pinned flake input. Shared, like nixfmtWrapperFor,
@@ -381,7 +400,10 @@ let
     {
       base = [
         (w "lefthook-commit-msg-lint" nix-lefthook-commit-msg-lint-src {
-          runtimeInputs = [ pkgs.coreutils ];
+          runtimeInputs = [
+            pkgs.coreutils
+            pkgs.gnused
+          ];
         })
         (w "lefthook-changelog-touched" nix-lefthook-changelog-touched-src {
           runtimeInputs = [
@@ -482,6 +504,8 @@ let
           runtimeInputs = [
             pkgs.gnugrep
             pkgs.libiconv
+            pkgs.python3
+            pkgs.perl
           ];
         })
       ];
