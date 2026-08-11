@@ -1548,24 +1548,25 @@ in
         echo "PASS: pinned file-size-check rejects a violation"
         touch $out
       '';
-    linter-coverage-catches-violation =
+    linter-coverage-rejects-invalid-ledger =
       let
         fixture = pkgs.runCommand "linter-coverage-fixture" { } ''
           mkdir -p "$out/config"
-          printf '%s\n' 'exempt: []' > "$out/config/linter-coverage-exemptions.yml"
-          printf '%s\n' 'unassigned' > "$out/unknown.zzz"
+          printf '%s\n' 'exempt:' '  - class: "unknown.zzz"' '    ticket: 0' \
+            > "$out/config/linter-coverage-exemptions.yml"
+          printf '%s\n' 'fixture' > "$out/unknown.zzz"
         '';
       in
-      pkgs.runCommand "linter-coverage-catches-violation" { } ''
+      pkgs.runCommand "linter-coverage-rejects-invalid-ledger" { } ''
         if ${
           self.lib.mkLinterCoverageCheck {
             inherit pkgs;
             src = fixture;
           }
         }; then
-          echo "FAIL: linter-coverage accepted an unassigned class"; exit 1
+          echo "FAIL: linter-coverage accepted an invalid ledger ticket"; exit 1
         fi
-        echo "PASS: linter-coverage rejects an unassigned class"
+        echo "PASS: linter-coverage rejects an invalid ledger ticket"
         touch $out
       '';
 
