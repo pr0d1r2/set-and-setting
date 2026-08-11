@@ -3,7 +3,7 @@
 # effective channel for this file: a per-file override (from
 # meta.channelOverrides) wins over the category default. Core channel ->
 # path-less (no frontmatter -> always-on). Domain channel -> conditional
-# frontmatter (COND_FIELD + globs). Body copied verbatim. No functions
+# frontmatter (COND_FIELD + globs). Bundle refs are rewritten. No functions
 # (sh/modularity).
 # Env in:
 #   SRC         source file
@@ -14,6 +14,7 @@
 #   COND_FIELD  frontmatter field name (e.g. "paths")
 #   OVERRIDES   "path|channel|g1,g2" lines ("|" delim, not tab -- tab is
 #               IFS-whitespace and would collapse an empty channel field)
+#   REF_MAP, REF_MATCH, SET_ROOT, REWRITE_REFS reference rewrite inputs
 set -euo pipefail
 
 channel="$CAT_CHANNEL"
@@ -43,15 +44,18 @@ elif [ "$pfx_len" -gt 0 ]; then
 fi
 
 mkdir -p "$(dirname "$DEST")"
+tmp_dest="$(mktemp "${DEST}.tmp.XXXXXX")"
+trap 'rm -f "$tmp_dest"' EXIT
 
 if [ "$channel" = "core" ]; then
-  cat "$SRC" >"$DEST"
+  if [ -n "${REF_MAP:-}" ]; then SRC="$SRC" DEST="$DEST" REF_MAP="$REF_MAP" REF_MATCH="$REF_MATCH" SET_ROOT="$SET_ROOT" bash "$REWRITE_REFS" >"$tmp_dest"; else cat "$SRC" >"$tmp_dest"; fi
 else
   read -ra garr <<<"$globs"
   {
     printf '%s\n%s:\n' "---" "$COND_FIELD"
     for g in "${garr[@]}"; do printf '  - "%s"\n' "$g"; done
     printf '%s\n\n' "---"
-  } >"$DEST"
-  cat "$SRC" >>"$DEST"
+  } >"$tmp_dest"
+  if [ -n "${REF_MAP:-}" ]; then SRC="$SRC" DEST="$DEST" REF_MAP="$REF_MAP" REF_MATCH="$REF_MATCH" SET_ROOT="$SET_ROOT" bash "$REWRITE_REFS" >>"$tmp_dest"; else cat "$SRC" >>"$tmp_dest"; fi
 fi
+mv "$tmp_dest" "$DEST"
