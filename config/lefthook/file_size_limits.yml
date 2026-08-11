@@ -4,7 +4,7 @@ extensions:
   bats: 57344
   dic: 32768
   lock: 393216
-  md: 98304
+  md: 106496
   nix: 159744
   sh: 40960
   txt: 12288
