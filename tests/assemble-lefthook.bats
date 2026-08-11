@@ -232,6 +232,12 @@ teardown() {
     grep -q 'bundle exec rspec' "$out/lefthook.yml"
     grep -q 'bundle exec rubocop --fail-fast --force-exclusion {staged_files}' \
         "$out/lefthook.yml"
+    awk '
+        /^pre-push:/ { push = 1 }
+        push && /rubocop:/ { rubocop = 1; next }
+        rubocop && /glob: "\*\*\/\*\.rb"/ { found = 1 }
+        END { exit !found }
+    ' "$out/lefthook.yml"
     run grep -F 'run: bundle exec reek {staged_files}' "$out/lefthook.yml"
     [ "$status" -eq 0 ]
     [ "$output" = '      run: bundle exec reek {staged_files}' ]

@@ -142,7 +142,8 @@ Pin the version in your flake and sync after each update.
 {
   description = "My project";
 
-  inputs.set-and-setting.url = "github:pr0d1r2/set-and-setting";
+  inputs.set-and-setting.url =
+    "git+https://github.com/pr0d1r2/set-and-setting.git?ref=main";
 
   outputs = { self, nixpkgs, set-and-setting, ... }:
     set-and-setting.lib.mkConsumerFlake {

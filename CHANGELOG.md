@@ -2,6 +2,14 @@
 
 ## Unreleased
 
+- Publish the evaluated `set` and `setting` delivery paths to Cachix after
+  successful main-branch checks, restoring cache-backed standard delivery for
+  fleet consumers. (#284)
+
+- Fetch the standard through Git instead of GitHub's API tarball endpoint in
+  generated consumer flakes, and apply bounded connection and download retries
+  before CI evaluates any flake. (#284)
+
 - Add a consumer lock-graph check that rejects check inputs carrying a second
   `nixpkgs` node, keeping materialized check pins deduplicated through
   `follows` and preventing unrelated check bumps from expanding consumer lock

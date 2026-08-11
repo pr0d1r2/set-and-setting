@@ -47,6 +47,7 @@ pre-push:
       glob: "*.nix"
       run: timeout ${LEFTHOOK_NIX_FLAKE_CHECK_TIMEOUT:-60} nix flake check
     rubocop:
+      glob: "**/*.rb"
       run: bundle exec rubocop --fail-fast
       timeout: 2m
     markdownlint:
