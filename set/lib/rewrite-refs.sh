@@ -9,6 +9,7 @@ while IFS= read -r line || [ -n "$line" ]; do
     case "$ref" in
       @set/concepts/*) source="$CONCEPTS_DIR/${ref#@set/concepts/}" ;;
       @set/skills/*) source="$SKILLS_DIR/${ref#@set/skills/}" ;;
+      @concepts/*) source="$CONCEPTS_DIR/${ref#@concepts/}" ;;
       @set/*) source="$SET_ROOT/${ref#@set/}" ;;
       @*) source="$SKILLS_DIR/${ref#@}" ;;
     esac

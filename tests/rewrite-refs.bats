@@ -36,6 +36,13 @@ teardown() { rm -rf "$root"; }
     grep -qx '@concepts-hardware-apple-m4.md' <(sed -n '3p' "$root/out/.claude/rules/set/concepts-hardware.md")
 }
 
+@test "rewrites relative concepts refs" {
+    printf '# Hardware\n\n@concepts/hardware/apple/m4.md\n' >"$root/set/concepts/hardware.md"
+    SRC="$root/set/concepts/hardware.md" DEST="$root/out/.claude/rules/set/concepts-hardware.md" \
+        bash "$SCRIPT" >"$root/out/.claude/rules/set/concepts-hardware.md"
+    grep -qx '@concepts-hardware-apple-m4.md' <(sed -n '3p' "$root/out/.claude/rules/set/concepts-hardware.md")
+}
+
 @test "drops refs whose targets are not emitted" {
     sed -i '/active.md/d' "$root/map"
     SRC="$root/set/skills/language/language.md" DEST="$root/out/.claude/rules/set/language/language.md" \
