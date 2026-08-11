@@ -152,8 +152,15 @@ in
       "deadnix"
       "nix-no-embedded-shell"
     ];
-    sh = [ "shellcheck" "shfmt" "no-shell-functions" ];
-    rb = [ "rubocop" "reek" ];
+    sh = [
+      "shellcheck"
+      "shfmt"
+      "no-shell-functions"
+    ];
+    rb = [
+      "rubocop"
+      "reek"
+    ];
     md = [
       "markdownlint"
       "markdownlint-agentic"
