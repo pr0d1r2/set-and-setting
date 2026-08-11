@@ -2518,6 +2518,18 @@ in
       setRoot = ../set;
     };
 
+    # emitted-set-ref-resolution -- T64/V12/V29: resolve refs in the
+    # materialized tree itself. Check broad and narrow selections so source
+    # validity cannot hide a selection-sensitive broken artifact.
+    emitted-set-ref-resolution =
+      (import ../lib/mk-emitted-ref-resolution-check.nix {
+        inherit (nixpkgs) lib;
+      } { inherit pkgs; }).all;
+    emitted-set-ref-resolution-language =
+      (import ../lib/mk-emitted-ref-resolution-check.nix {
+        inherit (nixpkgs) lib;
+      } { inherit pkgs; }).language;
+
     # set-bundle-content -- T65/V12: each bundle file (composes via @,
     # per the T63 matcher) limits its own content to one heading + a
     # purpose statement + the @ refs. Structural markdown fails. Ships
