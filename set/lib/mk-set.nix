@@ -36,6 +36,14 @@ in
 let
   ag = agents.claude // agent;
 
+  # A normal skills tree is rooted at set/skills, while callers that merge
+  # drafts use the merged tree itself as the @set/ source root.
+  sourceRoot =
+    if builtins.baseNameOf (toString skillsDir) == "skills" then
+      builtins.dirOf (toString skillsDir)
+    else
+      toString skillsDir;
+
   namedSource = skillsDir + "/${name}";
 
   categoryGlobs = cats.globs;
@@ -87,7 +95,7 @@ else
       SYNC_SRC = ./sync-set.sh;
       REF_MATCH = ../../lib/ref-match.sh;
       REWRITE_REFS = ./rewrite-refs.sh;
-      SET_ROOT = "${builtins.dirOf (toString skillsDir)}";
+      SET_ROOT = sourceRoot;
     }
     ''
       bash ${./mk-set.sh}
