@@ -1,8 +1,7 @@
 # Linter
 
-Every file type tracked in git must have an assigned linter in
-lefthook.yml (both pre-commit and pre-push). When adding a new file
-type to the repo, add its linter before committing.
+Every file type tracked in git must have an assigned check. When adding
+a new file type to the repo, add its check before committing.
 
 ## Stacked devShells
 
@@ -26,7 +25,7 @@ fails CI fails locally.
 ## Closing gaps
 
 When adding a new file type, close the linter gap in a follow-up
-commit: add the linter tool, configure lefthook, fix violations.
+commit: add the linter tool, configure its check, fix violations.
 Do not leave uncovered extensions.
 
 ## How to verify coverage
@@ -42,8 +41,17 @@ must be assigned a linter or explicitly marked as exempt with a reason.
 
 ## Adding a new linter
 
-1. Add the tool to `basePackages` in `flake.nix` (stacking gives it to `agentic`)
-2. Add a command to both `pre-commit` and `pre-push` in `lefthook.yml`
-3. Use `glob` to scope to the right file extensions
-4. Pre-commit: lint `{staged_files}` only; pre-push: lint all tracked files
-5. Fix any existing violations before committing
+1. Add the pinned flake input for the tool (`nix-lefthook-<tool>-src`), so the lint logic is pinned and updates via `nix flake update` rather than a runtime fetch.
+2. Add a `lib.mk<Tool>Check` convenience helper closing over that input, built on `lib/mk-lefthook-check.nix`. Its arguments include `suffices` (`null` for glob-less whole-tree tools) and `checkFlag` (`""` for wrappers with no check flag).
+3. Register the check in `lib/check-fragment-map.nix`: add it to `checksPerFragment` for its fragment and to `pinnedChecks` because it has a `mk*Check` equivalent. Consumers then receive it automatically through `checksFor`.
+4. Add a `<tool>-catches-violation` proof, matching the pattern every converted tier follows. A check that has never been shown to fail is not evidence.
+5. Keep the tool in the devShell packages if it is wanted for local runs; that is separate from the check.
+6. Fix existing violations before committing.
+
+V41's constraint still applies: a tool delivered as a pinned check must not
+also appear as a lefthook `remotes:` entry. Post-FLIP there are no remotes at
+all, so do not add one.
+
+`lefthook.yml` is an assembled artifact. Content that belongs in a hook goes
+in the matching fragment under `setting/integrations/lefthook/`, never in the
+assembled file.
