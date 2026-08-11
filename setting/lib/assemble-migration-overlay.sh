@@ -12,7 +12,7 @@ set -euo pipefail
 mkdir -p "$out"
 
 overlay_dir="${MIGRATION_OVERLAY_DIR}"
-ordered="${FRAGMENTS:-base nix shell ruby rubocop rspec reek brakeman bundle-audit ascii markdown yaml set}"
+ordered="${FRAGMENTS:-base actions nix shell ruby rubocop rspec reek brakeman bundle-audit ascii markdown yaml set}"
 
 {
   printf '%s\n' '---'
