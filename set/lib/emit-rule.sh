@@ -44,15 +44,18 @@ elif [ "$pfx_len" -gt 0 ]; then
 fi
 
 mkdir -p "$(dirname "$DEST")"
+tmp_dest="$(mktemp "${DEST}.tmp.XXXXXX")"
+trap 'rm -f "$tmp_dest"' EXIT
 
 if [ "$channel" = "core" ]; then
-  if [ -n "${REF_MAP:-}" ]; then SRC="$SRC" DEST="$DEST" REF_MAP="$REF_MAP" REF_MATCH="$REF_MATCH" SET_ROOT="$SET_ROOT" bash "$REWRITE_REFS" >"$DEST"; else cat "$SRC" >"$DEST"; fi
+  if [ -n "${REF_MAP:-}" ]; then SRC="$SRC" DEST="$DEST" REF_MAP="$REF_MAP" REF_MATCH="$REF_MATCH" SET_ROOT="$SET_ROOT" bash "$REWRITE_REFS" >"$tmp_dest"; else cat "$SRC" >"$tmp_dest"; fi
 else
   read -ra garr <<<"$globs"
   {
     printf '%s\n%s:\n' "---" "$COND_FIELD"
     for g in "${garr[@]}"; do printf '  - "%s"\n' "$g"; done
     printf '%s\n\n' "---"
-  } >"$DEST"
-  if [ -n "${REF_MAP:-}" ]; then SRC="$SRC" DEST="$DEST" REF_MAP="$REF_MAP" REF_MATCH="$REF_MATCH" SET_ROOT="$SET_ROOT" bash "$REWRITE_REFS" >>"$DEST"; else cat "$SRC" >>"$DEST"; fi
+  } >"$tmp_dest"
+  if [ -n "${REF_MAP:-}" ]; then SRC="$SRC" DEST="$DEST" REF_MAP="$REF_MAP" REF_MATCH="$REF_MATCH" SET_ROOT="$SET_ROOT" bash "$REWRITE_REFS" >>"$tmp_dest"; else cat "$SRC" >>"$tmp_dest"; fi
 fi
+mv "$tmp_dest" "$DEST"

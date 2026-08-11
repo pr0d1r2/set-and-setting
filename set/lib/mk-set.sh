@@ -87,8 +87,10 @@ if [ "$CONCEPTS" = "1" ]; then
   find "$CONCEPTS_DIR" -name '*.md' | sort | while read -r f; do
     rel="${f#"$CONCEPTS_DIR"/}"
     if [ -n "${REF_MATCH:-}" ] && [ -n "${REWRITE_REFS:-}" ]; then
+      tmp_dest="$(mktemp "$out/$DIR/concepts-${rel//\//-}.tmp.XXXXXX")"
       SRC="$f" DEST="$out/$DIR/concepts-${rel//\//-}" REF_MAP="$ref_map" \
-        REF_MATCH="$REF_MATCH" SET_ROOT="$SET_ROOT" bash "$REWRITE_REFS" >"$out/$DIR/concepts-${rel//\//-}"
+        REF_MATCH="$REF_MATCH" SET_ROOT="$SET_ROOT" bash "$REWRITE_REFS" >"$tmp_dest"
+      mv "$tmp_dest" "$out/$DIR/concepts-${rel//\//-}"
     else
       cp "$f" "$out/$DIR/concepts-${rel//\//-}"
     fi
