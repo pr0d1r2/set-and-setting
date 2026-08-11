@@ -948,6 +948,7 @@ in
         pkgs,
         src,
         name ? "linter-coverage",
+        asChecker ? false,
       }:
       let
         inherit (pkgs) lib;
@@ -957,18 +958,8 @@ in
             class: checks: "${class}=${builtins.concatStringsSep "," checks}"
           ) meta.coveragePerFileClass
         );
-      in
-      pkgs.runCommand "${name}-check"
-        {
-          nativeBuildInputs = [
-            pkgs.git
-            pkgs.gawk
-            pkgs.gnugrep
-            pkgs.coreutils
-          ];
-        }
-        ''
-          cd ${src}
+        checker = pkgs.writeShellScript "${name}-checker" ''
+          cd "$1"
           classes=${lib.escapeShellArg classes}
           ledger=config/linter-coverage-exemptions.yml
           test -f "$ledger" || { echo "linter-coverage: missing $ledger" >&2; exit 1; }
@@ -999,6 +990,19 @@ in
             [ "$found" -eq 1 ] || { echo "linter-coverage: unassigned class for $file" >&2; exit 1; }
           done
           echo "linter-coverage: PASS"
+        '';
+      in
+      if asChecker then checker else pkgs.runCommand "${name}-check"
+        {
+          nativeBuildInputs = [
+            pkgs.git
+            pkgs.gawk
+            pkgs.gnugrep
+            pkgs.coreutils
+          ];
+        }
+        ''
+          ${checker} ${src}
           touch $out
         '';
 
@@ -1562,8 +1566,9 @@ in
           self.lib.mkLinterCoverageCheck {
             inherit pkgs;
             src = fixture;
+            asChecker = true;
           }
-        }; then
+        } ${fixture}; then
           echo "FAIL: linter-coverage accepted an invalid ledger ticket"; exit 1
         fi
         echo "PASS: linter-coverage rejects an invalid ledger ticket"
