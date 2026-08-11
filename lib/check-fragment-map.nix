@@ -139,6 +139,7 @@ in
       "git-no-local-paths"
       "execute-permissions"
       "file-size-check"
+      "linter-coverage"
       "trailing-whitespace"
       "missing-final-newline"
       "editorconfig-checker"

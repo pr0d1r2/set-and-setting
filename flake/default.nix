@@ -961,6 +961,7 @@ in
           covered=0
           while IFS='=' read -r class checks; do
             [ -n "$class" ] || continue
+            [ "$class" = all ] && [ -n "$checks" ] && covered=1
             case "$file" in
               "$class"|$class|*/"$class"|$class/*|*/$class/*) [ -n "$checks" ] && covered=1 ;;
               *."$class") [ -n "$checks" ] && covered=1 ;;
