@@ -40,6 +40,7 @@
   src,
   name,
   suffices ? null,
+  pathPrefix ? null,
   checkFlag ? "--check",
 }:
 let
@@ -47,7 +48,11 @@ let
   # Filter the tree to only the linted file types -- keeps the derivation
   # input minimal and cache-stable (unrelated edits don't rebuild the check).
   # A `null` suffices means "lint every file" (glob-less whole-tree tools).
-  files = if suffices == null then src else lib.sources.sourceFilesBySuffices src suffices;
+  files =
+    let
+      selected = if suffices == null then src else lib.sources.sourceFilesBySuffices src suffices;
+    in
+    if pathPrefix == null then selected else lib.sources.sourceByRegex selected "^${pathPrefix}/.*";
 in
 pkgs.runCommand "${name}-check"
   {

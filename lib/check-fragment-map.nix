@@ -14,6 +14,7 @@ let
 in
 {
   validFragments = [
+    "actions"
     "base"
     "nix"
     "shell"
@@ -33,6 +34,7 @@ in
   # and lefthook-only commands (fragment YAML). The migrate equivalence gate
   # and carry-through logic use this to classify any check it encounters.
   checksPerFragment = {
+    actions = [ "actionlint" ];
     base = [
       "gitleaks"
       "git-conflict-markers"
@@ -91,6 +93,7 @@ in
   # checksFor builds derivations for exactly these; lefthook-only commands
   # (markdownlint, yamllint, set-*) are NOT here.
   pinnedChecks = {
+    actions = [ "actionlint" ];
     base = [
       "gitleaks"
       "git-conflict-markers"
@@ -170,7 +173,10 @@ in
     ];
     yml = [ "yamllint" ];
     yaml = [ "yamllint" ];
-    ".github/workflows" = [ "yamllint" ];
+    ".github/workflows" = [
+      "yamllint"
+      "actionlint"
+    ];
     "Gemfile" = [ "bundle-audit" ];
     "Gemfile.lock" = [ "bundle-audit" ];
     "set/**/*.md" = [
@@ -193,6 +199,7 @@ in
 
   # Human-readable trigger descriptions per fragment (for diagnostics).
   fragmentTriggers = {
+    actions = "tracked .github/workflows/*.yml/*.yaml files";
     base = "always active";
     ascii = "always active";
     nix = "tracked *.nix files";
@@ -211,6 +218,7 @@ in
   # Fragment -> canonical repo units. This is consumed by canonFor, beside
   # checksFor and materializationFor's fragment selection.
   canonUnitsPerFragment = {
+    actions = [ ];
     base = [
       "canonDocs"
       "canonGovernance"

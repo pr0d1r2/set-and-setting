@@ -2,6 +2,7 @@
   self,
   nixpkgs,
   nix-lefthook-changelog-touched-src,
+  nix-lefthook-actionlint-src,
   nix-lefthook-commit-msg-lint-src,
   nix-lefthook-ascii-only-src,
   nix-lefthook-deadnix-src,
@@ -212,6 +213,7 @@ let
     wrap pkgs "lefthook-nixfmt" nix-lefthook-nixfmt-src {
       runtimeInputs = [ pkgs.nixfmt ];
     };
+  actionlintWrapperFor = pkgs: wrap pkgs "lefthook-actionlint" nix-lefthook-actionlint-src { };
 
   # #98 (part of #93): the formatter tier's pinned wrappers, each built
   # from its own pinned flake input. Shared, like nixfmtWrapperFor, by the
@@ -529,6 +531,7 @@ let
           runtimeInputs = [ pkgs.yamllint ];
         })
       ];
+      actions = [ (actionlintWrapperFor pkgs) ];
       set = [ ];
     };
 
@@ -657,6 +660,21 @@ in
         inherit pkgs src name;
         wrapper = nixfmtWrapperFor pkgs;
         suffices = [ ".nix" ];
+      };
+    mkActionlintCheck =
+      {
+        pkgs,
+        src,
+        name ? "actionlint",
+      }:
+      import ../lib/mk-lefthook-check.nix {
+        inherit pkgs src name;
+        wrapper = actionlintWrapperFor pkgs;
+        pathPrefix = ".github/workflows";
+        suffices = [
+          ".yml"
+          ".yaml"
+        ];
       };
 
     # #98 (part of #93): the formatter tier's convenience helpers, each
@@ -1064,6 +1082,7 @@ in
           mkExecutePermissionsCheck
           mkFileSizeCheckCheck
           mkLinterCoverageCheck
+          mkActionlintCheck
           ;
       };
   };

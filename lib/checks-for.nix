@@ -41,6 +41,7 @@
   mkExecutePermissionsCheck,
   mkFileSizeCheckCheck,
   mkLinterCoverageCheck,
+  mkActionlintCheck,
 }:
 
 let
@@ -49,6 +50,9 @@ let
   invalidFragments = builtins.filter (f: !(builtins.elem f cfm.validFragments)) fragments;
 
   checksForFragment = {
+    actions = {
+      actionlint = mkActionlintCheck { inherit pkgs src; };
+    };
     base = {
       gitleaks = mkGitleaksCheck { inherit pkgs src; };
       git-conflict-markers = mkGitConflictMarkersCheck { inherit pkgs src; };
