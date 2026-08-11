@@ -992,19 +992,22 @@ in
           echo "linter-coverage: PASS"
         '';
       in
-      if asChecker then checker else pkgs.runCommand "${name}-check"
-        {
-          nativeBuildInputs = [
-            pkgs.git
-            pkgs.gawk
-            pkgs.gnugrep
-            pkgs.coreutils
-          ];
-        }
-        ''
-          ${checker} ${src}
-          touch $out
-        '';
+      if asChecker then
+        checker
+      else
+        pkgs.runCommand "${name}-check"
+          {
+            nativeBuildInputs = [
+              pkgs.git
+              pkgs.gawk
+              pkgs.gnugrep
+              pkgs.coreutils
+            ];
+          }
+          ''
+            ${checker} ${src}
+            touch $out
+          '';
 
     materializationFor =
       {
