@@ -542,6 +542,7 @@ let
     in
     builtins.concatMap (f: wff.${f}) [
       "base"
+      "actions"
       "nix"
       "shell"
       "ruby"
