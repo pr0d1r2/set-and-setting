@@ -50,6 +50,7 @@ let
         readFile "${std}/lefthook/file_size_limits.yml"
       )
     )
+    ++ [ (pkgs.writeTextDir "config/linter-coverage-exemptions.yml" ''exempt: []\n'') ]
     ++ lib.optional flakeManifest (
       pkgs.writeTextDir "config/lefthook/flake_manifest.yml" (
         readFile "${std}/lefthook/flake_manifest.yml"

@@ -40,6 +40,7 @@
   mkGitNoLocalPathsCheck,
   mkExecutePermissionsCheck,
   mkFileSizeCheckCheck,
+  mkLinterCoverageCheck,
 }:
 
 let
@@ -54,6 +55,7 @@ let
       git-no-local-paths = mkGitNoLocalPathsCheck { inherit pkgs src; };
       execute-permissions = mkExecutePermissionsCheck { inherit pkgs src; };
       file-size-check = mkFileSizeCheckCheck { inherit pkgs src; };
+      linter-coverage = mkLinterCoverageCheck { inherit pkgs src; };
       trailing-whitespace = mkTrailingWhitespaceCheck { inherit pkgs src; };
       missing-final-newline = mkMissingFinalNewlineCheck { inherit pkgs src; };
       editorconfig-checker = mkEditorconfigCheckerCheck { inherit pkgs src; };
