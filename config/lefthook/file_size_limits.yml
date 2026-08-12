@@ -6,5 +6,5 @@ extensions:
   lock: 393216
   md: 106496
   nix: 159744
-  sh: 40960
+  sh: 49152
   txt: 12288
