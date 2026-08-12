@@ -48,7 +48,7 @@ tmp_dest="$(mktemp "${DEST}.tmp.XXXXXX")"
 trap 'rm -f "$tmp_dest"' EXIT
 
 if [ "$channel" = "core" ]; then
-if [ -n "${REF_MAP:-}" ] && [ -n "${REF_MATCH:-}" ] && [ -n "${REWRITE_REFS:-}" ]; then SRC="$SRC" DEST="$DEST" REF_MAP="$REF_MAP" REF_MATCH="$REF_MATCH" SET_ROOT="$SET_ROOT" bash "$REWRITE_REFS" >"$tmp_dest"; else cat "$SRC" >"$tmp_dest"; fi
+  if [ -n "${REF_MAP:-}" ] && [ -n "${REF_MATCH:-}" ] && [ -n "${REWRITE_REFS:-}" ]; then SRC="$SRC" DEST="$DEST" REF_MAP="$REF_MAP" REF_MATCH="$REF_MATCH" SET_ROOT="$SET_ROOT" bash "$REWRITE_REFS" >"$tmp_dest"; else cat "$SRC" >"$tmp_dest"; fi
 else
   read -ra garr <<<"$globs"
   {
