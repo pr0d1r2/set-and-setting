@@ -561,6 +561,21 @@ write_vendored_lefthook_with_remotes() {
     [[ "$output" != *"MIGRATE-FAIL"* ]]
 }
 
+@test "migration writes a before/after coverage report including context renames" {
+    echo "{ outputs = { self }: { }; }" >flake.nix
+    write_vendored_lefthook
+    _init_repo
+    export BEFORE_REQUIRED_STATUS_CONTEXTS="build-linux|build-darwin"
+    export REQUIRED_STATUS_CONTEXTS="guardrails / check|guardrails / check-darwin"
+    run bash "$MIGRATE_SCRIPT"
+    [ "$status" -eq 0 ]
+    [ -f migration-coverage.md ]
+    grep -q "nixfmt" migration-coverage.md
+    grep -q "build-linux" migration-coverage.md
+    grep -q "guardrails / check" migration-coverage.md
+    grep -q "required-context missing (rename candidate)" migration-coverage.md
+}
+
 # ======== carry-through: repo-local checks (#126) ========
 
 @test "carry-through: self-hosting repo migrates with repo-local check preserved" {
