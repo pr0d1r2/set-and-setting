@@ -28,6 +28,10 @@
       url = "github:pr0d1r2/nix-lefthook-bats-unit";
       flake = false;
     };
+    nix-lefthook-tdd-order-bats-src = {
+      url = "github:pr0d1r2/nix-lefthook-tdd-order-bats";
+      flake = false;
+    };
     nix-lefthook-changelog-touched-src = {
       url = "github:pr0d1r2/nix-lefthook-changelog-touched";
       flake = false;

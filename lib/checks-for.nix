@@ -89,6 +89,7 @@ let
     markdown = { };
     yaml = { };
     set = { };
+    bats = { };
   };
 
   merged = builtins.foldl' (acc: f: acc // checksForFragment.${f}) { } fragments;

@@ -28,6 +28,7 @@ in
     "markdown"
     "yaml"
     "set"
+    "bats"
   ];
 
   # Fragment -> list of check names. Includes BOTH pinned checks (checksFor)
@@ -87,6 +88,11 @@ in
       "set-ref-resolution"
       "set-bundle-content"
     ];
+    bats = [
+      "bats-parse"
+      "bats-unit"
+      "tdd-order-bats"
+    ];
   };
 
   # Checks that have pinned flake check equivalents (mk*Check helpers).
@@ -130,6 +136,7 @@ in
     markdown = [ ];
     yaml = [ ];
     set = [ ];
+    bats = [ ];
   };
 
   # File class -> checks that lint it. Classes are extensions without the
@@ -189,6 +196,11 @@ in
     ".rubocop.yml" = [ "rubocop" ];
     ".reek.yml" = [ "reek" ];
     "config/brakeman.yml" = [ "brakeman" ];
+    bats = [
+      "bats-parse"
+      "bats-unit"
+      "tdd-order-bats"
+    ];
   };
 
   # Tracked classes deliberately not linted. These are exclusions from the
@@ -213,6 +225,7 @@ in
     markdown = "tracked *.md files";
     yaml = "tracked *.yml/*.yaml files";
     set = "tracked set/*.md files";
+    bats = "tracked *.bats files";
   };
 
   # Fragment -> canonical repo units. This is consumed by canonFor, beside
@@ -235,6 +248,7 @@ in
     markdown = [ ];
     yaml = [ ];
     set = [ ];
+    bats = [ ];
   };
 
   # Canon files that remain standard-owned after emission. Drift is an error;

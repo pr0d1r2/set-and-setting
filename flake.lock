@@ -416,6 +416,22 @@
         "type": "github"
       }
     },
+    "nix-lefthook-tdd-order-bats-src": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1785309008,
+        "narHash": "sha256-g37iSZbsVzv7eg3I+aWUDekOseu5NlUpM9xBWB4s8yc=",
+        "owner": "pr0d1r2",
+        "repo": "nix-lefthook-tdd-order-bats",
+        "rev": "9c1f614938ff40ad07285288098939869c2eb8e5",
+        "type": "github"
+      },
+      "original": {
+        "owner": "pr0d1r2",
+        "repo": "nix-lefthook-tdd-order-bats",
+        "type": "github"
+      }
+    },
     "nix-lefthook-trailing-whitespace-src": {
       "flake": false,
       "locked": {
@@ -542,6 +558,7 @@
         "nix-lefthook-shellcheck-src": "nix-lefthook-shellcheck-src",
         "nix-lefthook-shfmt-src": "nix-lefthook-shfmt-src",
         "nix-lefthook-statix-src": "nix-lefthook-statix-src",
+        "nix-lefthook-tdd-order-bats-src": "nix-lefthook-tdd-order-bats-src",
         "nix-lefthook-trailing-whitespace-src": "nix-lefthook-trailing-whitespace-src",
         "nix-lefthook-typos-src": "nix-lefthook-typos-src",
         "nix-lefthook-unicode-lint-src": "nix-lefthook-unicode-lint-src",
