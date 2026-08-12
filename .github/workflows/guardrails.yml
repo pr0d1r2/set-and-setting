@@ -44,8 +44,11 @@ jobs:
             --timeout ${{ inputs.flake-check-timeout }}
       - name: Bats suite
         run: |
-          nix develop --command lefthook-bats-parse tests
-          nix develop --command lefthook-bats-unit
+          mapfile -d '' bats_files < <(git ls-files -z -- '*.bats')
+          if [ "${#bats_files[@]}" -gt 0 ]; then
+            nix develop --command lefthook-bats-parse "${bats_files[@]}"
+            nix develop --command lefthook-bats-unit "${bats_files[@]}"
+          fi
           nix develop --command lefthook-tdd-order-bats
 
   check-darwin:
