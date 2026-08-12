@@ -1023,7 +1023,9 @@ if [ -n "$dropped" ]; then
     echo "## Delta"
     echo
     echo '```text'
-    echo "$dropped" | sed 's/^/removed or unsure: /'
+    while IFS= read -r dropped_line; do
+      echo "removed or unsure: $dropped_line"
+    done <<<"$dropped"
     if [ -s "$old_contexts" ]; then
       comm -23 "$old_contexts" "$new_contexts" | sed 's/^/required-context missing (rename candidate): /'
     fi
