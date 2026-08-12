@@ -1009,14 +1009,18 @@ if [ -n "$dropped" ]; then
     echo "## Before"
     echo
     echo '```text'
+    echo 'checks:'
     cat "$old_checks"
+    echo 'required status contexts:'
     cat "$old_contexts" 2>/dev/null
     echo '```'
     echo
     echo "## After (proposed)"
     echo
     echo '```text'
+    echo 'checks:'
     cat "$new_checks"
+    echo 'required status contexts:'
     cat "$new_contexts" 2>/dev/null
     echo '```'
     echo
@@ -1070,14 +1074,18 @@ coverage_report="${MIGRATION_COVERAGE_REPORT:-migration-coverage.md}"
   echo "## Before"
   echo
   echo '```text'
+  echo 'checks:'
   cat "$old_checks"
+  echo 'required status contexts:'
   if [ -s "$old_contexts" ]; then cat "$old_contexts"; fi
   echo '```'
   echo
   echo "## After"
   echo
   echo '```text'
+  echo 'checks:'
   cat "$new_checks"
+  echo 'required status contexts:'
   if [ -s "$new_contexts" ]; then cat "$new_contexts"; fi
   echo '```'
   echo

@@ -570,6 +570,8 @@ write_vendored_lefthook_with_remotes() {
     run bash "$MIGRATE_SCRIPT"
     [ "$status" -eq 0 ]
     [ -f migration-coverage.md ]
+    grep -q '^checks:$' migration-coverage.md
+    grep -q '^required status contexts:$' migration-coverage.md
     grep -q "nixfmt" migration-coverage.md
     grep -q "build-linux" migration-coverage.md
     grep -q "guardrails / check" migration-coverage.md
