@@ -53,7 +53,7 @@ if [ -n "$core" ] && [ -f "$core" ]; then
   if [ "$keep_active" -eq 0 ] || printf '%s\n' "$KEEP" | grep -qxF "$CAT.md"; then
     SRC="$core" REL="$CAT.md" DEST="$DEST_DIR/$CAT.md" \
       CAT_CHANNEL="$cat_channel" CAT_GLOBS="$GLOBS" \
-      COND_FIELD="$COND_FIELD" OVERRIDES="${OVERRIDES:-}" REF_MAP="$REF_MAP" REF_MATCH="$REF_MATCH" SET_ROOT="$SET_ROOT" REWRITE_REFS="$REWRITE_REFS" bash "$EMIT_RULE"
+      COND_FIELD="$COND_FIELD" OVERRIDES="${OVERRIDES:-}" REF_MAP="${REF_MAP:-}" REF_MATCH="${REF_MATCH:-}" SET_ROOT="${SET_ROOT:-}" REWRITE_REFS="${REWRITE_REFS:-}" bash "$EMIT_RULE"
   fi
 fi
 
@@ -66,6 +66,6 @@ if [ -d "$catdir" ]; then
     fi
     SRC="$f" REL="$rel" DEST="$DEST_DIR/$CAT/$sub" \
       CAT_CHANNEL="$cat_channel" CAT_GLOBS="$GLOBS" \
-      COND_FIELD="$COND_FIELD" OVERRIDES="${OVERRIDES:-}" REF_MAP="$REF_MAP" REF_MATCH="$REF_MATCH" SET_ROOT="$SET_ROOT" REWRITE_REFS="$REWRITE_REFS" bash "$EMIT_RULE"
+      COND_FIELD="$COND_FIELD" OVERRIDES="${OVERRIDES:-}" REF_MAP="${REF_MAP:-}" REF_MATCH="${REF_MATCH:-}" SET_ROOT="${SET_ROOT:-}" REWRITE_REFS="${REWRITE_REFS:-}" bash "$EMIT_RULE"
   done
 fi
