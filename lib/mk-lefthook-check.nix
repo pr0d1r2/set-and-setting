@@ -52,7 +52,7 @@ let
     let
       selected = if suffices == null then src else lib.sources.sourceFilesBySuffices src suffices;
     in
-    if pathPrefix == null then selected else lib.sources.sourceByRegex selected "^${pathPrefix}/.*";
+    if pathPrefix == null then selected else lib.sources.sourceByRegex selected [ "^${pathPrefix}/.*" ];
 in
 pkgs.runCommand "${name}-check"
   {
