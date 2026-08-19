@@ -20,7 +20,10 @@ let
     set-and-setting = self;
     lib = consumerLib;
     fragments = [ "base" ];
-    extraFragments = [ "shell" ];
+    extraFragments = [
+      "shell"
+      "actions"
+    ];
     src = ../.;
     extraPackages = _pkgs: { fixture = pkgs.hello; };
     extraChecks = _pkgs: { fixture = pkgs.hello; };
@@ -59,6 +62,7 @@ pkgs.runCommand "mkConsumerFlake-outputs" { } ''
       "dep-graph"
       "fixture"
       "lock-graph"
+      "actionlint"
       "setting-drift"
       "shellcheck"
     ];
