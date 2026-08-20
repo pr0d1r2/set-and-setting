@@ -379,13 +379,28 @@ let
     };
   linterCoverageWrapperFor =
     pkgs:
-    wrap pkgs "lefthook-linter-coverage-full" nix-lefthook-linter-coverage-src {
-      runtimeInputs = [
-        pkgs.gawk
-        pkgs.git
-        pkgs.gnused
-      ];
-    };
+    let
+      upstream = wrap pkgs "lefthook-linter-coverage-full" nix-lefthook-linter-coverage-src {
+        runtimeInputs = [
+          pkgs.gawk
+          pkgs.git
+          pkgs.gnused
+        ];
+      };
+    in
+    withWrapperChecks "lefthook-linter-coverage-full" (
+      pkgs.writeShellApplication {
+        name = "lefthook-linter-coverage-full";
+        runtimeInputs = [ pkgs.coreutils ];
+        text = ''
+          if [ -z "''${LEFTHOOK_LINTER_COVERAGE_DOC:-}" ]; then
+            echo "check-linter-coverage: skipped (LEFTHOOK_LINTER_COVERAGE_DOC is unset)"
+            exit 0
+          fi
+          exec ${pkgs.lib.getExe upstream} "$@"
+        '';
+      }
+    );
   flakeManifestSrc = ../nix-lefthook-flake-manifest;
   flakeManifestWrapperFor =
     pkgs:
@@ -1595,6 +1610,19 @@ in
           echo "FAIL: linter-coverage accepted an invalid ledger ticket"; exit 1
         fi
         echo "PASS: linter-coverage rejects an invalid ledger ticket"
+        touch $out
+      '';
+    linter-coverage-skips-without-doc =
+      let
+        wrapper = linterCoverageWrapperFor pkgs;
+      in
+      pkgs.runCommand "linter-coverage-skips-without-doc" { } ''
+        if env -u LEFTHOOK_LINTER_COVERAGE_DOC ${pkgs.lib.getExe wrapper}; then
+          echo "PASS: linter-coverage skips when its documentation is unconfigured"
+        else
+          echo "FAIL: linter-coverage aborted without its optional documentation input" >&2
+          exit 1
+        fi
         touch $out
       '';
 
