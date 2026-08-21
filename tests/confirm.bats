@@ -96,6 +96,17 @@ materialize_basic() {
     [[ "$output" == *"+modified"* ]]
 }
 
+@test "prints diff when a materialized config mismatches" {
+    materialize_basic
+    printf '%s\n' "modified" >> .markdownlint.yml
+    git add .
+    run bash "$SCRIPT"
+    [ "$status" -eq 1 ]
+    [[ "$output" == *"FAIL: fidelity: .markdownlint.yml differs"* ]]
+    [[ "$output" == *"diff:"* ]]
+    [[ "$output" == *"+modified"* ]]
+}
+
 @test "fails when rev is unknown" {
     materialize_basic
     export CONFIRM_REV="unknown"

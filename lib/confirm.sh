@@ -69,6 +69,8 @@ for cfg in .markdownlint.yml .yamllint.yml; do
       pass=$((pass + 1))
     else
       echo "FAIL: fidelity: $cfg differs from expected"
+      echo "  diff:"
+      diff -u "$cfg" "$SETTING_SRC/$cfg" || true
       fail=$((fail + 1))
     fi
   fi
