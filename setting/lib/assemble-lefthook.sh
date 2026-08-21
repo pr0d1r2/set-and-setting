@@ -17,6 +17,19 @@ mkdir -p "$out"
 
 ordered="${FRAGMENTS:-base actions nix shell ruby rubocop rspec reek brakeman bundle-audit ascii markdown yaml set}"
 
+# Fragment lists are assembled from a base selection plus optional additions.
+# Keep the first occurrence of each name: emitting a fragment twice creates
+# duplicate YAML mapping keys and makes lefthook reject the materialized file.
+declare -A seen_fragments=()
+unique_ordered=""
+for name in $ordered; do
+  if [ -z "${seen_fragments[$name]+x}" ]; then
+    seen_fragments[$name]=1
+    unique_ordered="${unique_ordered:+$unique_ordered }$name"
+  fi
+done
+ordered="$unique_ordered"
+
 {
   printf '%s\n' '---'
 

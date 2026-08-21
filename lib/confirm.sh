@@ -56,6 +56,8 @@ if [ -f "lefthook.yml" ] && [ -f "$assemble_out/lefthook.yml" ]; then
     pass=$((pass + 1))
   else
     echo "FAIL: fidelity: lefthook.yml differs from expected (fragments: $detected)"
+    echo "  diff:"
+    diff -u "lefthook.yml" "$assemble_out/lefthook.yml" || true
     fail=$((fail + 1))
   fi
 fi
@@ -67,6 +69,8 @@ for cfg in .markdownlint.yml .yamllint.yml; do
       pass=$((pass + 1))
     else
       echo "FAIL: fidelity: $cfg differs from expected"
+      echo "  diff:"
+      diff -u "$cfg" "$SETTING_SRC/$cfg" || true
       fail=$((fail + 1))
     fi
   fi

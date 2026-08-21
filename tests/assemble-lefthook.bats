@@ -174,6 +174,13 @@ teardown() {
     echo "$prepush_section" | grep -Fq 'run: timeout ${LEFTHOOK_NIX_FLAKE_CHECK_TIMEOUT:-60} nix flake check'
 }
 
+@test "duplicate fragment names are emitted only once" {
+    FRAGMENTS="base base nix nix" out="$out" bash "$SCRIPT"
+    [ "$(grep -c '^    nix-flake-check:' "$out/lefthook.yml")" -eq 2 ]
+    run grep -n 'nix-flake-check' "$out/lefthook.yml"
+    [ "$(printf '%s\n' "$output" | wc -l)" -eq 2 ]
+}
+
 @test "has pre-push section with commands" {
     bash "$SCRIPT"
     grep -q '^pre-push:' "$out/lefthook.yml"
