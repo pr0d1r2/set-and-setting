@@ -92,6 +92,8 @@ materialize_basic() {
     run bash "$SCRIPT"
     [ "$status" -eq 1 ]
     [[ "$output" == *"FAIL: fidelity: lefthook.yml differs"* ]]
+    [[ "$output" == *"diff:"* ]]
+    [[ "$output" == *"+modified"* ]]
 }
 
 @test "fails when rev is unknown" {
