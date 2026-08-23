@@ -61,6 +61,7 @@ let
       inherit pkgs;
       fragments = [
         "base"
+        "actions"
         "nix"
         "ascii"
         "markdown"
@@ -72,6 +73,7 @@ let
     let
       allFragments = [
         "base"
+        "actions"
         "nix"
         "shell"
         "ruby"

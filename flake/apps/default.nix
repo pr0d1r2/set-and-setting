@@ -46,6 +46,7 @@ let
       src = ../../.;
       fragments = [
         "base"
+        "actions"
         "nix"
         "shell"
         "ruby"
@@ -240,6 +241,7 @@ let
           inherit pkgs;
           fragments = [
             "base"
+            "actions"
             "nix"
             "shell"
             "ruby"
