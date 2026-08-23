@@ -16,9 +16,9 @@ setup() {
     export DETECT_SCRIPT="$REPO_ROOT/setting/lib/detect-fragments.sh"
     export CONFIRM_SCRIPT="$REPO_ROOT/lib/confirm.sh"
     export CONFIRM_REV="test-rev"
-    export CHECKS_UNIVERSE="flake-manifest nixfmt statix deadnix shellcheck gitleaks shfmt typos ascii-only unicode-lint editorconfig-checker execute-permissions file-size-check git-conflict-markers git-no-local-paths missing-final-newline nix-no-embedded-shell no-shell-functions trailing-whitespace"
-    export CHECK_FRAGMENT_MAP="gitleaks=base git-conflict-markers=base git-no-local-paths=base execute-permissions=base file-size-check=base trailing-whitespace=base missing-final-newline=base editorconfig-checker=base typos=base nix-flake-check=base flake-manifest=nix nixfmt=nix statix=nix deadnix=nix nix-no-embedded-shell=nix shellcheck=shell shfmt=shell no-shell-functions=shell rubocop=rubocop rspec=rspec reek=reek brakeman=brakeman bundle-audit=bundle-audit ascii-only=ascii unicode-lint=ascii markdownlint=markdown markdownlint-agentic=markdown yamllint=yaml set-skill-extension=set set-skill-size=set set-ref-resolution=set set-bundle-content=set"
-    export FRAGMENT_TRIGGERS="base=always active|nix=tracked *.nix files|shell=tracked *.sh/*.bash files|rubocop=tracked .rubocop.yml or *.gemspec files|rspec=tracked spec/ files or .rspec|reek=tracked .reek.yml|brakeman=tracked config/brakeman.yml|bundle-audit=tracked Gemfile.lock|ascii=always active|markdown=tracked *.md files|yaml=tracked *.yml/*.yaml files|set=tracked set/*.md files"
+    export CHECKS_UNIVERSE="actionlint flake-manifest nixfmt statix deadnix shellcheck gitleaks shfmt typos ascii-only unicode-lint editorconfig-checker execute-permissions file-size-check git-conflict-markers git-no-local-paths missing-final-newline nix-no-embedded-shell no-shell-functions trailing-whitespace"
+    export CHECK_FRAGMENT_MAP="actionlint=actions gitleaks=base git-conflict-markers=base git-no-local-paths=base execute-permissions=base file-size-check=base trailing-whitespace=base missing-final-newline=base editorconfig-checker=base typos=base nix-flake-check=base flake-manifest=nix nixfmt=nix statix=nix deadnix=nix nix-no-embedded-shell=nix shellcheck=shell shfmt=shell no-shell-functions=shell rubocop=rubocop rspec=rspec reek=reek brakeman=brakeman bundle-audit=bundle-audit ascii-only=ascii unicode-lint=ascii markdownlint=markdown markdownlint-agentic=markdown yamllint=yaml set-skill-extension=set set-skill-size=set set-ref-resolution=set set-bundle-content=set"
+    export FRAGMENT_TRIGGERS="base=always active|actions=tracked .github/workflows/*.yml/*.yaml files|nix=tracked *.nix files|shell=tracked *.sh/*.bash files|rubocop=tracked .rubocop.yml or *.gemspec files|rspec=tracked spec/ files or .rspec|reek=tracked .reek.yml|brakeman=tracked config/brakeman.yml|bundle-audit=tracked Gemfile.lock|ascii=always active|markdown=tracked *.md files|yaml=tracked *.yml/*.yaml files|set=tracked set/*.md files"
 
     # a materialized config bundle (SETTING_SRC)
     SETTING_SRC="$(mktemp -d)"
@@ -479,6 +479,19 @@ write_vendored_lefthook_with_remotes() {
     _assert_fragment_indent
     # "set" excluded (specific to set-and-setting)
     ! grep -q '"set"' flake.nix
+}
+
+@test "migrate preserves the detected actions fragment" {
+    echo "{ outputs = { self }: { }; }" >flake.nix
+    write_vendored_lefthook
+    mkdir -p .github/workflows
+    echo "name: CI" >.github/workflows/ci.yml
+    _init_repo
+    run bash "$MIGRATE_SCRIPT"
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"fragments: base actions"* ]]
+    grep -q '"actions"' flake.nix
+    _assert_fragment_indent
 }
 
 @test "partial-tracked-lefthook completes the migration" {
