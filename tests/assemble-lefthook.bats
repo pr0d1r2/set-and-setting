@@ -176,9 +176,9 @@ teardown() {
 
 @test "duplicate fragment names are emitted only once" {
     FRAGMENTS="base base nix nix" out="$out" bash "$SCRIPT"
-    [ "$(grep -c '^    nix-flake-check:' "$out/lefthook.yml")" -eq 2 ]
+    [ "$(grep -c '^    nix-flake-check:' "$out/lefthook.yml")" -eq 1 ]
     run grep -n 'nix-flake-check' "$out/lefthook.yml"
-    [ "$(printf '%s\n' "$output" | wc -l)" -eq 2 ]
+    [ "$(printf '%s\n' "$output" | wc -l)" -eq 1 ]
 }
 
 @test "has pre-push section with commands" {
@@ -410,6 +410,24 @@ teardown() {
     prepush_section="$(awk '/^pre-push:/,0' "$out/lefthook.yml")"
     echo "$prepush_section" | grep -q 'taplo:'
     echo "$prepush_section" | grep -q 'ascii-check:'
+    rm -rf "$workdir"
+}
+
+@test "repo-local command colliding with a standard command is emitted once" {
+    local workdir
+    workdir="$(mktemp -d)"
+    {
+        printf '%s\n' "---"
+        write_commands pre-commit nix-flake-check "*.nix" staged_files
+        write_commands pre-push nix-flake-check "*.nix" push_files
+    } >"$workdir/lefthook-repo.yml"
+    cd "$workdir"
+    FRAGMENTS="base" bash "$SCRIPT"
+
+    [ "$(grep -c '^    nix-flake-check:' "$out/lefthook.yml")" -eq 2 ]
+    cp "$out/lefthook.yml" lefthook.yml
+    run lefthook dump
+    [ "$status" -eq 0 ]
     rm -rf "$workdir"
 }
 

@@ -96,6 +96,42 @@ ordered="$unique_ordered"
   fi
 } >"$out/lefthook.yml"
 
+# A repo-local fragment is appended after the standard fragments. A carried-
+# through check can therefore collide with a standard command name. Keep the
+# first command for each hook: duplicate YAML mapping keys make lefthook reject
+# the whole config.
+awk '
+  /^(pre-commit|pre-push):$/ {
+    hook = $1
+    sub(/:$/, "", hook)
+    in_commands = 0
+    print
+    next
+  }
+  /^  commands:$/ {
+    in_commands = 1
+    print
+    next
+  }
+  /^[A-Za-z][A-Za-z0-9_-]*:/ {
+    in_commands = 0
+    print
+    next
+  }
+  in_commands && /^    [A-Za-z][A-Za-z0-9_-]*:/ {
+    key = $0
+    sub(/^    /, "", key)
+    sub(/:.*/, "", key)
+    keep = !(hook SUBSEP key in emitted)
+    if (keep) emitted[hook SUBSEP key] = 1
+    if (keep) print
+    next
+  }
+  in_commands && keep { print }
+  !in_commands { print }
+' "$out/lefthook.yml" >"$out/lefthook.yml.dedup"
+mv "$out/lefthook.yml.dedup" "$out/lefthook.yml"
+
 # Inject skip:true for migrating commands (parallel-change expand phase).
 # Each command name in MIGRATION_SKIPS gets a skip:true line inserted after
 # its YAML key line, disabling it in the main config while the migration
