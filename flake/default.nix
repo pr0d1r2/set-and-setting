@@ -31,6 +31,7 @@
   nix-lefthook-linter-coverage-src,
   nix-lefthook-bats-parse-src,
   nix-lefthook-bats-unit-src,
+  nix-lefthook-tdd-order-bats-src,
   ...
 }:
 let
@@ -86,6 +87,7 @@ let
         "markdown"
         "yaml"
         "set"
+        "bats"
       ];
       # Names of every pinned flake check the referenced architecture
       # provides (checksFor over all fragments) -- the equivalence gate
@@ -215,7 +217,11 @@ let
     wrap pkgs "lefthook-nixfmt" nix-lefthook-nixfmt-src {
       runtimeInputs = [ pkgs.nixfmt ];
     };
-  actionlintWrapperFor = pkgs: wrap pkgs "lefthook-actionlint" nix-lefthook-actionlint-src { };
+  actionlintWrapperFor =
+    pkgs:
+    wrap pkgs "lefthook-actionlint" nix-lefthook-actionlint-src {
+      runtimeInputs = [ pkgs.actionlint ];
+    };
 
   # #98 (part of #93): the formatter tier's pinned wrappers, each built
   # from its own pinned flake input. Shared, like nixfmtWrapperFor, by the
@@ -495,6 +501,23 @@ let
             pkgs.coreutils
           ];
         })
+        (pkgs.writeShellApplication {
+          name = "lefthook-tdd-order-bats";
+          runtimeInputs = [
+            pkgs.coreutils
+            pkgs.git
+            pkgs.gnugrep
+            pkgs.gnused
+          ];
+          text =
+            builtins.replaceStrings
+              [ "@IS_EXCLUDED_PATH@" "@SPEC_PATH_FOR_FILE@" ]
+              [
+                "${nix-lefthook-tdd-order-bats-src}/is-excluded-path.sh"
+                "${nix-lefthook-tdd-order-bats-src}/spec-path-for-file.sh"
+              ]
+              (builtins.readFile "${nix-lefthook-tdd-order-bats-src}/lefthook-tdd-order-bats.sh");
+        })
       ];
       nix = [
         (flakeManifestWrapperFor pkgs)
@@ -550,6 +573,38 @@ let
       ];
       actions = [ (actionlintWrapperFor pkgs) ];
       set = [ ];
+      bats = [
+        (w "lefthook-bats-parse" nix-lefthook-bats-parse-src {
+          runtimeInputs = [
+            pkgs.bats
+            pkgs.coreutils
+          ];
+        })
+        (w "lefthook-bats-unit" nix-lefthook-bats-unit-src {
+          runtimeInputs = [
+            pkgs.bats
+            pkgs.parallel
+            pkgs.coreutils
+          ];
+        })
+        (pkgs.writeShellApplication {
+          name = "lefthook-tdd-order-bats";
+          runtimeInputs = [
+            pkgs.coreutils
+            pkgs.git
+            pkgs.gnugrep
+            pkgs.gnused
+          ];
+          text =
+            builtins.replaceStrings
+              [ "@IS_EXCLUDED_PATH@" "@SPEC_PATH_FOR_FILE@" ]
+              [
+                "${nix-lefthook-tdd-order-bats-src}/is-excluded-path.sh"
+                "${nix-lefthook-tdd-order-bats-src}/spec-path-for-file.sh"
+              ]
+              (builtins.readFile "${nix-lefthook-tdd-order-bats-src}/lefthook-tdd-order-bats.sh");
+        })
+      ];
     };
 
   lefthookWrappersFor =
@@ -572,6 +627,7 @@ let
       "markdown"
       "yaml"
       "set"
+      "bats"
     ];
 in
 {

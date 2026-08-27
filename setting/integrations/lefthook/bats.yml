@@ -1,0 +1,16 @@
+---
+
+# Bats is intentionally a CI-side lefthook job, not a pinned flake check:
+# the suite and tdd-order-bats inspect the git worktree/history. Keep the
+# unit runner sequential; parallel bats is unstable under emulation and
+# concurrent git access (B12/B16/B18, generic/parallel.md).
+pre-push:
+  commands:
+    bats-parse:
+      glob: "**/*.bats"
+      run: timeout ${LEFTHOOK_BATS_PARSE_TIMEOUT:-30} lefthook-bats-parse {push_files}
+    bats-unit:
+      glob: "**/*.bats"
+      run: timeout ${LEFTHOOK_BATS_UNIT_TIMEOUT:-300} lefthook-bats-unit
+    tdd-order-bats:
+      run: timeout ${LEFTHOOK_TDD_ORDER_TIMEOUT:-30} lefthook-tdd-order-bats

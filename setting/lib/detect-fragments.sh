@@ -75,6 +75,10 @@ fi
 
 result="$result ascii"
 
+if grep -qE '\.bats$' <<<"$tracked"; then
+  result="$result bats"
+fi
+
 if grep -qE '\.md$' <<<"$tracked"; then
   result="$result markdown"
 fi

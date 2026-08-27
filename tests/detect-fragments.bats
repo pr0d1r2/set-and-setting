@@ -84,6 +84,14 @@ teardown() {
     [ "$output" = "base shell ascii" ]
 }
 
+@test ".bats files detect the bats fragment" {
+    printf '#!/usr/bin/env bats\n' >test.bats
+    git add test.bats
+    run bash "$SCRIPT"
+    [ "$status" -eq 0 ]
+    [ "$output" = "base ascii bats" ]
+}
+
 @test ".bash extension detected as shell" {
     printf '#!/bin/bash\n' >test.bash
     git add test.bash
@@ -209,7 +217,7 @@ teardown() {
     git add test.nix test.sh README.md config.yml set/skills/test.md
     run bash "$SCRIPT"
     [ "$status" -eq 0 ]
-    [ "$output" = "base actions nix shell ascii markdown yaml set" ]
+    [ "$output" = "base nix shell ascii markdown yaml set" ]
 }
 
 @test "fragment order is deterministic" {
@@ -222,7 +230,7 @@ teardown() {
     git add config.yml README.md test.sh test.nix set/skills/test.md
     run bash "$SCRIPT"
     [ "$status" -eq 0 ]
-    [ "$output" = "base actions nix shell ascii markdown yaml set" ]
+    [ "$output" = "base nix shell ascii markdown yaml set" ]
 }
 
 @test "base and ascii always present" {

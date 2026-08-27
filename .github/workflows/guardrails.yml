@@ -42,6 +42,17 @@ jobs:
           nix flake check \
             --print-build-logs \
             --timeout ${{ inputs.flake-check-timeout }}
+      - name: Bats suite
+        run: |
+          mapfile -d '' bats_files < <(git ls-files -z -- '*.bats')
+          if [ "${#bats_files[@]}" -gt 0 ]; then
+            nix develop --command lefthook-bats-parse "${bats_files[@]}"
+            # The wrapper enables parallel jobs; CI runners expose multiple
+            # cores and the Bats files share git/test state. Keep this gate
+            # deterministic by running the complete suite sequentially.
+            nix develop --command bats "${bats_files[@]}"
+          fi
+          nix develop --command lefthook-tdd-order-bats
 
   check-darwin:
     needs: check

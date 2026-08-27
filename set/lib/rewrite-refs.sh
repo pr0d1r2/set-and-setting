@@ -27,5 +27,7 @@ while IFS= read -r line || [ -n "$line" ]; do
     relative="$(realpath -m --relative-to="$(dirname "$DEST")" "$target")"
     line="${line//$ref/@$relative}"
   done <<<"$refs"
-  [ "$drop" -eq 0 ] && printf '%s\n' "$line"
+  if [ "$drop" -eq 0 ]; then
+    printf '%s\n' "$line"
+  fi
 done <"$SRC"
