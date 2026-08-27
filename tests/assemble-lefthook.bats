@@ -366,6 +366,7 @@ teardown() {
 @test "lefthook-repo.yml in CWD is included in assembly" {
     local workdir
     workdir="$(mktemp -d)"
+    git -C "$workdir" init -q
     {
         printf '%s\n' "---"
         write_commands pre-commit taplo "*.toml" staged_files
@@ -416,6 +417,7 @@ teardown() {
 @test "repo-local command colliding with a standard command is emitted once" {
     local workdir
     workdir="$(mktemp -d)"
+    git -C "$workdir" init -q
     {
         printf '%s\n' "---"
         write_commands pre-commit nix-flake-check "*.nix" staged_files
