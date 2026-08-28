@@ -89,7 +89,9 @@ let
     };
     markdown = { };
     yaml = { };
-    toml = { taplo = mkTaploCheck { inherit pkgs src; }; };
+    toml = {
+      taplo = mkTaploCheck { inherit pkgs src; };
+    };
     set = { };
     bats = { };
   };
