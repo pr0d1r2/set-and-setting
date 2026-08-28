@@ -21,9 +21,10 @@ teardown() {
 
 write_fixture() {
     printf '%s\n' "$1" >"$TARGET/issues.json"
-    printf '%s\n' '#!/usr/bin/env bash' 'cat "$ISSUES_JSON"' >"$BIN/gh"
+    printf '%s\n' '#!/usr/bin/env bash' 'printf "%s\\n" "$*" >"$GH_ARGS"' 'cat "$ISSUES_JSON"' >"$BIN/gh"
     chmod +x "$BIN/gh"
     export ISSUES_JSON="$TARGET/issues.json"
+    export GH_ARGS="$TARGET/gh-args"
 }
 
 @test "issues without dependencies and with closed dependencies are ready" {
@@ -36,6 +37,7 @@ write_fixture() {
     run bash -c "cd '$TARGET' && bash '$SCRIPT' 2>stderr"
     [ "$status" -eq 0 ]
     [ "$output" = $'292\n293' ]
+    grep -q -- '--limit 100000' "$TARGET/gh-args"
 }
 
 @test "not planned closure does not satisfy a dependency" {

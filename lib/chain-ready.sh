@@ -26,7 +26,9 @@ if ! command -v gh >/dev/null 2>&1; then
 fi
 
 records=$(
-  gh issue list --state all --limit 1000 \
+  # Use a deliberately generous limit: dependencies may point at old issues,
+  # so truncating the result set makes existing issues look missing.
+  gh issue list --state all --limit 100000 \
     --json number,state,stateReason,body |
     jq -r --arg repo "$repo" '
       def refs:
