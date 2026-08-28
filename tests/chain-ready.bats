@@ -33,7 +33,7 @@ write_fixture() {
         {"number":293,"state":"OPEN","stateReason":null,"body":"No dependency"},
         {"number":294,"state":"OPEN","stateReason":null,"body":"Depends-on: owner/repo#292"}
     ]'
-    run bash -c "cd '$TARGET' && bash '$SCRIPT'"
+    run bash -c "cd '$TARGET' && bash '$SCRIPT' 2>stderr"
     [ "$status" -eq 0 ]
     [ "$output" = $'292\n293' ]
 }
