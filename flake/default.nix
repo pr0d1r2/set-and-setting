@@ -633,6 +633,7 @@ let
       "ascii"
       "markdown"
       "yaml"
+      "toml"
       "set"
       "bats"
     ];
