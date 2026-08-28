@@ -28,10 +28,10 @@ write_fixture() {
 
 @test "issues without dependencies and with closed dependencies are ready" {
     write_fixture '[
-      {"number":291,"state":"CLOSED","stateReason":"COMPLETED","body":""},
-      {"number":292,"state":"OPEN","stateReason":null,"body":"Depends on: #291"},
-      {"number":293,"state":"OPEN","stateReason":null,"body":"No dependency"},
-      {"number":294,"state":"OPEN","stateReason":null,"body":"Depends-on: owner/repo#292"}
+        {"number":291,"state":"CLOSED","stateReason":"COMPLETED","body":""},
+        {"number":292,"state":"OPEN","stateReason":null,"body":"Depends on: #291"},
+        {"number":293,"state":"OPEN","stateReason":null,"body":"No dependency"},
+        {"number":294,"state":"OPEN","stateReason":null,"body":"Depends-on: owner/repo#292"}
     ]'
     run bash -c "cd '$TARGET' && bash '$SCRIPT'"
     [ "$status" -eq 0 ]
@@ -40,8 +40,8 @@ write_fixture() {
 
 @test "not planned closure does not satisfy a dependency" {
     write_fixture '[
-      {"number":291,"state":"CLOSED","stateReason":"NOT_PLANNED","body":""},
-      {"number":292,"state":"OPEN","stateReason":null,"body":"Depends on: #291"}
+        {"number":291,"state":"CLOSED","stateReason":"NOT_PLANNED","body":""},
+        {"number":292,"state":"OPEN","stateReason":null,"body":"Depends on: #291"}
     ]'
     run bash -c "cd '$TARGET' && bash '$SCRIPT' 2>stderr"
     [ "$status" -eq 0 ]
@@ -59,9 +59,9 @@ write_fixture() {
 
 @test "cross repository dependency is reported and both dependency syntaxes parse" {
     write_fixture '[
-      {"number":301,"state":"OPEN","stateReason":null,"body":"Depends on: #302"},
-      {"number":302,"state":"OPEN","stateReason":null,"body":"Depends-on: other/repo#303"},
-      {"number":304,"state":"OPEN","stateReason":null,"body":""}
+        {"number":301,"state":"OPEN","stateReason":null,"body":"Depends on: #302"},
+        {"number":302,"state":"OPEN","stateReason":null,"body":"Depends-on: other/repo#303"},
+        {"number":304,"state":"OPEN","stateReason":null,"body":""}
     ]'
     run bash -c "cd '$TARGET' && bash '$SCRIPT' 2>stderr"
     [ "$status" -eq 0 ]

@@ -25,7 +25,7 @@ if ! command -v gh >/dev/null 2>&1; then
   exit 1
 fi
 
-records=$( 
+records=$(
   gh issue list --state all --limit 1000 \
     --json number,state,stateReason,body |
     jq -r --arg repo "$repo" '
@@ -70,6 +70,6 @@ records=$(
 while IFS=$'\t' read -r kind value; do
   case "$kind" in
     R) echo "$value" ;;
-    B|E) echo "$value" >&2 ;;
+    B | E) echo "$value" >&2 ;;
   esac
 done <<<"${records}"
