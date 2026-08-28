@@ -41,7 +41,7 @@ teardown() {
 @test "empty repo defaults to all fragments" {
     run bash "$SCRIPT"
     [ "$status" -eq 0 ]
-    [ "$output" = "base actions nix shell ruby rubocop rspec reek brakeman bundle-audit ascii markdown yaml set" ]
+    [ "$output" = "base actions nix shell ruby rubocop rspec reek brakeman bundle-audit ascii markdown yaml toml set" ]
 }
 
 @test "Gemfile detects the Ruby fragment" {
