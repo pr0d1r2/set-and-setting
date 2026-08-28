@@ -416,6 +416,22 @@
         "type": "github"
       }
     },
+    "nix-lefthook-taplo-src": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1787329697,
+        "narHash": "sha256-lu2eqNWkBghT2OByRgqkNnQQul9TaolA2eE//O/xUKw=",
+        "owner": "pr0d1r2",
+        "repo": "nix-lefthook-taplo",
+        "rev": "072b2b62f8510094e01b3e7558c56d1b7d256180",
+        "type": "github"
+      },
+      "original": {
+        "owner": "pr0d1r2",
+        "repo": "nix-lefthook-taplo",
+        "type": "github"
+      }
+    },
     "nix-lefthook-tdd-order-bats-src": {
       "flake": false,
       "locked": {
@@ -558,6 +574,7 @@
         "nix-lefthook-shellcheck-src": "nix-lefthook-shellcheck-src",
         "nix-lefthook-shfmt-src": "nix-lefthook-shfmt-src",
         "nix-lefthook-statix-src": "nix-lefthook-statix-src",
+        "nix-lefthook-taplo-src": "nix-lefthook-taplo-src",
         "nix-lefthook-tdd-order-bats-src": "nix-lefthook-tdd-order-bats-src",
         "nix-lefthook-trailing-whitespace-src": "nix-lefthook-trailing-whitespace-src",
         "nix-lefthook-typos-src": "nix-lefthook-typos-src",

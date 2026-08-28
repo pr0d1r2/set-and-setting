@@ -87,6 +87,10 @@ if grep -qE '\.(yml|yaml)$' <<<"$tracked"; then
   result="$result yaml"
 fi
 
+if grep -qE '\.toml$' <<<"$tracked"; then
+  result="$result toml"
+fi
+
 if grep -qE '^set/.*\.md$' <<<"$tracked"; then
   result="$result set"
 fi

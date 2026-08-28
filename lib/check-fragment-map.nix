@@ -27,6 +27,7 @@ in
     "ascii"
     "markdown"
     "yaml"
+    "toml"
     "set"
     "bats"
   ];
@@ -82,6 +83,7 @@ in
     yaml = [
       "yamllint"
     ];
+    toml = [ "taplo" ];
     set = [
       "set-skill-extension"
       "set-skill-size"
@@ -135,6 +137,7 @@ in
     ];
     markdown = [ ];
     yaml = [ ];
+    toml = [ "taplo" ];
     set = [ ];
     bats = [ ];
   };
@@ -180,6 +183,7 @@ in
     ];
     yml = [ "yamllint" ];
     yaml = [ "yamllint" ];
+    toml = [ "taplo" ];
     ".github/workflows" = [
       "yamllint"
       "actionlint"
@@ -224,6 +228,7 @@ in
     bundle-audit = "tracked Gemfile.lock";
     markdown = "tracked *.md files";
     yaml = "tracked *.yml/*.yaml files";
+    toml = "tracked *.toml files";
     set = "tracked set/*.md files";
     bats = "tracked *.bats files";
   };
@@ -247,6 +252,7 @@ in
     ascii = [ ];
     markdown = [ ];
     yaml = [ ];
+    toml = [ ];
     set = [ ];
     bats = [ ];
   };

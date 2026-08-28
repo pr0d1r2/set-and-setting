@@ -116,6 +116,10 @@
       url = "github:pr0d1r2/nix-lefthook-statix";
       flake = false;
     };
+    nix-lefthook-taplo-src = {
+      url = "github:pr0d1r2/nix-lefthook-taplo";
+      flake = false;
+    };
     nix-lefthook-trailing-whitespace-src = {
       url = "github:pr0d1r2/nix-lefthook-trailing-whitespace";
       flake = false;

@@ -42,6 +42,7 @@
   mkFileSizeCheckCheck,
   mkLinterCoverageCheck,
   mkActionlintCheck,
+  mkTaploCheck,
 }:
 
 let
@@ -88,6 +89,7 @@ let
     };
     markdown = { };
     yaml = { };
+    toml = { taplo = mkTaploCheck { inherit pkgs src; }; };
     set = { };
     bats = { };
   };
