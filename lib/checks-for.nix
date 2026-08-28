@@ -92,6 +92,10 @@ let
     toml = {
       taplo = mkTaploCheck { inherit pkgs src; };
     };
+    just = { };
+    xml = { };
+    tcl = { };
+    awk = { };
     set = { };
     bats = { };
   };

@@ -1,0 +1,5 @@
+pre-commit:
+  commands:
+    xmllint:
+      glob: "*.xml"
+      run: timeout ${LEFTHOOK_XMLLINT_TIMEOUT:-30} nix-lefthook-xmllint {staged_files}

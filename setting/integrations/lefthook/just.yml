@@ -1,0 +1,9 @@
+# Just recipes are checked by the fleet's pinned justfile wrappers.
+pre-commit:
+  commands:
+    justfile-alphabetical:
+      glob: "{justfile,*.just}"
+      run: timeout ${LEFTHOOK_JUSTFILE_ALPHABETICAL_TIMEOUT:-30} nix-lefthook-justfile-alphabetical {staged_files}
+    justfile-no-embedded-shell:
+      glob: "{justfile,*.just}"
+      run: timeout ${LEFTHOOK_JUSTFILE_NO_EMBEDDED_SHELL_TIMEOUT:-30} nix-lefthook-justfile-no-embedded-shell {staged_files}

@@ -19,6 +19,10 @@ setup() {
     [[ "$output" == *\"sh\"*\"shellcheck\"* ]]
     [[ "$output" == *\".github/workflows\"*\"yamllint\"* ]]
     [[ "$output" == *\"toml\"*\"taplo\"* ]]
+    [[ "$output" == *\"justfile\"*\"justfile-alphabetical\"* ]]
+    [[ "$output" == *\"xml\"*\"xmllint\"* ]]
+    [[ "$output" == *\"tcl\"*\"tcl-syntax\"* ]]
+    [[ "$output" == *\"awk\"*\"gawk-lint\"* ]]
 }
 
 @test "deliberately unlinted file classes are queryable" {

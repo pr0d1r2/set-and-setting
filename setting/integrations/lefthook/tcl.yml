@@ -1,0 +1,5 @@
+pre-commit:
+  commands:
+    tcl-syntax:
+      glob: "*.{tcl,exp}"
+      run: timeout ${LEFTHOOK_TCL_SYNTAX_TIMEOUT:-30} nix-lefthook-tcl-syntax {staged_files}
