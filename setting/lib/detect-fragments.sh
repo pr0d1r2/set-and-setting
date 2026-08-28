@@ -31,7 +31,7 @@ if [ -z "$tracked" ] && [ -n "${DETECT_ROOT:-}" ]; then
 fi
 
 if [ -z "$tracked" ]; then
-  echo "base actions nix shell ruby rubocop rspec reek brakeman bundle-audit ascii markdown yaml set"
+  echo "base actions nix shell ruby rubocop rspec reek brakeman bundle-audit ascii markdown yaml toml set"
   exit 0
 fi
 
@@ -85,6 +85,10 @@ fi
 
 if grep -qE '\.(yml|yaml)$' <<<"$tracked"; then
   result="$result yaml"
+fi
+
+if grep -qE '\.toml$' <<<"$tracked"; then
+  result="$result toml"
 fi
 
 if grep -qE '^set/.*\.md$' <<<"$tracked"; then

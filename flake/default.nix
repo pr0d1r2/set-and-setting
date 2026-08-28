@@ -24,6 +24,7 @@
   nix-lefthook-shfmt-src,
   nix-lefthook-nixfmt-src,
   nix-lefthook-statix-src,
+  nix-lefthook-taplo-src,
   nix-lefthook-trailing-whitespace-src,
   nix-lefthook-typos-src,
   nix-lefthook-unicode-lint-src,
@@ -325,6 +326,11 @@ let
     wrap pkgs "lefthook-deadnix" nix-lefthook-deadnix-src {
       runtimeInputs = [ pkgs.deadnix ];
     };
+  taploWrapperFor =
+    pkgs:
+    wrap pkgs "lefthook-taplo" nix-lefthook-taplo-src {
+      runtimeInputs = [ pkgs.taplo ];
+    };
   nixNoEmbeddedShellWrapperFor =
     pkgs:
     withWrapperChecks "lefthook-nix-no-embedded-shell" (
@@ -571,6 +577,7 @@ let
           runtimeInputs = [ pkgs.yamllint ];
         })
       ];
+      toml = [ (taploWrapperFor pkgs) ];
       actions = [ (actionlintWrapperFor pkgs) ];
       set = [ ];
       bats = [
@@ -626,6 +633,7 @@ let
       "ascii"
       "markdown"
       "yaml"
+      "toml"
       "set"
       "bats"
     ];
@@ -769,6 +777,18 @@ in
         inherit pkgs src name;
         wrapper = shfmtWrapperFor pkgs;
         suffices = [ ".sh" ];
+      };
+    mkTaploCheck =
+      {
+        pkgs,
+        src,
+        name ? "taplo",
+      }:
+      import ../lib/mk-lefthook-check.nix {
+        inherit pkgs src name;
+        wrapper = taploWrapperFor pkgs;
+        suffices = [ ".toml" ];
+        checkFlag = "";
       };
     mkTrailingWhitespaceCheck =
       {
@@ -1157,6 +1177,7 @@ in
           mkFileSizeCheckCheck
           mkLinterCoverageCheck
           mkActionlintCheck
+          mkTaploCheck
           ;
       };
   };
@@ -1282,6 +1303,21 @@ in
           echo "FAIL: nixfmt --check accepted a malformed file"; exit 1
         fi
         echo "PASS: pinned nixfmt rejects a violation"
+        touch $out
+      '';
+
+    taplo-catches-violation =
+      let
+        wrapper = taploWrapperFor pkgs;
+      in
+      pkgs.runCommand "taplo-catches-violation" { } ''
+        bad=$TMPDIR/bad.toml
+        printf 'broken = [\n' > "$bad"
+        if ${pkgs.lib.getExe wrapper} "$bad"; then
+          echo "FAIL: taplo accepted a violation"
+          exit 1
+        fi
+        echo "PASS: pinned taplo rejects a violation"
         touch $out
       '';
 

@@ -15,7 +15,7 @@ set -euo pipefail
 
 mkdir -p "$out"
 
-ordered="${FRAGMENTS:-base actions nix shell ruby rubocop rspec reek brakeman bundle-audit ascii markdown yaml set}"
+ordered="${FRAGMENTS:-base actions nix shell ruby rubocop rspec reek brakeman bundle-audit ascii markdown yaml toml set}"
 
 # Fragment lists are assembled from a base selection plus optional additions.
 # Keep the first occurrence of each name: emitting a fragment twice creates
