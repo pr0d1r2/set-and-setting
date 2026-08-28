@@ -22,3 +22,10 @@ setup() {
     grep -q 'connect-timeout = 15' "$workflow"
     grep -q 'download-attempts = 5' "$workflow"
 }
+
+@test "Darwin Nix installer is pinned to an immutable commit" {
+    workflow="$ROOT/.github/workflows/guardrails.yml"
+
+    grep -Eq '^      - uses: DeterminateSystems/nix-installer-action@[0-9a-f]{40}$' "$workflow"
+    ! grep -q 'DeterminateSystems/nix-installer-action@main' "$workflow"
+}
