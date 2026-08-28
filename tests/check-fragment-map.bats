@@ -17,6 +17,7 @@ setup() {
     [ "$status" -eq 0 ]
     [[ "$output" == *\"nix\"*\"nixfmt\"* ]]
     [[ "$output" == *\"sh\"*\"shellcheck\"* ]]
+    [[ "$output" == *\"bash\"*\"shellcheck\"* ]]
     [[ "$output" == *\".github/workflows\"*\"yamllint\"* ]]
     [[ "$output" == *\"toml\"*\"taplo\"* ]]
     [[ "$output" == *\"justfile\"*\"justfile-alphabetical\"* ]]

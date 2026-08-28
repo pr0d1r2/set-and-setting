@@ -188,6 +188,11 @@ in
       "shfmt"
       "no-shell-functions"
     ];
+    bash = [
+      "shellcheck"
+      "shfmt"
+      "no-shell-functions"
+    ];
     rb = [
       "rubocop"
       "reek"
