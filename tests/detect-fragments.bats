@@ -190,6 +190,14 @@ teardown() {
     [ "$output" = "base ascii yaml" ]
 }
 
+@test ".toml files detect the toml fragment" {
+    printf 'key = "value"\n' >config.toml
+    git add config.toml
+    run bash "$SCRIPT"
+    [ "$status" -eq 0 ]
+    [ "$output" = "base ascii toml" ]
+}
+
 @test ".yaml extension detected" {
     printf 'key: value\n' >config.yaml
     git add config.yaml

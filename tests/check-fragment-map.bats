@@ -5,6 +5,12 @@ setup() {
     MAP="$BATS_TEST_DIRNAME/../lib/check-fragment-map.nix"
 }
 
+@test "toml fragment is present and declares taplo" {
+    fragment="$BATS_TEST_DIRNAME/../setting/integrations/lefthook/toml.yml"
+    [ -f "$fragment" ]
+    grep -q '^    taplo:' "$fragment"
+}
+
 @test "file-class coverage is exposed as queryable Nix data" {
     run nix --extra-experimental-features nix-command eval --json \
         --file "$MAP" coveragePerFileClass
@@ -12,6 +18,7 @@ setup() {
     [[ "$output" == *\"nix\"*\"nixfmt\"* ]]
     [[ "$output" == *\"sh\"*\"shellcheck\"* ]]
     [[ "$output" == *\".github/workflows\"*\"yamllint\"* ]]
+    [[ "$output" == *\"toml\"*\"taplo\"* ]]
 }
 
 @test "deliberately unlinted file classes are queryable" {
