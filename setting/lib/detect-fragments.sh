@@ -31,7 +31,7 @@ if [ -z "$tracked" ] && [ -n "${DETECT_ROOT:-}" ]; then
 fi
 
 if [ -z "$tracked" ]; then
-  echo "base actions nix shell ruby rubocop rspec reek brakeman bundle-audit ascii markdown yaml toml set"
+  echo "base actions nix shell ruby rubocop rspec reek brakeman bundle-audit ascii markdown yaml toml just xml tcl awk set"
   exit 0
 fi
 
@@ -71,6 +71,22 @@ fi
 
 if grep -qE '(^|/)Gemfile\.lock$' <<<"$tracked"; then
   result="$result bundle-audit"
+fi
+
+if grep -qE '(^|/)(justfile|[^/]+\.just)$' <<<"$tracked"; then
+  result="$result just"
+fi
+
+if grep -qE '\.xml$' <<<"$tracked"; then
+  result="$result xml"
+fi
+
+if grep -qE '\.(tcl|exp)$' <<<"$tracked"; then
+  result="$result tcl"
+fi
+
+if grep -qE '\.awk$' <<<"$tracked"; then
+  result="$result awk"
 fi
 
 result="$result ascii"

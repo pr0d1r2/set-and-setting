@@ -28,6 +28,10 @@ in
     "markdown"
     "yaml"
     "toml"
+    "just"
+    "xml"
+    "tcl"
+    "awk"
     "set"
     "bats"
   ];
@@ -84,6 +88,13 @@ in
       "yamllint"
     ];
     toml = [ "taplo" ];
+    just = [
+      "justfile-alphabetical"
+      "justfile-no-embedded-shell"
+    ];
+    xml = [ "xmllint" ];
+    tcl = [ "tcl-syntax" ];
+    awk = [ "gawk-lint" ];
     set = [
       "set-skill-extension"
       "set-skill-size"
@@ -138,6 +149,10 @@ in
     markdown = [ ];
     yaml = [ ];
     toml = [ "taplo" ];
+    just = [ ];
+    xml = [ ];
+    tcl = [ ];
+    awk = [ ];
     set = [ ];
     bats = [ ];
   };
@@ -173,6 +188,11 @@ in
       "shfmt"
       "no-shell-functions"
     ];
+    bash = [
+      "shellcheck"
+      "shfmt"
+      "no-shell-functions"
+    ];
     rb = [
       "rubocop"
       "reek"
@@ -184,6 +204,18 @@ in
     yml = [ "yamllint" ];
     yaml = [ "yamllint" ];
     toml = [ "taplo" ];
+    justfile = [
+      "justfile-alphabetical"
+      "justfile-no-embedded-shell"
+    ];
+    just = [
+      "justfile-alphabetical"
+      "justfile-no-embedded-shell"
+    ];
+    xml = [ "xmllint" ];
+    tcl = [ "tcl-syntax" ];
+    exp = [ "tcl-syntax" ];
+    awk = [ "gawk-lint" ];
     ".github/workflows" = [
       "yamllint"
       "actionlint"
@@ -230,6 +262,10 @@ in
     yaml = "tracked *.yml/*.yaml files";
     toml = "tracked *.toml files";
     set = "tracked set/*.md files";
+    just = "tracked justfile or *.just files";
+    xml = "tracked *.xml files";
+    tcl = "tracked *.tcl or *.exp files";
+    awk = "tracked *.awk files";
     bats = "tracked *.bats files";
   };
 
@@ -253,6 +289,10 @@ in
     markdown = [ ];
     yaml = [ ];
     toml = [ ];
+    just = [ ];
+    xml = [ ];
+    tcl = [ ];
+    awk = [ ];
     set = [ ];
     bats = [ ];
   };

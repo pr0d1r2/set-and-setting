@@ -1,20 +1,18 @@
 exempt:
   - class: ".editorconfig"
-    ticket: 329
+    reason: "checked-by-its-own-consumer"
   - class: ".gitattributes"
-    ticket: 330
+    reason: "checked-by-its-own-consumer"
   - class: ".envrc"
-    ticket: 331
+    reason: "checked-by-its-own-consumer"
   - class: "LICENSE"
     ticket: 332
-  - class: "justfile"
-    ticket: 333
   - class: ".nix-embedded-shell-allowlist"
     ticket: 334
   - class: "lock"
     ticket: 335
   - class: "txt"
-    ticket: 336
+    reason: "checked-by-its-own-consumer"
   - class: "gemspec"
     ticket: 337
   - class: ".gitkeep"
@@ -22,18 +20,10 @@ exempt:
   - class: "gitignore"
     ticket: 339
   - class: ".gitignore"
-    ticket: 328
+    reason: "checked-by-its-own-consumer"
   - class: ".github/workflows"
     ticket: 319
   - class: "in"
-    ticket: 322
+    reason: "checked-by-its-own-consumer; templates are validated as emitted artifacts"
   - class: "dic"
-    ticket: 323
-  - class: "justfile"
-    ticket: 324
-  - class: "xml"
-    ticket: 325
-  - class: "tcl"
-    ticket: 326
-  - class: "awk"
-    ticket: 327
+    reason: "data"
