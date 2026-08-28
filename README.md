@@ -74,6 +74,12 @@ portable `SKILL.md` provides cross-agent reach and `/`-invocability.
 A sidecar meta map (`set/meta.nix`) declares each skill's channel,
 path globs, and keywords -- the source markdown stays agent-agnostic.
 
+Rust repositories are `hk`-gated by design. `set-and-setting` provides only
+the `mkSet` skills guidance (`hk check`); `mkSetting` emits no Rust setting,
+and the standard has no clippy, rustfmt, or cargo lefthook fragments. Rust
+repositories therefore are not under-covered when the standard emits none of
+their checks.
+
 ### Active principles
 
 Every top-level markdown file in `set/skills/principles/` automatically

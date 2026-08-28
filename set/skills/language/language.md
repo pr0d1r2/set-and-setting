@@ -10,3 +10,4 @@ Language conventions for all written content in this repo.
 @language/operator.md
 @language/imperative.md
 @language/zipf.md
+@language/rust.md
