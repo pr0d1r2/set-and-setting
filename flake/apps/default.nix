@@ -205,6 +205,18 @@ let
     + builtins.readFile ../../lib/branch-protection.sh;
   };
 
+  chainReadyApp = pkgs.writeShellApplication {
+    name = "chain-ready";
+    runtimeInputs = [
+      pkgs.git
+      pkgs.gh
+      pkgs.jq
+      pkgs.gnused
+      pkgs.gnugrep
+    ];
+    text = builtins.readFile ../../lib/chain-ready.sh;
+  };
+
   confirmApp = self.lib.mkConfirmApp {
     inherit pkgs;
     standard = ../..;
@@ -315,6 +327,10 @@ in
   "branch-protection" = {
     type = "app";
     program = "${branchProtectionApp}/bin/branch-protection";
+  };
+  "chain-ready" = {
+    type = "app";
+    program = "${chainReadyApp}/bin/chain-ready";
   };
   confirm = {
     inherit (confirmApp) type program;
