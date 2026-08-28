@@ -73,6 +73,22 @@ if grep -qE '(^|/)Gemfile\.lock$' <<<"$tracked"; then
   result="$result bundle-audit"
 fi
 
+if grep -qE '(^|/)(justfile|[^/]+\.just)$' <<<"$tracked"; then
+  result="$result just"
+fi
+
+if grep -qE '\.xml$' <<<"$tracked"; then
+  result="$result xml"
+fi
+
+if grep -qE '\.(tcl|exp)$' <<<"$tracked"; then
+  result="$result tcl"
+fi
+
+if grep -qE '\.awk$' <<<"$tracked"; then
+  result="$result awk"
+fi
+
 result="$result ascii"
 
 if grep -qE '\.bats$' <<<"$tracked"; then
@@ -89,22 +105,6 @@ fi
 
 if grep -qE '\.toml$' <<<"$tracked"; then
   result="$result toml"
-fi
-
-if grep -qE '(^|/)(justfile|[^/]+\.just)$' <<<"$tracked"; then
-  result="$result just"
-fi
-
-if grep -qE '\.xml$' <<<"$tracked"; then
-  result="$result xml"
-fi
-
-if grep -qE '\.(tcl|exp)$' <<<"$tracked"; then
-  result="$result tcl"
-fi
-
-if grep -qE '\.awk$' <<<"$tracked"; then
-  result="$result awk"
 fi
 
 if grep -qE '^set/.*\.md$' <<<"$tracked"; then
