@@ -30,7 +30,9 @@ jobs:
           if ! jq -n --argjson a "$actual" --argjson b "$baseline" --argjson t "$threshold" '($a.bytes > $b.bytes * (1 + $t / 100)) or ($a.nodes > $b.nodes * (1 + $t / 100))'; then
             exit 0
           fi
-          body="$marker\nLock growth notice: **$(jq -r .bytes <<<"$actual") bytes**, **$(jq -r .nodes <<<"$actual") nodes** (baseline: $(jq -r .bytes <<<"$baseline") bytes, $(jq -r .nodes <<<"$baseline") nodes)."
+          body=$(printf '%s\nLock growth notice: **%s bytes**, **%s nodes** (baseline: %s bytes, %s nodes).' \
+            "$marker" "$(jq -r .bytes <<<"$actual")" "$(jq -r .nodes <<<"$actual")" \
+            "$(jq -r .bytes <<<"$baseline")" "$(jq -r .nodes <<<"$baseline")")
           comments=$(gh api "repos/${{ github.repository }}/issues/$PR_NUMBER/comments" --paginate)
           id=$(jq -r --arg m "$marker" '.[] | select(.body | contains($m)) | .id' <<<"$comments" | head -1)
           if [ -n "$id" ]; then

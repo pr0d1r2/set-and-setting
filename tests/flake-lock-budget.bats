@@ -24,3 +24,11 @@ setup() {
     [ "$status" -ne 0 ]
     [[ "$output" == *"ratchet violation"* ]]
 }
+
+@test "nodes without a lock identity are not treated as duplicates" {
+    printf '%s\n' '{"nodes":{"root":{"inputs":{}},"a":{"inputs":{}},"b":{"inputs":{}}},"root":"root","version":7}' >"$TARGET/flake.lock"
+    pushd "$TARGET" >/dev/null
+    run bash "$SCRIPT" flake.lock
+    popd >/dev/null
+    [ "$status" -eq 0 ]
+}

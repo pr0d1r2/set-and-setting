@@ -22,7 +22,7 @@ jq empty "$lock" >/dev/null 2>&1 || {
 }
 
 actual=$(jq -r '(.nodes // {}) as $n |
-  ([ $n[] | (.locked // .original) | tojson ] | unique | length) as $u |
+  ([ $n | to_entries[] | (.value.locked // .value.original // {"__node": .key}) | tojson ] | unique | length) as $u |
   {bytes: (input_filename | ""), nodes: ($n|length), unique: $u}' "$lock" |
   jq --argjson bytes "$(wc -c <"$lock")" '.bytes=($bytes|tonumber) | .ratio=(.nodes/.unique)')
 # Bytes and node count are informational growth (the PR workflow comments on
