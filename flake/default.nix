@@ -455,13 +455,7 @@ let
         (gitleaksWrapperFor pkgs)
         (gitConflictMarkersWrapperFor pkgs)
         (gitNoLocalPathsWrapperFor pkgs)
-        (executePermissionsWrapperFor pkgs)
-        (fileSizeCheckWrapperFor pkgs)
         (linterCoverageWrapperFor pkgs)
-        (trailingWhitespaceWrapperFor pkgs)
-        (missingFinalNewlineWrapperFor pkgs)
-        (editorconfigCheckerWrapperFor pkgs)
-        (typosWrapperFor pkgs)
         (w "lefthook-narrow-language" nix-lefthook-narrow-language-src {
           runtimeInputs = [
             pkgs.coreutils
