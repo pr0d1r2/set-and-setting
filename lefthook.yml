@@ -2,6 +2,11 @@
 
 pre-commit:
   commands:
+    changelog-touched:
+      run: lefthook-changelog-touched
+    narrow-language:
+      glob: "*.{md,nix,sh,bats,yml,yaml,toml}"
+      run: lefthook-narrow-language {staged_files}
     gitleaks:
       run: lefthook-gitleaks {staged_files}
     git-conflict-markers:
@@ -14,6 +19,27 @@ pre-commit:
     actionlint:
       glob: ".github/workflows/*.{yml,yaml}"
       run: timeout ${LEFTHOOK_ACTIONLINT_TIMEOUT:-30} lefthook-actionlint {staged_files}
+    nixfmt:
+      glob: "*.nix"
+      run: lefthook-nixfmt {staged_files}
+    statix:
+      glob: "*.nix"
+      run: lefthook-statix {staged_files}
+    deadnix:
+      glob: "*.nix"
+      run: lefthook-deadnix {staged_files}
+    nix-no-embedded-shell:
+      glob: "*.nix"
+      run: lefthook-nix-no-embedded-shell {staged_files}
+    shellcheck:
+      glob: "*.sh"
+      run: lefthook-shellcheck {staged_files}
+    shfmt:
+      glob: "*.sh"
+      run: lefthook-shfmt {staged_files}
+    no-shell-functions:
+      glob: "*.sh"
+      run: lefthook-no-shell-functions {staged_files}
     rubocop:
       glob: "**/*.rb"
       run: bundle exec rubocop --fail-fast --force-exclusion {staged_files}
@@ -57,6 +83,30 @@ pre-push:
     actionlint:
       glob: ".github/workflows/*.{yml,yaml}"
       run: timeout ${LEFTHOOK_ACTIONLINT_TIMEOUT:-30} lefthook-actionlint {push_files}
+    nixfmt:
+      glob: "*.nix"
+      run: lefthook-nixfmt {push_files}
+    statix:
+      glob: "*.nix"
+      run: lefthook-statix {push_files}
+    deadnix:
+      glob: "*.nix"
+      run: lefthook-deadnix {push_files}
+    nix-no-embedded-shell:
+      glob: "*.nix"
+      run: lefthook-nix-no-embedded-shell {push_files}
+    nix-flake-eval:
+      glob: "*.nix"
+      run: lefthook-nix-flake-eval
+    shellcheck:
+      glob: "*.sh"
+      run: lefthook-shellcheck {push_files}
+    shfmt:
+      glob: "*.sh"
+      run: lefthook-shfmt {push_files}
+    no-shell-functions:
+      glob: "*.sh"
+      run: lefthook-no-shell-functions {push_files}
     rubocop:
       glob: "**/*.rb"
       run: bundle exec rubocop --fail-fast
@@ -93,3 +143,8 @@ pre-push:
     set-bundle-content:
       glob: "set/**/*.md"
       run: SET_ROOT=set REF_MATCH=lib/ref-match.sh bash lib/bundle-content-check.sh
+
+commit-msg:
+  commands:
+    commit-msg-lint:
+      run: lefthook-commit-msg-lint {1}

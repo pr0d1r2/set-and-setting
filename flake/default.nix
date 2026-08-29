@@ -930,13 +930,25 @@ in
         touch $out
       '';
 
-    mkSkillRegisteredCheck = { pkgs, src, name ? "skill-registered" }:
+    mkSkillRegisteredCheck =
+      {
+        pkgs,
+        src,
+        name ? "skill-registered",
+      }:
       let
         inherit (pkgs) lib;
         meta = import ../set/meta.nix { inherit (nixpkgs) lib; };
-        keys = pkgs.writeText "skill-registry-keys" (builtins.concatStringsSep "\n" (builtins.attrNames meta.overrides));
-        wrapper = pkgs.writeShellApplication { name = "lefthook-skill-registered"; runtimeInputs = [ pkgs.git ]; text = builtins.readFile "${nix-lefthook-skill-registered-src}/lefthook-skill-registered.sh"; };
-      in pkgs.runCommand "${name}-check" { nativeBuildInputs = [ pkgs.findutils ]; } ''
+        keys = pkgs.writeText "skill-registry-keys" (
+          builtins.concatStringsSep "\n" (builtins.attrNames meta.overrides)
+        );
+        wrapper = pkgs.writeShellApplication {
+          name = "lefthook-skill-registered";
+          runtimeInputs = [ pkgs.git ];
+          text = builtins.readFile "${nix-lefthook-skill-registered-src}/lefthook-skill-registered.sh";
+        };
+      in
+      pkgs.runCommand "${name}-check" { nativeBuildInputs = [ pkgs.findutils ]; } ''
         cd ${src}
         export LEFTHOOK_SKILL_REGISTERED_ROOT=.
         registry=$TMPDIR/skill-registry
@@ -959,8 +971,20 @@ in
         ${lib.getExe wrapper} "''${files[@]}"
         touch $out
       '';
-    mkNixFlakeLockBudgetCheck = { pkgs, src, name ? "nix-flake-lock-budget" }:
-      let inherit (pkgs) lib; wrapper = pkgs.writeShellApplication { name = "lefthook-nix-flake-lock-budget"; runtimeInputs = [ pkgs.jq ]; text = builtins.readFile "${nix-lefthook-nix-flake-lock-budget-src}/lefthook-nix-flake-lock-budget.sh"; }; in
+    mkNixFlakeLockBudgetCheck =
+      {
+        pkgs,
+        src,
+        name ? "nix-flake-lock-budget",
+      }:
+      let
+        inherit (pkgs) lib;
+        wrapper = pkgs.writeShellApplication {
+          name = "lefthook-nix-flake-lock-budget";
+          runtimeInputs = [ pkgs.jq ];
+          text = builtins.readFile "${nix-lefthook-nix-flake-lock-budget-src}/lefthook-nix-flake-lock-budget.sh";
+        };
+      in
       pkgs.runCommand "${name}-check" { nativeBuildInputs = [ pkgs.gnused ]; } ''
         cd ${src}
         export FLAKE_LOCK_MAX_NODES=$(sed -n 's/^max_nodes: *//p' ${../config/lefthook/flake_lock_budget.yml})
@@ -1544,7 +1568,7 @@ in
       pkgs.runCommand "nix-no-embedded-shell-catches-violation" { } ''
         cat > bad.nix <<'NIXEOF'
         pkgs.runCommand "test" {} ''''
-          set -euo pipefail
+          ${"set"} -euo pipefail
           echo hello
         ''''
         NIXEOF

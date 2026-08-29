@@ -25,4 +25,3 @@ pre-push:
     no-shell-functions:
       glob: "*.sh"
       run: lefthook-no-shell-functions {push_files}
----

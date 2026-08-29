@@ -99,7 +99,9 @@ let
     xml = { };
     tcl = { };
     awk = { };
-    set = { skill-registered = mkSkillRegisteredCheck { inherit pkgs src; }; };
+    set = {
+      skill-registered = mkSkillRegisteredCheck { inherit pkgs src; };
+    };
     bats = { };
   };
 

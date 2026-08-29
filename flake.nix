@@ -140,8 +140,14 @@
       url = "github:pr0d1r2/nix-lefthook-linter-coverage-full";
       flake = false;
     };
-    nix-lefthook-skill-registered-src = { url = "github:pr0d1r2/nix-lefthook-skill-registered"; flake = false; };
-    nix-lefthook-nix-flake-lock-budget-src = { url = "github:pr0d1r2/nix-lefthook-nix-flake-lock-budget"; flake = false; };
+    nix-lefthook-skill-registered-src = {
+      url = "github:pr0d1r2/nix-lefthook-skill-registered";
+      flake = false;
+    };
+    nix-lefthook-nix-flake-lock-budget-src = {
+      url = "github:pr0d1r2/nix-lefthook-nix-flake-lock-budget";
+      flake = false;
+    };
   };
 
   outputs = inputs: import ./flake inputs;
