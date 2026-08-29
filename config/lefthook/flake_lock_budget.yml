@@ -2,3 +2,4 @@
 max_nodes: 40
 max_bytes: 262144
 max_ratio: 4
+growth_threshold_pct: 10

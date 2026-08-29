@@ -1,0 +1,40 @@
+name: Flake lock budget
+
+on:
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  budget:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Check lock ratchet
+        run: bash lib/flake-lock-budget.sh flake.lock
+      - name: Upsert growth notice
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: |
+          marker='<!-- flake-lock-budget -->'
+          baseline=$(jq -c . config/lefthook/flake_lock_baseline.json)
+          actual=$(jq -n --argjson b "$(wc -c <flake.lock)" --argjson n "$(jq '.nodes|length' flake.lock)" '{bytes:$b,nodes:$n}')
+          threshold=$(sed -n 's/^growth_threshold_pct: *//p' config/lefthook/flake_lock_budget.yml)
+          if ! jq -n --argjson a "$actual" --argjson b "$baseline" --argjson t "$threshold" '($a.bytes > $b.bytes * (1 + $t / 100)) or ($a.nodes > $b.nodes * (1 + $t / 100))'; then
+            exit 0
+          fi
+          body="$marker\nLock growth notice: **$(jq -r .bytes <<<"$actual") bytes**, **$(jq -r .nodes <<<"$actual") nodes** (baseline: $(jq -r .bytes <<<"$baseline") bytes, $(jq -r .nodes <<<"$baseline") nodes)."
+          comments=$(gh api "repos/${{ github.repository }}/issues/$PR_NUMBER/comments" --paginate)
+          id=$(jq -r --arg m "$marker" '.[] | select(.body | contains($m)) | .id' <<<"$comments" | head -1)
+          if [ -n "$id" ]; then
+            gh api --method PATCH "repos/${{ github.repository }}/issues/comments/$id" -f body="$body" >/dev/null
+          else
+            gh api --method POST "repos/${{ github.repository }}/issues/$PR_NUMBER/comments" -f body="$body" >/dev/null
+          fi
