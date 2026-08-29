@@ -1,3 +1,4 @@
 ---
 max_nodes: 40
-max_bytes: 32768
+max_bytes: 262144
+max_ratio: 4
