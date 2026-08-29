@@ -43,6 +43,8 @@
   mkLinterCoverageCheck,
   mkActionlintCheck,
   mkTaploCheck,
+  mkSkillRegisteredCheck,
+  mkNixFlakeLockBudgetCheck,
 }:
 
 let
@@ -72,6 +74,7 @@ let
       statix = mkStatixCheck { inherit pkgs src; };
       deadnix = mkDeadnixCheck { inherit pkgs src; };
       nix-no-embedded-shell = mkNixNoEmbeddedShellCheck { inherit pkgs src; };
+      nix-flake-lock-budget = mkNixFlakeLockBudgetCheck { inherit pkgs src; };
     };
     shell = {
       shellcheck = mkShellcheckCheck { inherit pkgs src; };
@@ -96,7 +99,7 @@ let
     xml = { };
     tcl = { };
     awk = { };
-    set = { };
+    set = { skill-registered = mkSkillRegisteredCheck { inherit pkgs src; }; };
     bats = { };
   };
 

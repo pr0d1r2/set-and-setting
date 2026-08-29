@@ -30,6 +30,8 @@
   nix-lefthook-unicode-lint-src,
   nix-lefthook-yamllint-src,
   nix-lefthook-linter-coverage-src,
+  nix-lefthook-skill-registered-src,
+  nix-lefthook-nix-flake-lock-budget-src,
   nix-lefthook-bats-parse-src,
   nix-lefthook-bats-unit-src,
   nix-lefthook-tdd-order-bats-src,
@@ -922,9 +924,48 @@ in
             || lib.hasSuffix "/config/lefthook/flake_manifest.yml" path;
         };
       in
-      pkgs.runCommand "${name}-check" { } ''
+      pkgs.runCommand "${name}-check" { nativeBuildInputs = [ pkgs.gnused ]; } ''
         cd ${filteredSrc}
         ${lib.getExe wrapper}
+        touch $out
+      '';
+
+    mkSkillRegisteredCheck = { pkgs, src, name ? "skill-registered" }:
+      let
+        inherit (pkgs) lib;
+        meta = import ../set/meta.nix { inherit (nixpkgs) lib; };
+        keys = pkgs.writeText "skill-registry-keys" (builtins.concatStringsSep "\n" (builtins.attrNames meta.overrides));
+        wrapper = pkgs.writeShellApplication { name = "lefthook-skill-registered"; runtimeInputs = [ pkgs.git ]; text = builtins.readFile "${nix-lefthook-skill-registered-src}/lefthook-skill-registered.sh"; };
+      in pkgs.runCommand "${name}-check" { nativeBuildInputs = [ pkgs.findutils ]; } ''
+        cd ${src}
+        export LEFTHOOK_SKILL_REGISTERED_ROOT=.
+        registry=$TMPDIR/skill-registry
+        : > "$registry"
+        mapfile -t files < <(find set -name '*.md' -type f | sort)
+        while IFS= read -r file; do
+          rel="''${file#set/skills/}"
+          candidate="$rel"
+          while [ -n "$candidate" ]; do
+            if grep -Fxq "$candidate" ${keys}; then
+              echo "$rel" >> "$registry"
+              break
+            fi
+            case "$candidate" in */*) candidate="''${candidate%/*}";; *) candidate=;; esac
+          done
+        done < <(printf '%s\n' "''${files[@]}")
+        export LEFTHOOK_SKILL_REGISTERED_FILE="$registry"
+        export LEFTHOOK_SKILL_REGISTERED_PREFIX=
+        export LEFTHOOK_SKILL_REGISTERED_STRIP=set/skills/
+        ${lib.getExe wrapper} "''${files[@]}"
+        touch $out
+      '';
+    mkNixFlakeLockBudgetCheck = { pkgs, src, name ? "nix-flake-lock-budget" }:
+      let inherit (pkgs) lib; wrapper = pkgs.writeShellApplication { name = "lefthook-nix-flake-lock-budget"; runtimeInputs = [ pkgs.jq ]; text = builtins.readFile "${nix-lefthook-nix-flake-lock-budget-src}/lefthook-nix-flake-lock-budget.sh"; }; in
+      pkgs.runCommand "${name}-check" { nativeBuildInputs = [ pkgs.gnused ]; } ''
+        cd ${src}
+        export FLAKE_LOCK_MAX_NODES=$(sed -n 's/^max_nodes: *//p' ${../config/lefthook/flake_lock_budget.yml})
+        export FLAKE_LOCK_MAX_BYTES=$(sed -n 's/^max_bytes: *//p' ${../config/lefthook/flake_lock_budget.yml})
+        ${lib.getExe wrapper} flake.lock
         touch $out
       '';
 
@@ -1135,6 +1176,8 @@ in
           mkLinterCoverageCheck
           mkActionlintCheck
           mkTaploCheck
+          mkSkillRegisteredCheck
+          mkNixFlakeLockBudgetCheck
           ;
       };
   };
@@ -3267,6 +3310,7 @@ in
             "statix"
             "deadnix"
             "nix-no-embedded-shell"
+            "nix-flake-lock-budget"
           ]
         )}
         echo "PASS: nix fragment returns all expected checks"
@@ -3343,7 +3387,6 @@ in
             "reek"
             "brakeman"
             "bundle-audit"
-            "set"
           ];
         };
       in
