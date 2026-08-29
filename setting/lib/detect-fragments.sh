@@ -30,6 +30,12 @@ if [ -z "$tracked" ] && [ -n "${DETECT_ROOT:-}" ]; then
   exit 0
 fi
 
+if [ -z "$tracked" ] && [ -f flake.nix ]; then
+  # During first materialization the flake may not be tracked yet; inspect it
+  # so inert checksFor examples do not trigger the full Nix fragment set.
+  tracked="flake.nix"
+fi
+
 if [ -z "$tracked" ]; then
   echo "base actions nix shell ruby rubocop rspec reek brakeman bundle-audit ascii markdown yaml toml just xml tcl awk set"
   exit 0
@@ -42,7 +48,29 @@ if grep -qE '(^|/)\.github/workflows/[^/]+\.(yml|yaml)$' <<<"$tracked"; then
 fi
 
 if grep -qE '\.nix$' <<<"$tracked"; then
-  result="$result nix"
+  _nix_evidence=1
+  # An inert checksFor mention in a lone flake must not select the Nix
+  # fragment and hide a dropped local hook during a settings refresh.
+  if [ "$(grep -c '^flake\.nix$' <<<"$tracked")" -eq 1 ] &&
+    grep -qE 'checksFor[[:space:]]*\{' flake.nix 2>/dev/null; then
+    if ! awk '
+      { line=$0; for (i=1; i<=length(line); i++) {
+          c=substr(line,i,1); p=substr(line,i,2)
+          if (b) { if (p=="*/") { b=0; i++ }; continue }
+          if (s) { if (c=="\\") i++; else if (c=="\"") s=0; continue }
+          if (q) { if (p=="\047\047") { q=0; i++ }; continue }
+          if (c=="#") break
+          if (p=="/*") { b=1; i++; continue }
+          if (p=="\047\047") { q=1; i++; continue }
+          if (c=="\"") { s=1; continue }
+          code=code c
+        }; code=code " " }
+      END { exit(code ~ /checksFor[[:space:]]*\{/ ? 0 : 1) }
+    ' flake.nix; then
+      _nix_evidence=0
+    fi
+  fi
+  [ "$_nix_evidence" -eq 1 ] && result="$result nix"
 fi
 
 if grep -qE '\.(sh|bash)$' <<<"$tracked"; then
