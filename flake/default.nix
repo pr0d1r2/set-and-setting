@@ -1201,6 +1201,7 @@ in
           mkActionlintCheck
           mkTaploCheck
           mkSkillRegisteredCheck
+          mkSkillSizeCheck
           mkNixFlakeLockBudgetCheck
           ;
       };

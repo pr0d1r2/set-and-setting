@@ -160,7 +160,10 @@ in
     xml = [ ];
     tcl = [ ];
     awk = [ ];
-    set = [ "skill-registered" ];
+    set = [
+      "skill-registered"
+      "set-skill-size"
+    ];
     bats = [ ];
   };
 
