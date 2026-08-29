@@ -644,6 +644,7 @@ in
     mkSetting = import ../setting/lib/mk-setting.nix { inherit (nixpkgs) lib; };
     mkDriftCheck = import ../lib/mk-drift-check.nix;
     mkSettingDriftCheck = import ../lib/mk-setting-drift-check.nix;
+    mkCoverageDriftCheck = import ../lib/mk-coverage-drift-check.nix;
     mkConsumerFlake = import ../set/lib/mk-consumer-flake.nix { inherit supportedSystems; };
     mkMaterializeCheck = import ../lib/mk-materialize-check.nix { inherit (nixpkgs) lib; };
     mkDepGraphCheck = import ../lib/mk-dep-graph-check.nix;

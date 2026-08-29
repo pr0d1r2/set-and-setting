@@ -5,16 +5,21 @@
 }:
 
 let
-  # A consumer library override from before mkLockGraphCheck was exposed must
+  # A consumer library override from before these helpers were exposed must
   # remain compatible with mkConsumerFlake.
-  consumerLib = builtins.removeAttrs self.lib [ "mkLockGraphCheck" ] // {
-    materializationFor =
-      args:
-      let
-        materialization = self.lib.materializationFor args;
-      in
-      materialization // { packages = materialization.packages ++ [ pkgs.hello ]; };
-  };
+  consumerLib =
+    builtins.removeAttrs self.lib [
+      "mkCoverageDriftCheck"
+      "mkLockGraphCheck"
+    ]
+    // {
+      materializationFor =
+        args:
+        let
+          materialization = self.lib.materializationFor args;
+        in
+        materialization // { packages = materialization.packages ++ [ pkgs.hello ]; };
+    };
   consumer = self.lib.mkConsumerFlake {
     inherit self nixpkgs;
     set-and-setting = self;
@@ -63,6 +68,7 @@ pkgs.runCommand "mkConsumerFlake-outputs" { } ''
       "fixture"
       "lock-graph"
       "actionlint"
+      "coverage-drift"
       "setting-drift"
       "shellcheck"
     ];
