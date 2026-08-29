@@ -770,4 +770,5 @@ and dogfoods both.
 | B80 | 2026-08-29 | `guardrails / check` failed because the fragment-map Bats test assumed JSON contained each check name before its owning fragment, but Nix emits the attribute keys first. | fixed: assert the check within its fragment's JSON value using the encoder's stable key-before-value order. |
 | B81 | 2026-08-29 | `guardrails / check` failed because the required B80 bug-history entry grew `SPEC.md` to 106625 bytes, exceeding the 106496-byte Markdown file-size budget. | fixed: advance the Markdown file-size budget by one 8 KiB step to 114688 bytes. |
 | B82 | 2026-08-29 | `guardrails / check` failed because the newly exposed `checksFor` implementation was not formatted according to the pinned nixfmt check. | fixed: format `lib/checks-for.nix` with the pinned nixfmt style. |
+| B83 | 2026-08-29 | `guardrails / check` failed because `lib/mk-coverage-drift-check.nix` was not formatted according to the pinned nixfmt check. | fixed: format the coverage-drift check with the pinned Nix formatter. |
 <!-- markdownlint-enable MD013 MD038 MD056 -->

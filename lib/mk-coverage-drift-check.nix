@@ -18,11 +18,15 @@ let
   covered = builtins.concatLists (builtins.attrValues cfm.coveragePerFileClass);
   uncovered = builtins.filter (name: !(builtins.elem name covered)) claimed;
 in
-assert uncovered == [ ]
+assert
+  uncovered == [ ]
   || builtins.throw "coverage-drift: checks claim file classes without coverage: ${builtins.concatStringsSep ", " uncovered}";
 pkgs.runCommand "coverage-drift-check"
   {
-    nativeBuildInputs = [ pkgs.gawk pkgs.coreutils ];
+    nativeBuildInputs = [
+      pkgs.gawk
+      pkgs.coreutils
+    ];
     EXPECTED_HOOK = "${expectedMaterialization}/lefthook.yml";
     ACTUAL_HOOK = "${materialization.files}/lefthook.yml";
     EXPECTED_PINNED = pinned;
