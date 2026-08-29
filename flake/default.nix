@@ -981,7 +981,10 @@ in
         inherit (pkgs) lib;
         wrapper = pkgs.writeShellApplication {
           name = "lefthook-nix-flake-lock-budget";
-          runtimeInputs = [ pkgs.jq pkgs.gawk ];
+          runtimeInputs = [
+            pkgs.jq
+            pkgs.gawk
+          ];
           text = builtins.readFile ../lib/flake-lock-budget.sh;
         };
       in
