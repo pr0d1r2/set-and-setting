@@ -176,6 +176,9 @@ in
       "missing-final-newline"
       "editorconfig-checker"
       "typos"
+      "commit-msg-lint"
+      "changelog-touched"
+      "narrow-language"
       "ascii-only"
       "unicode-lint"
     ];
@@ -186,6 +189,7 @@ in
       "statix"
       "deadnix"
       "nix-no-embedded-shell"
+      "nix-flake-eval"
     ];
     sh = [
       "shellcheck"
