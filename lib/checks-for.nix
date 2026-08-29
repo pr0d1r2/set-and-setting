@@ -102,7 +102,10 @@ let
     awk = { };
     set = {
       skill-registered = mkSkillRegisteredCheck { inherit pkgs src; };
-      set-skill-size = mkSkillSizeCheck { inherit pkgs; setRoot = "${src}/set"; };
+      set-skill-size = mkSkillSizeCheck {
+        inherit pkgs;
+        setRoot = "${src}/set";
+      };
     };
     bats = { };
   };
