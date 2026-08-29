@@ -117,7 +117,7 @@ in
         inherit pkgs;
         fragments = allFragments;
       };
-      coverageDrift = lib.mkCoverageDriftCheck {
+      coverageDrift = (lib.mkCoverageDriftCheck or set-and-setting.lib.mkCoverageDriftCheck) {
         inherit pkgs;
         fragments = allFragments;
         checks = lib.checksFor {

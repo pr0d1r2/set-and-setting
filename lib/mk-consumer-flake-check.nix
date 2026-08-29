@@ -5,9 +5,9 @@
 }:
 
 let
-  # A consumer library override from before mkLockGraphCheck was exposed must
+  # A consumer library override from before these helpers were exposed must
   # remain compatible with mkConsumerFlake.
-  consumerLib = builtins.removeAttrs self.lib [ "mkLockGraphCheck" ] // {
+  consumerLib = builtins.removeAttrs self.lib [ "mkCoverageDriftCheck" "mkLockGraphCheck" ] // {
     materializationFor =
       args:
       let
