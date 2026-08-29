@@ -10,13 +10,17 @@ setup() {
 
 @test "growth in a unique lock passes" {
     printf '%s\n' '{"nodes":{"root":{"inputs":{}},"a":{"locked":{"type":"github","owner":"o","repo":"a"}}},"root":"root","version":7}' >"$TARGET/flake.lock"
-    (cd "$TARGET" && run bash "$SCRIPT" flake.lock)
+    pushd "$TARGET" >/dev/null
+    run bash "$SCRIPT" flake.lock
+    popd >/dev/null
     [ "$status" -eq 0 ]
 }
 
 @test "duplicating a locked identity fails the ratchet" {
     printf '%s\n' '{"nodes":{"root":{"inputs":{}},"a":{"locked":{"type":"github","owner":"o","repo":"a"}},"b":{"locked":{"type":"github","owner":"o","repo":"a"}}},"root":"root","version":7}' >"$TARGET/flake.lock"
-    (cd "$TARGET" && run bash "$SCRIPT" flake.lock)
+    pushd "$TARGET" >/dev/null
+    run bash "$SCRIPT" flake.lock
+    popd >/dev/null
     [ "$status" -ne 0 ]
     [[ "$output" == *"ratchet violation"* ]]
 }

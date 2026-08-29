@@ -774,4 +774,5 @@ and dogfoods both.
 | B84 | 2026-08-29 | `guardrails / check` failed because `lib/mk-consumer-flake-check.nix` was not formatted according to the pinned nixfmt check. | fixed: format the consumer-flake output check with the pinned Nix formatter. |
 | B85 | 2026-08-29 | `guardrails / check` failed because `flake/default.nix` retained an unused flake-input argument rejected by the pinned deadnix check. | fixed: remove the unused `nix-lefthook-nix-flake-lock-budget-src` argument. |
 | B86 | 2026-08-29 | `guardrails / check` failed because `lib/flake-lock-budget.sh` defined a shell function and used formatting rejected by the repository's no-shell-functions and pinned shfmt checks. | fixed: inline the lock-metric pipeline and format the script with the pinned shell formatter. |
+| B87 | 2026-08-29 | `guardrails / check` failed because the flake-lock-budget Bats tests invoked Bats' `run` helper inside a subshell, so the helper was unavailable and status assertions received an empty value. | fixed: run the command after changing directory in the current shell and restore the directory afterward. |
 <!-- markdownlint-enable MD013 MD038 MD056 -->
