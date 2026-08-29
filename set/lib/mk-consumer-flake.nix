@@ -109,8 +109,27 @@ in
           };
           default = pkgs.runCommand "checks" { } "touch $out";
         };
+      coverageMaterialization = lib.materializationFor {
+        inherit pkgs fileClassOverrides;
+        fragments = allFragments;
+      };
+      standardMaterialization = lib.materializationFor {
+        inherit pkgs;
+        fragments = allFragments;
+      };
+      coverageDrift = lib.mkCoverageDriftCheck {
+        inherit pkgs;
+        fragments = allFragments;
+        checks = lib.checksFor {
+          inherit pkgs src;
+          fragments = allFragments;
+        };
+        consumerChecks = (extraChecks pkgs) // standardChecks;
+        materialization = coverageMaterialization;
+        expectedMaterialization = standardMaterialization;
+      };
     in
-    (extraChecks pkgs) // standardChecks
+    (extraChecks pkgs) // standardChecks // { coverage-drift = coverageDrift; }
   );
 
   apps = forAllSystems (

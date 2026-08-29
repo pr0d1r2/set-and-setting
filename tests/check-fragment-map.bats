@@ -45,3 +45,9 @@ setup() {
         .#checks.x86_64-linux.check-fragment-map-complete --no-link
     [ "$status" -eq 0 ]
 }
+
+@test "consumer coverage drift check is exposed" {
+    grep -q 'mkCoverageDriftCheck' "$BATS_TEST_DIRNAME/../flake/default.nix"
+    grep -q 'coverage-drift' "$BATS_TEST_DIRNAME/../set/lib/mk-consumer-flake.nix"
+    [ -f "$BATS_TEST_DIRNAME/../lib/mk-coverage-drift-check.nix" ]
+}

@@ -63,6 +63,7 @@ pkgs.runCommand "mkConsumerFlake-outputs" { } ''
       "fixture"
       "lock-graph"
       "actionlint"
+      "coverage-drift"
       "setting-drift"
       "shellcheck"
     ];
