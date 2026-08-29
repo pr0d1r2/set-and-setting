@@ -1,10 +1,37 @@
 # All nix linters (flake-manifest, nixfmt, statix, deadnix, nix-no-embedded-shell)
-# are delivered as PINNED flake `checks.<sys>.<tool>`
-# (#97 nixfmt, #99 the rest), replacing their runtime `remotes:` git_urls
-# with offline-runnable, cache-warm checks. No nix remotes remain.
+# are delivered as pinned wrappers and as PINNED flake `checks.<sys>.<tool>`
+# (#97 nixfmt, #99 the rest). The local stages use the same wrappers as the
+# checks, so the packages exposed by materializationFor are not dead.
+
+pre-commit:
+  commands:
+    nixfmt:
+      glob: "*.nix"
+      run: lefthook-nixfmt {staged_files}
+    statix:
+      glob: "*.nix"
+      run: lefthook-statix {staged_files}
+    deadnix:
+      glob: "*.nix"
+      run: lefthook-deadnix {staged_files}
+    nix-no-embedded-shell:
+      glob: "*.nix"
+      run: lefthook-nix-no-embedded-shell {staged_files}
 
 pre-push:
   commands:
+    nixfmt:
+      glob: "*.nix"
+      run: lefthook-nixfmt {push_files}
+    statix:
+      glob: "*.nix"
+      run: lefthook-statix {push_files}
+    deadnix:
+      glob: "*.nix"
+      run: lefthook-deadnix {push_files}
+    nix-no-embedded-shell:
+      glob: "*.nix"
+      run: lefthook-nix-no-embedded-shell {push_files}
     nix-flake-eval:
       glob: "*.nix"
       run: lefthook-nix-flake-eval
