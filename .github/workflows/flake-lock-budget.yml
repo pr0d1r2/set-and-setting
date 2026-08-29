@@ -27,14 +27,17 @@ jobs:
           baseline=$(jq -c . config/lefthook/flake_lock_baseline.json)
           actual=$(jq -n --argjson b "$(wc -c <flake.lock)" --argjson n "$(jq '.nodes|length' flake.lock)" '{bytes:$b,nodes:$n}')
           threshold=$(sed -n 's/^growth_threshold_pct: *//p' config/lefthook/flake_lock_budget.yml)
+          comments=$(gh api "repos/${{ github.repository }}/issues/$PR_NUMBER/comments" --paginate)
+          id=$(jq -r --arg m "$marker" '.[] | select(.body | contains($m)) | .id' <<<"$comments" | head -1)
           if ! jq -n --argjson a "$actual" --argjson b "$baseline" --argjson t "$threshold" '($a.bytes > $b.bytes * (1 + $t / 100)) or ($a.nodes > $b.nodes * (1 + $t / 100))'; then
+            if [ -n "$id" ]; then
+              gh api --method DELETE "repos/${{ github.repository }}/issues/comments/$id" >/dev/null
+            fi
             exit 0
           fi
           body=$(printf '%s\nLock growth notice: **%s bytes**, **%s nodes** (baseline: %s bytes, %s nodes).' \
             "$marker" "$(jq -r .bytes <<<"$actual")" "$(jq -r .nodes <<<"$actual")" \
             "$(jq -r .bytes <<<"$baseline")" "$(jq -r .nodes <<<"$baseline")")
-          comments=$(gh api "repos/${{ github.repository }}/issues/$PR_NUMBER/comments" --paginate)
-          id=$(jq -r --arg m "$marker" '.[] | select(.body | contains($m)) | .id' <<<"$comments" | head -1)
           if [ -n "$id" ]; then
             gh api --method PATCH "repos/${{ github.repository }}/issues/comments/$id" -f body="$body" >/dev/null
           else
