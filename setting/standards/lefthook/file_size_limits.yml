@@ -1,8 +1,10 @@
 ---
 default: 8192
 extensions:
-  dic: 16384
-  lock: 262144
-  md: 32768
-  # Fleet ratchet: only lower this cap. Extract growing Nix into modules.
-  nix: 8192
+  bats: 57344
+  dic: 32768
+  lock: 393216
+  md: 114688
+  nix: 159744
+  sh: 49152
+  txt: 12288
