@@ -320,6 +320,22 @@
         "type": "github"
       }
     },
+    "nix-lefthook-nix-flake-lock-budget-src": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1785414035,
+        "narHash": "sha256-vTzon1wpVqV/9zOHXmc+h9g18dJpL8J2u6vfSBTIi+A=",
+        "owner": "pr0d1r2",
+        "repo": "nix-lefthook-nix-flake-lock-budget",
+        "rev": "1c08ff6fb12da8d8996e3dd9e68c1df704dee803",
+        "type": "github"
+      },
+      "original": {
+        "owner": "pr0d1r2",
+        "repo": "nix-lefthook-nix-flake-lock-budget",
+        "type": "github"
+      }
+    },
     "nix-lefthook-nix-no-embedded-shell-src": {
       "flake": false,
       "locked": {
@@ -397,6 +413,22 @@
       "original": {
         "owner": "pr0d1r2",
         "repo": "nix-lefthook-shfmt",
+        "type": "github"
+      }
+    },
+    "nix-lefthook-skill-registered-src": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1787746429,
+        "narHash": "sha256-LwaHwgcAp6hfWQ9spxiByNnL4WngrpZsXp0y4y9Svk8=",
+        "owner": "pr0d1r2",
+        "repo": "nix-lefthook-skill-registered",
+        "rev": "e5ee36395b34e63ea0c7f73aba7d1fda55706774",
+        "type": "github"
+      },
+      "original": {
+        "owner": "pr0d1r2",
+        "repo": "nix-lefthook-skill-registered",
         "type": "github"
       }
     },
@@ -568,11 +600,13 @@
         "nix-lefthook-narrow-language-src": "nix-lefthook-narrow-language-src",
         "nix-lefthook-nix-flake-check-src": "nix-lefthook-nix-flake-check-src",
         "nix-lefthook-nix-flake-eval-src": "nix-lefthook-nix-flake-eval-src",
+        "nix-lefthook-nix-flake-lock-budget-src": "nix-lefthook-nix-flake-lock-budget-src",
         "nix-lefthook-nix-no-embedded-shell-src": "nix-lefthook-nix-no-embedded-shell-src",
         "nix-lefthook-nixfmt-src": "nix-lefthook-nixfmt-src",
         "nix-lefthook-no-shell-functions-src": "nix-lefthook-no-shell-functions-src",
         "nix-lefthook-shellcheck-src": "nix-lefthook-shellcheck-src",
         "nix-lefthook-shfmt-src": "nix-lefthook-shfmt-src",
+        "nix-lefthook-skill-registered-src": "nix-lefthook-skill-registered-src",
         "nix-lefthook-statix-src": "nix-lefthook-statix-src",
         "nix-lefthook-taplo-src": "nix-lefthook-taplo-src",
         "nix-lefthook-tdd-order-bats-src": "nix-lefthook-tdd-order-bats-src",

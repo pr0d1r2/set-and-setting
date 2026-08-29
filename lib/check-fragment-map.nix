@@ -64,6 +64,7 @@ in
       "deadnix"
       "nix-no-embedded-shell"
       "nix-flake-eval"
+      "nix-flake-lock-budget"
     ];
     shell = [
       "shellcheck"
@@ -104,6 +105,7 @@ in
       "set-skill-size"
       "set-ref-resolution"
       "set-bundle-content"
+      "skill-registered"
     ];
     bats = [
       "bats-parse"
@@ -135,6 +137,7 @@ in
       "statix"
       "deadnix"
       "nix-no-embedded-shell"
+      "nix-flake-lock-budget"
     ];
     shell = [
       "shellcheck"
@@ -157,7 +160,10 @@ in
     xml = [ ];
     tcl = [ ];
     awk = [ ];
-    set = [ ];
+    set = [
+      "skill-registered"
+      "set-skill-size"
+    ];
     bats = [ ];
   };
 
@@ -190,6 +196,7 @@ in
       "deadnix"
       "nix-no-embedded-shell"
       "nix-flake-eval"
+      "nix-flake-lock-budget"
     ];
     sh = [
       "shellcheck"
@@ -235,6 +242,7 @@ in
       "set-skill-size"
       "set-ref-resolution"
       "set-bundle-content"
+      "skill-registered"
     ];
     "spec/" = [ "rspec" ];
     ".rubocop.yml" = [ "rubocop" ];

@@ -35,4 +35,3 @@ pre-push:
     nix-flake-eval:
       glob: "*.nix"
       run: lefthook-nix-flake-eval
----

@@ -11,6 +11,13 @@ setup() {
     grep -q '^    taplo:' "$fragment"
 }
 
+@test "new fleet checks are pinned to their fragments" {
+    run nix --extra-experimental-features nix-command eval --json --file "$MAP" checksPerFragment
+    [ "$status" -eq 0 ]
+    [[ "$output" == *'"nix"'*'"nix-flake-lock-budget"'* ]]
+    [[ "$output" == *'"set"'*'"skill-registered"'* ]]
+}
+
 @test "file-class coverage is exposed as queryable Nix data" {
     run nix --extra-experimental-features nix-command eval --json \
         --file "$MAP" coveragePerFileClass
