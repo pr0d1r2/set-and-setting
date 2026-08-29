@@ -455,56 +455,13 @@ let
         (gitleaksWrapperFor pkgs)
         (gitConflictMarkersWrapperFor pkgs)
         (gitNoLocalPathsWrapperFor pkgs)
-        (executePermissionsWrapperFor pkgs)
-        (fileSizeCheckWrapperFor pkgs)
         (linterCoverageWrapperFor pkgs)
-        (trailingWhitespaceWrapperFor pkgs)
-        (missingFinalNewlineWrapperFor pkgs)
-        (editorconfigCheckerWrapperFor pkgs)
-        (typosWrapperFor pkgs)
         (w "lefthook-narrow-language" nix-lefthook-narrow-language-src {
           runtimeInputs = [
             pkgs.coreutils
             pkgs.gawk
             pkgs.gnugrep
             pkgs.gnused
-          ];
-        })
-        (w "lefthook-narrow-language-add" nix-lefthook-narrow-language-src {
-          runtimeInputs = [
-            pkgs.coreutils
-            pkgs.gawk
-            pkgs.git
-            pkgs.gnugrep
-            pkgs.gnused
-          ];
-        })
-        (w "lefthook-narrow-language-compact" nix-lefthook-narrow-language-src {
-          runtimeInputs = [
-            pkgs.coreutils
-            pkgs.gawk
-            pkgs.git
-            pkgs.gnugrep
-            pkgs.gnused
-          ];
-        })
-        (w "lefthook-narrow-language-freeze" nix-lefthook-narrow-language-src {
-          runtimeInputs = [
-            pkgs.git
-            pkgs.gnugrep
-          ];
-        })
-        (w "lefthook-bats-parse" nix-lefthook-bats-parse-src {
-          runtimeInputs = [
-            pkgs.bats
-            pkgs.coreutils
-          ];
-        })
-        (w "lefthook-bats-unit" nix-lefthook-bats-unit-src {
-          runtimeInputs = [
-            pkgs.bats
-            pkgs.parallel
-            pkgs.coreutils
           ];
         })
         (pkgs.writeShellApplication {

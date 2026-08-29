@@ -1,6 +1,28 @@
-# shellcheck, no-shell-functions, and shfmt are intentionally absent here:
-# they are delivered as PINNED flake `checks.<sys>.<tool>`
-# (set-and-setting.lib.mk{Shellcheck,NoShellFunctions,Shfmt}Check / #98,
-# #100), replacing the runtime `remotes:` git_urls with offline-runnable,
-# cache-warm checks. No shell remotes remain.
+# shellcheck, no-shell-functions, and shfmt use the same pinned wrappers as
+# the corresponding flake checks. This keeps the materialized package set
+# aligned with the commands users actually run.
+
+pre-commit:
+  commands:
+    shellcheck:
+      glob: "*.sh"
+      run: lefthook-shellcheck {staged_files}
+    shfmt:
+      glob: "*.sh"
+      run: lefthook-shfmt {staged_files}
+    no-shell-functions:
+      glob: "*.sh"
+      run: lefthook-no-shell-functions {staged_files}
+
+pre-push:
+  commands:
+    shellcheck:
+      glob: "*.sh"
+      run: lefthook-shellcheck {push_files}
+    shfmt:
+      glob: "*.sh"
+      run: lefthook-shfmt {push_files}
+    no-shell-functions:
+      glob: "*.sh"
+      run: lefthook-no-shell-functions {push_files}
 ---
