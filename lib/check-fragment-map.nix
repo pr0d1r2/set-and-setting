@@ -53,6 +53,9 @@ in
       "editorconfig-checker"
       "typos"
       "nix-flake-check"
+      "commit-msg-lint"
+      "changelog-touched"
+      "narrow-language"
     ];
     nix = [
       "flake-manifest"
@@ -60,6 +63,7 @@ in
       "statix"
       "deadnix"
       "nix-no-embedded-shell"
+      "nix-flake-eval"
     ];
     shell = [
       "shellcheck"

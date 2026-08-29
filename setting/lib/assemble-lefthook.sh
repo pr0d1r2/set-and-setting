@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # assemble-lefthook.sh -- assemble lefthook.yml from integration fragments.
-# Merges pre-commit + pre-push sections from selected fragment files into
+# Merges hook sections from selected fragment files into
 # a single lefthook.yml. Fragment order is deterministic.
 # No remotes: block -- all linters are pinned flake checks (#102 FLIP).
 # Env in: FRAGMENTS_DIR, out. Reads optional lefthook-overrides.yml from CWD.
@@ -94,6 +94,19 @@ ordered="$unique_ordered"
         "lefthook-repo.yml"
     fi
   fi
+  for stage in commit-msg pre-rebase; do
+    has_stage=0
+    for name in $ordered; do
+      if grep -q "^$stage:" "$FRAGMENTS_DIR/$name.yml"; then
+        if [ "$has_stage" -eq 0 ]; then
+          printf '\n%s\n' "$stage:"
+          printf '%s\n' '  commands:'
+          has_stage=1
+        fi
+        awk -v stage="$stage" '$0 == stage ":" {s=1;next} s&&/^  commands:/{c=1;next} s&&/^[a-z]/{s=0;c=0} c&&NF{print}' "$FRAGMENTS_DIR/$name.yml"
+      fi
+    done
+  done
 } >"$out/lefthook.yml"
 
 # A repo-local fragment is appended after the standard fragments. A carried-
@@ -101,7 +114,7 @@ ordered="$unique_ordered"
 # first command for each hook: duplicate YAML mapping keys make lefthook reject
 # the whole config.
 awk '
-  /^(pre-commit|pre-push):$/ {
+  /^(pre-commit|pre-push|commit-msg|pre-rebase):$/ {
     hook = $1
     sub(/:$/, "", hook)
     in_commands = 0
