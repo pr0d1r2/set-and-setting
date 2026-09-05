@@ -45,6 +45,10 @@ let
   packageNames = names consumer.packages;
   checkNames = names consumer.checks;
   appNames = names consumer.apps;
+  # Attribute NAMES prove only that a check was DECLARED.  `coverage-drift` was
+  # present by name while its derivation threw on every consumer, so force each
+  # check's drvPath here: an eval-time defect in any check now fails this check.
+  checkDrvPaths = map (name: consumer.checks.${system}.${name}.drvPath) checkNames;
   agenticShellHook = consumer.devShells.${system}.agentic.shellHook;
   confirmProgram = consumer.apps.${system}.confirm.program;
 in
@@ -72,6 +76,7 @@ pkgs.runCommand "mkConsumerFlake-outputs" { } ''
       "setting-drift"
       "shellcheck"
     ];
+    assert builtins.all (path: builtins.isString path) checkDrvPaths;
     assert builtins.all (name: builtins.elem name appNames) [
       "bootstrap-hooks"
       "confirm"
