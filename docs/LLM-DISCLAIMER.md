@@ -76,13 +76,13 @@ CI round each.
 In the order it matters:
 
 1. **Do the checks run for you?** If a claim here is false, that is where it
-   shows.
+  shows.
 2. **Do the commit messages explain the decisions?** That is the whole audit
-   trail. If it reads as a series of assertions, treat the code the same way.
+  trail. If it reads as a series of assertions, treat the code the same way.
 3. **Does the defect log read like a real one or a curated one?** Judge the
-   rest of the record by its least flattering entry.
+  rest of the record by its least flattering entry.
 4. **Do the rules have runners?** A rule nothing executes is a comment with a
-   number on it.
+  number on it.
 
 ## Accountability
 
