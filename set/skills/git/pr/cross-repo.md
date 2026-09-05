@@ -53,6 +53,8 @@ about to be deleted.
 
 A pull request body is public and it stays. Agent session links,
 local paths and build dashboards behind a login are not references a
-reader can follow; they are private data in the shape of a link. Name
-the repo, the pull request number, or the file path relative to the
-repo root -- see `repo/fleet.md`.
+reader can follow. Some of them sit behind a password, so pasting one
+need not expose anything -- it is still a dead end for every reader
+but its author, which is reason enough to leave it out. Name the repo,
+the pull request number, or the file path relative to the repo root --
+see `repo/fleet.md`.
