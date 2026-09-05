@@ -4,9 +4,18 @@ set -euo pipefail
 lock=${1:-flake.lock}
 baseline=${2:-config/lefthook/flake_lock_baseline.yml}
 
-test -f "$lock" || { echo "error: $lock: not found" >&2; exit 1; }
-test -f "$baseline" || { echo "error: $baseline: not found" >&2; exit 1; }
-jq empty "$lock" 2>/dev/null || { echo "error: $lock: invalid JSON" >&2; exit 1; }
+test -f "$lock" || {
+  echo "error: $lock: not found" >&2
+  exit 1
+}
+test -f "$baseline" || {
+  echo "error: $baseline: not found" >&2
+  exit 1
+}
+jq empty "$lock" 2>/dev/null || {
+  echo "error: $lock: invalid JSON" >&2
+  exit 1
+}
 
 bytes=$(wc -c <"$lock" | tr -d ' ')
 nodes=$(jq '.nodes | length' "$lock")
@@ -22,10 +31,16 @@ max_nodes=$(read_baseline absolute_max_nodes)
 max_ratio=$(read_baseline absolute_max_duplication_ratio)
 
 for value in "$base_bytes" "$base_nodes" "$max_bytes" "$max_nodes"; do
-  [[ "$value" =~ ^[1-9][0-9]*$ ]] || { echo "error: invalid integer in $baseline" >&2; exit 1; }
+  [[ "$value" =~ ^[1-9][0-9]*$ ]] || {
+    echo "error: invalid integer in $baseline" >&2
+    exit 1
+  }
 done
 for value in "$base_ratio" "$max_ratio"; do
-  [[ "$value" =~ ^[0-9]+(\.[0-9]+)?$ ]] || { echo "error: invalid ratio in $baseline" >&2; exit 1; }
+  [[ "$value" =~ ^[0-9]+(\.[0-9]+)?$ ]] || {
+    echo "error: invalid ratio in $baseline" >&2
+    exit 1
+  }
 done
 
 printf 'bytes=%s nodes=%s unique_nodes=%s duplication_ratio=%s baseline_bytes=%s baseline_nodes=%s baseline_duplication_ratio=%s\n' \
