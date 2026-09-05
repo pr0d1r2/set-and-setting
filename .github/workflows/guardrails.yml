@@ -55,7 +55,10 @@ jobs:
           nix develop --command lefthook-tdd-order-bats
 
   check-darwin:
-    needs: check
+    # No `needs: check`. The two platforms build the same 110 checks from the
+    # same pinned inputs and share no state, so gating darwin behind linux
+    # bought nothing but wall-clock: darwin idled 3m28s per run. Both jobs
+    # now start together.
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v4
