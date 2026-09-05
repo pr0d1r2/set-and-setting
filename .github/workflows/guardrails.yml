@@ -39,8 +39,14 @@ jobs:
           # is a sandboxed derivation touching no shared state, so they
           # parallelize safely -- unlike the lefthook (B12) and Bats
           # (B16/B18/B70) parallelism this repository had to retire.
+          # The cache is also declared in flake.nix `nixConfig`, but flake-
+          # supplied config is untrusted: CI logged `ignoring untrusted flake
+          # configuration setting 'extra-substituters'` and never fetched from
+          # it. Installer config is system config, and trusted.
           extra_nix_config: |
             max-jobs = auto
+            extra-substituters = https://pr0d1r2.cachix.org
+            extra-trusted-public-keys = pr0d1r2.cachix.org-1:NfWjbhgAj41byXhCKiaE+av3Vnphm1fTezHXEGsiQIM=
       - name: Materialize configs
         run: nix develop --command true
       - name: Confirm materialization
@@ -81,6 +87,8 @@ jobs:
           # 770 idle behind it.
           extra-conf: |
             max-jobs = auto
+            extra-substituters = https://pr0d1r2.cachix.org
+            extra-trusted-public-keys = pr0d1r2.cachix.org-1:NfWjbhgAj41byXhCKiaE+av3Vnphm1fTezHXEGsiQIM=
       - name: Materialize configs
         run: |
           setting_pkg="$(nix build .#setting --print-out-paths --no-link)"
