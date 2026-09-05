@@ -5,6 +5,13 @@ A bare name is easy to follow only for a reader who already knows the
 fleet, and that reader did not need the sentence. The link is what
 turns a name into a door.
 
+The fleet these links describe is the **public** one. A repository
+that anyone can open is a repository that can be named, linked and
+cited; a private one is not part of the graph a public reader can
+walk, and naming it leaks rather than connects. Interconnectivity is
+a property of open-source repositories, so everything below assumes
+both ends are public.
+
 ## Where a link belongs
 
 Link the **first** mention in each document, not every mention:

@@ -2,6 +2,15 @@
 
 ## Unreleased
 
+- Add fleet-linking guidance to the git skill: cross-repo links in
+  `README.md`, `SPEC.md` and dependency notes, naming the direction of each
+  edge, keeping links in both directions, and the public boundary that keeps
+  private repository names, local paths and agent session URLs out of public
+  artifacts. A companion leaf covers the same for pull request bodies --
+  `OWNER/REPO#N` cross-references, naming which half of a spanning change this
+  is, sending a bug to the repo that owns the rule and reading it there, and
+  pull request numbers rather than branch shas that a squash merge deletes.
+
 - Fix the consumer coverage-drift check, which interpolated the whole
   materialization attribute set into its expected-hook path and so aborted
   `nix flake check` in every consumer, and force each consumer check's
