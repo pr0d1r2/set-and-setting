@@ -42,9 +42,7 @@ jobs:
           name: pr0d1r2
           authToken: ${{ secrets.CACHIX_AUTH_TOKEN }}
       - name: Build standard delivery paths and every check
-        run: |
-          nix build .#set .#setting --no-link
-          nix flake check --print-build-logs
+        run: bash .github/scripts/cache-build.sh
 
   cache-push-darwin:
     needs: guardrails
@@ -70,6 +68,4 @@ jobs:
           name: pr0d1r2
           authToken: ${{ secrets.CACHIX_AUTH_TOKEN }}
       - name: Build standard delivery paths and every check
-        run: |
-          nix build .#set .#setting --no-link
-          nix flake check --print-build-logs
+        run: bash .github/scripts/cache-build.sh

@@ -2,6 +2,14 @@
 
 ## Unreleased
 
+- Give the pinned actionlint its shellcheck, so the shell inside every workflow
+  `run:` block is linted at last, and move the six embedded blocks into tracked
+  `.github/scripts/*.sh` where the repository's own shell guardrails and a Bats
+  suite reach them. The flake check was four identical lines in each platform
+  job and is now one script; the sequential Bats invocation keeps its reason
+  beside it. Adding the module to the embedded-shell allowlist, which the
+  monolith split left behind, so the file can be staged at all. (#485)
+
 - Cut CI wall clock and restore binary-cache use. The macos job no longer
   waits for the ubuntu job, both platforms now build the checks in parallel
   rather than one at a time, and the cache declaration moves to installer

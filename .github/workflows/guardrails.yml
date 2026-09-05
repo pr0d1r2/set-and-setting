@@ -52,21 +52,11 @@ jobs:
       - name: Confirm materialization
         run: nix run .#confirm
       - name: Nix flake check
-        run: |
-          nix flake check \
-            --print-build-logs \
-            --timeout ${{ inputs.flake-check-timeout }}
+        env:
+          FLAKE_CHECK_TIMEOUT: ${{ inputs.flake-check-timeout }}
+        run: bash .github/scripts/flake-check.sh
       - name: Bats suite
-        run: |
-          mapfile -d '' bats_files < <(git ls-files -z -- '*.bats')
-          if [ "${#bats_files[@]}" -gt 0 ]; then
-            nix develop --command lefthook-bats-parse "${bats_files[@]}"
-            # The wrapper enables parallel jobs; CI runners expose multiple
-            # cores and the Bats files share git/test state. Keep this gate
-            # deterministic by running the complete suite sequentially.
-            nix develop --command bats "${bats_files[@]}"
-          fi
-          nix develop --command lefthook-tdd-order-bats
+        run: bash .github/scripts/bats-suite.sh
 
   check-darwin:
     # No `needs: check`. The two platforms build the same 110 checks from the
@@ -90,11 +80,8 @@ jobs:
             extra-substituters = https://pr0d1r2.cachix.org
             extra-trusted-public-keys = pr0d1r2.cachix.org-1:NfWjbhgAj41byXhCKiaE+av3Vnphm1fTezHXEGsiQIM=
       - name: Materialize configs
-        run: |
-          setting_pkg="$(nix build .#setting --print-out-paths --no-link)"
-          "$setting_pkg/bin/sync-setting" .
+        run: bash .github/scripts/materialize-setting.sh
       - name: Nix flake check
-        run: |
-          nix flake check \
-            --print-build-logs \
-            --timeout ${{ inputs.flake-check-timeout }}
+        env:
+          FLAKE_CHECK_TIMEOUT: ${{ inputs.flake-check-timeout }}
+        run: bash .github/scripts/flake-check.sh

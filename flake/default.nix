@@ -223,7 +223,11 @@ let
   actionlintWrapperFor =
     pkgs:
     wrap pkgs "lefthook-actionlint" nix-lefthook-actionlint-src {
-      runtimeInputs = [ pkgs.actionlint ];
+      # shellcheck on PATH or actionlint's `run:` linting is inert (T81).
+      runtimeInputs = [
+        pkgs.actionlint
+        pkgs.shellcheck
+      ];
     };
 
   # #98 (part of #93): the formatter tier's pinned wrappers, each built
