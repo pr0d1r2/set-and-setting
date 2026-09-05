@@ -19,6 +19,12 @@ write_lock() {
     [ "$status" -eq 0 ]
 }
 
+@test "positional lock path is honored" {
+    write_lock '"root":{"locked":{"owner":"o","repo":"a"}},"new":{"locked":{"owner":"o","repo":"b"}}'
+    run bash "$SCRIPT" "$ROOT/flake.lock"
+    [ "$status" -eq 0 ]
+}
+
 @test "duplicated nodes fail the duplication ratchet" {
     sed -i 's/baseline_duplication_ratio: 1000/baseline_duplication_ratio: 1000/' "$ROOT/config/lefthook/flake_lock_budget.yml"
     write_lock '"a":{"locked":{"owner":"o","repo":"same"}},"b":{"locked":{"owner":"o","repo":"same"}},"c":{"locked":{"owner":"o","repo":"same"}},"d":{"locked":{"owner":"o","repo":"same"}},"e":{"locked":{"owner":"o","repo":"same"}},"f":{"locked":{"owner":"o","repo":"same"}},"g":{"locked":{"owner":"o","repo":"same"}},"h":{"locked":{"owner":"o","repo":"same"}},"i":{"locked":{"owner":"o","repo":"same"}},"j":{"locked":{"owner":"o","repo":"same"}},"k":{"locked":{"owner":"o","repo":"same"}},"l":{"locked":{"owner":"o","repo":"same"}},"m":{"locked":{"owner":"o","repo":"same"}},"n":{"locked":{"owner":"o","repo":"same"}},"p":{"locked":{"owner":"o","repo":"same"}},"q":{"locked":{"owner":"o","repo":"same"}}'

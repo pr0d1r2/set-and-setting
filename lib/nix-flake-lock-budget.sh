@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 set -euo pipefail
-lock=${FLAKE_LOCK:-flake.lock}
+lock=${FLAKE_LOCK:-${1:-flake.lock}}
 baseline=${FLAKE_LOCK_BASELINE:-config/lefthook/flake_lock_budget.yml}
 [ -f "$lock" ] || {
   echo "FAIL: $lock not found"
