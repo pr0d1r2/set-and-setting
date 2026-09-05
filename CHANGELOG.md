@@ -12,6 +12,10 @@
   commit in every tended repository. The wrapper remains available in the
   development shell.
 
+- Correct five superseded task rows that were marked work-in-progress, which
+  held the `standard-current` tag back: the tending loop treats any `.` or `~`
+  row as pending and so never published a settled standard to the fleet.
+
 - Publish the evaluated `set` and `setting` delivery paths to Cachix after
   successful main-branch checks, restoring cache-backed standard delivery for
   fleet consumers. (#284)
