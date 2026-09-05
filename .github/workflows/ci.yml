@@ -36,7 +36,7 @@ jobs:
           base=$(sed -n 's/.*baseline_bytes=\([^ ]*\).*/\1/p' <<<"$report")
           marker='<!-- set-and-setting:flake-lock-growth -->'
           if [ "$bytes" -le $((base + base / 20)) ]; then exit 0; fi
-          body="$marker\n🔒 flake.lock grew mechanically: **${bytes} bytes** (baseline ${base}).\n\nThe committed baseline must be refreshed in the same commit as the pin update."
+          body=$(printf '%s\n🔒 flake.lock grew mechanically: **%s bytes** (baseline %s).\n\nThe committed baseline must be refreshed in the same commit as the pin update.\n' "$marker" "$bytes" "$base")
           comments=$(gh api "repos/$REPOSITORY/issues/$PR_NUMBER/comments" --paginate)
           id=$(jq -r --arg marker "$marker" '.[] | select(.body | contains($marker)) | .id' <<<"$comments" | head -n1)
           if [ -n "$id" ]; then
