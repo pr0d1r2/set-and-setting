@@ -7,6 +7,10 @@
 # lines drift independently.
 set -euo pipefail
 
+# --keep-going: report EVERY failing check in one run. Without it the first
+# failure ends the run, so N defects cost N round trips -- and a round trip is
+# the tending loop's unit of cost, not a second.
 nix flake check \
+  --keep-going \
   --print-build-logs \
   --timeout "${FLAKE_CHECK_TIMEOUT:-600}"

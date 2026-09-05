@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+- Cancel superseded guardrail runs on a pull request, and report every failing
+  check in one run rather than the first. The tending loop force-pushes on each
+  fix round, so a superseded run held a runner while the run that mattered
+  queued; and an all-or-nothing check makes five defects cost five round trips,
+  which is the loop's real unit of cost. Cancellation is scoped to pull requests
+  so a merge's cache push is never killed. (#489)
+
 - Give the pinned actionlint its shellcheck, so the shell inside every workflow
   `run:` block is linted at last, and move the six embedded blocks into tracked
   `.github/scripts/*.sh` where the repository's own shell guardrails and a Bats

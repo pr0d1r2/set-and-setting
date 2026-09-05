@@ -12,6 +12,14 @@ name: Guardrails
 #     guardrails:
 #       uses: pr0d1r2/set-and-setting/.github/workflows/guardrails.yml@main
 
+# One run per ref for a pull request: the tending loop force-pushes on every fix
+# round, and without this the superseded run keeps a runner busy and competes
+# with the run that matters. NEVER on the default branch -- cancelling there
+# would kill the cache-push that follows a merge.
+concurrency:
+  group: guardrails-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
 "on":
   workflow_call:
     inputs:
