@@ -31,7 +31,6 @@
   nix-lefthook-yamllint-src,
   nix-lefthook-linter-coverage-src,
   nix-lefthook-skill-registered-src,
-  nix-lefthook-nix-flake-lock-budget-src,
   nix-lefthook-bats-parse-src,
   nix-lefthook-bats-unit-src,
   nix-lefthook-tdd-order-bats-src,
