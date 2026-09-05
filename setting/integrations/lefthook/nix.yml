@@ -32,6 +32,3 @@ pre-push:
     nix-no-embedded-shell:
       glob: "*.nix"
       run: lefthook-nix-no-embedded-shell {push_files}
-    nix-flake-eval:
-      glob: "*.nix"
-      run: lefthook-nix-flake-eval

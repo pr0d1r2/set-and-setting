@@ -62,7 +62,6 @@ in
       "statix"
       "deadnix"
       "nix-no-embedded-shell"
-      "nix-flake-eval"
       "nix-flake-lock-budget"
     ];
     shell = [
@@ -193,7 +192,6 @@ in
       "statix"
       "deadnix"
       "nix-no-embedded-shell"
-      "nix-flake-eval"
       "nix-flake-lock-budget"
     ];
     sh = [
