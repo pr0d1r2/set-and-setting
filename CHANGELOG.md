@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+- Fix the consumer coverage-drift check, which interpolated the whole
+  materialization attribute set into its expected-hook path and so aborted
+  `nix flake check` in every consumer, and force each consumer check's
+  derivation in the consumer-flake output check so a check that cannot evaluate
+  fails there instead of fleet-wide. The comparator moves to
+  `lib/coverage-drift-check.sh` with unit coverage. (#437)
+
 - Retire the Nix fragment's pre-push flake-evaluation command, which required an
   attribute the standard never set and so failed every push from every Nix
   repository. The full flake check in the same hook already evaluates and builds

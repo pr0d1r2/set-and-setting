@@ -27,48 +27,13 @@ pkgs.runCommand "coverage-drift-check"
       pkgs.gawk
       pkgs.coreutils
     ];
-    EXPECTED_HOOK = "${expectedMaterialization}/lefthook.yml";
+    EXPECTED_HOOK = "${expectedMaterialization.files}/lefthook.yml";
     ACTUAL_HOOK = "${materialization.files}/lefthook.yml";
     EXPECTED_PINNED = pinned;
     CONSUMER_CHECKS = builtins.concatStringsSep "\n" (builtins.attrNames consumerChecks);
     FRAGMENTS = fragmentText;
   }
   ''
-    set -euo pipefail
-
-    commands() {
-      awk '
-        /^    [A-Za-z0-9][A-Za-z0-9_.-]*:$/ {
-          name=$0; sub(/^    /, "", name); sub(/:$/, "", name); print name
-        }
-      ' "$1" | sort -u
-    }
-
-    expected=$(mktemp)
-    actual=$(mktemp)
-    trap 'rm -f "$expected" "$actual"' EXIT
-    {
-      printf '%s\n' "$EXPECTED_PINNED"
-      commands "$EXPECTED_HOOK"
-    } | sed '/^$/d' | sort -u >"$expected"
-    {
-      printf '%s\n' "$EXPECTED_PINNED"
-      commands "$ACTUAL_HOOK"
-      printf '%s\n' "$CONSUMER_CHECKS"
-    } | sed '/^$/d' | sort -u >"$actual"
-
-    missing=$(comm -23 "$expected" "$actual" || true)
-    if [ -n "$missing" ]; then
-      echo "coverage-drift: missing emitted checks for fragments [$FRAGMENTS]:" >&2
-      printf '  %s\n' "$missing" >&2
-      exit 1
-    fi
-
-    extra=$(comm -13 "$expected" "$actual" || true)
-    if [ -n "$extra" ]; then
-      echo "coverage-drift: repo-local checks (allowed):" >&2
-      printf '  %s\n' "$extra" >&2
-    fi
-    echo "coverage-drift: PASS"
+    bash ${./coverage-drift-check.sh}
     touch "$out"
   ''
