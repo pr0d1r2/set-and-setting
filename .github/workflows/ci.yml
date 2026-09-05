@@ -1,6 +1,10 @@
 ---
 name: CI
 
+permissions:
+  contents: read
+  issues: write
+
 "on":
   push:
     branches: [main]
@@ -14,6 +18,32 @@ jobs:
     # exercised by the PR's own CI. `@main` pinned to main's stale copy, so
     # the darwin-installer fix (B26) never ran on the PR that introduced it.
     uses: ./.github/workflows/guardrails.yml
+
+  lock-growth:
+    needs: guardrails
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Update lock-growth marker
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          REPOSITORY: ${{ github.repository }}
+        run: |
+          report="$(bash lib/flake-lock-budget.sh flake.lock config/lefthook/flake_lock_baseline.yml)"
+          bytes=$(sed -n 's/.*bytes=\([^ ]*\).*/\1/p' <<<"$report")
+          base=$(sed -n 's/.*baseline_bytes=\([^ ]*\).*/\1/p' <<<"$report")
+          marker='<!-- set-and-setting:flake-lock-growth -->'
+          if [ "$bytes" -le $((base + base / 20)) ]; then exit 0; fi
+          body="$marker\n🔒 flake.lock grew mechanically: **${bytes} bytes** (baseline ${base}).\n\nThe committed baseline must be refreshed in the same commit as the pin update."
+          comments=$(gh api "repos/$REPOSITORY/issues/$PR_NUMBER/comments" --paginate)
+          id=$(jq -r --arg marker "$marker" '.[] | select(.body | contains($marker)) | .id' <<<"$comments" | head -n1)
+          if [ -n "$id" ]; then
+            gh api --method PATCH "repos/$REPOSITORY/issues/comments/$id" -f body="$body" >/dev/null
+          else
+            gh api --method POST "repos/$REPOSITORY/issues/$PR_NUMBER/comments" -f body="$body" >/dev/null
+          fi
 
   cache-push:
     needs: guardrails
