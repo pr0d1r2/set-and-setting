@@ -93,6 +93,9 @@ jobs:
           metrics=$(grep '^PASS:' lock-growth.txt | sed -E 's/^PASS: lock //')
           echo "FLAKE_LOCK_METRICS=$metrics" >> "$GITHUB_ENV"
           echo "code=$code" >> "$GITHUB_OUTPUT"
+          # Growth notices are advisory (exit 2), but malformed locks and
+          # sanity-cap violations (exit 1) must still fail this check.
+          if [ "$code" -eq 1 ]; then exit 1; fi
           exit 0
       - name: Update lock growth comment
         if: steps.measure.outputs.code == '2'
