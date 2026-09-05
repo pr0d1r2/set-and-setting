@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+- Correct the reason the fleet-links skill gives for keeping agent session
+  URLs out of pull request bodies. They sit behind a password, so pasting
+  one exposes nothing; the rule holds on the ground the surrounding section
+  is about, that no reader but the author can open it. (#477)
+
 - Cut CI wall clock and restore binary-cache use. The macos job no longer
   waits for the ubuntu job, both platforms now build the checks in parallel
   rather than one at a time, and the cache declaration moves to installer
