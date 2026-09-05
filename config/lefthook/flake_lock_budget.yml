@@ -1,3 +1,14 @@
 ---
-max_nodes: 40
-max_bytes: 32768
+baseline_bytes: 20489
+baseline_nodes: 37
+baseline_duplication_ratio: 1.028
+
+# These are deliberately much higher than today's baseline.  They are an
+# emergency brake, not a replacement for the ratchet.
+max_nodes: 80
+max_bytes: 65536
+max_duplication_ratio: 2
+
+# Growth beyond this fraction is reported on the pull request.  Pin refreshes
+# must update the three baseline values in this file in the same commit.
+comment_threshold: 0.05

@@ -31,7 +31,6 @@
   nix-lefthook-yamllint-src,
   nix-lefthook-linter-coverage-src,
   nix-lefthook-skill-registered-src,
-  nix-lefthook-nix-flake-lock-budget-src,
   nix-lefthook-bats-parse-src,
   nix-lefthook-bats-unit-src,
   nix-lefthook-tdd-order-bats-src,
@@ -978,19 +977,13 @@ in
         src,
         name ? "nix-flake-lock-budget",
       }:
-      let
-        inherit (pkgs) lib;
-        wrapper = pkgs.writeShellApplication {
-          name = "lefthook-nix-flake-lock-budget";
-          runtimeInputs = [ pkgs.jq ];
-          text = builtins.readFile "${nix-lefthook-nix-flake-lock-budget-src}/lefthook-nix-flake-lock-budget.sh";
-        };
-      in
-      pkgs.runCommand "${name}-check" { nativeBuildInputs = [ pkgs.gnused ]; } ''
+      pkgs.runCommand "${name}-check" { } ''
         cd ${src}
-        export FLAKE_LOCK_MAX_NODES=$(sed -n 's/^max_nodes: *//p' ${../config/lefthook/flake_lock_budget.yml})
-        export FLAKE_LOCK_MAX_BYTES=$(sed -n 's/^max_bytes: *//p' ${../config/lefthook/flake_lock_budget.yml})
-        ${lib.getExe wrapper} flake.lock
+        export FLAKE_LOCK_BUDGET=${../config/lefthook/flake_lock_budget.yml}
+        export FLAKE_LOCK=flake.lock
+        export JQ_BIN=${pkgs.jq}/bin/jq
+        export FLAKE_LOCK_ALLOW_GROWTH_NOTICE=1
+        ${pkgs.bash}/bin/bash ${../lib/flake-lock-ratchet-check.sh}
         touch $out
       '';
 
