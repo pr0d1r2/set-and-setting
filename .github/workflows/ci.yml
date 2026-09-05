@@ -26,11 +26,50 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: cachix/install-nix-action@v27
+        with:
+          extra_nix_config: |
+            max-jobs = auto
+            extra-substituters = https://pr0d1r2.cachix.org
+            extra-trusted-public-keys = pr0d1r2.cachix.org-1:NfWjbhgAj41byXhCKiaE+av3Vnphm1fTezHXEGsiQIM=
+      - name: Upload evaluated standard paths
+        # Best-effort: a cache is not a check, and every gate has already
+        # passed by the time this job runs (B19). The cost of that choice is
+        # that a broken token is silent -- read the push step's log, not its
+        # conclusion, when cache hits stop appearing.
+        continue-on-error: true
+        uses: cachix/cachix-action@v15
+        with:
+          name: pr0d1r2
+          authToken: ${{ secrets.CACHIX_AUTH_TOKEN }}
+      - name: Build standard delivery paths and every check
+        run: |
+          nix build .#set .#setting --no-link
+          nix flake check --print-build-logs
+
+  cache-push-darwin:
+    needs: guardrails
+    if: github.event_name == 'push'
+    runs-on: macos-latest
+    env:
+      NIX_CONFIG: |
+        connect-timeout = 15
+        download-attempts = 5
+    steps:
+      - uses: actions/checkout@v4
+      # Same installer as the darwin guardrails job, for the same reason (B26).
+      - uses: DeterminateSystems/nix-installer-action@33c9ab3ef95cd57c164d9d6eb1f9a46338538d41
+        with:
+          extra-conf: |
+            max-jobs = auto
+            extra-substituters = https://pr0d1r2.cachix.org
+            extra-trusted-public-keys = pr0d1r2.cachix.org-1:NfWjbhgAj41byXhCKiaE+av3Vnphm1fTezHXEGsiQIM=
       - name: Upload evaluated standard paths
         continue-on-error: true
         uses: cachix/cachix-action@v15
         with:
           name: pr0d1r2
           authToken: ${{ secrets.CACHIX_AUTH_TOKEN }}
-      - name: Build standard delivery paths
-        run: nix build .#set .#setting --no-link
+      - name: Build standard delivery paths and every check
+        run: |
+          nix build .#set .#setting --no-link
+          nix flake check --print-build-logs

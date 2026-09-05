@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+- Cut CI wall clock and restore binary-cache use. The macos job no longer
+  waits for the ubuntu job, both platforms now build the checks in parallel
+  rather than one at a time, and the cache declaration moves to installer
+  configuration so CI stops ignoring it as untrusted flake config. The
+  cache-push jobs now push every check on both platforms, not two packages on
+  one.
+
 - Add fleet-linking guidance to the git skill: cross-repo links in
   `README.md`, `SPEC.md` and dependency notes, naming the direction of each
   edge, keeping links in both directions, and the public boundary that keeps
