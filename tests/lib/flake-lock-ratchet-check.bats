@@ -2,7 +2,7 @@
 
 setup() {
     TARGET=$(mktemp -d)
-    SCRIPT="$BATS_TEST_DIRNAME/../lib/flake-lock-ratchet-check.sh"
+    SCRIPT="$BATS_TEST_DIRNAME/../../lib/flake-lock-ratchet-check.sh"
     cat >"$TARGET/budget.yml" <<'EOF'
 baseline_bytes: 100
 baseline_nodes: 2
