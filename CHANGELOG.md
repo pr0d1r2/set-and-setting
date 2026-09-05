@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+- Stop `guardrails / check` failing with `lefthook-tdd-order-bats: not
+  found` in consumer repositories that track no `.bats` files. The
+  wrapper comes from the bats fragment, which is materialized only for a
+  repository that has bats files, so the call now sits inside the same
+  guard as the suite it belongs to. (#413)
+
 - Correct the reason the fleet-links skill gives for keeping agent session
   URLs out of pull request bodies. They sit behind a password, so pasting
   one exposes nothing; the rule holds on the ground the surrounding section

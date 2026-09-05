@@ -65,8 +65,11 @@ jobs:
             # cores and the Bats files share git/test state. Keep this gate
             # deterministic by running the complete suite sequentially.
             nix develop --command bats "${bats_files[@]}"
+            # The bats fragment -- and so the tdd-order-bats wrapper -- is
+            # materialized only for a repository with tracked .bats files,
+            # so this gate belongs inside the same guard as the suite.
+            nix develop --command lefthook-tdd-order-bats
           fi
-          nix develop --command lefthook-tdd-order-bats
 
   check-darwin:
     # No `needs: check`. The two platforms build the same 110 checks from the
