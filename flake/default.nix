@@ -983,13 +983,11 @@ in
         wrapper = pkgs.writeShellApplication {
           name = "lefthook-nix-flake-lock-budget";
           runtimeInputs = [ pkgs.jq ];
-          text = builtins.readFile "${nix-lefthook-nix-flake-lock-budget-src}/lefthook-nix-flake-lock-budget.sh";
+          text = builtins.readFile ../lib/nix-flake-lock-budget.sh;
         };
       in
       pkgs.runCommand "${name}-check" { nativeBuildInputs = [ pkgs.gnused ]; } ''
         cd ${src}
-        export FLAKE_LOCK_MAX_NODES=$(sed -n 's/^max_nodes: *//p' ${../config/lefthook/flake_lock_budget.yml})
-        export FLAKE_LOCK_MAX_BYTES=$(sed -n 's/^max_bytes: *//p' ${../config/lefthook/flake_lock_budget.yml})
         ${lib.getExe wrapper} flake.lock
         touch $out
       '';
