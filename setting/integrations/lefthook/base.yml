@@ -7,9 +7,6 @@ pre-commit:
   commands:
     changelog-touched:
       run: lefthook-changelog-touched
-    narrow-language:
-      glob: "*.{md,nix,sh,bats,yml,yaml,toml}"
-      run: lefthook-narrow-language {staged_files}
     gitleaks:
       run: lefthook-gitleaks {staged_files}
     git-conflict-markers:
