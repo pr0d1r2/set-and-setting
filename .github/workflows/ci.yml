@@ -73,3 +73,39 @@ jobs:
         run: |
           nix build .#set .#setting --no-link
           nix flake check --print-build-logs
+
+  lock-growth-comment:
+    needs: guardrails
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Measure lock growth
+        id: measure
+        run: |
+          set +e
+          FLAKE_LOCK=flake.lock FLAKE_LOCK_BUDGET=config/lefthook/flake_lock_budget.yml \
+            bash lib/flake-lock-ratchet-check.sh | tee lock-growth.txt
+          code=${PIPESTATUS[0]}
+          grep -E '^PASS:|^NOTICE:' lock-growth.txt || true
+          metrics=$(grep '^PASS:' lock-growth.txt | sed -E 's/^PASS: lock //')
+          echo "FLAKE_LOCK_METRICS=$metrics" >> "$GITHUB_ENV"
+          echo "code=$code" >> "$GITHUB_OUTPUT"
+          exit 0
+      - name: Update lock growth comment
+        if: steps.measure.outputs.code == '2'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          marker='<!-- flake-lock-growth -->'
+          body="$marker
+          Lock growth crossed the configured threshold. Metrics: ${FLAKE_LOCK_METRICS:-unavailable}."
+          api="repos/${{ github.repository }}/issues/${{ github.event.pull_request.number }}/comments"
+          comment=$(gh api "$api" --paginate --jq '.[] | select(.body | contains("<!-- flake-lock-growth -->")) | .id' | head -n1)
+          if [ -n "$comment" ]; then
+            gh api --method PATCH "$api/$comment" -f body="$body"
+          else
+            gh api --method POST "$api" -f body="$body"
+          fi
