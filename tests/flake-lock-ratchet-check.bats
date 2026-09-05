@@ -19,7 +19,7 @@ teardown() { rm -rf "$TARGET"; }
 write_lock() { printf '%s\n' "$1" >"$TARGET/flake.lock"; }
 
 @test "ordinary lock growth passes with a notice" {
-    write_lock '{"nodes":{"a":{"locked":{"owner":"o","repo":"a"}},"b":{"locked":{"owner":"o","repo":"b"}}},"root":{}}'
+    write_lock '{"nodes":{"a":{"locked":{"owner":"o","repo":"a"}},"b":{"locked":{"owner":"o","repo":"b"}}},"root":{"description":"growth"}}'
     FLAKE_LOCK="$TARGET/flake.lock" FLAKE_LOCK_BUDGET="$TARGET/budget.yml" FLAKE_LOCK_ALLOW_GROWTH_NOTICE=1 run bash "$SCRIPT"
     [ "$status" -eq 0 ]
     [[ "$output" == *"growth crossed"* ]]
