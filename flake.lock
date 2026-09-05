@@ -51,11 +51,11 @@
     "nix-lefthook-bats-unit-src": {
       "flake": false,
       "locked": {
-        "lastModified": 1780849239,
-        "narHash": "sha256-g4OoePb0pnf3J9O/LnV/Yudq3Nq6lC3UAXI+Ebop9P0=",
+        "lastModified": 1788614123,
+        "narHash": "sha256-N4QZ7sy/cQEMcAvltD2Md4VOtCzFNZnrfHxcwVZ6c7I=",
         "owner": "pr0d1r2",
         "repo": "nix-lefthook-bats-unit",
-        "rev": "872ed7507d20fd2f03752e8e464b4607db523e07",
+        "rev": "283d8765ae608f5a032eae3209e4dbb4f2ab7d4c",
         "type": "github"
       },
       "original": {

@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- Bump the pinned Bats wrapper to the revision that discovers specs with
+  `git ls-files` instead of assuming `tests/unit/`, so this repository's
+  pre-push gate runs its 637 specs rather than silently finding none.
+
 - Cut CI wall clock and restore binary-cache use. The macos job no longer
   waits for the ubuntu job, both platforms now build the checks in parallel
   rather than one at a time, and the cache declaration moves to installer
