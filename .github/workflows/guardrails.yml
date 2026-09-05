@@ -33,6 +33,20 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: cachix/install-nix-action@v27
+        with:
+          # Nix defaults `max-jobs` to 1 and neither installer overrides it,
+          # so the 110 independent checks built strictly one at a time. Each
+          # is a sandboxed derivation touching no shared state, so they
+          # parallelize safely -- unlike the lefthook (B12) and Bats
+          # (B16/B18/B70) parallelism this repository had to retire.
+          # The cache is also declared in flake.nix `nixConfig`, but flake-
+          # supplied config is untrusted: CI logged `ignoring untrusted flake
+          # configuration setting 'extra-substituters'` and never fetched from
+          # it. Installer config is system config, and trusted.
+          extra_nix_config: |
+            max-jobs = auto
+            extra-substituters = https://pr0d1r2.cachix.org
+            extra-trusted-public-keys = pr0d1r2.cachix.org-1:NfWjbhgAj41byXhCKiaE+av3Vnphm1fTezHXEGsiQIM=
       - name: Materialize configs
         run: nix develop --command true
       - name: Confirm materialization
@@ -55,7 +69,10 @@ jobs:
           nix develop --command lefthook-tdd-order-bats
 
   check-darwin:
-    needs: check
+    # No `needs: check`. The two platforms build the same 110 checks from the
+    # same pinned inputs and share no state, so gating darwin behind linux
+    # bought nothing but wall-clock: darwin idled 3m28s per run. Both jobs
+    # now start together.
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v4
@@ -64,6 +81,14 @@ jobs:
       # `dscl ... eDSRecordAlreadyExists` (-14135) the way the older
       # cachix/install-nix-action shell installer does (B26).
       - uses: DeterminateSystems/nix-installer-action@33c9ab3ef95cd57c164d9d6eb1f9a46338538d41
+        with:
+          # See the ubuntu job: nix's default `max-jobs` of 1 serialized every
+          # check. Darwin paid most for it -- one 105-second derivation with
+          # 770 idle behind it.
+          extra-conf: |
+            max-jobs = auto
+            extra-substituters = https://pr0d1r2.cachix.org
+            extra-trusted-public-keys = pr0d1r2.cachix.org-1:NfWjbhgAj41byXhCKiaE+av3Vnphm1fTezHXEGsiQIM=
       - name: Materialize configs
         run: |
           setting_pkg="$(nix build .#setting --print-out-paths --no-link)"
