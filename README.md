@@ -1,20 +1,7 @@
 # set-and-setting
 
 <!-- hallucinogen:autonomy-disclaimer start -->
-> **This repository is tended by an autonomous loop.**
->
-> Commits and pull requests here may be authored by a machine, and merged
-> without a human reading the diff. The merge gate is CI plus an automated
-> quality review, not human approval. Some classes of change — releases,
-> anything touching the loop's own safety rails, and anything that could
-> publish to a package registry — are held for a human by design; everything
-> else is not.
->
-> What governs it is checked in: `SPEC.md` records the invariants (§V), the
-> task list (§T) and every defect found (§B), and the loop is bound by them.
->
-> Issues and pull requests from people are welcome and are read by a human.
-> If you need one, say so in the thread and a human will answer.
+> Read [LLM-DISCLAIMER](docs/LLM-DISCLAIMER.md) first — this repository is tended by an autonomous loop, and that file says what the loop may do here, what it may not, and what to check before trusting anything in this tree.
 <!-- hallucinogen:autonomy-disclaimer end -->
 
 [![CI](https://github.com/pr0d1r2/set-and-setting/actions/workflows/ci.yml/badge.svg)](https://github.com/pr0d1r2/set-and-setting/actions/workflows/ci.yml)
