@@ -2,6 +2,16 @@
 
 ## Unreleased
 
+- Retire the Nix fragment's pre-push flake-evaluation command, which required an
+  attribute the standard never set and so failed every push from every Nix
+  repository. The full flake check in the same hook already evaluates and builds
+  every check.
+
+- Retire the base lefthook fragment's narrow-language command, which asked for a
+  repository-wide dictionary that the standard never seeds and so failed every
+  commit in every tended repository. The wrapper remains available in the
+  development shell.
+
 - Publish the evaluated `set` and `setting` delivery paths to Cachix after
   successful main-branch checks, restoring cache-backed standard delivery for
   fleet consumers. (#284)

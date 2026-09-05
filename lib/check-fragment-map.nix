@@ -55,7 +55,6 @@ in
       "nix-flake-check"
       "commit-msg-lint"
       "changelog-touched"
-      "narrow-language"
     ];
     nix = [
       "flake-manifest"
@@ -63,7 +62,6 @@ in
       "statix"
       "deadnix"
       "nix-no-embedded-shell"
-      "nix-flake-eval"
       "nix-flake-lock-budget"
     ];
     shell = [
@@ -184,7 +182,6 @@ in
       "typos"
       "commit-msg-lint"
       "changelog-touched"
-      "narrow-language"
       "ascii-only"
       "unicode-lint"
     ];
@@ -195,7 +192,6 @@ in
       "statix"
       "deadnix"
       "nix-no-embedded-shell"
-      "nix-flake-eval"
       "nix-flake-lock-budget"
     ];
     sh = [

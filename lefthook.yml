@@ -4,9 +4,6 @@ pre-commit:
   commands:
     changelog-touched:
       run: lefthook-changelog-touched
-    narrow-language:
-      glob: "*.{md,nix,sh,bats,yml,yaml,toml}"
-      run: lefthook-narrow-language {staged_files}
     gitleaks:
       run: lefthook-gitleaks {staged_files}
     git-conflict-markers:
@@ -95,9 +92,6 @@ pre-push:
     nix-no-embedded-shell:
       glob: "*.nix"
       run: lefthook-nix-no-embedded-shell {push_files}
-    nix-flake-eval:
-      glob: "*.nix"
-      run: lefthook-nix-flake-eval
     shellcheck:
       glob: "*.sh"
       run: lefthook-shellcheck {push_files}
