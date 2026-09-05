@@ -14,14 +14,13 @@ unique=$($jq_bin '[.nodes[] | select(.locked?) | [.locked.owner // "", .locked.r
 }
 ratio=$(awk -v n="$nodes" -v u="$unique" 'BEGIN { printf "%.3f", n/u }')
 
-read_value() { sed -n "s/^$1: *//p" "$budget"; }
-base_bytes=$(read_value baseline_bytes)
-base_nodes=$(read_value baseline_nodes)
-base_ratio=$(read_value baseline_duplication_ratio)
-max_bytes=$(read_value max_bytes)
-max_nodes=$(read_value max_nodes)
-max_ratio=$(read_value max_duplication_ratio)
-threshold=$(read_value comment_threshold)
+base_bytes=$(sed -n 's/^baseline_bytes: *//p' "$budget")
+base_nodes=$(sed -n 's/^baseline_nodes: *//p' "$budget")
+base_ratio=$(sed -n 's/^baseline_duplication_ratio: *//p' "$budget")
+max_bytes=$(sed -n 's/^max_bytes: *//p' "$budget")
+max_nodes=$(sed -n 's/^max_nodes: *//p' "$budget")
+max_ratio=$(sed -n 's/^max_duplication_ratio: *//p' "$budget")
+threshold=$(sed -n 's/^comment_threshold: *//p' "$budget")
 
 export FLAKE_LOCK_BYTES="$bytes" FLAKE_LOCK_NODES="$nodes" \
   FLAKE_LOCK_DUPLICATION_RATIO="$ratio" FLAKE_LOCK_GROWTH_THRESHOLD="$threshold"
