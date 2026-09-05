@@ -1066,8 +1066,15 @@ in
         src,
         name ? "file-size-check",
       }:
+      let
+        filteredSrc = pkgs.lib.cleanSourceWith {
+          inherit src;
+          filter = path: _: pkgs.lib.baseNameOf path != "flake.lock";
+        };
+      in
       import ../lib/mk-lefthook-check.nix {
-        inherit pkgs src name;
+        inherit pkgs name;
+        src = filteredSrc;
         wrapper = fileSizeCheckWrapperFor pkgs;
         checkFlag = "";
       };
