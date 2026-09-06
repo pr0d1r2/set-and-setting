@@ -11,8 +11,11 @@ lock="${FLAKE_LOCK:-flake.lock}"
 
 for repo in nixpkgs nixpkgs-lock set-and-setting; do
   count="$(jq --arg repo "$repo" '[.nodes[] | select(.locked.repo? == $repo)] | length' "$lock")"
-  if [ "$count" -gt 1 ]; then
-    echo "FAIL: $repo has $count lock nodes; expected at most 1 (shared inputs must use follows)"
+  if [ "$repo" = set-and-setting ] && [ "${ALLOW_MISSING_SET_AND_SETTING:-0}" = 1 ] && [ "$count" -eq 0 ]; then
+    continue
+  fi
+  if [ "$count" -ne 1 ]; then
+    echo "FAIL: $repo has $count lock nodes; expected exactly 1 (shared inputs must use follows)"
     exit 1
   fi
 done
