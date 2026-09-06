@@ -156,6 +156,7 @@ in
           lock-graph = (lib.mkLockGraphCheck or set-and-setting.lib.mkLockGraphCheck) {
             inherit pkgs;
             projectRoot = src;
+            allowMissingSetAndSetting = false;
           };
           setting-drift = lib.mkSettingDriftCheck {
             inherit pkgs;
