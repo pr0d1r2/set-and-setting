@@ -6,9 +6,19 @@ baseline=${FLAKE_LOCK_BASELINE:-config/lefthook/flake_lock_budget.yml}
   echo "FAIL: $lock not found"
   exit 1
 }
+# A repository that has never RECORDED a baseline is not in breach of one
+# (B95). The file holds this repository's own measured metrics, so it cannot be
+# shipped to consumers as a default -- and `sync-setting` does not deliver it,
+# which means every consumer that picked up this check failed on a file it had
+# no way to obtain. The ratchet binds where a baseline exists and says so, out
+# loud, where none does.
 [ -f "$baseline" ] || {
-  echo "FAIL: $baseline not found"
-  exit 1
+  echo "SKIP: $baseline not found -- no lock baseline recorded for this repository."
+  echo "      To enable it here, write that file with this repository's own"
+  echo "      current metrics: baseline_bytes, baseline_nodes,"
+  echo "      baseline_duplication_ratio, growth_percent, sanity_max_bytes,"
+  echo "      sanity_max_nodes, sanity_max_duplication_ratio."
+  exit 0
 }
 bytes=$(wc -c <"$lock")
 nodes=$(jq '.nodes | length' "$lock")
