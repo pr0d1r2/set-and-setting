@@ -14,6 +14,7 @@ jobs:
     # exercised by the PR's own CI. `@main` pinned to main's stale copy, so
     # the darwin-installer fix (B26) never ran on the PR that introduced it.
     uses: ./.github/workflows/guardrails.yml
+    secrets: inherit
 
   lock-budget-comment:
     needs: guardrails
@@ -69,10 +70,11 @@ jobs:
         with:
           name: pr0d1r2
           authToken: ${{ secrets.CACHIX_AUTH_TOKEN }}
-      - name: Build standard delivery paths and every check
-        run: |
-          nix build .#set .#setting --no-link
-          nix flake check --print-build-logs
+      # The checks are pushed by the guardrails jobs that build them; this job
+      # adds only the two consumer delivery paths, which the flake check does
+      # not build.
+      - name: Build the standard delivery paths
+        run: nix build .#set .#setting --no-link
 
   cache-push-darwin:
     needs: guardrails
@@ -97,7 +99,8 @@ jobs:
         with:
           name: pr0d1r2
           authToken: ${{ secrets.CACHIX_AUTH_TOKEN }}
-      - name: Build standard delivery paths and every check
-        run: |
-          nix build .#set .#setting --no-link
-          nix flake check --print-build-logs
+      # The checks are pushed by the guardrails jobs that build them; this job
+      # adds only the two consumer delivery paths, which the flake check does
+      # not build.
+      - name: Build the standard delivery paths
+        run: nix build .#set .#setting --no-link

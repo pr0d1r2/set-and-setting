@@ -19,6 +19,12 @@ name: Guardrails
         description: Timeout in seconds for nix flake check
         type: string
         default: "600"
+    secrets:
+      cachix-auth-token:
+        description: >-
+          Token for the shared binary cache. Optional: without it the push
+          step is skipped and the workflow still gates normally.
+        required: false
 
 env:
   # Apply before flake evaluation so transient input and substituter failures
@@ -30,6 +36,8 @@ env:
 jobs:
   check:
     runs-on: ubuntu-latest
+    env:
+      CACHIX_AUTH_TOKEN: ${{ secrets.cachix-auth-token }}
     steps:
       - uses: actions/checkout@v4
       - uses: cachix/install-nix-action@v27
@@ -47,6 +55,18 @@ jobs:
             max-jobs = auto
             extra-substituters = https://pr0d1r2.cachix.org
             extra-trusted-public-keys = pr0d1r2.cachix.org-1:NfWjbhgAj41byXhCKiaE+av3Vnphm1fTezHXEGsiQIM=
+      # The job that builds is the job that pushes. A separate push job has to
+      # rebuild every derivation this one just discarded -- measured at 116s
+      # (linux) and 360s (darwin) of duplicate work per push to main. Skipped
+      # without a token (fork pull requests, consumers with no cache), and
+      # non-gating either way: a cache is not a check (B19).
+      - name: Push built paths to the shared cache
+        if: env.CACHIX_AUTH_TOKEN != ''
+        continue-on-error: true
+        uses: cachix/cachix-action@v15
+        with:
+          name: pr0d1r2
+          authToken: ${{ secrets.cachix-auth-token }}
       - name: Materialize configs
         run: nix develop --command true
       - name: Confirm materialization
@@ -81,6 +101,8 @@ jobs:
     # bought nothing but wall-clock: darwin idled 3m28s per run. Both jobs
     # now start together.
     runs-on: macos-latest
+    env:
+      CACHIX_AUTH_TOKEN: ${{ secrets.cachix-auth-token }}
     steps:
       - uses: actions/checkout@v4
       # DeterminateSystems installer detects and reuses an existing Nix /
@@ -96,6 +118,14 @@ jobs:
             max-jobs = auto
             extra-substituters = https://pr0d1r2.cachix.org
             extra-trusted-public-keys = pr0d1r2.cachix.org-1:NfWjbhgAj41byXhCKiaE+av3Vnphm1fTezHXEGsiQIM=
+      # Same reason as the ubuntu job: whoever builds, pushes.
+      - name: Push built paths to the shared cache
+        if: env.CACHIX_AUTH_TOKEN != ''
+        continue-on-error: true
+        uses: cachix/cachix-action@v15
+        with:
+          name: pr0d1r2
+          authToken: ${{ secrets.cachix-auth-token }}
       - name: Materialize configs
         run: |
           setting_pkg="$(nix build .#setting --print-out-paths --no-link)"
