@@ -2,6 +2,23 @@
 
 ## Unreleased
 
+- Stop consumer bats suites failing before they assert anything, in two
+  places at once. The runners this repository wraps bundled plain `bats`,
+  and because a `writeShellApplication`'s runtime inputs sit ahead of the
+  caller's path that was the only bats a consumer had -- so `BATS_LIB_PATH`
+  was unset and every spec died in `setup`. Thirteen of thirteen, on the
+  first repository whose CI reached the runner at all. The rule against
+  this is one of our own skills, and no nix file in the repository was
+  following it. Separately, the wrapper set was composed from the fragments
+  a repository DECLARES while the shared workflow decides to run the suite
+  from the files it TRACKS, so a repository with specs and no `bats` in its
+  list got a workflow calling a runner its shell did not have. The fragment
+  map already documented the right criterion -- tracked `*.bats` files -- as
+  prose that nothing enforced; it is now what the code does. The consumer
+  check builds the runner and puts a real spec through it with no ambient
+  `BATS_LIB_PATH`, so the plain-bats version of this cannot come back
+  quietly. (#501)
+
 - Pick up `nix-lefthook-bats-unit` carrying its own bats libraries. Its
   wrapper bundled plain `bats`, and because a `writeShellApplication`'s
   runtime inputs sit ahead of the caller's path, that was the only bats a

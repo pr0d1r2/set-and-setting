@@ -435,6 +435,15 @@ let
       ];
     };
 
+  # ONE definition of "bats that can find its libraries" (B92).
+  batsWithLibrariesFor =
+    pkgs:
+    pkgs.bats.withLibraries (p: [
+      p.bats-support
+      p.bats-assert
+      p.bats-file
+    ]);
+
   wrappersForFragment =
     pkgs: fileClassOverrides:
     let
@@ -540,15 +549,17 @@ let
       actions = [ (actionlintWrapperFor pkgs) ];
       set = [ ];
       bats = [
+        # withLibraries, not pkgs.bats: these inputs shadow the caller's PATH,
+        # so plain bats leaves a consumer with no BATS_LIB_PATH at all (B92).
         (w "lefthook-bats-parse" nix-lefthook-bats-parse-src {
           runtimeInputs = [
-            pkgs.bats
+            (batsWithLibrariesFor pkgs)
             pkgs.coreutils
           ];
         })
         (w "lefthook-bats-unit" nix-lefthook-bats-unit-src {
           runtimeInputs = [
-            pkgs.bats
+            (batsWithLibrariesFor pkgs)
             pkgs.parallel
             pkgs.coreutils
           ];
