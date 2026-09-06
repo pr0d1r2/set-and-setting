@@ -1105,12 +1105,20 @@ in
           cd "$1"
           classes=${lib.escapeShellArg classes}
           ledger=config/linter-coverage-exemptions.yml
-          test -f "$ledger" || { echo "linter-coverage: missing $ledger" >&2; exit 1; }
-          mapfile -t exempt < <(awk '/^[[:space:]]*- class:/ { match($0, /"[^"]+"/); c=substr($0, RSTART + 1, RLENGTH - 2) } /^[[:space:]]*ticket:/ { if (c != "") print c "=" $2 }' "$ledger")
-          for entry in "''${exempt[@]}"; do
-            ticket=''${entry#*=}
-            case "$ticket" in ""|*[!0-9]*|0) echo "linter-coverage: invalid ticket in ledger: $entry" >&2; exit 1;; esac
-          done
+          # NO ledger means NOTHING is exempt, which is the strictest reading --
+          # not a reason to refuse to check (B96). The file is an exemptions
+          # list; a repository that has never claimed one is fully covered by
+          # definition. Failing on its absence broke every consumer that had not
+          # been handed the file, and `sync-setting` does not deliver it, so the
+          # check took down the loop's own pushes fleet-wide.
+          exempt=()
+          if [ -f "$ledger" ]; then
+            mapfile -t exempt < <(awk '/^[[:space:]]*- class:/ { match($0, /"[^"]+"/); c=substr($0, RSTART + 1, RLENGTH - 2) } /^[[:space:]]*ticket:/ { if (c != "") print c "=" $2 }' "$ledger")
+            for entry in "''${exempt[@]}"; do
+              ticket=''${entry#*=}
+              case "$ticket" in ""|*[!0-9]*|0) echo "linter-coverage: invalid ticket in ledger: $entry" >&2; exit 1;; esac
+            done
+          fi
           if [ -d .git ]; then mapfile -t files < <(git ls-files); else mapfile -t files < <(find . -type f ! -path './.git/*' -printf '%P\n'); fi
           for file in "''${files[@]}"; do
             covered=0

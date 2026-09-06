@@ -2,6 +2,16 @@
 
 ## Unreleased
 
+- Stop the linter-coverage check refusing to run when a repository has no
+  exemptions ledger. The ledger lists exemptions, so having none means nothing
+  is exempt -- the strictest reading, and no reason to fail. The file is
+  declared by the setting but never delivered by the sync, so it exists only
+  where a bootstrap once put it, and the check took down every repository
+  without one. That included the tending loop's own pushes: an agent produced
+  a fix, the pre-push gate failed on the missing file, and the work was left
+  unreachable. The default the setting ships also wrote a literal backslash-n
+  instead of a newline, which is fixed here too. (#508)
+
 - Stop the flake-lock ratchet failing repositories that were never given a
   baseline. The check requires `config/lefthook/flake_lock_budget.yml`, which
   lives only in this repository: it is not among the standards that

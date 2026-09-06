@@ -50,7 +50,13 @@ let
         readFile "${std}/lefthook/file_size_limits.yml"
       )
     )
-    ++ [ (pkgs.writeTextDir "config/linter-coverage-exemptions.yml" ''exempt: []\n'') ]
+    ++ [
+      # A real newline: `''''''` strings do not interpret \n, so the previous
+      # form wrote the two characters backslash-n into the file (B96).
+      (pkgs.writeTextDir "config/linter-coverage-exemptions.yml" ''
+        exempt: []
+      '')
+    ]
     ++ lib.optional flakeManifest (
       pkgs.writeTextDir "config/lefthook/flake_manifest.yml" (
         readFile "${std}/lefthook/flake_manifest.yml"
