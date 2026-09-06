@@ -2,6 +2,17 @@
 
 ## Unreleased
 
+- Stop `guardrails / check` failing with `exec: bats: not found` in every
+  consumer repository that tracks `.bats` files. The Bats suite step called
+  `bats` directly, which exists in this repository's own devShell and in no
+  consumer's, so the reusable workflow was green here and red everywhere it
+  is used -- 25 pull requests across the fleet, each one then parked as
+  "stuck red" by the tending loop, which is why the fleet stopped advancing.
+  The step now calls `lefthook-bats-unit`, the wrapper the bats fragment
+  materializes alongside the two the step already used. It is sequential
+  unless `LEFTHOOK_BATS_UNIT_JOBS` is set, so the determinism the old
+  comment asked for is what the wrapper already does. (#492)
+
 - Stop `guardrails / check` failing with `lefthook-tdd-order-bats: not
   found` in consumer repositories that track no `.bats` files. The
   wrapper comes from the bats fragment, which is materialized only for a

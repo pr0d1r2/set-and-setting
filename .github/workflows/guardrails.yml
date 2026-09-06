@@ -61,10 +61,14 @@ jobs:
           mapfile -d '' bats_files < <(git ls-files -z -- '*.bats')
           if [ "${#bats_files[@]}" -gt 0 ]; then
             nix develop --command lefthook-bats-parse "${bats_files[@]}"
-            # The wrapper enables parallel jobs; CI runners expose multiple
-            # cores and the Bats files share git/test state. Keep this gate
-            # deterministic by running the complete suite sequentially.
-            nix develop --command bats "${bats_files[@]}"
+            # `bats` itself is not in a consumer devShell -- only the
+            # wrappers are -- so calling it directly fails every consumer
+            # with `exec: bats: not found` while passing here, where the
+            # standard's own shell has it. The wrapper is also already
+            # sequential: it runs bats with no `--jobs` unless
+            # LEFTHOOK_BATS_UNIT_JOBS asks for them, which is the
+            # determinism this step wanted (B91).
+            nix develop --command lefthook-bats-unit "${bats_files[@]}"
             # The bats fragment -- and so the tdd-order-bats wrapper -- is
             # materialized only for a repository with tracked .bats files,
             # so this gate belongs inside the same guard as the suite.
