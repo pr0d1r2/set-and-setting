@@ -99,6 +99,8 @@ in
     tcl = [ "tcl-syntax" ];
     awk = [ "gawk-lint" ];
     set = [
+      "rekall-check"
+      "rekall-gnu-sed"
       "set-skill-extension"
       "set-skill-size"
       "set-ref-resolution"
@@ -193,16 +195,19 @@ in
       "deadnix"
       "nix-no-embedded-shell"
       "nix-flake-lock-budget"
+      "rekall-gnu-sed"
     ];
     sh = [
       "shellcheck"
       "shfmt"
       "no-shell-functions"
+      "rekall-gnu-sed"
     ];
     bash = [
       "shellcheck"
       "shfmt"
       "no-shell-functions"
+      "rekall-gnu-sed"
     ];
     rb = [
       "rubocop"
@@ -212,8 +217,14 @@ in
       "markdownlint"
       "markdownlint-agentic"
     ];
-    yml = [ "yamllint" ];
-    yaml = [ "yamllint" ];
+    yml = [
+      "yamllint"
+      "rekall-gnu-sed"
+    ];
+    yaml = [
+      "yamllint"
+      "rekall-gnu-sed"
+    ];
     toml = [ "taplo" ];
     justfile = [
       "justfile-alphabetical"
@@ -233,7 +244,9 @@ in
     ];
     "Gemfile" = [ "bundle-audit" ];
     "Gemfile.lock" = [ "bundle-audit" ];
+    ".rekall/**" = [ "rekall-check" ];
     "set/**/*.md" = [
+      "rekall-check"
       "set-skill-extension"
       "set-skill-size"
       "set-ref-resolution"

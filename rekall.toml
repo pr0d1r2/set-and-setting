@@ -1,0 +1,5 @@
+# The corpus rekall mines here: the skill set, which is prose stating
+# rules an agent must follow.
+[sources]
+roots = ["set/skills"]
+globs = ["**/*.md"]
