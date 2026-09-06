@@ -108,6 +108,19 @@ pkgs.runCommand "mkConsumerFlake-outputs" { } ''
     assert builtins.elem "lefthook-bats-unit" shellPkgNames;
     assert builtins.elem "lefthook-bats-parse" shellPkgNames;
     assert batsUnitPkgs != [ ];
+    # ORDER is part of the contract, not cosmetics (B94): `confirm` compares the
+    # materialized config against `detect-fragments.sh`, so a fragment added in
+    # the wrong position produces a config the standard's own check rejects.
+    # `actions` is AUTO-added here and `shell` is DECLARED, and the detector puts
+    # actions first -- so appending what we detect, as the first cut did, fails
+    # this while producing a config that looks perfectly reasonable.
+    assert
+      let
+        idx = n: pkgs.lib.lists.findFirstIndex (x: x == n) null shellPkgNames;
+      in
+      idx "lefthook-actionlint" != null
+      && idx "lefthook-shellcheck" != null
+      && idx "lefthook-actionlint" < idx "lefthook-shellcheck";
     ""
   }
   ${batsProbe}/bin/consumer-bats-probe

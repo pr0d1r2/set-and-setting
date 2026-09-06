@@ -19,18 +19,41 @@
 }:
 
 let
-  # The bats fragment's own trigger, enforced rather than merely documented:
-  # check-fragment-map.nix says `bats = "tracked *.bats files"`, and the shared
-  # CI workflow decides to RUN the suite from exactly that -- `git ls-files
-  # '*.bats'`. The devShell decided from the DECLARED fragments instead, so a
-  # repository with specs but no `bats` in its list got a workflow that ran a
-  # runner its shell did not have. Measured on nix-lefthook-yamllint: tracked
-  # specs, six fragments, none of them bats, and CI ending in
-  # `lefthook-bats-unit: not found`.
+  # A fragment a repository FORGOT to declare (B92/B94). `guardrails.yml`
+  # decides to run a suite from what git TRACKS, and `confirm` checks the
+  # materialized config against `detect-fragments.sh`, which reads the same
+  # thing -- so a repository with specs and no `bats` in its list gets a
+  # workflow calling a runner its shell lacks, and a fidelity failure for the
+  # config it did materialize. Both are the same omission.
   #
-  # `src` is the flake source, so this walk sees exactly what git tracks --
-  # untracked files are not in it. A repository that names `bats` itself is
-  # unaffected; this only adds the fragment nobody remembered to ask for.
+  # THE DETECTOR IS THE AUTHORITY, including for ORDER. Its output sequence is
+  # the order it appends in, so that order is READ OUT OF IT here rather than
+  # restated: a second copy is what made the first cut of this emit a config
+  # `confirm` then rejected (B94). `src` is the flake source, so these walks
+  # see what git tracks.
+  detectorLines = nixpkgs.lib.splitString "\n" (
+    builtins.readFile "${set-and-setting}/setting/lib/detect-fragments.sh"
+  );
+  detectorOrder = [
+    "base"
+  ]
+  ++ builtins.filter (f: f != null) (
+    map (
+      line:
+      let
+        m = builtins.match ''.*result="\$result ([a-z-]+)".*'' line;
+      in
+      if m == null then null else builtins.head m
+    ) detectorLines
+  );
+
+  workflowsDir = src + "/.github/workflows";
+  hasWorkflows =
+    builtins.pathExists workflowsDir
+    && builtins.any (n: nixpkgs.lib.hasSuffix ".yml" n || nixpkgs.lib.hasSuffix ".yaml" n) (
+      builtins.attrNames (builtins.readDir workflowsDir)
+    );
+
   hasBats =
     dir:
     let
@@ -42,10 +65,17 @@ let
     builtins.any isSpec names || builtins.any (n: hasBats (dir + "/${n}")) subdirs;
 
   declaredFragments = fragments ++ extraFragments;
-  autoFragments = nixpkgs.lib.optional (
-    !(builtins.elem "bats" declaredFragments) && builtins.pathExists src && hasBats src
-  ) "bats";
-  allFragments = declaredFragments ++ autoFragments;
+  srcExists = builtins.pathExists src;
+  autoFragments =
+    nixpkgs.lib.optional (srcExists && hasWorkflows) "actions"
+    ++ nixpkgs.lib.optional (srcExists && hasBats src) "bats";
+  wantedFragments = nixpkgs.lib.unique (declaredFragments ++ autoFragments);
+
+  # Canonical first, then anything the detector does not know about, so a
+  # consumer's own extra fragment is never silently dropped.
+  allFragments =
+    builtins.filter (f: builtins.elem f wantedFragments) detectorOrder
+    ++ builtins.filter (f: !(builtins.elem f detectorOrder)) wantedFragments;
   forAllSystems =
     f: nixpkgs.lib.genAttrs supportedSystems (system: f nixpkgs.legacyPackages.${system});
 in
