@@ -15,6 +15,34 @@ jobs:
     # the darwin-installer fix (B26) never ran on the PR that introduced it.
     uses: ./.github/workflows/guardrails.yml
 
+  lock-budget-comment:
+    needs: guardrails
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - name: Report lock growth
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR: ${{ github.event.pull_request.number }}
+        run: |
+          set -euo pipefail
+          report="$(bash lib/nix-flake-lock-budget.sh flake.lock 2>&1 || true)"
+          bytes="$(printf '%s\n' "$report" | sed -n 's/lock-budget: bytes=\([0-9]*\).*/\1/p')"
+          baseline="$(sed -n 's/^baseline_bytes: *//p' config/lefthook/flake_lock_budget.yml)"
+          [ -n "$bytes" ] && [ "$bytes" -gt "$baseline" ] || exit 0
+          body="<!-- lock-budget-report -->\n### flake.lock growth\n\n\`$report\`\n\nThe committed lock baseline was updated with this lock refresh."
+          export BODY="$body"
+          existing="$(gh api "repos/${GITHUB_REPOSITORY}/issues/${PR}/comments" --paginate --jq '.[] | select(.body | contains("<!-- lock-budget-report -->")) | .id' | head -n1)"
+          if [ -n "$existing" ]; then
+            gh api --method PATCH "repos/${GITHUB_REPOSITORY}/issues/comments/${existing}" -f body="$BODY"
+          else
+            gh api --method POST "repos/${GITHUB_REPOSITORY}/issues/${PR}/comments" -f body="$BODY"
+          fi
+
   cache-push:
     needs: guardrails
     if: github.event_name == 'push'

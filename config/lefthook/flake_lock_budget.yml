@@ -1,3 +1,8 @@
 ---
-max_nodes: 40
-max_bytes: 32768
+baseline_bytes: 20489
+baseline_nodes: 37
+baseline_duplication_ratio: 1000
+growth_percent: 5
+sanity_max_bytes: 393216
+sanity_max_nodes: 80
+sanity_max_duplication_ratio: 4000
