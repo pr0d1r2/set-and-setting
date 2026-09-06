@@ -53,6 +53,7 @@ jobs:
           # it. Installer config is system config, and trusted.
           extra_nix_config: |
             max-jobs = auto
+            access-tokens = github.com=${{ secrets.GITHUB_TOKEN }}
             extra-substituters = https://pr0d1r2.cachix.org
             extra-trusted-public-keys = pr0d1r2.cachix.org-1:NfWjbhgAj41byXhCKiaE+av3Vnphm1fTezHXEGsiQIM=
       # The job that builds is the job that pushes. A separate push job has to
@@ -74,6 +75,7 @@ jobs:
       - name: Nix flake check
         run: |
           nix flake check \
+            --refresh \
             --print-build-logs \
             --timeout ${{ inputs.flake-check-timeout }}
       - name: Bats suite
@@ -116,6 +118,7 @@ jobs:
           # 770 idle behind it.
           extra-conf: |
             max-jobs = auto
+            access-tokens = github.com=${{ secrets.GITHUB_TOKEN }}
             extra-substituters = https://pr0d1r2.cachix.org
             extra-trusted-public-keys = pr0d1r2.cachix.org-1:NfWjbhgAj41byXhCKiaE+av3Vnphm1fTezHXEGsiQIM=
       # Same reason as the ubuntu job: whoever builds, pushes.
@@ -133,5 +136,6 @@ jobs:
       - name: Nix flake check
         run: |
           nix flake check \
+            --refresh \
             --print-build-logs \
             --timeout ${{ inputs.flake-check-timeout }}
