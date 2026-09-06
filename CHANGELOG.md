@@ -2,6 +2,17 @@
 
 ## Unreleased
 
+- Make the job that builds the checks the job that pushes them to the shared
+  binary cache. `guardrails.yml` now accepts an optional `cachix-auth-token`
+  and both platform jobs push what they just built; without a token the step
+  is skipped, so fork pull requests and consumers without a cache are
+  unaffected. The separate cache-push jobs previously had to rebuild every
+  derivation the guardrails jobs had discarded before they could push it --
+  measured at 116 seconds on linux and 360 seconds on darwin, per push to
+  main. They now build only the two consumer delivery paths, which the flake
+  check does not build. Pull request runs also warm the cache instead of only
+  consuming it.
+
 - Stop the linter-coverage check refusing to run when a repository has no
   exemptions ledger. The ledger lists exemptions, so having none means nothing
   is exempt -- the strictest reading, and no reason to fail. The file is

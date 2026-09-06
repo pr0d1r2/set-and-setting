@@ -3446,6 +3446,35 @@ in
         touch $out
       '';
 
+    # The job that BUILDS the checks is the job that must push them. Splitting
+    # push into a second job made that job rebuild every derivation the
+    # guardrails jobs had just discarded -- measured at 116s (linux) and 360s
+    # (darwin) of pure duplicate work per push to main.
+    ci-cache-push =
+      pkgs.runCommand "ci-cache-push"
+        {
+          guardrails = ../.github/workflows/guardrails.yml;
+          caller = ../.github/workflows/ci.yml;
+          leafCaller = ../setting/scaffold/leaf-ci.yml;
+        }
+        ''
+          pushes=$(grep -c 'uses: cachix/cachix-action' "$guardrails" || true)
+          [ "$pushes" -ge 2 ] \
+            || { echo "FAIL: both guardrails jobs must push what they build"; exit 1; }
+          grep -q 'cachix-auth-token:' "$guardrails" \
+            || { echo "FAIL: guardrails must accept an optional cachix-auth-token secret"; exit 1; }
+          for c in "$caller" "$leafCaller"; do
+            grep -q '^ *secrets: inherit$' "$c" \
+              || { echo "FAIL: $c must pass secrets through to guardrails"; exit 1; }
+          done
+          if grep -qE '^ *nix flake check' "$caller"; then
+            echo "FAIL: the caller must not rebuild what guardrails already built"
+            exit 1
+          fi
+          echo "PASS: the building job pushes; no job rebuilds in order to push"
+          touch $out
+        '';
+
     # #168: check-fragment-map completeness -- every check name produced by
     # checksFor (over all fragments) must appear in the map, and every
     # command in lefthook integration fragments must appear too.
