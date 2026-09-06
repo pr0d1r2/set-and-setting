@@ -831,6 +831,14 @@ let
         "extra-substituters"
       ];
     };
+    "git/repo/backup.md" = {
+      keywords = [
+        "gitlab-backup"
+        "git-remote"
+        "post-commit"
+        "repository-backup"
+      ];
+    };
     "nix/python-package.md" = {
       paths = [ "**/*.nix" ];
       content = [ "buildPythonPackage" ];
