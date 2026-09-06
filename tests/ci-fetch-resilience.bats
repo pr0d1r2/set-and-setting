@@ -27,8 +27,8 @@ setup() {
     workflow="$ROOT/.github/workflows/guardrails.yml"
 
     grep -Fq 'access-tokens = github.com=${{ secrets.GITHUB_TOKEN }}' "$workflow"
-    grep -Fq 'nix flake check \\' "$workflow"
-    grep -Fq '            --refresh \\' "$workflow"
+    grep -Fq 'nix flake check \' "$workflow"
+    grep -Fq '            --refresh \' "$workflow"
 }
 
 @test "Darwin Nix installer is pinned to an immutable commit" {
