@@ -2,6 +2,18 @@
 
 ## Unreleased
 
+- Make the fragment a repository forgot to declare agree with the detector
+  that already knows about it. The previous entry added `bats` from tracked
+  spec files in the nix layer, which was a second opinion: the shell detector
+  has always decided this, `confirm` checks the materialized configuration
+  against exactly that, and the two now disagreed -- the right jobs in the
+  wrong position, and `actions` missing altogether, so a consumer that had
+  been green through that check started failing it. The nix side now reads
+  the detector's own ordering out of the script rather than restating it,
+  detects workflows as well as specs, and sorts the union. The consumer check
+  asserts an auto-added fragment sorts ahead of a declared one, which is
+  something appending cannot do. (#505)
+
 - Stop consumer bats suites failing before they assert anything, in two
   places at once. The runners this repository wraps bundled plain `bats`,
   and because a `writeShellApplication`'s runtime inputs sit ahead of the
