@@ -19,7 +19,33 @@
 }:
 
 let
-  allFragments = fragments ++ extraFragments;
+  # The bats fragment's own trigger, enforced rather than merely documented:
+  # check-fragment-map.nix says `bats = "tracked *.bats files"`, and the shared
+  # CI workflow decides to RUN the suite from exactly that -- `git ls-files
+  # '*.bats'`. The devShell decided from the DECLARED fragments instead, so a
+  # repository with specs but no `bats` in its list got a workflow that ran a
+  # runner its shell did not have. Measured on nix-lefthook-yamllint: tracked
+  # specs, six fragments, none of them bats, and CI ending in
+  # `lefthook-bats-unit: not found`.
+  #
+  # `src` is the flake source, so this walk sees exactly what git tracks --
+  # untracked files are not in it. A repository that names `bats` itself is
+  # unaffected; this only adds the fragment nobody remembered to ask for.
+  hasBats =
+    dir:
+    let
+      entries = builtins.readDir dir;
+      names = builtins.attrNames entries;
+      isSpec = n: entries.${n} == "regular" && nixpkgs.lib.hasSuffix ".bats" n;
+      subdirs = builtins.filter (n: entries.${n} == "directory" && n != ".git" && n != "result") names;
+    in
+    builtins.any isSpec names || builtins.any (n: hasBats (dir + "/${n}")) subdirs;
+
+  declaredFragments = fragments ++ extraFragments;
+  autoFragments = nixpkgs.lib.optional (
+    !(builtins.elem "bats" declaredFragments) && builtins.pathExists src && hasBats src
+  ) "bats";
+  allFragments = declaredFragments ++ autoFragments;
   forAllSystems =
     f: nixpkgs.lib.genAttrs supportedSystems (system: f nixpkgs.legacyPackages.${system});
 in
