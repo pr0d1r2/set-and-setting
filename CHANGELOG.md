@@ -2,6 +2,16 @@
 
 ## Unreleased
 
+- Pick up `nix-lefthook-bats-unit` carrying its own bats libraries. Its
+  wrapper bundled plain `bats`, and because a `writeShellApplication`'s
+  runtime inputs sit ahead of the caller's path, that was the only bats a
+  consumer had -- so `BATS_LIB_PATH` was unset and every spec died in
+  `setup` on `Could not find '/usr/lib/bats/bats-support/load.bash'`. This
+  is what the previous entry uncovered: with the suite finally reaching a
+  runner, all thirteen specs of the first repository to try it failed that
+  way. The same wrapper backs the pre-push `bats-unit` hook, so consumer
+  suites had not been running locally either. (pr0d1r2/nix-lefthook-bats-unit#13)
+
 - Stop `guardrails / check` failing with `exec: bats: not found` in every
   consumer repository that tracks `.bats` files. The Bats suite step called
   `bats` directly, which exists in this repository's own devShell and in no
