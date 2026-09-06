@@ -58,6 +58,7 @@ jobs:
         with:
           extra_nix_config: |
             max-jobs = auto
+            access-tokens = github.com=${{ secrets.GITHUB_TOKEN }}
             extra-substituters = https://pr0d1r2.cachix.org
             extra-trusted-public-keys = pr0d1r2.cachix.org-1:NfWjbhgAj41byXhCKiaE+av3Vnphm1fTezHXEGsiQIM=
       - name: Upload evaluated standard paths

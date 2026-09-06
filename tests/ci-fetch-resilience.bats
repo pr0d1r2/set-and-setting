@@ -23,6 +23,14 @@ setup() {
     grep -q 'download-attempts = 5' "$workflow"
 }
 
+@test "CI authenticates GitHub flake resolution and refreshes cached refs" {
+    workflow="$ROOT/.github/workflows/guardrails.yml"
+
+    grep -Fq 'access-tokens = github.com=${{ secrets.GITHUB_TOKEN }}' "$workflow"
+    grep -Fq 'nix flake check \\' "$workflow"
+    grep -Fq '            --refresh \\' "$workflow"
+}
+
 @test "Darwin Nix installer is pinned to an immutable commit" {
     workflow="$ROOT/.github/workflows/guardrails.yml"
 
