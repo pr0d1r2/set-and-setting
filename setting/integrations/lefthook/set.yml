@@ -1,6 +1,14 @@
 ---
 pre-commit:
   commands:
+    rekall-check:
+      glob: "{set/skills/**,.rekall/**}"
+      run: >
+        if command -v rekall >/dev/null 2>&1; then rekall check;
+        else echo "lefthook SKIPPED rekall check -- not on PATH"; fi
+    rekall-gnu-sed:
+      glob: "*.{sh,bash,nix,yml,yaml}"
+      run: sh .rekall/rules/always-use-sed-from-the-dev.sh
     set-skill-extension:
       glob: "set/{skills,drafts}/**"
       run: SET_ROOT=set bash lib/skill-extension-check.sh
@@ -16,6 +24,14 @@ pre-commit:
 
 pre-push:
   commands:
+    rekall-check:
+      glob: "{set/skills/**,.rekall/**}"
+      run: >
+        if command -v rekall >/dev/null 2>&1; then rekall check;
+        else echo "lefthook SKIPPED rekall check -- not on PATH"; fi
+    rekall-gnu-sed:
+      glob: "*.{sh,bash,nix,yml,yaml}"
+      run: sh .rekall/rules/always-use-sed-from-the-dev.sh
     set-skill-extension:
       glob: "set/{skills,drafts}/**"
       run: SET_ROOT=set bash lib/skill-extension-check.sh

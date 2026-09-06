@@ -1,0 +1,16 @@
+candidates = []
+
+[[extracted]]
+id = "4116dcd"
+src = "set/skills/gnu/sed.md"
+line_start = 3
+line_end = 6
+text = """
+Always use `sed` from the dev shell (GNU sed via nixpkgs `gnused`).
+Never use macOS built-in `/usr/bin/sed` which is BSD sed and has
+incompatible flag syntax (e.g. `-i ''` vs `-i`). The dev shell
+provides GNU sed on all architectures so scripts stay portable."""
+label = "M1"
+artifact = ".rekall/rules/always-use-sed-from-the-dev.sh"
+fires = 0
+at = 1788716133
