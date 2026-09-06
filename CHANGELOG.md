@@ -2,6 +2,16 @@
 
 ## Unreleased
 
+- Stop the flake-lock ratchet failing repositories that were never given a
+  baseline. The check requires `config/lefthook/flake_lock_budget.yml`, which
+  lives only in this repository: it is not among the standards that
+  `sync-setting` delivers, and its contents are this repository's own measured
+  lock metrics, so it could not honestly be handed to a leaf as a default
+  either. The first consumer to pick the check up failed on a file it had no
+  way to obtain. An absent baseline is now a skip that names the keys to
+  write, so the ratchet binds where a baseline was recorded and stays quiet
+  where none was. A missing lock file is still a failure. (#506)
+
 - Make the fragment a repository forgot to declare agree with the detector
   that already knows about it. The previous entry added `bats` from tracked
   spec files in the nix layer, which was a second opinion: the shell detector

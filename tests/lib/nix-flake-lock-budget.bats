@@ -2,9 +2,9 @@
 
 setup() {
     ROOT=$(mktemp -d)
-    SCRIPT="$BATS_TEST_DIRNAME/../lib/nix-flake-lock-budget.sh"
+    SCRIPT="$BATS_TEST_DIRNAME/../../lib/nix-flake-lock-budget.sh"
     mkdir -p "$ROOT/config/lefthook"
-    cp "$BATS_TEST_DIRNAME/../config/lefthook/flake_lock_budget.yml" "$ROOT/config/lefthook/"
+    cp "$BATS_TEST_DIRNAME/../../config/lefthook/flake_lock_budget.yml" "$ROOT/config/lefthook/"
 }
 
 teardown() { rm -rf "$ROOT"; }
@@ -31,4 +31,38 @@ write_lock() {
     FLAKE_LOCK="$ROOT/flake.lock" FLAKE_LOCK_BASELINE="$ROOT/config/lefthook/flake_lock_budget.yml" run bash "$SCRIPT"
     [ "$status" -eq 1 ]
     [[ "$output" == *"duplication_ratio"* ]]
+}
+
+@test "B95: no baseline recorded is a SKIP, not a failure" {
+    # The baseline holds a repository's OWN measured metrics, so it cannot ship
+    # to consumers as a default -- and sync-setting does not deliver it. Failing
+    # on its absence broke every consumer that picked this check up, on a file
+    # none of them could obtain.
+    write_lock '"root":{"locked":{"owner":"o","repo":"a"}}'
+    rm -f "$ROOT/config/lefthook/flake_lock_budget.yml"
+    FLAKE_LOCK="$ROOT/flake.lock" \
+        FLAKE_LOCK_BASELINE="$ROOT/config/lefthook/flake_lock_budget.yml" \
+        run bash "$SCRIPT"
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"SKIP"* ]]
+    [[ "$output" == *"no lock baseline recorded"* ]]
+}
+
+@test "B95: the skip says what to write, so it is actionable" {
+    write_lock '"root":{"locked":{"owner":"o","repo":"a"}}'
+    rm -f "$ROOT/config/lefthook/flake_lock_budget.yml"
+    FLAKE_LOCK="$ROOT/flake.lock" \
+        FLAKE_LOCK_BASELINE="$ROOT/config/lefthook/flake_lock_budget.yml" \
+        run bash "$SCRIPT"
+    [[ "$output" == *"baseline_bytes"* ]]
+    [[ "$output" == *"sanity_max_nodes"* ]]
+}
+
+@test "B95: a MISSING LOCK is still a failure -- the skip is scoped" {
+    rm -f "$ROOT/flake.lock"
+    FLAKE_LOCK="$ROOT/flake.lock" \
+        FLAKE_LOCK_BASELINE="$ROOT/config/lefthook/flake_lock_budget.yml" \
+        run bash "$SCRIPT"
+    [ "$status" -eq 1 ]
+    [[ "$output" == *"FAIL"* ]]
 }
