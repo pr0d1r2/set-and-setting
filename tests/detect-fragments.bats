@@ -5,6 +5,7 @@
 # fragments apply to a repo based on tracked file types.
 
 setup() {
+    load git-env
     bats_require_minimum_version 1.5.0
     REPO="$(mktemp -d)"
     SCRIPT="$BATS_TEST_DIRNAME/../setting/lib/detect-fragments.sh"

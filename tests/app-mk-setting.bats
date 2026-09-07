@@ -5,6 +5,7 @@
 # for mkSetting. Materializes unified configs + content-aware lefthook.yml.
 
 setup() {
+    load git-env
     bats_require_minimum_version 1.5.0
     SETTING_SRC="$(mktemp -d)"
     TARGET="$(mktemp -d)"

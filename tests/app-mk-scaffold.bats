@@ -7,6 +7,7 @@
 # lefthook.yml is now constructed from detected repo content.
 
 setup() {
+    load git-env
     bats_require_minimum_version 1.5.0
     SCAFFOLD_SRC="$(mktemp -d)"
     RUBY_SCAFFOLD_SRC="$(mktemp -d)"

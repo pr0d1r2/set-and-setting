@@ -17,11 +17,7 @@ setup() {
     BIN="$TMP/bin"
     mkdir -p "$BIN"
 
-    # git exports these into every hook it runs, and this spec runs under
-    # pre-commit. Inherited, the probe's `git init`/`git add` would write the
-    # index of the repository being committed rather than its own fixture.
-    unset GIT_DIR GIT_WORK_TREE GIT_INDEX_FILE GIT_OBJECT_DIRECTORY GIT_PREFIX
-    unset GIT_AUTHOR_NAME GIT_AUTHOR_EMAIL GIT_COMMITTER_NAME GIT_COMMITTER_EMAIL
+    load ../git-env
 }
 
 teardown() { rm -rf "$TMP"; }

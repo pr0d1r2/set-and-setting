@@ -2,6 +2,24 @@
 
 ## Unreleased
 
+- Stop the pre-push gate corrupting the repository it is gating. Git exports
+  `GIT_DIR`, and an author identity, into every hook it runs; the Bats suite
+  runs from pre-push; and nine of the ten specs that call `git init` or
+  `git commit` never scrubbed them. Their `cd` into a temporary directory
+  bought nothing, because `GIT_DIR` outranks the working directory, so every
+  fixture command addressed the repository being pushed instead: measured over
+  `tests/migrate.bats` alone, fifty-eight commits titled `initial` on the real
+  HEAD and a fixture identity written to the real config. Pushing from a linked
+  worktree is worse -- that `GIT_DIR` does not end in `/.git`, so `git init`
+  cannot infer a work tree and marks the shared config bare, which leaves the
+  main checkout answering `fatal: this operation must be run in a work tree` to
+  everything. Pre-push is the one hook CI never runs, so nothing outside a
+  developer's terminal could see any of it, and consumers run the same hook.
+  The scrub is now one loaded file rather than the single spec that had
+  documented it correctly and alone since #501. Its spec reproduces the defect
+  as a negative control, so a pass means the scrub did it, and fails when a new
+  spec runs git without loading the helper.
+
 - Make the job that builds the checks the job that pushes them to the shared
   binary cache. `guardrails.yml` now accepts an optional `cachix-auth-token`
   and both platform jobs push what they just built; without a token the step
