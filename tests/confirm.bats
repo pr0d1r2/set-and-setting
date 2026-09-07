@@ -4,6 +4,7 @@
 # Unit tests for lib/confirm.sh -- post-materialization acceptance suite (#94).
 
 setup() {
+    load git-env
     bats_require_minimum_version 1.5.0
     TARGET="$(mktemp -d)"
     SCRIPT="$BATS_TEST_DIRNAME/../lib/confirm.sh"

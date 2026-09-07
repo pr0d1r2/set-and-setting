@@ -8,6 +8,7 @@
 # and the dry-run/detect modes.
 
 setup() {
+    load git-env
     bats_require_minimum_version 1.5.0
     REPO_ROOT="$BATS_TEST_DIRNAME/.."
     export MIGRATE_SCRIPT="$REPO_ROOT/lib/migrate.sh"

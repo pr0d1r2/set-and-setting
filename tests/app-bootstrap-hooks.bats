@@ -1,6 +1,7 @@
 #!/usr/bin/env bats
 
 setup() {
+    load git-env
     TARGET="$(mktemp -d)"
     SCRIPT="$BATS_TEST_DIRNAME/../setting/lib/app-bootstrap-hooks.sh"
     mkdir -p "$TARGET/mock-bin"

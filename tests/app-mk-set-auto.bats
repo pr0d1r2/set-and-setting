@@ -4,6 +4,7 @@
 # records the applicability evidence in the manifest.
 
 setup() {
+    load git-env
     bats_require_minimum_version 1.5.0
     SKILLS_DIR="$(mktemp -d)"
     CONCEPTS_DIR="$(mktemp -d)"

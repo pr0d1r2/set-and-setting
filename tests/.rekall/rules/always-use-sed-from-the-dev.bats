@@ -12,6 +12,7 @@
 # payload, which is a property of the fixture and not of the rule.
 
 setup() {
+    load ../../git-env
     TMP="$(mktemp -d)"
     RULE="$BATS_TEST_DIRNAME/../../../.rekall/rules/always-use-sed-from-the-dev.sh"
     git init -q "$TMP"
