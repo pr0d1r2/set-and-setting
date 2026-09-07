@@ -8,6 +8,7 @@
 # git actually loads it (B97).
 
 setup() {
+    bats_require_minimum_version 1.5.0
     HELPER="$BATS_TEST_DIRNAME/git-env.bash"
     TMP="$(mktemp -d)"
 
@@ -81,14 +82,19 @@ teardown() { rm -rf "$TMP"; }
     git -C "$VICTIM" status --short
 }
 
+# Any git invocation, not only `git init` and friends: an inherited GIT_DIR
+# misdirects a read as readily as a write, and it outranks `-C`, so
+# `git -C "$fixture" init` reinitializes the repository being pushed (B98).
+# Match git in command position so prose mentioning the word does not count.
+GIT_CALL='(^|[;&|(]|\$\(|`|[[:space:]]run |[[:space:]]!)[[:space:]]*!?[[:space:]]*git[[:space:]]'
+
 @test "every spec that runs git loads the helper" {
     cd "$BATS_TEST_DIRNAME/.." || return 1
 
     unloaded=""
     while IFS= read -r spec; do
         case "$spec" in tests/git-env.bats) continue ;; esac
-        grep -Eq '(^|[^[:alnum:]_-])git (init|clone|commit|worktree)' "$spec" ||
-            continue
+        grep -Eq "$GIT_CALL" "$spec" || continue
         grep -q "git-env" "$spec" || unloaded="$unloaded $spec"
     done < <(git ls-files -- 'tests/*.bats' 'tests/**/*.bats')
 
@@ -96,4 +102,22 @@ teardown() { rm -rf "$TMP"; }
         echo "specs run git without loading tests/git-env.bash:$unloaded"
         return 1
     }
+}
+
+@test "the detector sees git behind -C and other options" {
+    probe="$TMP/probe.bats"
+    printf '%s\n' '    git -C "$TARGET" init' >"$probe"
+    grep -Eq "$GIT_CALL" "$probe"
+
+    printf '%s\n' '    run git -c user.name=x commit -m x' >"$probe"
+    grep -Eq "$GIT_CALL" "$probe"
+}
+
+@test "the detector ignores prose that merely names git" {
+    probe="$TMP/probe.bats"
+    printf '%s\n' '# tracked in git must have a check' >"$probe"
+    run ! grep -Eq "$GIT_CALL" "$probe"
+
+    printf '%s\n' '@test "git short SHA is skipped" {' >"$probe"
+    run ! grep -Eq "$GIT_CALL" "$probe"
 }

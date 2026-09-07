@@ -2,6 +2,17 @@
 
 ## Unreleased
 
+- Close the hole the previous scrub left. Its guard matched the verb
+  immediately after the bare word git, so `git -C "$fixture" init` never matched and three
+  specs were never enrolled -- and because `GIT_DIR` outranks even `-C`, that
+  init reinitialized the repository being pushed and marked its shared config
+  bare. Only `git push` reproduces this, because git exports `GIT_DIR` and
+  `lefthook run` does not, which is why the gate measured clean and the very
+  next push still failed with 23 broken tests and a corrupted checkout. The
+  detector now matches git in command position with any options between, so
+  `-C` and `-c` cannot hide an invocation, and it carries proofs that it sees
+  `git -C <dir> init` and ignores prose that merely names git.
+
 - Make the pre-push gate passable on a darwin workstation. The fragment-map
   spec built `.#checks.x86_64-linux.check-fragment-map-complete` -- a literal
   system -- so on aarch64-darwin it asked for a foreign-platform derivation
