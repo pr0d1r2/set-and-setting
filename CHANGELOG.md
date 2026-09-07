@@ -2,6 +2,16 @@
 
 ## Unreleased
 
+- Make the pre-push gate passable on a darwin workstation. The fragment-map
+  spec built `.#checks.x86_64-linux.check-fragment-map-complete` -- a literal
+  system -- so on aarch64-darwin it asked for a foreign-platform derivation
+  and failed. Continuous integration runs on linux, so the only place the
+  literal was correct was the only place it ran, while the constraint that
+  names four supported systems went unasserted. The spec now resolves the
+  check through `builtins.currentSystem` and builds for the machine it runs
+  on. Every push from a darwin machine previously needed `--no-verify`, which
+  is a gate that has stopped gating.
+
 - Stop the pre-push gate corrupting the repository it is gating. Git exports
   `GIT_DIR`, and an author identity, into every hook it runs; the Bats suite
   runs from pre-push; and nine of the ten specs that call `git init` or
