@@ -13,6 +13,7 @@ write_commands() {
 }
 
 setup() {
+    load git-env
     bats_require_minimum_version 1.5.0
     FRAGMENTS_DIR="$(mktemp -d)"
     _ORIG_FRAGMENTS_DIR="$FRAGMENTS_DIR"

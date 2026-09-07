@@ -3,6 +3,7 @@
 setup() {
     bats_require_minimum_version 1.5.0
     MAP="$BATS_TEST_DIRNAME/../lib/check-fragment-map.nix"
+    SYSTEM="$(nix --extra-experimental-features nix-command eval --impure --raw --expr builtins.currentSystem)"
 }
 
 @test "toml fragment is present and declares taplo" {
@@ -42,7 +43,7 @@ setup() {
 
 @test "completeness check accepts the coverage map" {
     run nix --extra-experimental-features nix-command build \
-        .#checks.x86_64-linux.check-fragment-map-complete --no-link
+        .#checks.${SYSTEM}.check-fragment-map-complete --no-link
     [ "$status" -eq 0 ]
 }
 

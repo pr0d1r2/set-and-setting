@@ -4,6 +4,7 @@
 # Unit tests for lib/branch-protection.sh -- branch protection (T19).
 
 setup() {
+    load git-env
     bats_require_minimum_version 1.5.0
     TARGET="$(mktemp -d)"
     SCRIPT="$BATS_TEST_DIRNAME/../lib/branch-protection.sh"

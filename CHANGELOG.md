@@ -2,6 +2,27 @@
 
 ## Unreleased
 
+- Close the hole the previous scrub left. Its guard matched the verb
+  immediately after the bare word git, so `git -C "$fixture" init` never matched and three
+  specs were never enrolled -- and because `GIT_DIR` outranks even `-C`, that
+  init reinitialized the repository being pushed and marked its shared config
+  bare. Only `git push` reproduces this, because git exports `GIT_DIR` and
+  `lefthook run` does not, which is why the gate measured clean and the very
+  next push still failed with 23 broken tests and a corrupted checkout. The
+  detector now matches git in command position with any options between, so
+  `-C` and `-c` cannot hide an invocation, and it carries proofs that it sees
+  `git -C <dir> init` and ignores prose that merely names git.
+
+- Make the pre-push gate passable on a darwin workstation. The fragment-map
+  spec built `.#checks.x86_64-linux.check-fragment-map-complete` -- a literal
+  system -- so on aarch64-darwin it asked for a foreign-platform derivation
+  and failed. Continuous integration runs on linux, so the only place the
+  literal was correct was the only place it ran, while the constraint that
+  names four supported systems went unasserted. The spec now resolves the
+  check through `builtins.currentSystem` and builds for the machine it runs
+  on. Every push from a darwin machine previously needed `--no-verify`, which
+  is a gate that has stopped gating.
+
 - Stop the pre-push gate corrupting the repository it is gating. Git exports
   `GIT_DIR`, and an author identity, into every hook it runs; the Bats suite
   runs from pre-push; and nine of the ten specs that call `git init` or
