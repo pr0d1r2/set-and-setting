@@ -2,6 +2,28 @@
 
 ## Unreleased
 
+- Give the three extracted scripts the specs the TDD order asks for. Pulling
+  shell out of the nix files created `lib/canon-drift-check.sh`,
+  `lib/lefthook-check.sh` and `setting/lib/materialize-lefthook.sh` with no bats
+  beside them, and each carries a decision worth pinning: an absent pinned path
+  is UNKNOWN rather than drift, an empty file set is a pass rather than a
+  failure, and the migration overlay runs only when the caller supplied both a
+  flag and a script. Seventeen proofs, one per branch.
+
+- Take the nix files out of the shell business. `nix-no-embedded-shell` — this
+  repository's own rule — was refusing `flake/apps/default.nix`, so the gate was
+  red for every consumer waiting on the standard, and the refusal was hiding
+  three more violators behind it. The ten app builders there carried their
+  environment as an interpolated `export` preamble welded onto the script they
+  read; that preamble is now `runtimeEnv`, which nixpkgs emits before the body
+  with proper escaping, so the nix carries no shell and the scripts are
+  unchanged. Three more followed the same treatment: the materialization
+  builder's assemble-and-overlay, the canonical-paths guard, and the generic
+  linter runner each move into a script file beside the nix that calls them,
+  with the conditional that used to live in Nix expressed over the variables the
+  derivation already exports. Zero violations remain, so the allowlist's four
+  entries are now the whole debt rather than the visible part of it.
+
 - Close the hole the previous scrub left. Its guard matched the verb
   immediately after the bare word git, so `git -C "$fixture" init` never matched and three
   specs were never enrolled -- and because `GIT_DIR` outranks even `-C`, that

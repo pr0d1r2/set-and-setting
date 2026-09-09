@@ -29,19 +29,12 @@ let
         FRAGMENTS = builtins.concatStringsSep " " fragments;
         MIGRATION_SKIPS = if hasMigrations then migrationSkips else "";
         MIGRATION_HAS_OVERLAY = if hasMigrations then "1" else "";
+        ASSEMBLE_SCRIPT = assembleScript;
+        MIGRATION_OVERLAY_DIR = if migrationOverlayDir != null then migrationOverlayDir else "";
+        MIGRATION_OVERLAY_SCRIPT = if migrationOverlayScript != null then migrationOverlayScript else "";
       }
       ''
-        bash ${assembleScript}
-        ${
-          if hasMigrations && migrationOverlayDir != null && migrationOverlayScript != null then
-            ''
-              MIGRATION_OVERLAY_DIR="${migrationOverlayDir}" \
-                FRAGMENTS="${builtins.concatStringsSep " " fragments}" \
-                bash ${migrationOverlayScript}
-            ''
-          else
-            ""
-        }
+        bash ${./materialize-lefthook.sh}
       '';
 in
 assert

@@ -57,16 +57,11 @@ in
 pkgs.runCommand "${name}-check"
   {
     nativeBuildInputs = [ pkgs.findutils ];
+    CHECK_NAME = name;
+    CHECK_FILES = files;
+    CHECK_WRAPPER = lib.getExe wrapper;
+    CHECK_FLAG = checkFlag;
   }
   ''
-    cd ${files}
-    mapfile -t matches < <(find . -type f | sort)
-    if [ ''${#matches[@]} -eq 0 ]; then
-      echo "${name}: no matching files, nothing to check"
-      touch $out
-      exit 0
-    fi
-    ${lib.getExe wrapper} ${checkFlag} "''${matches[@]}"
-    echo "${name}: PASS (''${#matches[@]} files)"
-    touch $out
+    bash ${./lefthook-check.sh}
   ''
