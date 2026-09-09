@@ -14,14 +14,8 @@ pkgs.runCommand "canon-drift-check"
     ACTUAL = projectRoot;
     REL_PATHS = builtins.concatStringsSep " " cfm.pinnedCanonPaths;
     SYNC_HINT = "restore pinned files with mkCanon or migrate";
+    DRIFT_CHECK_SCRIPT = ./drift-check.sh;
   }
   ''
-    for rel in $REL_PATHS; do
-      if [ ! -e "$EXPECTED/$rel" ]; then
-        echo "UNKNOWN: pinned canonical path is absent: $rel -- $SYNC_HINT"
-        exit 1
-      fi
-    done
-    bash ${./drift-check.sh}
-    touch $out
+    bash ${./canon-drift-check.sh}
   ''

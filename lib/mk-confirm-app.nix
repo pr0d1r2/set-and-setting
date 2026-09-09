@@ -22,16 +22,16 @@ let
       pkgs.gnugrep
     ]
     ++ materialization.packages;
-    text = ''
-      export FRAGMENTS_DIR="${standard}/setting/integrations/lefthook"
-      export ASSEMBLE_SCRIPT="${standard}/setting/lib/assemble-lefthook.sh"
-      export DETECT_SCRIPT="${standard}/setting/lib/detect-fragments.sh"
-      export SETTING_SRC="${setting}"
-      export CONFIRM_SCRIPT="${standard}/lib/confirm.sh"
-      export CONFIRM_REV="${confirmRev}"
-      export REQUIRED_STATUS_CONTEXTS="${builtins.concatStringsSep "|" cfm.requiredStatusContexts}"
-    ''
-    + builtins.readFile ./app-confirm.sh;
+    runtimeEnv = {
+      FRAGMENTS_DIR = "${standard}/setting/integrations/lefthook";
+      ASSEMBLE_SCRIPT = "${standard}/setting/lib/assemble-lefthook.sh";
+      DETECT_SCRIPT = "${standard}/setting/lib/detect-fragments.sh";
+      SETTING_SRC = "${setting}";
+      CONFIRM_SCRIPT = "${standard}/lib/confirm.sh";
+      CONFIRM_REV = confirmRev;
+      REQUIRED_STATUS_CONTEXTS = builtins.concatStringsSep "|" cfm.requiredStatusContexts;
+    };
+    text = builtins.readFile ./app-confirm.sh;
   };
 in
 {

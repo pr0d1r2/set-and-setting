@@ -69,31 +69,31 @@ let
       pkgs.coreutils
       pkgs.findutils
     ];
-    text = ''
-      export SKILLS_DIR="${../../set/skills}"
-      export CONCEPTS_DIR="${../../set/concepts}"
-      export MK_SET_SCRIPT="${../../set/lib/mk-set.sh}"
-      export EMIT_SCRIPT="${../../set/lib/emit-skill.sh}"
-      export EMIT_PRINCIPLES_SCRIPT="${../../set/lib/emit-principles.sh}"
-      export EMIT_RULE_SCRIPT="${../../set/lib/emit-rule.sh}"
-      export EMIT_SKILLMD_SCRIPT="${../../set/lib/emit-skillmd.sh}"
-      export APPLICABILITY_SCRIPT="${../../set/lib/applicability.sh}"
-      export AUTO_KEEP_SCRIPT="${../../set/lib/app-auto-keep.sh}"
-      export SYNC_SCRIPT="${../../set/lib/sync-set.sh}"
-      export RESOLVE_AGENT_SCRIPT="${../../set/lib/resolve-agent.sh}"
-      export ALL_CATEGORIES="${lib.concatStringsSep " " cats.all}"
-      export CORE_CATEGORIES="${lib.concatStringsSep " " cats.core}"
-      export GLOBS_MAP="${globsMap}"
-      export CHANNEL_OVERRIDES=${lib.escapeShellArg meta.channelOverrides}
-      export SIGNALS_MANIFEST=${lib.escapeShellArg meta.signals}
-      export AGENT_SEAMS="${agentSeams}"
-      export KEYWORDS_MAP="${keywordsMap}"
-      export COMPILER_SCRIPT="${../../lib/agents-md-compile.sh}"
-      export RENAME_PROPAGATE_SCRIPT="${../../set/lib/rename-propagate.sh}"
-      export RENAMES_MAP=${lib.escapeShellArg renames.serialized}
-      export MKSET_REV="${self.rev or self.dirtyRev or "unknown"}"
-    ''
-    + builtins.readFile ../../set/lib/app-mk-set.sh;
+    runtimeEnv = {
+      SKILLS_DIR = "${../../set/skills}";
+      CONCEPTS_DIR = "${../../set/concepts}";
+      MK_SET_SCRIPT = "${../../set/lib/mk-set.sh}";
+      EMIT_SCRIPT = "${../../set/lib/emit-skill.sh}";
+      EMIT_PRINCIPLES_SCRIPT = "${../../set/lib/emit-principles.sh}";
+      EMIT_RULE_SCRIPT = "${../../set/lib/emit-rule.sh}";
+      EMIT_SKILLMD_SCRIPT = "${../../set/lib/emit-skillmd.sh}";
+      APPLICABILITY_SCRIPT = "${../../set/lib/applicability.sh}";
+      AUTO_KEEP_SCRIPT = "${../../set/lib/app-auto-keep.sh}";
+      SYNC_SCRIPT = "${../../set/lib/sync-set.sh}";
+      RESOLVE_AGENT_SCRIPT = "${../../set/lib/resolve-agent.sh}";
+      ALL_CATEGORIES = "${lib.concatStringsSep " " cats.all}";
+      CORE_CATEGORIES = "${lib.concatStringsSep " " cats.core}";
+      GLOBS_MAP = "${globsMap}";
+      CHANNEL_OVERRIDES = meta.channelOverrides;
+      SIGNALS_MANIFEST = meta.signals;
+      AGENT_SEAMS = "${agentSeams}";
+      KEYWORDS_MAP = "${keywordsMap}";
+      COMPILER_SCRIPT = "${../../lib/agents-md-compile.sh}";
+      RENAME_PROPAGATE_SCRIPT = "${../../set/lib/rename-propagate.sh}";
+      RENAMES_MAP = renames.serialized;
+      MKSET_REV = "${self.rev or self.dirtyRev or "unknown"}";
+    };
+    text = builtins.readFile ../../set/lib/app-mk-set.sh;
   };
 
   migrations = import ../../setting/lib/migrations.nix;
@@ -108,19 +108,19 @@ let
       pkgs.git
       pkgs.gnugrep
     ];
-    text = ''
-      export SETTING_SRC="${mkSettingFull.configFiles}"
-      export FRAGMENTS_DIR="${../../setting/integrations/lefthook}"
-      export ASSEMBLE_SCRIPT="${../../setting/lib/assemble-lefthook.sh}"
-      export DETECT_SCRIPT="${../../setting/lib/detect-fragments.sh}"
-      export COVERAGE_SCRIPT="${../../lib/check-coverage.sh}"
-      export CHECKS_UNIVERSE="${lib.concatStringsSep " " checksUniverse}"
-      export CHECK_FRAGMENT_MAP="${checkFragmentMapStr}"
-      export MIGRATION_OVERLAY_DIR="${../../setting/integrations/lefthook/migrations}"
-      export MIGRATION_OVERLAY_SCRIPT="${../../setting/lib/assemble-migration-overlay.sh}"
-      export MIGRATION_SKIPS="${migrationSkips}"
-    ''
-    + builtins.readFile ../../setting/lib/app-mk-setting.sh;
+    runtimeEnv = {
+      SETTING_SRC = "${mkSettingFull.configFiles}";
+      FRAGMENTS_DIR = "${../../setting/integrations/lefthook}";
+      ASSEMBLE_SCRIPT = "${../../setting/lib/assemble-lefthook.sh}";
+      DETECT_SCRIPT = "${../../setting/lib/detect-fragments.sh}";
+      COVERAGE_SCRIPT = "${../../lib/check-coverage.sh}";
+      CHECKS_UNIVERSE = "${lib.concatStringsSep " " checksUniverse}";
+      CHECK_FRAGMENT_MAP = "${checkFragmentMapStr}";
+      MIGRATION_OVERLAY_DIR = "${../../setting/integrations/lefthook/migrations}";
+      MIGRATION_OVERLAY_SCRIPT = "${../../setting/lib/assemble-migration-overlay.sh}";
+      MIGRATION_SKIPS = "${migrationSkips}";
+    };
+    text = builtins.readFile ../../setting/lib/app-mk-setting.sh;
   };
 
   mkSettingInitApp = pkgs.writeShellApplication {
@@ -129,10 +129,10 @@ let
       pkgs.coreutils
       pkgs.findutils
     ];
-    text = ''
-      export SEED_SRC="${mkSettingInitSeed}"
-    ''
-    + builtins.readFile ../../setting/lib/app-mk-setting-init.sh;
+    runtimeEnv = {
+      SEED_SRC = "${mkSettingInitSeed}";
+    };
+    text = builtins.readFile ../../setting/lib/app-mk-setting-init.sh;
   };
 
   mkScaffoldBundles = import ../../setting/lib/mk-scaffold.nix { inherit pkgs; };
@@ -145,14 +145,14 @@ let
       pkgs.git
       pkgs.gnugrep
     ];
-    text = ''
-      export SCAFFOLD_SRC="${mkScaffoldBundles.default}"
-      export RUBY_SCAFFOLD_SRC="${mkScaffoldBundles.ruby}"
-      export FRAGMENTS_DIR="${../../setting/integrations/lefthook}"
-      export ASSEMBLE_SCRIPT="${../../setting/lib/assemble-lefthook.sh}"
-      export DETECT_SCRIPT="${../../setting/lib/detect-fragments.sh}"
-    ''
-    + builtins.readFile ../../setting/lib/app-mk-scaffold.sh;
+    runtimeEnv = {
+      SCAFFOLD_SRC = "${mkScaffoldBundles.default}";
+      RUBY_SCAFFOLD_SRC = "${mkScaffoldBundles.ruby}";
+      FRAGMENTS_DIR = "${../../setting/integrations/lefthook}";
+      ASSEMBLE_SCRIPT = "${../../setting/lib/assemble-lefthook.sh}";
+      DETECT_SCRIPT = "${../../setting/lib/detect-fragments.sh}";
+    };
+    text = builtins.readFile ../../setting/lib/app-mk-scaffold.sh;
   };
 
   bootstrapHooksApp = pkgs.writeShellApplication {
@@ -166,14 +166,14 @@ let
 
   bootstrapApp = pkgs.writeShellApplication {
     name = "bootstrap";
-    text = ''
-      export MKSET_APP="${mkSetApp}/bin/mkSet"
-      export MKSETTING_APP="${mkSettingApp}/bin/mkSetting"
-      export MKSETTING_INIT_APP="${mkSettingInitApp}/bin/mkSetting-init"
-      export MKSCAFFOLD_APP="${mkScaffoldApp}/bin/mkScaffold"
-      export BOOTSTRAP_HOOKS_APP="${bootstrapHooksApp}/bin/bootstrap-hooks"
-    ''
-    + builtins.readFile ../../set/lib/app-bootstrap.sh;
+    runtimeEnv = {
+      MKSET_APP = "${mkSetApp}/bin/mkSet";
+      MKSETTING_APP = "${mkSettingApp}/bin/mkSetting";
+      MKSETTING_INIT_APP = "${mkSettingInitApp}/bin/mkSetting-init";
+      MKSCAFFOLD_APP = "${mkScaffoldApp}/bin/mkScaffold";
+      BOOTSTRAP_HOOKS_APP = "${bootstrapHooksApp}/bin/bootstrap-hooks";
+    };
+    text = builtins.readFile ../../set/lib/app-bootstrap.sh;
   };
 
   graduateApp = pkgs.writeShellApplication {
@@ -184,10 +184,10 @@ let
       pkgs.gnugrep
       pkgs.gnused
     ];
-    text = ''
-      export ALL_CATEGORIES="${lib.concatStringsSep " " cats.all}"
-    ''
-    + builtins.readFile ../../lib/graduate-draft.sh;
+    runtimeEnv = {
+      ALL_CATEGORIES = "${lib.concatStringsSep " " cats.all}";
+    };
+    text = builtins.readFile ../../lib/graduate-draft.sh;
   };
 
   branchProtectionApp = pkgs.writeShellApplication {
@@ -199,10 +199,10 @@ let
       pkgs.gnused
       pkgs.gnugrep
     ];
-    text = ''
-      export REQUIRED_STATUS_CONTEXTS="${requiredStatusContextsStr}"
-    ''
-    + builtins.readFile ../../lib/branch-protection.sh;
+    runtimeEnv = {
+      REQUIRED_STATUS_CONTEXTS = "${requiredStatusContextsStr}";
+    };
+    text = builtins.readFile ../../lib/branch-protection.sh;
   };
 
   chainReadyApp = pkgs.writeShellApplication {
@@ -235,20 +235,20 @@ let
       pkgs.git
       pkgs.gnugrep
     ];
-    text = ''
-      export SEED_SRC="${migrateSeedFor pkgs}"
-      export SETTING_SRC="${mkSettingFull.configFiles}"
-      export FRAGMENTS_DIR="${../../setting/integrations/lefthook}"
-      export ASSEMBLE_SCRIPT="${../../setting/lib/assemble-lefthook.sh}"
-      export DETECT_SCRIPT="${../../setting/lib/detect-fragments.sh}"
-      export CONFIRM_SCRIPT="${../../lib/confirm.sh}"
-      export CONFIRM_REV="${self.rev or self.dirtyRev or "unknown"}"
-      export MIGRATE_SCRIPT="${../../lib/migrate.sh}"
-      export CHECKS_UNIVERSE="${lib.concatStringsSep " " checksUniverse}"
-      export CHECK_FRAGMENT_MAP="${checkFragmentMapStr}"
-      export FRAGMENT_TRIGGERS="${fragmentTriggersStr}"
-      export REQUIRED_STATUS_CONTEXTS="${requiredStatusContextsStr}"
-      export FULL_LEFTHOOK="${
+    runtimeEnv = {
+      SEED_SRC = "${migrateSeedFor pkgs}";
+      SETTING_SRC = "${mkSettingFull.configFiles}";
+      FRAGMENTS_DIR = "${../../setting/integrations/lefthook}";
+      ASSEMBLE_SCRIPT = "${../../setting/lib/assemble-lefthook.sh}";
+      DETECT_SCRIPT = "${../../setting/lib/detect-fragments.sh}";
+      CONFIRM_SCRIPT = "${../../lib/confirm.sh}";
+      CONFIRM_REV = "${self.rev or self.dirtyRev or "unknown"}";
+      MIGRATE_SCRIPT = "${../../lib/migrate.sh}";
+      CHECKS_UNIVERSE = "${lib.concatStringsSep " " checksUniverse}";
+      CHECK_FRAGMENT_MAP = "${checkFragmentMapStr}";
+      FRAGMENT_TRIGGERS = "${fragmentTriggersStr}";
+      REQUIRED_STATUS_CONTEXTS = "${requiredStatusContextsStr}";
+      FULL_LEFTHOOK = "${
         (self.lib.materializationFor {
           inherit pkgs;
           fragments = [
@@ -268,9 +268,9 @@ let
             "set"
           ];
         }).files
-      }/lefthook.yml"
-    ''
-    + builtins.readFile ../../lib/app-migrate.sh;
+      }/lefthook.yml";
+    };
+    text = builtins.readFile ../../lib/app-migrate.sh;
   };
 
   mkCanonApp = pkgs.writeShellApplication {
@@ -282,13 +282,13 @@ let
       pkgs.gnused
       pkgs.lefthook
     ];
-    text = ''
-      export SEED_SRC="${migrateSeedFor pkgs}"
-      export CANON_APP_NAME="mkCanon"
-      export CANON_APP_LABEL="canon"
-      export CANON_INSTALL_HOOKS=1
-    ''
-    + builtins.readFile ../../lib/app-seed.sh;
+    runtimeEnv = {
+      SEED_SRC = "${migrateSeedFor pkgs}";
+      CANON_APP_NAME = "mkCanon";
+      CANON_APP_LABEL = "canon";
+      CANON_INSTALL_HOOKS = 1;
+    };
+    text = builtins.readFile ../../lib/app-seed.sh;
   };
 in
 {
@@ -352,10 +352,10 @@ in
           pkgs.git
           pkgs.gnused
         ];
-        text = ''
-          export SEED_SRC="${self.lib.mkSeed { inherit pkgs; }}"
-        ''
-        + builtins.readFile ../../lib/app-seed.sh;
+        runtimeEnv = {
+          SEED_SRC = "${self.lib.mkSeed { inherit pkgs; }}";
+        };
+        text = builtins.readFile ../../lib/app-seed.sh;
       }
     }/bin/seed";
   };
