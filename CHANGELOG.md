@@ -2,6 +2,14 @@
 
 ## Unreleased
 
+- Give the three extracted scripts the specs the TDD order asks for. Pulling
+  shell out of the nix files created `lib/canon-drift-check.sh`,
+  `lib/lefthook-check.sh` and `setting/lib/materialize-lefthook.sh` with no bats
+  beside them, and each carries a decision worth pinning: an absent pinned path
+  is UNKNOWN rather than drift, an empty file set is a pass rather than a
+  failure, and the migration overlay runs only when the caller supplied both a
+  flag and a script. Seventeen proofs, one per branch.
+
 - Take the nix files out of the shell business. `nix-no-embedded-shell` — this
   repository's own rule — was refusing `flake/apps/default.nix`, so the gate was
   red for every consumer waiting on the standard, and the refusal was hiding
