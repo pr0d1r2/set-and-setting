@@ -590,6 +590,16 @@ and dogfoods both.
   rename updates the map once and propagates to all three consumers. The
   tree plane (workflow YAML) and settings plane (required contexts) are
   never one change split across two uncoordinated planes.
+- V51: A whole-tree check may not be gated on one file type. `nix flake check`
+  validates markdown, YAML, shell, dictionaries and the emitted lefthook config
+  as well as nix, so a `glob: "*.nix"` on the pre-push command let every
+  non-nix change reach CI ungated by it while CI ran it unconditionally --
+  green locally, red remotely, for exactly the changes least likely to be
+  suspected: a config edit, a doc, a fragment. MEASURED 2026-09-10: a one-sided
+  edit to `file_size_limits.yml` passed the full local gate and failed CI on
+  `compose-setting`, because the commit touched no `.nix` file. The pre-push
+  command runs unconditionally and costs what CI costs; pre-commit keeps the
+  glob, because the expensive full-tree run belongs at the push.
 - V50: A limit that one legitimate outlier cannot meet is loosened FOR THAT FILE,
   by name, with the reason beside it -- never for its whole extension and never
   by shrinking the file to fit (#421 fallout). SPEC.md is the whole-repository
@@ -639,6 +649,7 @@ and dogfoods both.
 | T90 | x | `workflow-status-contexts.nix` expands `strategy.matrix` into the context names GitHub actually reports — `job (v)` for one key, `job (v1, v2)` for several in declaration order, on either side of the `caller / job` slash — while the workflows here still have none, so the derived set is byte-identical (`guardrails / check`, `guardrails / check-darwin`) and branch protection keeps requiring exactly what CI keeps reporting. `include`/`exclude` throw. 6 specs over 5 fixtures (flow list, block list beside `fail-fast:`, two keys, include, caller-side), 10 green in `workflow-status-contexts` | V48, #421 |
 | T91 | x | The `nix flake check` ceiling in `base.yml` (both hooks) and the materialized `lefthook.yml` is 600s -- `guardrails.yml`'s own `flake-check-timeout` default -- up from a 60s this repository could never fit inside; 2 specs assert fragment == CI and materialized == fragment, both RED against 60 | V49, #421 |
 | T92 | x | BOTH copies of `file_size_limits.yml` (this repository's and `setting/standards/`, which consumers materialize -- `compose-setting-check` diffs them and a one-sided edit is drift) gain a `paths:` entry exempting `SPEC.md` (262144), with the reason in a comment beside it; the `md` limit is untouched at 131072 so skills and docs keep the ceiling that matters. Needs the `nix-lefthook-file-size-check` pin bumped to the revision that reads `paths:` (path > extension > default, sections respected, `./` normalized) | V50, B20, #421 |
+| T93 | x | The pre-push `nix-flake-check` in `setting/integrations/lefthook/base.yml` and the materialized `lefthook.yml` drops `glob: "*.nix"` so it runs on every push, matching CI, which never had the glob; pre-commit keeps it. 3 specs: no glob in the fragment, none in the materialized file, and the pre-commit one still has it | V51, V49 |
 | T84 | x | `nix-flake-lock-budget.sh` treats an absent baseline as SKIP with the keys to write named in the message; bats covers the skip, its actionability, and that a missing lock still FAILS (#506) | B95, B92 |
 | T83 | x | Make the auto-fragment agree with `detect-fragments.sh` rather than compete with it: parse the detector's own append order for the canonical sequence, add `actions` alongside `bats`, union and sort. `mkConsumerFlake-outputs` asserts `lefthook-actionlint` (auto) precedes `lefthook-shellcheck` (declared) — appending fails it (#505) | B94, B92, T82 |
 | T82 | x | `batsWithLibrariesFor` for both bats wrappers, and `mkConsumerFlake` adding the `bats` fragment when `src` tracks `.bats` files — the criterion `check-fragment-map.nix` documents and `guardrails.yml` assumes. `mkConsumerFlake-outputs` asserts both: its fixture declares no bats and must still carry the wrappers, and a probe runs a spec through the built runner with no ambient `BATS_LIB_PATH` (#501) | B92, B91, T81 |

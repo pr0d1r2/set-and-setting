@@ -2,6 +2,17 @@
 
 ## Unreleased
 
+- Stop gating the whole-tree check on one file type. The pre-push run of `nix flake check`
+  only fired when a commit touched a nix file, but that check validates markdown, YAML,
+  shell, dictionaries and the generated hook config too -- and continuous integration has
+  always run it unconditionally. So a change to a config, a document or a fragment passed
+  every local gate and could only fail remotely, which is the worst place to learn it and
+  the least likely change to be suspected. It caught the previous entry in this very log:
+  a one-sided edit to the file-size config sailed through the local gate and failed
+  remotely, because no nix file was involved. The pre-push run now happens on every push
+  and costs what the remote costs; the pre-commit run keeps its narrow trigger, because
+  the expensive full-tree pass belongs at the push rather than on every commit.
+
 - Let the whole-repository specification be as large as it needs to be, without loosening
   the limit for every other document. SPEC.md carries every invariant, task and bug row
   and grows by one row per fix; it had drifted to within nine hundred bytes of the

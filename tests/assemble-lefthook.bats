@@ -699,3 +699,36 @@ teardown() {
         "$BATS_TEST_DIRNAME/../lefthook.yml" | sort -u)"
     [ "$base" = "$materialized" ]
 }
+
+# ---- the pre-push flake check is not gated on *.nix -------------------------
+# `nix flake check` validates the whole tree -- markdown, YAML, shell,
+# dictionaries, the emitted lefthook config. Gating it on `*.nix` meant every
+# non-nix change reached CI ungated by it, while CI ran it unconditionally: a
+# config edit or a doc could only fail remotely. MEASURED: a one-sided edit to
+# `file_size_limits.yml` passed the local gate and failed CI on
+# `compose-setting`, because the commit touched no .nix file.
+
+prepush_flake_check_block() {
+    sed -n '/^pre-push:/,$p' "$1" | sed -n '/^    nix-flake-check:/,/^    [a-z]/p'
+}
+
+@test "the pre-push nix-flake-check carries NO glob in the fragment" {
+    run prepush_flake_check_block "$BATS_TEST_DIRNAME/../setting/integrations/lefthook/base.yml"
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"nix flake check"* ]]
+    [[ "$output" != *"glob:"* ]]
+}
+
+@test "the pre-push nix-flake-check carries NO glob in the materialized file" {
+    run prepush_flake_check_block "$BATS_TEST_DIRNAME/../lefthook.yml"
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"nix flake check"* ]]
+    [[ "$output" != *"glob:"* ]]
+}
+
+@test "the pre-COMMIT nix-flake-check keeps its glob -- cheap stays cheap" {
+    # The expensive full-tree run belongs at the push, not on every commit.
+    run bash -c "sed -n '/^pre-commit:/,/^pre-push:/p' '$BATS_TEST_DIRNAME/../setting/integrations/lefthook/base.yml' | sed -n '/^    nix-flake-check:/,/^    [a-z]/p'"
+    [ "$status" -eq 0 ]
+    [[ "$output" == *'glob: "*.nix"'* ]]
+}
