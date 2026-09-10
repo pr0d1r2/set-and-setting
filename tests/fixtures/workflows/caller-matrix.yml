@@ -1,0 +1,7 @@
+---
+jobs:
+  guardrails:
+    strategy:
+      matrix:
+        profile: [minimal, full]
+    uses: owner/standard/.github/workflows/guardrails.yml@main

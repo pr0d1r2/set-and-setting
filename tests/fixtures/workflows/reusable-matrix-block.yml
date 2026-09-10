@@ -1,0 +1,11 @@
+---
+jobs:
+  check:
+    strategy:
+      fail-fast: false
+      matrix:
+        system:
+          - x86_64-linux
+          - aarch64-linux
+          - "aarch64-darwin"
+    runs-on: ubuntu-latest

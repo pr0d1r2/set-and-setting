@@ -590,6 +590,17 @@ and dogfoods both.
   rename updates the map once and propagates to all three consumers. The
   tree plane (workflow YAML) and settings plane (required contexts) are
   never one change split across two uncoordinated planes.
+- V48: A required status context is a NAME, and anything that renames a job is
+  a breaking change to every repository requiring it — adding a matrix included
+  (#421). GitHub reports a matrix job as `job (v)`, or `job (v1, v2)` for
+  several keys in declaration order, and stops reporting the bare `job`
+  entirely. A required context nobody reports does not fail; it stays PENDING
+  forever, so the PR can never merge and the symptom reads as slow CI rather
+  than as a misconfiguration. The safe order is therefore fixed: teach
+  `workflow-status-contexts.nix` the new names FIRST, verify the derived set is
+  unchanged, then change the workflow, then re-apply protection — never the
+  reverse. `include` / `exclude` throw rather than derive a name the parser
+  cannot see, because a plausible wrong name is worse here than no answer.
 
 ## §T Tasks
 
@@ -600,6 +611,7 @@ and dogfoods both.
 | T87 | x | `tests/git-env.bash` is the one place the hook-exported git environment is scrubbed, loaded by every spec that runs git; `tests/git-env.bats` proves the scrub against a victim repository and holds every such spec to loading it. MEASURED: one spec file under a hostile `GIT_DIR` wrote 58 `initial` commits and `user.name=Test` into the victim before, 0 after | B97, V1 |
 | T88 | x | `tests/check-fragment-map.bats` resolves the completeness check through `builtins.currentSystem` rather than the literal `x86_64-linux`, so the spec builds the check for the machine it runs on. VERIFIED green on aarch64-darwin, where the hardcoded attribute had made the pre-push gate unpassable | B98, C3, V1 |
 | T89 | x | The git-env detector matches `git` in command position rather than the verb immediately after the bare word git, so `git -C <dir> init` enrolls; `branch-protection`, `assemble-lefthook`, and `chain-ready` load the helper. VERIFIED by `git push`, the only invocation that reproduces the defect: red with corruption before, green and repo-clean after | B99, B97 |
+| T90 | x | `workflow-status-contexts.nix` expands `strategy.matrix` into the context names GitHub actually reports — `job (v)` for one key, `job (v1, v2)` for several in declaration order, on either side of the `caller / job` slash — while the workflows here still have none, so the derived set is byte-identical (`guardrails / check`, `guardrails / check-darwin`) and branch protection keeps requiring exactly what CI keeps reporting. `include`/`exclude` throw. 6 specs over 5 fixtures (flow list, block list beside `fail-fast:`, two keys, include, caller-side), 10 green in `workflow-status-contexts` | V48, #421 |
 | T84 | x | `nix-flake-lock-budget.sh` treats an absent baseline as SKIP with the keys to write named in the message; bats covers the skip, its actionability, and that a missing lock still FAILS (#506) | B95, B92 |
 | T83 | x | Make the auto-fragment agree with `detect-fragments.sh` rather than compete with it: parse the detector's own append order for the canonical sequence, add `actions` alongside `bats`, union and sort. `mkConsumerFlake-outputs` asserts `lefthook-actionlint` (auto) precedes `lefthook-shellcheck` (declared) — appending fails it (#505) | B94, B92, T82 |
 | T82 | x | `batsWithLibrariesFor` for both bats wrappers, and `mkConsumerFlake` adding the `bats` fragment when `src` tracks `.bats` files — the criterion `check-fragment-map.nix` documents and `guardrails.yml` assumes. `mkConsumerFlake-outputs` asserts both: its fixture declares no bats and must still carry the wrappers, and a probe runs a spec through the built runner with no ambient `BATS_LIB_PATH` (#501) | B92, B91, T81 |
