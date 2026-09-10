@@ -590,18 +590,14 @@ and dogfoods both.
   rename updates the map once and propagates to all three consumers. The
   tree plane (workflow YAML) and settings plane (required contexts) are
   never one change split across two uncoordinated planes.
-- V49: A timeout inside a hook command is a RUNAWAY guard, never a performance
-  budget, and it may not sit below the bound the same check runs under in CI
-  (#421 discussion). A killed command is reported by lefthook as a FAILED
-  CHECK, indistinguishable from a real refusal, so a ceiling shorter than the
-  work turns "too slow" into "wrong" -- and an autonomous consumer then spends
-  repair rounds fixing a check that only needed time. MEASURED: `nix flake
-  check` ran under `timeout 60` while this repository's own check takes 334s
-  cold on an M4; the tending loop logged 22 kills at exactly 60.0x seconds in
-  one 48h window on this repository alone, and every issue it drove here ended
-  `the repo's own gate refused it`. The local ceiling is now
-  `guardrails.yml`'s `flake-check-timeout` default, asserted equal by spec, so
-  the local gate and the remote gate refuse the same runs.
+- V49: A hook timeout is a RUNAWAY guard, not a performance budget, and may not
+  sit below CI's bound for the same check (#421). lefthook reports a killed
+  command as a FAILED CHECK, so a short ceiling turns "slow" into "wrong" and an
+  autonomous consumer spends repair rounds on a check that only needed time.
+  MEASURED: `nix flake check` under `timeout 60` while this repository's check
+  takes 334s cold; 22 kills at 60.0x seconds in one 48h window here, every issue
+  trip ending `the repo's own gate refused it`. Now `guardrails.yml`'s own
+  `flake-check-timeout` default, asserted equal by spec.
 - V48: A required status context is a NAME, and anything that renames a job is
   a breaking change to every repository requiring it — adding a matrix included
   (#421). GitHub reports a matrix job as `job (v)`, or `job (v1, v2)` for
@@ -628,7 +624,7 @@ and dogfoods both.
 | T88 | x | `tests/check-fragment-map.bats` resolves the completeness check through `builtins.currentSystem` rather than the literal `x86_64-linux`, so the spec builds the check for the machine it runs on. VERIFIED green on aarch64-darwin, where the hardcoded attribute had made the pre-push gate unpassable | B98, C3, V1 |
 | T89 | x | The git-env detector matches `git` in command position rather than the verb immediately after the bare word git, so `git -C <dir> init` enrolls; `branch-protection`, `assemble-lefthook`, and `chain-ready` load the helper. VERIFIED by `git push`, the only invocation that reproduces the defect: red with corruption before, green and repo-clean after | B99, B97 |
 | T90 | x | `workflow-status-contexts.nix` expands `strategy.matrix` into the context names GitHub actually reports — `job (v)` for one key, `job (v1, v2)` for several in declaration order, on either side of the `caller / job` slash — while the workflows here still have none, so the derived set is byte-identical (`guardrails / check`, `guardrails / check-darwin`) and branch protection keeps requiring exactly what CI keeps reporting. `include`/`exclude` throw. 6 specs over 5 fixtures (flow list, block list beside `fail-fast:`, two keys, include, caller-side), 10 green in `workflow-status-contexts` | V48, #421 |
-| T91 | x | The `nix flake check` ceiling in `setting/integrations/lefthook/base.yml` (both hooks) and the materialized `lefthook.yml` is 600s, `guardrails.yml`'s own `flake-check-timeout` default, up from a 60s that this repository's check could never fit inside; 2 specs assert the fragment matches CI's number and the materialized file matches the fragment, both RED against the old value | V49, #421 |
+| T91 | x | The `nix flake check` ceiling in `base.yml` (both hooks) and the materialized `lefthook.yml` is 600s -- `guardrails.yml`'s own `flake-check-timeout` default -- up from a 60s this repository could never fit inside; 2 specs assert fragment == CI and materialized == fragment, both RED against 60 | V49, #421 |
 | T84 | x | `nix-flake-lock-budget.sh` treats an absent baseline as SKIP with the keys to write named in the message; bats covers the skip, its actionability, and that a missing lock still FAILS (#506) | B95, B92 |
 | T83 | x | Make the auto-fragment agree with `detect-fragments.sh` rather than compete with it: parse the detector's own append order for the canonical sequence, add `actions` alongside `bats`, union and sort. `mkConsumerFlake-outputs` asserts `lefthook-actionlint` (auto) precedes `lefthook-shellcheck` (declared) — appending fails it (#505) | B94, B92, T82 |
 | T82 | x | `batsWithLibrariesFor` for both bats wrappers, and `mkConsumerFlake` adding the `bats` fragment when `src` tracks `.bats` files — the criterion `check-fragment-map.nix` documents and `guardrails.yml` assumes. `mkConsumerFlake-outputs` asserts both: its fixture declares no bats and must still carry the wrappers, and a probe runs a spec through the built runner with no ambient `BATS_LIB_PATH` (#501) | B92, B91, T81 |
