@@ -2,6 +2,19 @@
 
 ## Unreleased
 
+- Teach the status-context deriver about build matrices, before any workflow here has one.
+  A required check on GitHub is a name, and a matrix renames every job it touches: `check`
+  becomes `check (x86_64-linux)`, and nothing reports the bare name again. A required name
+  nobody reports never fails — it stays pending forever, the pull request can never merge,
+  and it looks like slow CI rather than a misconfiguration. That is the trap waiting at
+  the end of the platform-coverage work, so the parser learns the new names first, while
+  the workflows are still matrix-free and the derived set is provably byte-identical. One
+  matrix key gives `job (value)`, several give the values joined in the order they are
+  declared, and a matrix on the calling side expands on its own side of the slash. Matrix
+  `include` and `exclude` add combinations the parser cannot see, so they refuse to answer
+  rather than produce a plausible wrong name — the wrong name being the failure this whole
+  change exists to avoid.
+
 - Give the three extracted scripts the specs the TDD order asks for. Pulling
   shell out of the nix files created `lib/canon-drift-check.sh`,
   `lib/lefthook-check.sh` and `setting/lib/materialize-lefthook.sh` with no bats

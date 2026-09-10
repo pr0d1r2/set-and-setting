@@ -1,0 +1,10 @@
+---
+jobs:
+  check:
+    strategy:
+      matrix:
+        system: [x86_64-linux]
+        include:
+          - system: aarch64-darwin
+            runner: macos-latest
+    runs-on: ubuntu-latest
