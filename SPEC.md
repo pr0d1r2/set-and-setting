@@ -590,6 +590,19 @@ and dogfoods both.
   rename updates the map once and propagates to all three consumers. The
   tree plane (workflow YAML) and settings plane (required contexts) are
   never one change split across two uncoordinated planes.
+- V50: A limit that one legitimate outlier cannot meet is loosened FOR THAT FILE,
+  by name, with the reason beside it -- never for its whole extension and never
+  by shrinking the file to fit (#421 fallout). SPEC.md is the whole-repository
+  specification and grows by a row per fix; MEASURED 2026-09-10 it sat 934 bytes
+  under the `md` limit, so the next spec row on any branch failed a size check
+  that had nothing to do with the change, which reads as a defect rather than as
+  the policy it is. Raising `md` would weaken the limit where it does its real
+  work -- skills and docs, and it is what happened the last two times (B20 took
+  `md` 49152 -> 57344 for this same file; it is 131072 now). Both copies of
+  `file_size_limits.yml` -- this repository's and the one consumers materialize
+  -- now carry a `paths:` entry, and the exemption is visible where the limit
+  lives. Consumers inherit it deliberately: every repository in the fleet keeps
+  a SPEC.md of the same shape and reaches the same wall as it grows.
 - V49: A hook timeout is a RUNAWAY guard, not a performance budget, and may not
   sit below CI's bound for the same check (#421). lefthook reports a killed
   command as a FAILED CHECK, so a short ceiling turns "slow" into "wrong" and an
@@ -625,6 +638,7 @@ and dogfoods both.
 | T89 | x | The git-env detector matches `git` in command position rather than the verb immediately after the bare word git, so `git -C <dir> init` enrolls; `branch-protection`, `assemble-lefthook`, and `chain-ready` load the helper. VERIFIED by `git push`, the only invocation that reproduces the defect: red with corruption before, green and repo-clean after | B99, B97 |
 | T90 | x | `workflow-status-contexts.nix` expands `strategy.matrix` into the context names GitHub actually reports — `job (v)` for one key, `job (v1, v2)` for several in declaration order, on either side of the `caller / job` slash — while the workflows here still have none, so the derived set is byte-identical (`guardrails / check`, `guardrails / check-darwin`) and branch protection keeps requiring exactly what CI keeps reporting. `include`/`exclude` throw. 6 specs over 5 fixtures (flow list, block list beside `fail-fast:`, two keys, include, caller-side), 10 green in `workflow-status-contexts` | V48, #421 |
 | T91 | x | The `nix flake check` ceiling in `base.yml` (both hooks) and the materialized `lefthook.yml` is 600s -- `guardrails.yml`'s own `flake-check-timeout` default -- up from a 60s this repository could never fit inside; 2 specs assert fragment == CI and materialized == fragment, both RED against 60 | V49, #421 |
+| T92 | x | BOTH copies of `file_size_limits.yml` (this repository's and `setting/standards/`, which consumers materialize -- `compose-setting-check` diffs them and a one-sided edit is drift) gain a `paths:` entry exempting `SPEC.md` (262144), with the reason in a comment beside it; the `md` limit is untouched at 131072 so skills and docs keep the ceiling that matters. Needs the `nix-lefthook-file-size-check` pin bumped to the revision that reads `paths:` (path > extension > default, sections respected, `./` normalized) | V50, B20, #421 |
 | T84 | x | `nix-flake-lock-budget.sh` treats an absent baseline as SKIP with the keys to write named in the message; bats covers the skip, its actionability, and that a missing lock still FAILS (#506) | B95, B92 |
 | T83 | x | Make the auto-fragment agree with `detect-fragments.sh` rather than compete with it: parse the detector's own append order for the canonical sequence, add `actions` alongside `bats`, union and sort. `mkConsumerFlake-outputs` asserts `lefthook-actionlint` (auto) precedes `lefthook-shellcheck` (declared) — appending fails it (#505) | B94, B92, T82 |
 | T82 | x | `batsWithLibrariesFor` for both bats wrappers, and `mkConsumerFlake` adding the `bats` fragment when `src` tracks `.bats` files — the criterion `check-fragment-map.nix` documents and `guardrails.yml` assumes. `mkConsumerFlake-outputs` asserts both: its fixture declares no bats and must still carry the wrappers, and a probe runs a spec through the built runner with no ambient `BATS_LIB_PATH` (#501) | B92, B91, T81 |
