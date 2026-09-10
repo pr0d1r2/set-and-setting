@@ -15,5 +15,12 @@ paths:
   # failed a size check that has nothing to do with the change -- which reads
   # as a defect rather than as the policy it is. Raising `md` for every file
   # would weaken the limit where it does its real work, on skills and docs.
-  # This is a declared exemption for the one legitimate outlier.
+  # This is a declared exemption for the one legitimate outlier. Raising `md`
+  # is what happened the last two times (B20 took it 49152 -> 57344, and it is
+  # 131072 now) -- twice weakening the ceiling for every document because of
+  # one file, which is the pattern this replaces.
+  #
+  # Consumers materialize this file, so they inherit the exemption. That is
+  # intended: every repository in the fleet keeps a SPEC.md of the same shape
+  # and hits the same wall as it grows.
   SPEC.md: 262144
