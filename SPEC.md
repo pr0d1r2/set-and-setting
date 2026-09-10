@@ -595,6 +595,10 @@ and dogfoods both.
 
 | id  | s | description                                          | cites     |
 |-----|---|------------------------------------------------------|-----------|
+| T81 | x | HOOTL-ELIGIBLE -- preflight autofix tier. Formatting, whitespace, markdown indent, size budget, dictionary, and lefthook regeneration are fixed or reported locally before commit, so a mechanical defect never consumes a CI round trip. | I.detectFragments,V40,V41 |
+| T82 | x | HOOTL-ELIGIBLE -- always-on context reduction. Prose rules in the `language` category become a mechanical linter; the principles registry becomes an on-demand expander. | V18,V18a,V38,I.meta |
+| T83 | x | HOOTL-ELIGIBLE -- multi-site generators. The `generic/linter.md` six-site linter checklist and the `generic/skill.md` five-step skill checklist become single commands. | I.checkFragmentMap,I.mkSet,I.meta |
+| T84 | x | HOOTL-ELIGIBLE -- mechanical guardrails for the lefthook, CI workflow, repository hygiene, and flake structure skills. | I.checksFor,V41,V46 |
 | T85 | x | `linter-coverage` treats a missing `config/linter-coverage-exemptions.yml` as `exempt: []` and keeps checking, ⊥ exiting 1; `mk-setting.nix` writes a real newline in the default it ships. VERIFIED by building the check against a consumer worktree with the ledger removed (#508) | B96, B95, B92 |
 | T86 | x | The job that builds the checks is the job that pushes them: `guardrails.yml` takes an optional `cachix-auth-token` and both platform jobs push what they built, so the separate cache-push jobs stop rebuilding every discarded derivation -- 116s (linux) and 360s (darwin) per push to main -- and pull-request runs now warm the cache instead of only consuming it | I.flake,V41,C7 |
 | T87 | x | `tests/git-env.bash` is the one place the hook-exported git environment is scrubbed, loaded by every spec that runs git; `tests/git-env.bats` proves the scrub against a victim repository and holds every such spec to loading it. MEASURED: one spec file under a hostile `GIT_DIR` wrote 58 `initial` commits and `user.name=Test` into the victim before, 0 after | B97, V1 |
