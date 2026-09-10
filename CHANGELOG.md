@@ -2,6 +2,19 @@
 
 ## Unreleased
 
+- Give the local flake check the same clock CI gives it. Both hooks ran `nix flake check`
+  under a sixty-second ceiling while the check itself takes minutes here -- over five of
+  them from cold on the maintainer's machine -- so the gate could not pass on this
+  repository at all. The failure did not look like a clock: lefthook reports a killed
+  command as a failed check, identical to a real refusal, and the autonomous consumer
+  driving issues here spent repair round after repair round trying to fix a check that
+  only ever needed time. Twenty-two kills at exactly sixty seconds in a single forty-eight
+  hour window, every one of them read downstream as the repository refusing its own work.
+  The ceiling is now the number the CI workflow already uses for the same command, so the
+  local gate and the remote gate refuse the same runs, and two specs hold the two planes
+  together: the fragment carries CI's number, and the materialized file carries the
+  fragment's. A timeout in a hook is a runaway guard, not a budget.
+
 - Teach the status-context deriver about build matrices, before any workflow here has one.
   A required check on GitHub is a name, and a matrix renames every job it touches: `check`
   becomes `check (x86_64-linux)`, and nothing reports the bare name again. A required name

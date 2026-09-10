@@ -28,7 +28,7 @@ setup() {
         write_commands pre-commit git-no-local-paths "*" staged_files
         printf '%s\n' '    nix-flake-check:' \
             '      glob: "*.nix"' \
-            '      run: timeout ${LEFTHOOK_NIX_FLAKE_CHECK_TIMEOUT:-60} nix flake check'
+            '      run: timeout ${LEFTHOOK_NIX_FLAKE_CHECK_TIMEOUT:-600} nix flake check'
     } >"$FRAGMENTS_DIR/base.yml"
 
     printf '%s\n' "---" >"$FRAGMENTS_DIR/nix.yml"
@@ -172,7 +172,7 @@ teardown() {
     echo "$precommit_section" | grep -q 'nix-flake-check:'
     echo "$precommit_section" | grep -Fq 'glob: "*.nix"'
     echo "$prepush_section" | grep -q 'nix-flake-check:'
-    echo "$prepush_section" | grep -Fq 'run: timeout ${LEFTHOOK_NIX_FLAKE_CHECK_TIMEOUT:-60} nix flake check'
+    echo "$prepush_section" | grep -Fq 'run: timeout ${LEFTHOOK_NIX_FLAKE_CHECK_TIMEOUT:-600} nix flake check'
 }
 
 @test "duplicate fragment names are emitted only once" {
@@ -661,4 +661,41 @@ teardown() {
     local with_empty
     with_empty="$(cat "$out/lefthook.yml")"
     [ "$baseline" = "$with_empty" ]
+}
+
+# ---- #421-adjacent: the hook's ceiling must not sit below CI's own ----------
+# The pre-commit and pre-push `nix flake check` ran under `timeout 60`. This
+# repository's own check takes minutes -- 334s measured cold on an M4 -- so the
+# hook could not pass here, ever, and a timeout kill is reported by lefthook as
+# a FAILED CHECK rather than as a timeout. The autonomous loop then spent
+# repair rounds "fixing" a check that only needed time: 22 kills at exactly
+# 60.0x seconds in one 48h window on this repository alone.
+#
+# The number is now CI's own bound (`guardrails.yml`'s `flake-check-timeout`
+# default), so the local gate and the remote gate refuse the same runs. It is a
+# RUNAWAY guard, not a performance budget.
+
+@test "the hook's flake-check ceiling equals the CI workflow's own default" {
+    local base workflow hook_timeout ci_timeout
+    base="$BATS_TEST_DIRNAME/../setting/integrations/lefthook/base.yml"
+    workflow="$BATS_TEST_DIRNAME/../.github/workflows/guardrails.yml"
+
+    hook_timeout="$(sed -n 's/.*LEFTHOOK_NIX_FLAKE_CHECK_TIMEOUT:-\([0-9]*\)}.*/\1/p' "$base" | sort -u)"
+    ci_timeout="$(sed -n '/flake-check-timeout:/,/^      [a-z]/p' "$workflow" |
+        sed -n 's/^ *default: "\([0-9]*\)".*/\1/p' | head -1)"
+
+    [ -n "$hook_timeout" ]
+    [ -n "$ci_timeout" ]
+    # One value across both hooks, and that value is CI's.
+    [ "$(printf '%s\n' "$hook_timeout" | wc -l | tr -d ' ')" = 1 ]
+    [ "$hook_timeout" = "$ci_timeout" ]
+}
+
+@test "the materialized lefthook.yml carries the same ceiling as its fragment" {
+    local base materialized
+    base="$(sed -n 's/.*LEFTHOOK_NIX_FLAKE_CHECK_TIMEOUT:-\([0-9]*\)}.*/\1/p' \
+        "$BATS_TEST_DIRNAME/../setting/integrations/lefthook/base.yml" | sort -u)"
+    materialized="$(sed -n 's/.*LEFTHOOK_NIX_FLAKE_CHECK_TIMEOUT:-\([0-9]*\)}.*/\1/p' \
+        "$BATS_TEST_DIRNAME/../lefthook.yml" | sort -u)"
+    [ "$base" = "$materialized" ]
 }
