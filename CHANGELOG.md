@@ -2,6 +2,16 @@
 
 ## Unreleased
 
+- Let the whole-repository specification be as large as it needs to be, without loosening
+  the limit for every other document. SPEC.md carries every invariant, task and bug row
+  and grows by one row per fix; it had drifted to within nine hundred bytes of the
+  markdown size ceiling, which meant the next spec row on any branch would fail a size
+  check having nothing to do with the change under review -- a refusal that reads as a
+  defect rather than as the policy it is. Raising the markdown ceiling would have weakened
+  it exactly where it does its real work, on skills and documents. Instead the checker
+  learned to key a limit on a path, and this repository declares one exemption by name
+  with the reason written beside it. The ceiling for everything else is unchanged.
+
 - Give the local flake check the same clock CI gives it. Both hooks ran `nix flake check`
   under a sixty-second ceiling while the check itself takes minutes here -- over five of
   them from cold on the maintainer's machine -- so the gate could not pass on this

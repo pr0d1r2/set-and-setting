@@ -147,11 +147,11 @@
     "nix-lefthook-file-size-check-src": {
       "flake": false,
       "locked": {
-        "lastModified": 1780828050,
-        "narHash": "sha256-2yK4ueOpXyXYT4hqhVYbRAAdRnlsDpQuO+XT6cR9ack=",
+        "lastModified": 1789055339,
+        "narHash": "sha256-MsZo8uqL2u0XGjgAPitXv9BUrjrB6RoTC9T5UKioAkI=",
         "owner": "pr0d1r2",
         "repo": "nix-lefthook-file-size-check",
-        "rev": "f30fa4c19aaf68f1e9ad831d2b8e62863a3b6eb0",
+        "rev": "4883aa80a2930851c4045a501d14cd43659e32b7",
         "type": "github"
       },
       "original": {

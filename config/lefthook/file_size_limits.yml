@@ -8,3 +8,12 @@ extensions:
   nix: 167936
   sh: 49152
   txt: 12288
+paths:
+  # SPEC.md is the whole-repository specification: one file that carries every
+  # invariant, task and bug row, and it grows by a row per fix. At the .md
+  # limit it had 934 bytes of headroom, so the next spec row on any branch
+  # failed a size check that has nothing to do with the change -- which reads
+  # as a defect rather than as the policy it is. Raising `md` for every file
+  # would weaken the limit where it does its real work, on skills and docs.
+  # This is a declared exemption for the one legitimate outlier.
+  SPEC.md: 262144
