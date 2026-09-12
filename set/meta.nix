@@ -843,6 +843,21 @@ let
       paths = [ "**/*.nix" ];
       content = [ "buildPythonPackage" ];
     };
+    "lefthook/hk.md" = {
+      paths = [
+        "hk.pkl"
+        "**/hk.pkl"
+        ".gate/**/*.sh"
+        "**/.gate/**/*.sh"
+      ];
+      keywords = [
+        "hk.pkl"
+        "gate-scripts"
+        "shellcheck"
+        "shfmt"
+        "shell-quoting"
+      ];
+    };
   };
 
   resolve =
