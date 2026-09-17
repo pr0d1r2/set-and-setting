@@ -51,8 +51,25 @@ let
   files =
     let
       selected = if suffices == null then src else lib.sources.sourceFilesBySuffices src suffices;
+      root = if selected ? _isLibCleanSourceWith then selected.origSrc else selected;
     in
-    if pathPrefix == null then selected else lib.sources.sourceByRegex selected [ "^${pathPrefix}/.*" ];
+    if pathPrefix == null then
+      selected
+    else
+      lib.cleanSourceWith {
+        src = selected;
+        # Every directory on the way down to `pathPrefix` has to survive, or
+        # the walk stops at the first one and the tree arrives empty (#535).
+        # Comparing whole segments keeps `.git` from passing as an ancestor
+        # of `.github/workflows`.
+        filter =
+          path: type:
+          let
+            relPath = lib.removePrefix (toString root + "/") (toString path);
+          in
+          lib.hasPrefix "${pathPrefix}/" relPath
+          || (type == "directory" && lib.hasPrefix "${relPath}/" "${pathPrefix}/");
+      };
 in
 pkgs.runCommand "${name}-check"
   {

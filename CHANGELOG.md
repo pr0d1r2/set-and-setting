@@ -2,6 +2,22 @@
 
 ## Unreleased
 
+- Make the workflow linter actually read the workflows, and stop it breaking every
+  repository that uses it. The check that validates GitHub Actions files selected them
+  by matching a path prefix, but the matcher it used tests directories as well as files,
+  and the workflow directory itself does not match a rule written for the files inside
+  it. The walk stopped at the first directory, the linter received an empty tree, and it
+  reported success without reading anything -- in every repository that had the check.
+  The same call also tied the check to a helper that fourteen repositories had patched
+  locally to work around its earlier argument shape; correcting that shape made their
+  patch wrap the argument twice and refused every one of their pushes, twenty-four in a
+  single three-hour window. The selection now belongs to this repository: it admits each
+  directory on the way down by whole path segments, so the workflow directory is reached
+  and a similarly named neighbour is not, and it calls no helper a consumer can patch, so
+  those repositories recover with no change of their own. The check now also runs here,
+  alongside the ones it was always shipped beside, with proofs that it selects the
+  workflows, survives a patched helper, and still rejects a malformed workflow.
+
 - Stop gating the whole-tree check on one file type. The pre-push run of `nix flake check`
   only fired when a commit touched a nix file, but that check validates markdown, YAML,
   shell, dictionaries and the generated hook config too -- and continuous integration has
