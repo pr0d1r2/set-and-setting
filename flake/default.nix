@@ -1363,6 +1363,82 @@ in
         touch $out
       '';
 
+    # #535: this repository self-hosts the actionlint check it ships. Without
+    # it neither the empty-selection defect nor the sourceByRegex coupling
+    # below could surface here, and both reached the whole fleet.
+    actionlint = self.lib.mkActionlintCheck {
+      inherit pkgs;
+      src = ../.;
+    };
+
+    # #535: `pathPrefix` selection must actually reach the workflows. The
+    # prefix filter has to admit every directory on the way down to
+    # `.github/workflows`, or the tree arrives empty and the check lints
+    # nothing while reporting success.
+    actionlint-selects-workflows =
+      let
+        selected =
+          (self.lib.mkActionlintCheck {
+            inherit pkgs;
+            src = ../.;
+          }).CHECK_FILES;
+      in
+      pkgs.runCommand "actionlint-selects-workflows" { } ''
+        if [ ! -e ${selected}/.github/workflows/guardrails.yml ]; then
+          echo "FAIL: actionlint selects no workflow file"
+          exit 1
+        fi
+        if [ -e ${selected}/lefthook.yml ]; then
+          echo "FAIL: actionlint selects YAML outside .github/workflows"
+          exit 1
+        fi
+        echo "PASS: actionlint selects the workflows and nothing else"
+        touch $out
+      '';
+
+    # #535: consumers carried a local `lib.sources.sourceByRegex` shim for as
+    # long as this check passed a scalar regex. Passing a list made that shim
+    # double-wrap and broke `nix flake check` in every repository holding one,
+    # so the prefix filter owes them independence from that function.
+    actionlint-ignores-source-by-regex =
+      let
+        poisoned = pkgs // {
+          lib = pkgs.lib // {
+            sources = pkgs.lib.sources // {
+              sourceByRegex =
+                _src: _regexes:
+                throw "mk-lefthook-check must filter by path prefix without lib.sources.sourceByRegex";
+            };
+          };
+        };
+        selected =
+          (self.lib.mkActionlintCheck {
+            pkgs = poisoned;
+            src = ../.;
+          }).CHECK_FILES;
+      in
+      pkgs.runCommand "actionlint-ignores-source-by-regex" { } ''
+        test -e ${selected}/.github/workflows/guardrails.yml
+        echo "PASS: prefix selection does not call lib.sources.sourceByRegex"
+        touch $out
+      '';
+
+    actionlint-catches-violation =
+      let
+        wrapper = actionlintWrapperFor pkgs;
+      in
+      pkgs.runCommand "actionlint-catches-violation" { } ''
+        mkdir -p .github/workflows
+        bad=.github/workflows/bad.yml
+        printf 'on: push\njobs:\n  x:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v4\n        with:\n          unknown-input: 1\n    if: $\{{ github.evenf }}\n' > "$bad"
+        if ${pkgs.lib.getExe wrapper} "$bad"; then
+          echo "FAIL: actionlint accepted a malformed workflow"
+          exit 1
+        fi
+        echo "PASS: pinned actionlint rejects a violation"
+        touch $out
+      '';
+
     # #98 (part of #93): the formatter tier as PINNED hermetic checks,
     # each replacing its runtime lefthook `remotes:` git_url. shfmt gates
     # `*.sh`; trailing-whitespace / missing-final-newline / editorconfig-
