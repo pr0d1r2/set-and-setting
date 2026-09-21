@@ -19,13 +19,13 @@ Report:
 
 1. Work completed, work still in progress, and the next concrete action.
 2. Uncommitted changes, untracked files, failing checks, and unresolved
-   decisions.
+  decisions.
 3. Observations that are not yet specified, each with a proposed
-   invariant, task, or bug entry and the evidence needed to support it.
+  invariant, task, or bug entry and the evidence needed to support it.
 4. Candidate upstream issues, with identifying details removed and the
-   owning repository named. Do not file them automatically.
+  owning repository named. Do not file them automatically.
 5. A short handoff for the next session, including the first command or
-   file to inspect.
+  file to inspect.
 
 ## Boundaries
 
