@@ -9,7 +9,6 @@
   set-and-setting,
   fragments,
   src,
-  lib ? set-and-setting.lib,
   extraFragments ? [ ],
   extraPackages ? (_pkgs: { }),
   extraChecks ? (_pkgs: { }),
@@ -31,6 +30,7 @@ let
   # restated: a second copy is what made the first cut of this emit a config
   # `confirm` then rejected (B94). `src` is the flake source, so these walks
   # see what git tracks.
+  standardLib = set-and-setting.lib;
   detectorLines = nixpkgs.lib.splitString "\n" (
     builtins.readFile "${set-and-setting}/setting/lib/detect-fragments.sh"
   );
@@ -84,10 +84,10 @@ in
     pkgs:
     (extraPackages pkgs)
     // nixpkgs.lib.optionalAttrs includeSet {
-      set = lib.mkSet { inherit pkgs; };
+      set = standardLib.mkSet { inherit pkgs; };
     }
     // {
-      setting = (lib.mkSetting { inherit pkgs; }).materialized;
+      setting = (standardLib.mkSetting { inherit pkgs; }).materialized;
     }
   );
 
@@ -95,12 +95,12 @@ in
     pkgs:
     let
       inherit (pkgs.stdenv.hostPlatform) system;
-      materialization = lib.materializationFor {
+      materialization = standardLib.materializationFor {
         inherit pkgs fileClassOverrides;
         fragments = allFragments;
       };
     in
-    lib.mkDevShells {
+    standardLib.mkDevShells {
       inherit pkgs;
       basePackages = materialization.packages;
       settingHook =
@@ -144,21 +144,21 @@ in
     let
       inherit (pkgs.stdenv.hostPlatform) system;
       standardChecks =
-        (lib.checksFor {
+        (standardLib.checksFor {
           inherit pkgs src;
           fragments = allFragments;
         })
         // {
-          dep-graph = lib.mkDepGraphCheck {
+          dep-graph = standardLib.mkDepGraphCheck {
             inherit pkgs;
             projectRoot = src;
           };
-          lock-graph = (lib.mkLockGraphCheck or set-and-setting.lib.mkLockGraphCheck) {
+          lock-graph = standardLib.mkLockGraphCheck {
             inherit pkgs;
             projectRoot = src;
             allowMissingSetAndSetting = false;
           };
-          setting-drift = lib.mkSettingDriftCheck {
+          setting-drift = standardLib.mkSettingDriftCheck {
             inherit pkgs;
             settingSet = self.packages.${system}.setting;
             projectRoot = src;
@@ -166,18 +166,18 @@ in
           };
           default = pkgs.runCommand "checks" { } "touch $out";
         };
-      coverageMaterialization = lib.materializationFor {
+      coverageMaterialization = standardLib.materializationFor {
         inherit pkgs fileClassOverrides;
         fragments = allFragments;
       };
-      standardMaterialization = lib.materializationFor {
+      standardMaterialization = standardLib.materializationFor {
         inherit pkgs;
         fragments = allFragments;
       };
-      coverageDrift = (lib.mkCoverageDriftCheck or set-and-setting.lib.mkCoverageDriftCheck) {
+      coverageDrift = standardLib.mkCoverageDriftCheck {
         inherit pkgs;
         fragments = allFragments;
-        checks = lib.checksFor {
+        checks = standardLib.checksFor {
           inherit pkgs src;
           fragments = allFragments;
         };
@@ -193,7 +193,7 @@ in
     pkgs:
     let
       inherit (self.packages.${pkgs.stdenv.hostPlatform.system}) setting;
-      materialization = lib.materializationFor {
+      materialization = standardLib.materializationFor {
         inherit pkgs fileClassOverrides;
         fragments = allFragments;
       };
@@ -220,7 +220,7 @@ in
           }
         }/bin/bootstrap-hooks";
       };
-      confirm = set-and-setting.lib.mkConfirmApp {
+      confirm = standardLib.mkConfirmApp {
         inherit pkgs setting materialization;
         standard = set-and-setting;
         confirmRev = set-and-setting.rev or set-and-setting.dirtyRev or "unknown";

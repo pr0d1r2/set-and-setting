@@ -5,25 +5,9 @@
 }:
 
 let
-  # A consumer library override from before these helpers were exposed must
-  # remain compatible with mkConsumerFlake.
-  consumerLib =
-    builtins.removeAttrs self.lib [
-      "mkCoverageDriftCheck"
-      "mkLockGraphCheck"
-    ]
-    // {
-      materializationFor =
-        args:
-        let
-          materialization = self.lib.materializationFor args;
-        in
-        materialization // { packages = materialization.packages ++ [ pkgs.hello ]; };
-    };
   consumer = self.lib.mkConsumerFlake {
     inherit self nixpkgs;
     set-and-setting = self;
-    lib = consumerLib;
     fragments = [ "base" ];
     extraFragments = [
       "shell"
@@ -127,6 +111,5 @@ pkgs.runCommand "mkConsumerFlake-outputs" { } ''
   ${confirmProgram} --help > confirm-help
   grep -q "Usage: confirm" confirm-help
   grep -q "Post-materialization acceptance suite" confirm-help
-  grep -q '${pkgs.hello}/bin' ${confirmProgram}
   touch $out
 ''
