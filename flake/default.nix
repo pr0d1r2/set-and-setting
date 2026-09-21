@@ -1921,10 +1921,15 @@ in
       pkgs.runCommand "ops-loop-skills-check" { } ''
         test -f "${rules}/hitl.md"
         test -f "${rules}/hootl.md"
+        test -f "${rules}/wrapup.md"
         grep -q 'HOOTL-ELIGIBLE' "${rules}/hootl.md"
         grep -q 'HUMAN-GATED' "${rules}/hootl.md"
+        grep -q '/wrapup' "${rules}/wrapup.md"
+        grep -q 'Do not file them automatically' "${rules}/wrapup.md"
+        grep -q 'Only issue candidates for repositories the user owns' "${rules}/wrapup.md"
         grep -q '@set/drafts/ops/hitl.md' "${../set/drafts/ops/ops.md}"
         grep -q '@set/drafts/ops/hootl.md' "${../set/drafts/ops/ops.md}"
+        grep -q '@set/drafts/ops/wrapup.md' "${../set/drafts/ops/ops.md}"
         touch $out
       '';
 
@@ -3060,6 +3065,8 @@ in
           || { echo "FAIL: ops.md @-ref not updated"; exit 1; }
         grep -q '@set/ops/destructive.md' "${graduatedSkills}/ops/ops.md" \
           || { echo "FAIL: ops.md destructive @-ref not updated"; exit 1; }
+        grep -q '@set/ops/wrapup.md' "${graduatedSkills}/ops/ops.md" \
+          || { echo "FAIL: ops.md wrapup @-ref not updated"; exit 1; }
         if grep -q '@set/drafts/' "${graduatedSkills}/ops/ops.md"; then
           echo "FAIL: ops.md still has drafts/ @-ref"; exit 1
         fi
@@ -3069,6 +3076,8 @@ in
           || { echo "FAIL: ops.md missing"; exit 1; }
         [ -f "${graduatedSkills}/ops/slash.md" ] \
           || { echo "FAIL: slash.md missing"; exit 1; }
+        [ -f "${graduatedSkills}/ops/wrapup.md" ] \
+          || { echo "FAIL: wrapup.md missing"; exit 1; }
         [ -f "${graduatedSkills}/ops/destructive.md" ] \
           || { echo "FAIL: destructive.md missing"; exit 1; }
 
