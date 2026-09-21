@@ -13,7 +13,7 @@
 set -euo pipefail
 
 cd "$CHECK_FILES"
-mapfile -t matches < <(find . -type f | sort)
+mapfile -t matches < <(find . -type f | LC_ALL=C sort)
 
 if [ ${#matches[@]} -eq 0 ]; then
   echo "$CHECK_NAME: no matching files, nothing to check"

@@ -64,6 +64,6 @@ teardown() {
     : >"$TMP/files/aaa.rb"
     run bash "$SCRIPT"
     [ "$status" -eq 0 ]
-    run sort -c "$TMP/args"
+    run env LC_ALL=C sort -c "$TMP/args"
     [ "$status" -eq 0 ]
 }
