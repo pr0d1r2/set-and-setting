@@ -67,3 +67,11 @@ teardown() {
     run env LC_ALL=C sort -c "$TMP/args"
     [ "$status" -eq 0 ]
 }
+
+@test "an empty CHECK_FLAG is omitted from the wrapper arguments" {
+    export CHECK_FLAG=""
+    run bash "$SCRIPT"
+    [ "$status" -eq 0 ]
+    run head -1 "$TMP/args"
+    [ "$output" = "./a.rb" ]
+}
