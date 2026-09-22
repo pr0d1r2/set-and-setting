@@ -172,6 +172,28 @@ fragment checks, setting and dependency drift checks, and the `confirm` app.
 The dependency checks reject duplicated foundation pins, so transitive check
 inputs must follow the consumer's shared `nixpkgs` instead of adding parallel
 lock trees.
+
+If the consumer declares individual `nix-lefthook-*` flake inputs, deduplicate
+each one in the consumer manifest. The exact set depends on the hook revision;
+inspect that hook's inputs when updating it. This is the recommended starting
+point for a legacy hook that still carries the agentic development tree:
+
+```nix
+inputs.nix-lefthook-FOO = {
+  url = "github:pr0d1r2/nix-lefthook-FOO";
+  inputs.nixpkgs.follows = "nixpkgs";
+  inputs.nixpkgs-lock.follows = "nixpkgs-lock";
+  inputs.set-and-setting.follows = "nix-lefthook-FOO/set-and-setting";
+  inputs.nix-dev-shell-agentic.follows =
+    "nix-lefthook-FOO/nix-dev-shell-agentic";
+};
+```
+
+Remove a follows line when the hook no longer declares that input. Hooks that
+have migrated to the shared standard usually need the first three lines;
+`nix-lefthook-nixfmt` has its own compatibility constraints and must be
+checked separately. Without these edges, every hook can add another copy of
+the foundation trees to `flake.lock`.
 Extend it with `extraFragments` or per-system functions named `extraPackages`,
 `extraChecks`, and `extraApps`. Set `includeSet = true` to expose
 `packages.<system>.set` and sync it when the agentic shell starts.
