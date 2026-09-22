@@ -53,6 +53,28 @@ Missing the flake input → `exit 127: No such file or directory`.
 5. Run `nix flake lock --update-input nix-lefthook-FOO`
 6. Reload direnv
 
+### Keep legacy hook locks shared
+
+Every individual hook input must follow the consumer's foundation inputs. Add
+the edges that exist in the hook's own lock; older hooks also need the
+`nix-dev-shell-agentic` edge:
+
+```nix
+inputs.nix-lefthook-FOO = {
+  url = "github:pr0d1r2/nix-lefthook-FOO";
+  inputs.nixpkgs.follows = "nixpkgs";
+  inputs.nixpkgs-lock.follows = "nixpkgs-lock";
+  inputs.set-and-setting.follows = "nix-lefthook-FOO/set-and-setting";
+  inputs.nix-dev-shell-agentic.follows =
+    "nix-lefthook-FOO/nix-dev-shell-agentic";
+};
+```
+
+The hook's lock is authoritative: omit follows for inputs it no longer
+declares, and verify `nix-lefthook-nixfmt` separately because it cannot use
+the shared `set-and-setting` input. Without these follows, a consumer with
+many legacy hooks fans out the same foundation trees once per hook.
+
 ## Common miss
 
 Tools like deadnix, nixfmt, shellcheck exist as `pkgs.deadnix` etc.

@@ -112,6 +112,19 @@ teardown() {
     grep -Fq 'set-and-setting.inputs.nixpkgs-lock.follows = "nixpkgs-lock";' flake.nix
 }
 
+@test "consumer documentation preserves legacy hook deduplication guidance" {
+    local readme="$BATS_TEST_DIRNAME/../README.md"
+    local skill="$BATS_TEST_DIRNAME/../set/skills/lefthook/wrapper-flake-inputs.md"
+    grep -Fq 'inputs.nixpkgs.follows = "nixpkgs";' "$readme"
+    grep -Fq 'inputs.nixpkgs-lock.follows = "nixpkgs-lock";' "$readme"
+    grep -Fq 'inputs.set-and-setting.follows = "nix-lefthook-FOO/set-and-setting";' "$readme"
+    grep -Fq 'inputs.nix-dev-shell-agentic.follows' "$readme"
+    grep -Fq 'inputs.nixpkgs.follows = "nixpkgs";' "$skill"
+    grep -Fq 'inputs.nixpkgs-lock.follows = "nixpkgs-lock";' "$skill"
+    grep -Fq 'inputs.set-and-setting.follows = "nix-lefthook-FOO/set-and-setting";' "$skill"
+    grep -Fq 'inputs.nix-dev-shell-agentic.follows' "$skill"
+}
+
 @test "lefthook.yml is assembled from fragments, not bundled copy" {
     bash "$SCRIPT"
     [ "$(cat "$TARGET/lefthook.yml")" != "bundled lefthook" ]
