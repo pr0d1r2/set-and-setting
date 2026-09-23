@@ -395,13 +395,27 @@ let
   linterCoverageWrapperFor =
     pkgs:
     let
-      upstream = wrap pkgs "lefthook-linter-coverage-full" nix-lefthook-linter-coverage-src {
-        runtimeInputs = [
-          pkgs.gawk
-          pkgs.git
-          pkgs.gnused
-        ];
-      };
+      # The tool's own flake substitutes the awk program's store path into the
+      # script at build time; `wrap` reads the script verbatim, so the literal
+      # `LEFTHOOK_LINTER_COVERAGE_AWK_PROGRAM_PATH` survived into every
+      # consumer's wrapper and gawk died with `cannot open source file`. Do the
+      # same substitution here rather than re-deriving the packaging.
+      awkScript = pkgs.writeText "linter-coverage.awk" (
+        builtins.readFile "${nix-lefthook-linter-coverage-src}/linter-coverage.awk"
+      );
+      upstream = withWrapperChecks "lefthook-linter-coverage-full" (
+        pkgs.writeShellApplication {
+          name = "lefthook-linter-coverage-full";
+          runtimeInputs = [
+            pkgs.gawk
+            pkgs.git
+            pkgs.gnused
+          ];
+          text = builtins.replaceStrings [ "LEFTHOOK_LINTER_COVERAGE_AWK_PROGRAM_PATH" ] [ "${awkScript}" ] (
+            builtins.readFile "${nix-lefthook-linter-coverage-src}/lefthook-linter-coverage-full.sh"
+          );
+        }
+      );
     in
     withWrapperChecks "lefthook-linter-coverage-full" (
       pkgs.writeShellApplication {
