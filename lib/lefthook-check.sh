@@ -21,6 +21,10 @@ if [ ${#matches[@]} -eq 0 ]; then
   exit 0
 fi
 
-"$CHECK_WRAPPER" "$CHECK_FLAG" "${matches[@]}"
+if [ -n "$CHECK_FLAG" ]; then
+  "$CHECK_WRAPPER" "$CHECK_FLAG" "${matches[@]}"
+else
+  "$CHECK_WRAPPER" "${matches[@]}"
+fi
 echo "$CHECK_NAME: PASS (${#matches[@]} files)"
 touch "$out"
