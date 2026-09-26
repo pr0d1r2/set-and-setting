@@ -2,4 +2,4 @@ pre-commit:
   commands:
     gawk-lint:
       glob: "*.awk"
-      run: timeout ${LEFTHOOK_GAWK_LINT_TIMEOUT:-30} nix-lefthook-gawk-lint {staged_files}
+      run: timeout ${LEFTHOOK_GAWK_LINT_TIMEOUT:-30} lefthook-gawk-lint {staged_files}
