@@ -166,9 +166,10 @@ and dogfoods both.
   `materializationFor` and `lefthookWrappersFor` (no duplication).
   Coherence (every tool in emitted lefthook.yml is in packages) holds by
   construction. Args: `pkgs`, `fragments` (list of fragment names).
-  Valid fragments: `base`, `nix`, `shell`, `ruby`, `rubocop`, `rspec`, `reek`,
-  `brakeman`, `bundle-audit`, `ascii`, `markdown`, `yaml`, `set`. Unknown
-  fragment -> error with guidance. Exposed as
+  Valid fragments: `lib/check-fragment-map.nix` `validFragments`; every one
+  MUST have a `wrappersForFragment` entry (checked by
+  `wrappersForFragment-covers-valid-fragments`; `just`, `xml`, `tcl` are
+  pending pinned wrappers). Unknown fragment -> error with guidance. Exposed as
   `lib.materializationFor`.
 - I.checkFragmentMap: `lib/check-fragment-map.nix` -- single source of
   truth for check-name-to-fragment mapping (#168). Pure data (no
@@ -868,4 +869,5 @@ and dogfoods both.
 | B93 | 2026-09-05 | `guardrails / check` also failed because `flake/default.nix` retained an unused `nix-lefthook-nix-flake-lock-budget-src` parameter, which the pinned deadnix check rejects. | fixed: remove the unused parameter. |
 | B94 | 2026-09-05 | `guardrails / check` also failed because `lib/nix-flake-lock-budget.sh` did not match the pinned `shfmt` layout after its recent edits. | fixed: format the script with the pinned shell formatter. |
 | B95 | 2026-09-05 | `guardrails / check` also failed because `lib/nix-flake-lock-budget.sh` defined shell functions, violating the repository's no-shell-functions guardrail. | fixed: inline the baseline lookups and ratchet calculations. |
+| B96 | 2026-09-26 | Every consumer tracking `*.awk` failed `guardrails / check`: `check-fragment-map.nix` and `awk.yml` knew the `awk` fragment, so confirm detected it and demanded `gawk-lint`, but `wrappersForFragment` had no `awk` key -- declaring it failed evaluation (`attribute 'awk' missing`), omitting it failed confirm fidelity. `awk.yml` also ran `nix-lefthook-gawk-lint`, a name no wrapper provides and the coherence scan reads as `lefthook-gawk-lint`. | fixed: pin `nix-lefthook-gawk-lint` source and add `wrappersForFragment.awk`; `awk.yml` runs `lefthook-gawk-lint`; `wrappersForFragment-covers-valid-fragments` fails any valid fragment without a wrapper entry. |
 <!-- markdownlint-enable MD013 MD038 MD056 -->
