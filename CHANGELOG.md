@@ -2,6 +2,16 @@
 
 ## Unreleased
 
+- Make the awk fragment usable. The fragment map and the hook fragment both knew
+  it, so the confirm app detected it in every repository that tracks an awk file
+  and demanded its gawk lint hook -- but the devShell side never learned it. A
+  repository that declared the fragment failed to evaluate, and one that did not
+  failed confirm, so every such repository failed its checks. The fragment now
+  ships a pinned gawk lint wrapper, its hook runs the name that wrapper provides,
+  and a new check fails any fragment the map accepts but the devShell cannot
+  provide. The just, xml and tcl fragments have the same gap and are listed as
+  pending there until their wrappers are pinned.
+
 - Make the workflow linter actually read the workflows, and stop it breaking every
   repository that uses it. The check that validates GitHub Actions files selected them
   by matching a path prefix, but the matcher it used tests directories as well as files,

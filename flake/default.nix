@@ -9,6 +9,7 @@
   nix-lefthook-editorconfig-checker-src,
   nix-lefthook-execute-permissions-src,
   nix-lefthook-file-size-check-src,
+  nix-lefthook-gawk-lint-src,
   nix-lefthook-git-conflict-markers-src,
   nix-lefthook-git-no-local-paths-src,
   nix-lefthook-gitleaks-src,
@@ -560,6 +561,11 @@ let
       ];
       toml = [ (taploWrapperFor pkgs) ];
       actions = [ (actionlintWrapperFor pkgs) ];
+      awk = [
+        (w "lefthook-gawk-lint" nix-lefthook-gawk-lint-src {
+          runtimeInputs = [ pkgs.gawk ];
+        })
+      ];
       set = [ ];
       bats = [
         # withLibraries, not pkgs.bats: these inputs shadow the caller's PATH,
@@ -617,6 +623,7 @@ let
       "markdown"
       "yaml"
       "toml"
+      "awk"
       "set"
       "bats"
     ];
@@ -3224,6 +3231,7 @@ in
             "ascii"
             "markdown"
             "yaml"
+            "awk"
             "set"
           ];
         };
@@ -3240,6 +3248,39 @@ in
             || { echo "FAIL: $wrapper in lefthook.yml but missing from packages"; exit 1; }
         done
         echo "PASS: all lefthook.yml tool references found in packages"
+        touch $out
+      '';
+
+    # A fragment that check-fragment-map.nix accepts but wrappersForFragment
+    # does not know is half-wired: confirm detects and demands its hooks,
+    # while declaring it fails evaluation (the awk fragment shipped this way).
+    # `pending` names the fragments still waiting for pinned wrapper inputs;
+    # shrink it as each is wired, never grow it.
+    wrappersForFragment-covers-valid-fragments =
+      let
+        known = builtins.attrNames (wrappersForFragment pkgs { });
+        pending = [
+          "just"
+          "xml"
+          "tcl"
+        ];
+        missing = builtins.filter (
+          f: !(builtins.elem f known) && !(builtins.elem f pending)
+        ) cfm.validFragments;
+        stale = builtins.filter (f: builtins.elem f known) pending;
+      in
+      pkgs.runCommand "wrappersForFragment-covers-valid-fragments" { } ''
+        missing="${builtins.concatStringsSep " " missing}"
+        stale="${builtins.concatStringsSep " " stale}"
+        if [ -n "$missing" ]; then
+          echo "FAIL: valid fragments without wrappersForFragment entry: $missing"
+          exit 1
+        fi
+        if [ -n "$stale" ]; then
+          echo "FAIL: wired fragments still listed as pending: $stale"
+          exit 1
+        fi
+        echo "PASS: every valid fragment has a wrappersForFragment entry"
         touch $out
       '';
 

@@ -56,6 +56,10 @@
       url = "github:pr0d1r2/nix-lefthook-file-size-check";
       flake = false;
     };
+    nix-lefthook-gawk-lint-src = {
+      url = "github:pr0d1r2/nix-lefthook-gawk-lint";
+      flake = false;
+    };
     nix-lefthook-git-conflict-markers-src = {
       url = "github:pr0d1r2/nix-lefthook-git-conflict-markers";
       flake = false;
