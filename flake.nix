@@ -72,6 +72,14 @@
       url = "github:pr0d1r2/nix-lefthook-git-no-local-paths";
       flake = false;
     };
+    nix-lefthook-justfile-alphabetical-src = {
+      url = "github:pr0d1r2/nix-lefthook-justfile-alphabetical";
+      flake = false;
+    };
+    nix-lefthook-justfile-no-embedded-shell-src = {
+      url = "github:pr0d1r2/nix-lefthook-justfile-no-embedded-shell";
+      flake = false;
+    };
     nix-lefthook-markdownlint-agentic-src = {
       url = "github:pr0d1r2/nix-lefthook-markdownlint-agentic";
       flake = false;
@@ -122,6 +130,10 @@
     };
     nix-lefthook-taplo-src = {
       url = "github:pr0d1r2/nix-lefthook-taplo";
+      flake = false;
+    };
+    nix-lefthook-tcl-syntax-src = {
+      url = "github:pr0d1r2/nix-lefthook-tcl-syntax";
       flake = false;
     };
     nix-lefthook-trailing-whitespace-src = {

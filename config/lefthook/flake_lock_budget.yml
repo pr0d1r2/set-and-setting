@@ -1,6 +1,6 @@
 ---
-baseline_bytes: 20489
-baseline_nodes: 37
+baseline_bytes: 22827
+baseline_nodes: 41
 baseline_duplication_ratio: 1000
 growth_percent: 5
 sanity_max_bytes: 393216
