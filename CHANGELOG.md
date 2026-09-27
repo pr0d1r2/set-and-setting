@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+- Make the shfmt flake check read the repository's `.editorconfig`, as the shfmt
+  hook already does. The check saw only `.sh` files, so it fell back to 2-space
+  indentation with indented `case` bodies, while the hook followed the
+  repository's own `.editorconfig`. In any repository whose `.editorconfig` does
+  not set `switch_case_indent`, every edit failed one of the two, and the
+  tending loop's fix-up rounds flipped the same lines back and forth.
 - Make the awk fragment usable. The fragment map and the hook fragment both knew
   it, so the confirm app detected it in every repository that tracks an awk file
   and demanded its gawk lint hook -- but the devShell side never learned it. A

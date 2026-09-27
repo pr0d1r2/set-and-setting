@@ -767,7 +767,11 @@ in
       import ../lib/mk-lefthook-check.nix {
         inherit pkgs src name;
         wrapper = shfmtWrapperFor pkgs;
-        suffices = [ ".sh" ];
+        # B97: .editorconfig too, as the hook reads it.
+        suffices = [
+          ".sh"
+          ".editorconfig"
+        ];
       };
     mkTaploCheck =
       {
@@ -1470,6 +1474,18 @@ in
       inherit pkgs;
       src = ../.;
     };
+    # B97: the shfmt check must see .editorconfig.
+    shfmt-keeps-editorconfig =
+      let
+        chk = self.lib.mkShfmtCheck {
+          inherit pkgs;
+          src = ../.;
+        };
+      in
+      pkgs.runCommand "shfmt-keeps-editorconfig" { } ''
+        test -f ${chk.CHECK_FILES}/.editorconfig
+        touch $out
+      '';
     trailing-whitespace = self.lib.mkTrailingWhitespaceCheck {
       inherit pkgs;
       src = ../.;
