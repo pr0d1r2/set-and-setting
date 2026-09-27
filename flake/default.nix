@@ -12,6 +12,8 @@
   nix-lefthook-gawk-lint-src,
   nix-lefthook-git-conflict-markers-src,
   nix-lefthook-git-no-local-paths-src,
+  nix-lefthook-justfile-alphabetical-src,
+  nix-lefthook-justfile-no-embedded-shell-src,
   nix-lefthook-gitleaks-src,
   nix-lefthook-markdownlint-src,
   nix-lefthook-markdownlint-agentic-src,
@@ -26,6 +28,7 @@
   nix-lefthook-nixfmt-src,
   nix-lefthook-statix-src,
   nix-lefthook-taplo-src,
+  nix-lefthook-tcl-syntax-src,
   nix-lefthook-trailing-whitespace-src,
   nix-lefthook-typos-src,
   nix-lefthook-unicode-lint-src,
@@ -314,10 +317,6 @@ let
       }
     );
 
-  # #99 (part of #93): the nix linters tier's pinned wrappers, each built
-  # from its own pinned flake input. Shared, like nixfmtWrapperFor, by the
-  # devShell wrapper list and the hermetic `checks.<sys>.<tool>` derivation
-  # so both resolve the exact same pinned lint logic (no runtime git_url).
   statixWrapperFor =
     pkgs:
     wrap pkgs "lefthook-statix" nix-lefthook-statix-src {
@@ -560,6 +559,25 @@ let
         })
       ];
       toml = [ (taploWrapperFor pkgs) ];
+      just = [
+        (w "lefthook-justfile-alphabetical" nix-lefthook-justfile-alphabetical-src {
+          runtimeInputs = [
+            pkgs.gawk
+            pkgs.coreutils
+          ];
+        })
+        (w "lefthook-justfile-no-embedded-shell" nix-lefthook-justfile-no-embedded-shell-src {
+          runtimeInputs = [
+            pkgs.gawk
+            pkgs.coreutils
+          ];
+        })
+      ];
+      tcl = [
+        (w "lefthook-tcl-syntax" nix-lefthook-tcl-syntax-src {
+          runtimeInputs = [ pkgs.tcl ];
+        })
+      ];
       actions = [ (actionlintWrapperFor pkgs) ];
       awk = [
         (w "lefthook-gawk-lint" nix-lefthook-gawk-lint-src {
@@ -623,6 +641,8 @@ let
       "markdown"
       "yaml"
       "toml"
+      "just"
+      "tcl"
       "awk"
       "set"
       "bats"
@@ -3267,19 +3287,10 @@ in
         touch $out
       '';
 
-    # A fragment that check-fragment-map.nix accepts but wrappersForFragment
-    # does not know is half-wired: confirm detects and demands its hooks,
-    # while declaring it fails evaluation (the awk fragment shipped this way).
-    # `pending` names the fragments still waiting for pinned wrapper inputs;
-    # shrink it as each is wired, never grow it.
     wrappersForFragment-covers-valid-fragments =
       let
         known = builtins.attrNames (wrappersForFragment pkgs { });
-        pending = [
-          "just"
-          "xml"
-          "tcl"
-        ];
+        pending = [ "xml" ];
         missing = builtins.filter (
           f: !(builtins.elem f known) && !(builtins.elem f pending)
         ) cfm.validFragments;
