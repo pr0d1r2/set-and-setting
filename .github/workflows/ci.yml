@@ -20,6 +20,7 @@ jobs:
     needs: guardrails
     if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     permissions:
       pull-requests: write
       contents: read
@@ -48,6 +49,7 @@ jobs:
     needs: guardrails
     if: github.event_name == 'push'
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     env:
       NIX_CONFIG: |
         connect-timeout = 15
@@ -81,6 +83,7 @@ jobs:
     needs: guardrails
     if: github.event_name == 'push'
     runs-on: macos-latest
+    timeout-minutes: 15
     env:
       NIX_CONFIG: |
         connect-timeout = 15
