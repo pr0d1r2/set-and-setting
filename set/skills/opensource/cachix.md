@@ -1,72 +1,68 @@
-# Open-source: cachix
+# Open-source: Cachix
 
-Open-source Nix projects should use Cachix free tier to serve
-pre-built binary caches. Without a cache, every contributor and
-CI run rebuilds from source -- slow and wasteful.
+Every open-source repository that contains Nix code uses the shared
+`pr0d1r2` binary cache. This keeps the cache setup consistent across the
+fleet and lets a contributor reuse the outputs built by CI.
 
-## Setup
+## Flake configuration
 
-1. Create cache at cachix.org (free for open-source)
-2. Add `cachix use <name>` to CONTRIBUTING.md setup steps
-3. Configure substituters in `flake.nix` `nixConfig` or
-  `extra-substituters`
-4. Push builds with `cachix push <name>` after successful `nix build`
+Put the shared cache and its public key in the flake's `nixConfig`:
 
-## Cross-repo flake dependencies
-
-When repo A depends on repo B as a flake input, Nix rebuilds B
-from source unless a binary cache has it. A shared Cachix cache
-across related repos eliminates redundant builds. One cache per
-org/user serving all repos is simpler than per-repo caches.
-
-## PII and secrets risk
-
-Nix store paths are hash-based, but `builtins.readFile` and
-`pkgs.writeText` embed file contents into derivations at eval
-time. Any derivation built from config containing IPs, SSH keys,
-hostnames, or credentials will have those values in the binary
-cache.
-
-**Gitignore does not protect against this.** `builtins.readFile`
-reads files at eval time regardless of git state. If those
-derivations are then pushed to cachix, the secrets become public.
-
-**Safe to cache publicly:** devShell (no `readFile` of secrets),
-generic build tools -- no project data.
-
-**Never cache publicly:** system derivations that embed firewall
-allowlists, SSH keys, or tunnel config at eval time.
-
-**Selective push:** only push safe outputs explicitly:
-
-```sh
-cachix push <name> $(nix build .#devShells.x86_64-linux.default --print-out-paths)
+```nix
+nixConfig = {
+  extra-substituters = [ "https://pr0d1r2.cachix.org" ];
+  extra-trusted-public-keys = [
+    "pr0d1r2.cachix.org-1:NfWjbhgAj41byXhCKiaE+av3Vnphm1fTezHXEGsiQIM="
+  ];
+};
 ```
 
-Never use blanket `cachix push` after a full system build.
+The cache is a substitute, not a requirement for evaluation or building.
+The repository must remain usable when the cache is unavailable.
 
-Rule: only push derivations whose inputs are already public
-(nixpkgs, flake inputs, open-source scripts).
+## GitHub Actions
 
-## Additional risks
+The workflow installs Nix with the shared cache configured, then realizes the
+outputs that contributors need. Add Cachix immediately after the build step:
 
-- **No undo:** once pushed, clients cache locally. Deleting from
-  cachix does not recall already-fetched store paths.
-- **Build logs:** cachix stores build logs. If builds print
-  secrets to stdout/stderr, logs are public.
-- **Signing key:** cachix auth token and signing key are
-  deployment-grade secrets. Leaked key = attacker pushes trusted
-  malicious binaries to all cache users.
-- **Reference graph:** narinfo exposes full dependency tree of
-  pushed derivation. System narinfo = complete package list =
-  attack surface map. Only push leaf packages, not full closures.
-- **Store path names:** name component of `/nix/store/<hash>-name`
-  reveals package versions and build variant info.
+```yaml
+- name: Build outputs
+  run: nix build .#default .#devShells.x86_64-linux.default --no-link
+- name: Push built paths to the shared cache
+  continue-on-error: true
+  uses: cachix/cachix-action@5f2d7c5294214f71b873db4b969586b980625e71 # v17
+  with:
+    name: pr0d1r2
+    authToken: ${{ secrets.CACHIX_AUTH_TOKEN }}
+```
 
-## Convention
+Use a full commit SHA for the action, with its release tag in a comment. Set
+`CACHIX_AUTH_TOKEN` as a repository secret; never put the token in YAML, a
+flake, or a tracked example file. Pull requests from forks may not have the
+secret, so the push step must be conditional when the workflow would
+otherwise invoke it without a token:
 
-- Cache name matches repo name or org name when shared
-- Public key goes in flake.nix so users get cache without manual setup
-- CI pushes to cache on every successful main build
-- Never push secrets or private derivations to public cache
-- Audit `builtins.readFile` targets before adding new cache pushes
+```yaml
+if: secrets.CACHIX_AUTH_TOKEN != ''
+```
+
+The cache push may not decide a build or release. It runs after the outputs
+already succeeded, and its result concerns the cache service and network.
+`continue-on-error: true` keeps a slow or unavailable cache from blocking a
+release while still reporting the failed step in the Actions run.
+
+Push only outputs whose inputs are public. Do not blanket-push system
+closures or derivations that read secrets, private configuration, SSH keys,
+firewall allowlists, or other operator data at evaluation time. Prefer leaf
+packages and explicitly selected dev shells.
+
+## Checklist
+
+- `flake.nix` names `https://pr0d1r2.cachix.org` and the matching public key.
+- CI configures the same substituter before Nix evaluates the flake.
+- CI builds the outputs that developers actually consume.
+- A post-build `cachix/cachix-action` step pushes to `pr0d1r2`.
+- The push has `continue-on-error: true` and is conditional on the token when
+  forked pull requests can reach the job.
+- `CACHIX_AUTH_TOKEN` exists only as a repository secret.
+- Every pushed derivation has public inputs and contains no secret data.
