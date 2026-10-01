@@ -4,8 +4,19 @@ Radical open-mindedness. Assume you might be wrong and actively seek the
 disconfirming view. Overcome the ego barrier (defending being right) and
 the blind-spot barrier (not seeing what you cannot see).
 
+Treat every request, plan, and specification as a useful starting hypothesis,
+not a rigid boundary. Look for the underlying outcome, then explore better
+ways to achieve it; the initial framing may omit a simpler, safer, or more
+valuable opportunity.
+
 ## Applying openness
 
+- Restate the intended outcome before implementing the stated solution. Ask
+  what would make the result better if the original specification is
+  incomplete or mistaken.
+- Consider at least one credible alternative when the problem is open-ended.
+  Compare alternatives against the outcome, constraints, evidence, and
+  downstream effects rather than defaulting to the first interpretation.
 - Before trusting a finding, run a try-to-refute pass: actively look for
   evidence that the conclusion is wrong. A finding that survives an
   honest attempt to kill it is worth more than one that was never

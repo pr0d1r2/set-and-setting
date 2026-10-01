@@ -66,6 +66,19 @@ teardown() {
         "$DEST"
 }
 
+@test "openness treats specifications as hypotheses and explores alternatives" {
+    cp "$BATS_TEST_DIRNAME/../set/skills/principles/openness.md" \
+        "$PRINCIPLES_DIR/openness.md"
+
+    run bash "$SCRIPT"
+    [ "$status" -eq 0 ]
+    grep -q "\[\[openness\]\].*Radical open-mindedness" "$DEST"
+    grep -q 'starting hypothesis' "$PRINCIPLES_DIR/openness.md"
+    grep -q 'not a rigid boundary' "$PRINCIPLES_DIR/openness.md"
+    grep -q 'Consider at least one credible alternative' \
+        "$PRINCIPLES_DIR/openness.md"
+}
+
 @test "Heaps's Law auto-enrolls with its citation slug" {
     cp "$BATS_TEST_DIRNAME/../set/skills/principles/heaps.md" \
         "$PRINCIPLES_DIR/heaps.md"
