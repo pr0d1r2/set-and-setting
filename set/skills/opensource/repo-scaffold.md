@@ -49,12 +49,30 @@ so lefthook and every hook command remain available on `PATH`.
 
 ## Branch protection
 
+Protect `main` with pull requests for every role, including administrators,
+and require all CI status contexts before merging. Prefer the repository's
+branch-protection app so its standard-derived contexts stay synchronized with
+the workflow:
+
+```bash
+nix run github:pr0d1r2/set-and-setting#branch-protection -- \
+  --from-standard --dry-run
+nix run github:pr0d1r2/set-and-setting#branch-protection -- --from-standard
+```
+
+For a direct API integration, the equivalent policy is:
+
 ```bash
 gh api repos/OWNER/REPO/branches/main/protection -X PUT --input - <<'JSON'
 {
-  "required_status_checks": null,
-  "enforce_admins": false,
-  "required_pull_request_reviews": null,
+  "required_status_checks": {
+    "strict": true,
+    "contexts": ["CI / build"]
+  },
+  "enforce_admins": true,
+  "required_pull_request_reviews": {
+    "required_approving_review_count": 0
+  },
   "restrictions": null,
   "required_linear_history": true,
   "allow_force_pushes": false,
