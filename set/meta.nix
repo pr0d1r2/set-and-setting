@@ -645,6 +645,17 @@ let
         "seniority"
       ];
     };
+    "principles/approaches.md" = {
+      keywords = [
+        "multiple-approaches"
+        "alternative-solutions"
+        "divergent-thinking"
+        "edge-cases"
+        "tradeoffs"
+        "decision-making"
+        "solution-selection"
+      ];
+    };
     "principles/murphy.md" = {
       keywords = [
         "murphy"
