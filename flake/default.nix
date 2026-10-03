@@ -1226,12 +1226,6 @@ in
         wrappersForFragment = wrappersForFragment pkgs fileClassOverrides;
       };
 
-    # #93: fragment-driven check selection -- the CI-gate counterpart to
-    # materializationFor. A consumer declares fragments once and gets both
-    # the local convenience (materializationFor -> lefthook.yml + packages)
-    # and CI gate (checksFor -> flake checks). Only tools with pinned-check
-    # equivalents are included; hooks needing git context, test runners, and
-    # `nix-flake-check` (which IS this mechanism) stay lefthook-local-only.
     checksFor =
       {
         pkgs,
@@ -2269,6 +2263,10 @@ in
       let
         mkSet = import ../set/lib/mk-set.nix { inherit (nixpkgs) lib; };
         full = mkSet { inherit pkgs; };
+        withConcepts = mkSet {
+          inherit pkgs;
+          concepts = true;
+        };
         excluded = mkSet {
           inherit pkgs;
           categories = [ "generic" ];
@@ -2277,6 +2275,13 @@ in
       in
       pkgs.runCommand "compose-set-check" { } ''
         setdir="${full}/.claude/rules/set"
+        conceptsSetdir="${withConcepts}/.claude/rules/set"
+
+        # Machine-specific concepts are opt-in and must not be emitted by
+        # the default mkSet invocation (#560).
+        if find "$setdir" -maxdepth 1 -name 'concepts-*.md' -print -quit | grep -q .; then
+          echo "FAIL: default mkSet emitted concepts"; exit 1
+        fi
 
         # CHANNEL b (conditional domain): rule carries the conditional-
         # load field + nix glob (V17/V19)
@@ -2333,7 +2338,7 @@ in
         # lists @-refs to concepts + core, omits domain rules
         manifest="${full}/.claude/rules/set.md"
         [ -f "$manifest" ] || { echo "FAIL: set.md manifest missing"; exit 1; }
-        grep -q '^@set/concepts-user.md$' "$manifest" \
+        grep -q '^@set/concepts-user.md$' "${withConcepts}/.claude/rules/set.md" \
           || { echo "FAIL: set.md missing concept ref"; exit 1; }
         grep -q '^@set/generic/skill.md$' "$manifest" \
           || { echo "FAIL: set.md missing core ref"; exit 1; }
@@ -2346,7 +2351,7 @@ in
         # store-root-correct index.md (#167): $out-relative @-imports
         idx="${full}/index.md"
         [ -f "$idx" ] || { echo "FAIL: index.md missing"; exit 1; }
-        grep -q '^@\./.claude/rules/set/concepts-user.md$' "$idx" \
+        grep -q '^@\./.claude/rules/set/concepts-user.md$' "${withConcepts}/index.md" \
           || { echo "FAIL: index.md missing concept ref"; exit 1; }
         grep -q '^@\./.claude/rules/set/generic/skill.md$' "$idx" \
           || { echo "FAIL: index.md missing core ref"; exit 1; }
@@ -3009,15 +3014,11 @@ in
       projectRoot = ../.;
     };
 
-    # set-skill-extension -- T56/V6/V13: only *.md files in set/skills/
-    # and set/drafts/. Pure find + exit-on-non-md.
     set-skill-extension = import ../lib/mk-skill-extension-check.nix {
       inherit pkgs;
       setRoot = ../set;
     };
 
-    # set-skill-size -- T57: per-file size limit on individual
-    # skill/draft markdown. Single wc -c check.
     set-skill-size = import ../lib/mk-skill-size-check.nix {
       inherit pkgs;
       setRoot = ../set;

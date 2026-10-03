@@ -377,7 +377,7 @@ Channel assignment comes from `set/meta.nix`, not the source markdown.
 lib.mkSet {
   inherit pkgs;
   categories = [ "generic" "git" "nix" "security" ];
-  concepts = true;   # include set/concepts/ (default: true)
+  concepts = true;   # include set/concepts/ (default: false)
   exclude = [ ];      # paths to exclude from output
 }
 ```
