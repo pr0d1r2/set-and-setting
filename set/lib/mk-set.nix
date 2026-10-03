@@ -21,7 +21,7 @@ in
   # Omit this to use the multi-channel category emitter below.
   name ? null,
   categories ? cats.all,
-  concepts ? true,
+  concepts ? false,
   # Skill filenames to omit from the emitted output (e.g. "rtk.md").
   exclude ? [ ],
   # Per-agent seam. Default: Claude (from agents.nix).
