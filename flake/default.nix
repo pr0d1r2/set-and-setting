@@ -1226,12 +1226,6 @@ in
         wrappersForFragment = wrappersForFragment pkgs fileClassOverrides;
       };
 
-    # #93: fragment-driven check selection -- the CI-gate counterpart to
-    # materializationFor. A consumer declares fragments once and gets both
-    # the local convenience (materializationFor -> lefthook.yml + packages)
-    # and CI gate (checksFor -> flake checks). Only tools with pinned-check
-    # equivalents are included; hooks needing git context, test runners, and
-    # `nix-flake-check` (which IS this mechanism) stay lefthook-local-only.
     checksFor =
       {
         pkgs,
@@ -3020,15 +3014,11 @@ in
       projectRoot = ../.;
     };
 
-    # set-skill-extension -- T56/V6/V13: only *.md files in set/skills/
-    # and set/drafts/. Pure find + exit-on-non-md.
     set-skill-extension = import ../lib/mk-skill-extension-check.nix {
       inherit pkgs;
       setRoot = ../set;
     };
 
-    # set-skill-size -- T57: per-file size limit on individual
-    # skill/draft markdown. Single wc -c check.
     set-skill-size = import ../lib/mk-skill-size-check.nix {
       inherit pkgs;
       setRoot = ../set;
