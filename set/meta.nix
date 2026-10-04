@@ -816,6 +816,7 @@ let
     "principles/assumptions.md" = {
       keywords = [
         "assumptions"
+        "assumption-testing"
         "ambiguity"
         "clarify"
         "interpretation"
@@ -823,6 +824,13 @@ let
         "requirements"
         "scope"
         "surface-tradeoffs"
+        "evidence"
+        "verification"
+        "acceptance-criteria"
+        "regression-testing"
+        "mutation-testing"
+        "falsification"
+        "decision-making"
       ];
     };
     "security/hardening.md" = {
