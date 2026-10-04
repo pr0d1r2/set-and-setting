@@ -25,6 +25,9 @@ observable.
   rate-limit signals. Preserve the final status, response body, request
   context, and attempt count in the error or logs, while avoiding credentials
   and other sensitive headers.
+- Stop after the configured retry budget, including when a server supplies a
+  delay. Report that the budget was exhausted rather than silently issuing an
+  unbounded series of delayed requests.
 
 Test the policy with a server or transport double that returns 429 responses
 with delta and HTTP-date `Retry-After` values, then succeeds. Assert that no

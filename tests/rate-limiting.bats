@@ -14,6 +14,8 @@
     grep -q 'attempts' "$skill"
     grep -q 'Reduce concurrency' "$skill"
     grep -q 'idempotency key' "$skill"
+    grep -q 'retry budget' "$skill"
+    grep -q 'budget was exhausted' "$skill"
 }
 
 @test "rate limiting skill requires timing and concurrency tests" {
