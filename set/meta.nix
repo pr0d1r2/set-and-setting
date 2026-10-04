@@ -256,6 +256,17 @@ let
     # specific to a language, tool, or repo layout, so it meets the V38
     # bar for always-on. Recorded as a decision rather than inherited
     # from the generic category fallback (#294).
+    "generic/rate-limiting.md" = {
+      keywords = [
+        "rate-limiting"
+        "http-429"
+        "retry-after"
+        "backoff"
+        "jitter"
+        "concurrency"
+      ];
+    };
+
     "generic/streamline.md" = {
       channel = "core";
       keywords = [
