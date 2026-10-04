@@ -373,6 +373,15 @@ multi-channel layout: each source file in `set/skills/` becomes one
 rule file copied verbatim with its category `paths:` prepended.
 Channel assignment comes from `set/meta.nix`, not the source markdown.
 
+For a consumer that only needs `mkSet`, use the small nested flake so its
+lock file does not inherit this repository's lefthook inputs:
+
+```nix
+inputs.set.url = "github:pr0d1r2/set-and-setting?dir=set";
+```
+
+That flake exposes `set.lib.mkSet` and has only `nixpkgs` as an input.
+
 ```nix
 lib.mkSet {
   inherit pkgs;
