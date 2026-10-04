@@ -50,8 +50,7 @@ already wrong.
   an existing focused test or command before adding a broad integration run;
   escalate only when the narrower evidence cannot settle the assumption.
 - Separate verified facts, remaining assumptions, and untested risks in the
-  handoff. This makes the next confirmation targeted instead of repeating
-  the whole investigation.
+  handoff so the next confirmation is targeted.
 
 ## Signals of violation
 
