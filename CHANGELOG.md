@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- Add a rate-limiting skill that treats HTTP 429 responses as server feedback:
+  it honors `Retry-After` and reset headers, falls back to capped exponential
+  backoff with jitter, bounds retries, and reduces endpoint concurrency.
+
 - Make the shfmt flake check read the repository's `.editorconfig`, as the shfmt
   hook already does. The check saw only `.sh` files, so it fell back to 2-space
   indentation with indented `case` bodies, while the hook followed the
