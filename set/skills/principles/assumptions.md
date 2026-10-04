@@ -33,6 +33,26 @@ already wrong.
 - Re-open an assumption when evidence contradicts it. An assumption is a
   placeholder for a fact, not a commitment to defend.
 
+## Proving assumptions
+
+- Turn every consequential assumption into an observable acceptance
+  criterion. Test the behavior that would be wrong if the assumption were
+  false; a test that merely repeats the assumption is not evidence.
+- Make the test fail before trusting it. Exercise the smallest counterexample
+  that would disprove the assumption, then keep the regression test alongside
+  the fix.
+- Use dual-band mutation testing when the assumption affects tests: mutate
+  the implementation to check that the test detects a real regression, and
+  mutate the test or its fixture to check that the test itself can detect the
+  wrong behavior. A passing test that never fails under either mutation is
+  untrusted.
+- Optimize confirmation by checking cheap, high-signal evidence first. Reuse
+  an existing focused test or command before adding a broad integration run;
+  escalate only when the narrower evidence cannot settle the assumption.
+- Separate verified facts, remaining assumptions, and untested risks in the
+  handoff. This makes the next confirmation targeted instead of repeating
+  the whole investigation.
+
 ## Signals of violation
 
 - An implementation hardcodes a path, a field list, a format, or a limit
