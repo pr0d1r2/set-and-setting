@@ -16,6 +16,14 @@
     grep -q 'idempotency key' "$skill"
     grep -q 'retry budget' "$skill"
     grep -q 'budget was exhausted' "$skill"
+    grep -q 'configured retry budget' "$skill"
+    grep -q 'unbounded series' "$skill"
+    grep -q 'final status' "$skill"
+    grep -q 'response body' "$skill"
+    grep -q 'request' "$skill"
+    grep -q 'context' "$skill"
+    grep -q 'attempt count' "$skill"
+    grep -q 'sensitive headers' "$skill"
 }
 
 @test "rate limiting skill requires timing and concurrency tests" {
