@@ -45,7 +45,12 @@ must be assigned a linter or explicitly marked as exempt with a reason.
 
 1. Add the pinned flake input for the tool (`nix-lefthook-<tool>-src`), so the lint logic is pinned and updates via `nix flake update` rather than a runtime fetch.
 2. Add a `lib.mk<Tool>Check` convenience helper closing over that input, built on `lib/mk-lefthook-check.nix`. Its arguments include `suffices` (`null` for glob-less whole-tree tools) and `checkFlag` (`""` for wrappers with no check flag).
-3. Register the check in `lib/check-fragment-map.nix`: add it to `checksPerFragment` for its fragment and to `pinnedChecks` because it has a `mk*Check` equivalent. Consumers then receive it automatically through `checksFor`.
+3. Register the check in `lib/check-fragment-map.nix`: add it to
+    `checksPerFragment` for its fragment and to the matching file class in
+    `coveragePerFileClass`. If it has a `mk*Check` equivalent, add it to
+    `pinnedChecks` and wire that helper through `checksFor`; hook-only checks
+    stay out of `pinnedChecks`. Consumers then receive the check automatically
+    through the appropriate path.
 4. Add a `<tool>-catches-violation` proof, matching the pattern every converted tier follows. A check that has never been shown to fail is not evidence.
 5. Keep the tool in the devShell packages if it is wanted for local runs; that is separate from the check.
 6. Fix existing violations before committing.
