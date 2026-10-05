@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+- Delete the four `.narrow-language-*.dic` dictionaries this repository tracked
+  but nothing read since `narrow-language` was retired (#490). They missed 4,066
+  words of the current tree, so re-enabling the hook would have meant a bulk
+  absorb that gates nothing. `language/narrow.md` now says the hook is retired
+  by default.
+
 - Add a rate-limiting skill that treats HTTP 429 responses as server feedback:
   it honors `Retry-After` and reset headers, falls back to capped exponential
   backoff with jitter, bounds retries, and reduces endpoint concurrency.
