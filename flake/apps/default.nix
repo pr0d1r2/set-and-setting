@@ -320,19 +320,19 @@ in
     type = "app";
     program = "${bootstrapHooksApp}/bin/bootstrap-hooks";
   };
-  graduate = {
+  "maintenance.graduate" = {
     type = "app";
     program = "${graduateApp}/bin/graduate";
   };
-  "branch-protection" = {
+  "maintenance.branch-protection" = {
     type = "app";
     program = "${branchProtectionApp}/bin/branch-protection";
   };
-  "chain-ready" = {
+  "maintenance.chain-ready" = {
     type = "app";
     program = "${chainReadyApp}/bin/chain-ready";
   };
-  confirm = {
+  "maintenance.confirm" = {
     inherit (confirmApp) type program;
   };
   migrate = {

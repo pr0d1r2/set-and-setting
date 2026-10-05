@@ -7,8 +7,11 @@ function record(path, line, name,    parts, i, namespace) {
     gsub(/^"|"$/, "", name)
     split(name, parts, ".")
     namespace = "<root>"
-    counts[path SUBSEP namespace]++
-    lines[path SUBSEP namespace] = line
+    if (!(path SUBSEP namespace SUBSEP parts[1] in seen)) {
+        counts[path SUBSEP namespace]++
+        lines[path SUBSEP namespace] = line
+        seen[path SUBSEP namespace SUBSEP parts[1]] = 1
+    }
     for (i = 1; i < length(parts); i++) {
         namespace = (namespace == "<root>" ? parts[i] : namespace "." parts[i])
         counts[path SUBSEP namespace]++
