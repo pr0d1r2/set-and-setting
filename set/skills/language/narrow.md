@@ -1,5 +1,15 @@
 # Narrow language
 
+## Status: retired by default
+
+The `narrow-language` hook is not part of the standard hook set (it could
+never pass without a per-class `NARROW_LANGUAGE_DICT`). Do not commit a
+dictionary that nothing reads: a dictionary that is a transcript of the
+corpus gates nothing, and bulk-absorbing a backlog only makes it one.
+Enable the hook for a single file class, with its dictionary, only when
+that class's unknown-word count is small enough to review by hand; the
+rest of this page applies from then on.
+
 ## Glob-to-dictionary map
 
 Classify each unknown word by the language of the file it appears

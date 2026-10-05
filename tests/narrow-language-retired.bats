@@ -2,6 +2,7 @@
 # narrow-language is retired (#474); its unread dictionaries are gone (#490).
 
 setup() {
+    bats_require_minimum_version 1.5.0
     ROOT="$BATS_TEST_DIRNAME/.."
 }
 
