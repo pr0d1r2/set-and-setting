@@ -31,6 +31,9 @@ pre-commit:
     nix-no-embedded-shell:
       glob: "*.nix"
       run: lefthook-nix-no-embedded-shell {staged_files}
+    leaf-import:
+      glob: "flake/**/*.nix"
+      run: bash lib/lint-leaf-import.sh {staged_files}
     shellcheck:
       glob: "*.sh"
       run: lefthook-shellcheck {staged_files}
@@ -109,6 +112,9 @@ pre-push:
     nix-no-embedded-shell:
       glob: "*.nix"
       run: lefthook-nix-no-embedded-shell {push_files}
+    leaf-import:
+      glob: "flake/**/*.nix"
+      run: bash lib/lint-leaf-import.sh {push_files}
     shellcheck:
       glob: "*.sh"
       run: lefthook-shellcheck {push_files}
