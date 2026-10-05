@@ -64,6 +64,7 @@ in
       "deadnix"
       "nix-no-embedded-shell"
       "nix-flake-lock-budget"
+      "leaf-import"
     ];
     shell = [
       "shellcheck"
@@ -197,6 +198,7 @@ in
       "deadnix"
       "nix-no-embedded-shell"
       "nix-flake-lock-budget"
+      "leaf-import"
       "rekall-gnu-sed"
     ];
     sh = [

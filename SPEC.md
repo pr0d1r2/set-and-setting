@@ -756,6 +756,7 @@ and dogfoods both.
 | T101 | x | Leaf `seed` substitutes README owner/repo and license holder/year from CLI or `TRIP_*` repo-birth inputs, falls back to GitHub `origin`, and otherwise preserves placeholders plus the fill-in note. Existing README/LICENSE files remain untouched. (#235) | I.apps,I.mkSeed,T76 |
 | T102 | x | Flake-manifest structural guard (#200) -- add the reusable `nix-lefthook-flake-manifest` leaf, strict/let-only/off configuration, manifest/helper/monolith/missing-flake bats proofs, pinned `lib.mkFlakeManifestCheck`, Nix-fragment registry propagation through `checksFor`/`materializationFor`, strict standard, thin component scaffold, and a self-hosting negative check | I.mkLefthookCheck,I.checksFor,V41,V46 |
 | T103 | x | Fleet Nix size capstone (#204) -- after the #200 fleet migration gate, ratchet the propagated standard Nix cap from 16 KiB to 8 KiB while preserving tighter or repo-specific phase-1 limits; future growth extracts modules instead of raising the cap | I.mkSetting,V22,T78 |
+| T104 | x | HOOTL-ELIGIBLE -- `lib/lint-leaf-import.sh` rejects a `flake/<dir>/` leaf that imports a sibling leaf; `flake/lib.nix`, the leaf's own files, and paths outside `flake/` are allowed. Wired as `leaf-import` in the nix fragment and the `nix` file class (#473) | I.checkFragmentMap,V46,T84 |
 
 ## §B Bugs
 
