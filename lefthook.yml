@@ -2,6 +2,11 @@
 
 pre-commit:
   commands:
+    namespace-limit:
+      glob: "{flake/apps/**/*.nix,justfile,*.just}"
+      run: >
+        bash lib/lint-namespace-limit.sh flake/apps/default.nix
+        $(find . -type f \( -name justfile -o -name '*.just' \) -print)
     changelog-touched:
       run: lefthook-changelog-touched
     ledger-ids:
