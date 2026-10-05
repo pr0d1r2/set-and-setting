@@ -39,6 +39,13 @@ teardown() {
     [ "$status" -eq 0 ]
 }
 
+@test "each import resolves independently" {
+    printf '%s\n' 'import ./helper.nix { }' 'import ../apps/x.nix' >"$TMP/flake/checks/y.nix"
+    run bash "$SCRIPT" "$TMP/flake/checks/y.nix"
+    [ "$status" -eq 1 ]
+    [[ "$output" == *"$TMP/flake/checks/y.nix:2: leaf imports sibling ../apps/x.nix"* ]]
+}
+
 @test "import reaching outside flake is not a finding" {
     printf '%s\n' 'import ../../lib/x.nix' >"$TMP/flake/apps/default.nix"
     run bash "$SCRIPT" "$TMP/flake/apps/default.nix"

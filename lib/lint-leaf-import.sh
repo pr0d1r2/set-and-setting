@@ -24,8 +24,8 @@ for path in "$@"; do
         ref = substr(line, RSTART, RLENGTH)
         line = substr(line, RSTART + RLENGTH)
         sub(/^import[[:space:]]+\(?[[:space:]]*/, "", ref)
-        n = split(dir ref, parts, "/")
         top = 0
+        n = split(dir ref, parts, "/")
         for (i = 1; i <= n; i++) {
           if (parts[i] == "" || parts[i] == ".") continue
           if (parts[i] == ".." && top > 0 && stack[top] != "..") top--
