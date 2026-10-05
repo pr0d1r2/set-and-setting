@@ -2245,7 +2245,7 @@ in
       pkgs.runCommand "agents-md-check" { } ''
         f="${compiled}/AGENTS.md"
         [ -f "$f" ] || { echo "FAIL: no AGENTS.md"; exit 1; }
-        grep -q 'Auto commit after successful prompt' "$f" \
+        grep -q 'Commit successful work in small, atomic steps' "$f" \
           || { echo "FAIL: git core not inlined"; exit 1; }
         grep -q "behavioral rules" "$f" \
           || { echo "FAIL: generic core not inlined"; exit 1; }
@@ -2662,7 +2662,7 @@ in
         # only (V38) -- no domain content leaks in.
         ocagents="${opencode}/AGENTS.md"
         [ -f "$ocagents" ] || { echo "FAIL: opencode AGENTS.md missing"; exit 1; }
-        grep -q 'Auto commit after successful prompt' "$ocagents" \
+        grep -q 'Commit successful work in small, atomic steps' "$ocagents" \
           || { echo "FAIL: AGENTS.md missing git core"; exit 1; }
         if grep -q 'The project starts with nix flake' "$ocagents"; then
           echo "FAIL: domain content leaked into always-on AGENTS.md"; exit 1
