@@ -55,6 +55,7 @@ in
       "nix-flake-check"
       "commit-msg-lint"
       "changelog-touched"
+      "ledger-ids"
     ];
     nix = [
       "flake-manifest"
@@ -184,6 +185,7 @@ in
       "typos"
       "commit-msg-lint"
       "changelog-touched"
+      "ledger-ids"
       "ascii-only"
       "unicode-lint"
     ];

@@ -4,6 +4,9 @@ pre-commit:
   commands:
     changelog-touched:
       run: lefthook-changelog-touched
+    ledger-ids:
+      glob: "SPEC.md"
+      run: bash lib/lint-ledger-ids.sh {staged_files}
     gitleaks:
       run: lefthook-gitleaks {staged_files}
     git-conflict-markers:
