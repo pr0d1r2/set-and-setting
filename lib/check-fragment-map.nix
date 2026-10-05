@@ -56,6 +56,7 @@ in
       "commit-msg-lint"
       "changelog-touched"
       "ledger-ids"
+      "namespace-limit"
     ];
     nix = [
       "flake-manifest"
@@ -200,6 +201,7 @@ in
       "nix-flake-lock-budget"
       "leaf-import"
       "rekall-gnu-sed"
+      "namespace-limit"
     ];
     sh = [
       "shellcheck"
@@ -237,6 +239,7 @@ in
     just = [
       "justfile-alphabetical"
       "justfile-no-embedded-shell"
+      "namespace-limit"
     ];
     xml = [ "xmllint" ];
     tcl = [ "tcl-syntax" ];
