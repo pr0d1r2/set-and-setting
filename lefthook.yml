@@ -39,6 +39,9 @@ pre-commit:
     leaf-import:
       glob: "flake/**/*.nix"
       run: bash lib/lint-leaf-import.sh {staged_files}
+    watch-file:
+      glob: "*.nix"
+      run: bash lib/lint-watch-file.sh {staged_files}
     shellcheck:
       glob: "*.sh"
       run: lefthook-shellcheck {staged_files}
@@ -59,6 +62,12 @@ pre-commit:
     lint-arch-diagram:
       glob: "README.md"
       run: bash lib/lint-arch-diagram.sh {staged_files}
+    lint-badge-version:
+      glob: "README.md"
+      run: bash lib/lint-badge-version.sh flake.nix README.md flake.lock
+    lint-badge-order:
+      glob: "README.md"
+      run: bash lib/lint-badge-order.sh {staged_files}
     markdownlint:
       glob: "*.md"
       run: timeout ${LEFTHOOK_MARKDOWNLINT_TIMEOUT:-30} lefthook-markdownlint {staged_files}
@@ -123,6 +132,9 @@ pre-push:
     leaf-import:
       glob: "flake/**/*.nix"
       run: bash lib/lint-leaf-import.sh {push_files}
+    watch-file:
+      glob: "*.nix"
+      run: bash lib/lint-watch-file.sh {push_files}
     shellcheck:
       glob: "*.sh"
       run: lefthook-shellcheck {push_files}
