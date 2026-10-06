@@ -5,6 +5,9 @@
 
 pre-commit:
   commands:
+    lint-arch-diagram:
+      glob: "README.md"
+      run: bash lib/lint-arch-diagram.sh {staged_files}
     markdownlint:
       glob: "*.md"
       run: timeout ${LEFTHOOK_MARKDOWNLINT_TIMEOUT:-30} lefthook-markdownlint {staged_files}
@@ -14,6 +17,9 @@ pre-commit:
 
 pre-push:
   commands:
+    lint-arch-diagram:
+      glob: "README.md"
+      run: bash lib/lint-arch-diagram.sh {push_files}
     markdownlint:
       glob: "*.md"
       run: timeout ${LEFTHOOK_MARKDOWNLINT_TIMEOUT:-30} lefthook-markdownlint {push_files}

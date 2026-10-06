@@ -56,6 +56,9 @@ pre-commit:
       glob: "*"
       exclude: '\.(gif|png|jpg|jpeg|ico|webp|bmp|tiff|pdf|woff2?|ttf|eot|mp[34]|wav|ogg|zip|gz|tar|iso)$'
       run: timeout ${LEFTHOOK_UNICODE_LINT_TIMEOUT:-30} lefthook-unicode-lint {staged_files}
+    lint-arch-diagram:
+      glob: "README.md"
+      run: bash lib/lint-arch-diagram.sh {staged_files}
     markdownlint:
       glob: "*.md"
       run: timeout ${LEFTHOOK_MARKDOWNLINT_TIMEOUT:-30} lefthook-markdownlint {staged_files}
@@ -141,6 +144,9 @@ pre-push:
       run: timeout ${LEFTHOOK_BATS_UNIT_TIMEOUT:-300} lefthook-bats-unit
     tdd-order-bats:
       run: timeout ${LEFTHOOK_TDD_ORDER_TIMEOUT:-30} lefthook-tdd-order-bats
+    lint-arch-diagram:
+      glob: "README.md"
+      run: bash lib/lint-arch-diagram.sh {push_files}
     markdownlint:
       glob: "*.md"
       run: timeout ${LEFTHOOK_MARKDOWNLINT_TIMEOUT:-30} lefthook-markdownlint {push_files}
