@@ -1332,6 +1332,7 @@ in
         requiredApps = [
           "bootstrap"
           "bootstrap-hooks"
+          "confirm"
           "migrate"
           "mkCanon"
           "mkScaffold"
