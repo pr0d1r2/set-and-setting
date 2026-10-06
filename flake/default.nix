@@ -1332,9 +1332,6 @@ in
         requiredApps = [
           "bootstrap"
           "bootstrap-hooks"
-          "branch-protection"
-          "confirm"
-          "graduate"
           "migrate"
           "mkCanon"
           "mkScaffold"
@@ -1342,6 +1339,12 @@ in
           "mkSetting"
           "mkSetting-init"
           "seed"
+        ];
+        requiredMaintenanceApps = [
+          "maintenance.branch-protection"
+          "maintenance.chain-ready"
+          "maintenance.confirm"
+          "maintenance.graduate"
         ];
         requiredPackages = [
           "set"
@@ -1355,6 +1358,7 @@ in
           assert hasAll self requiredTopLevel;
           assert hasAll self.lib requiredLib;
           assert hasAll self.apps.${system} requiredApps;
+          assert hasAll self.apps.${system} requiredMaintenanceApps;
           assert hasAll self.packages.${system} requiredPackages;
           ""
         }

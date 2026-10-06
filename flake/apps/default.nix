@@ -320,18 +320,23 @@ in
     type = "app";
     program = "${bootstrapHooksApp}/bin/bootstrap-hooks";
   };
-  graduate = {
+  "maintenance.graduate" = {
     type = "app";
     program = "${graduateApp}/bin/graduate";
   };
-  "branch-protection" = {
+  "maintenance.branch-protection" = {
     type = "app";
     program = "${branchProtectionApp}/bin/branch-protection";
   };
-  "chain-ready" = {
+  "maintenance.chain-ready" = {
     type = "app";
     program = "${chainReadyApp}/bin/chain-ready";
   };
+  "maintenance.confirm" = {
+    inherit (confirmApp) type program;
+  };
+  # Keep the conventional entrypoint used by the guardrails workflow while
+  # retaining the maintenance namespace for existing callers.
   confirm = {
     inherit (confirmApp) type program;
   };
