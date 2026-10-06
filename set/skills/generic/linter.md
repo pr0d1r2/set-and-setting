@@ -54,7 +54,7 @@ must be assigned a linter or explicitly marked as exempt with a reason.
 4. Add a `<tool>-catches-violation` proof, matching the pattern every converted tier follows. A check that has never been shown to fail is not evidence.
 5. Keep the tool in the devShell packages if it is wanted for local runs; that is separate from the check.
 6. Fix all existing violations before committing, including violations in
-   files that were not otherwise part of the feature change.
+    files that were not otherwise part of the feature change.
 
 V41's constraint still applies: a tool delivered as a pinned check must not
 also appear as a lefthook `remotes:` entry. Post-FLIP there are no remotes at

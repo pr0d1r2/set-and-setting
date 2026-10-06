@@ -225,7 +225,10 @@ in
       "markdownlint"
       "markdownlint-agentic"
     ];
-    "README.md" = [ "lint-arch-diagram" "lint-badge-version" ];
+    "README.md" = [
+      "lint-arch-diagram"
+      "lint-badge-version"
+    ];
     yml = [
       "yamllint"
       "rekall-gnu-sed"
