@@ -8,6 +8,9 @@ pre-commit:
     lint-arch-diagram:
       glob: "README.md"
       run: bash lib/lint-arch-diagram.sh {staged_files}
+    lint-badge-version:
+      glob: "README.md"
+      run: bash lib/lint-badge-version.sh flake.nix README.md flake.lock
     markdownlint:
       glob: "*.md"
       run: timeout ${LEFTHOOK_MARKDOWNLINT_TIMEOUT:-30} lefthook-markdownlint {staged_files}
