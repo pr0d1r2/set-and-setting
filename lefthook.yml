@@ -5,13 +5,13 @@ pre-commit:
     namespace-limit:
       glob: "{flake/apps/**/*.nix,justfile,*.just}"
       run: >
-        bash lib/lint-namespace-limit.sh flake/apps/default.nix
+        lefthook-namespace-limit flake/apps/default.nix
         $(find . -type f \( -name justfile -o -name '*.just' \) -print)
     changelog-touched:
       run: lefthook-changelog-touched
     ledger-ids:
       glob: "SPEC.md"
-      run: bash lib/lint-ledger-ids.sh {staged_files}
+      run: lefthook-ledger-ids {staged_files}
     gitleaks:
       run: lefthook-gitleaks {staged_files}
     git-conflict-markers:
@@ -59,6 +59,12 @@ pre-commit:
     lint-arch-diagram:
       glob: "README.md"
       run: bash lib/lint-arch-diagram.sh {staged_files}
+    lint-badge-version:
+      glob: "README.md"
+      run: bash lib/lint-badge-version.sh flake.nix README.md flake.lock
+    lint-badge-order:
+      glob: "README.md"
+      run: bash lib/lint-badge-order.sh {staged_files}
     markdownlint:
       glob: "*.md"
       run: timeout ${LEFTHOOK_MARKDOWNLINT_TIMEOUT:-30} lefthook-markdownlint {staged_files}

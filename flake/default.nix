@@ -448,7 +448,6 @@ let
       ];
     };
 
-  # ONE definition of "bats that can find its libraries" (B92).
   batsWithLibrariesFor =
     pkgs:
     pkgs.bats.withLibraries (p: [
@@ -461,9 +460,18 @@ let
     pkgs: fileClassOverrides:
     let
       w = wrap pkgs;
+      localLint =
+        n: s:
+        pkgs.writeShellApplication {
+          name = n;
+          runtimeInputs = [ pkgs.gawk ];
+          text = builtins.readFile s;
+        };
     in
     {
       base = [
+        (localLint "lefthook-ledger-ids" ../lib/lint-ledger-ids.sh)
+        (localLint "lefthook-namespace-limit" ../lib/lint-namespace-limit.sh)
         (w "lefthook-commit-msg-lint" nix-lefthook-commit-msg-lint-src {
           runtimeInputs = [
             pkgs.coreutils
@@ -528,8 +536,6 @@ let
         pkgs.ruby
         pkgs.bundler
       ];
-      # RuboCop is project-bundled and runs through Ruby/Bundler from the
-      # ruby devShell, so this lefthook-only fragment needs no Nix wrapper.
       rubocop = [ ];
       # RSpec is project-bundled and runs through Ruby/Bundler from the ruby
       # devShell, so this lefthook-only fragment needs no Nix wrapper.
@@ -586,8 +592,6 @@ let
       ];
       set = [ ];
       bats = [
-        # withLibraries, not pkgs.bats: these inputs shadow the caller's PATH,
-        # so plain bats leaves a consumer with no BATS_LIB_PATH at all (B92).
         (w "lefthook-bats-parse" nix-lefthook-bats-parse-src {
           runtimeInputs = [
             (batsWithLibrariesFor pkgs)
