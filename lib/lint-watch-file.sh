@@ -19,7 +19,7 @@ for path in "$@"; do
       *) continue ;;
     esac
     if ! grep -Eq "^[[:space:]]*watch_file[[:space:]]+$relative([[:space:]]*)$" .envrc 2>/dev/null; then
-      printf "%s:%s: add \`watch_file %s\` to .envrc\\n" "$path" "$line" "$relative"
+      printf "%s:%s: add \`watch_file %s\` to .envrc\n" "$path" "$line" "$relative"
       status=1
     fi
   done < <(awk '

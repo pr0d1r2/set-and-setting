@@ -25,7 +25,7 @@ teardown() {
     cd "$TMP"
     run bash "$SCRIPT" check.nix
     [ "$status" -eq 1 ]
-    [[ "$output" == *"check.nix:1: add \`watch_file lib/tool.sh\` to .envrc"* ]]
+    [ "$output" = 'check.nix:1: add `watch_file lib/tool.sh` to .envrc' ]
 }
 
 @test "a shell path that is not readFile is not a finding" {
