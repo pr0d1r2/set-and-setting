@@ -91,6 +91,7 @@ in
       "markdownlint-agentic"
       "lint-arch-diagram"
       "lint-badge-version"
+      "lint-badge-order"
     ];
     yaml = [
       "yamllint"
@@ -228,6 +229,7 @@ in
     "README.md" = [
       "lint-arch-diagram"
       "lint-badge-version"
+      "lint-badge-order"
     ];
     yml = [
       "yamllint"
