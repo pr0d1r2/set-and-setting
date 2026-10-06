@@ -343,6 +343,18 @@ sequenceDiagram
     Note over C: deterministic, reproducible upgrade
 ```
 
+## Development architecture
+
+```mermaid
+flowchart TD
+    F[flake.nix] --> DS[nix develop]
+    DS --> H[generated Lefthook hooks]
+    H --> L[lint and validation checks]
+    L --> C[nix flake checks]
+    C --> G[CI gate]
+    G --> R[reproducible repository changes]
+```
+
 ## API
 
 ### `sets`
