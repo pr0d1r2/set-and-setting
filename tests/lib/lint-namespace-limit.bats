@@ -41,3 +41,15 @@ teardown() {
     [ "$status" -eq 0 ]
     [ -z "$output" ]
 }
+
+@test "dots in quoted names are not namespace separators" {
+    {
+        echo 'in {'
+        for i in $(seq 1 11); do echo "  \"group.app$i\" = { type = \"app\"; };"; done
+        echo '}'
+    } >"$TMP/apps.nix"
+    run bash "$SCRIPT" "$TMP/apps.nix"
+    [ "$status" -eq 1 ]
+    [[ "$output" == *"namespace <root> has 11 entries"* ]]
+    [[ "$output" != *"namespace group has"* ]]
+}

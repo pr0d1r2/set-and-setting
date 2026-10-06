@@ -2,17 +2,25 @@
 set -euo pipefail
 
 awk '
-function record(path, line, name,    parts, i, namespace) {
+function record(path, line, name,    parts, i, namespace, quoted, part_count) {
     if (name == "") return
+    # A quoted Nix attribute name is a single literal name, even when it
+    # contains dots. Only unquoted names use dots as namespace separators.
+    quoted = (substr(name, 1, 1) == "\"")
     gsub(/^"|"$/, "", name)
-    split(name, parts, ".")
+    if (quoted) {
+        parts[1] = name
+        part_count = 1
+    } else {
+        part_count = split(name, parts, ".")
+    }
     namespace = "<root>"
     if (!(path SUBSEP namespace SUBSEP parts[1] in seen)) {
         counts[path SUBSEP namespace]++
         lines[path SUBSEP namespace] = line
         seen[path SUBSEP namespace SUBSEP parts[1]] = 1
     }
-    for (i = 1; i < length(parts); i++) {
+    for (i = 1; i < part_count; i++) {
         namespace = (namespace == "<root>" ? parts[i] : namespace "." parts[i])
         counts[path SUBSEP namespace]++
         lines[path SUBSEP namespace] = line
