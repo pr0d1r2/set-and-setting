@@ -335,6 +335,11 @@ in
   "maintenance.confirm" = {
     inherit (confirmApp) type program;
   };
+  # Keep the conventional entrypoint used by the guardrails workflow while
+  # retaining the maintenance namespace for existing callers.
+  confirm = {
+    inherit (confirmApp) type program;
+  };
   migrate = {
     type = "app";
     program = "${migrateApp}/bin/migrate";
