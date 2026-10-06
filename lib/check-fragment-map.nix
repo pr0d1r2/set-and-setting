@@ -89,6 +89,7 @@ in
     markdown = [
       "markdownlint"
       "markdownlint-agentic"
+      "lint-arch-diagram"
     ];
     yaml = [
       "yamllint"
@@ -223,6 +224,7 @@ in
       "markdownlint"
       "markdownlint-agentic"
     ];
+    "README.md" = [ "lint-arch-diagram" ];
     yml = [
       "yamllint"
       "rekall-gnu-sed"
