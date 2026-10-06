@@ -4,6 +4,7 @@
 # flake/lib.nix, and anything outside flake/. Files directly in flake/ are
 # the assembler and are exempt.
 set -euo pipefail
+status=0
 
 for path in "$@"; do
   awk -v path="$path" '
@@ -25,6 +26,7 @@ for path in "$@"; do
         line = substr(line, RSTART + RLENGTH)
         sub(/^import[[:space:]]+\(?[[:space:]]*/, "", ref)
         top = 0
+        delete stack
         n = split(dir ref, parts, "/")
         for (i = 1; i <= n; i++) {
           if (parts[i] == "" || parts[i] == ".") continue
