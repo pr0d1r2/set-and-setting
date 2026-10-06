@@ -11,6 +11,9 @@ pre-commit:
     lint-badge-version:
       glob: "README.md"
       run: bash lib/lint-badge-version.sh flake.nix README.md flake.lock
+    lint-badge-order:
+      glob: "README.md"
+      run: bash lib/lint-badge-order.sh {staged_files}
     markdownlint:
       glob: "*.md"
       run: timeout ${LEFTHOOK_MARKDOWNLINT_TIMEOUT:-30} lefthook-markdownlint {staged_files}
