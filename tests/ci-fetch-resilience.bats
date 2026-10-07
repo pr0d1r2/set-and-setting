@@ -31,6 +31,18 @@ setup() {
     grep -Fq '            --refresh \' "$workflow"
 }
 
+@test "both platform gates fall back to source builds when caches fail" {
+    workflow="$ROOT/.github/workflows/guardrails.yml"
+
+    [ "$(grep -Fc -- '            --fallback \' "$workflow")" -eq 2 ]
+}
+
+@test "delivery-path builds also fall back when caches fail" {
+    workflow="$ROOT/.github/workflows/ci.yml"
+
+    [ "$(grep -Fc -- 'run: nix build .#set .#setting --no-link --fallback' "$workflow")" -eq 2 ]
+}
+
 @test "Darwin Nix installer is pinned to an immutable commit" {
     workflow="$ROOT/.github/workflows/guardrails.yml"
 
