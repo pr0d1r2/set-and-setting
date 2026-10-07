@@ -20,6 +20,9 @@ pre-commit:
     leaf-import:
       glob: "flake/**/*.nix"
       run: bash lib/lint-leaf-import.sh {staged_files}
+    watch-file:
+      glob: "*.nix"
+      run: bash lib/lint-watch-file.sh {staged_files}
 
 pre-push:
   commands:
@@ -38,3 +41,6 @@ pre-push:
     leaf-import:
       glob: "flake/**/*.nix"
       run: bash lib/lint-leaf-import.sh {push_files}
+    watch-file:
+      glob: "*.nix"
+      run: bash lib/lint-watch-file.sh {push_files}

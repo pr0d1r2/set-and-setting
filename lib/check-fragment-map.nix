@@ -66,6 +66,7 @@ in
       "nix-no-embedded-shell"
       "nix-flake-lock-budget"
       "leaf-import"
+      "watch-file"
     ];
     shell = [
       "shellcheck"
@@ -205,6 +206,7 @@ in
       "leaf-import"
       "rekall-gnu-sed"
       "namespace-limit"
+      "watch-file"
     ];
     sh = [
       "shellcheck"
