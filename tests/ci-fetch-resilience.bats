@@ -31,6 +31,12 @@ setup() {
     grep -Fq '            --refresh \' "$workflow"
 }
 
+@test "Nix checks fall back to source builds on both platforms" {
+    workflow="$ROOT/.github/workflows/guardrails.yml"
+
+    [ "$(grep -Fc '            --fallback \' "$workflow")" -eq 2 ]
+}
+
 @test "Darwin Nix installer is pinned to an immutable commit" {
     workflow="$ROOT/.github/workflows/guardrails.yml"
 
