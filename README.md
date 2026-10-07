@@ -231,7 +231,7 @@ steps:
   - uses: cachix/install-nix-action@v27
   - name: Sync materialized configs
     run: |
-      setting_pkg="$(nix build .#setting --print-out-paths --no-link)"
+      setting_pkg="$(nix build --fallback .#setting --print-out-paths --no-link)"
       "$setting_pkg/bin/sync-setting" .
   - uses: pr0d1r2/nix-lefthook-ci-action@ce9a118b
     with:

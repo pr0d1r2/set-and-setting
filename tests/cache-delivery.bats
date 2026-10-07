@@ -7,6 +7,6 @@
     grep -q 'if: github.event_name == .push.' "$workflow"
     grep -q 'needs: guardrails' "$workflow"
     grep -q 'cachix/cachix-action@' "$workflow"
-    grep -q 'nix build .#set .#setting' "$workflow"
+    grep -q 'nix build --fallback .#set .#setting' "$workflow"
     grep -q 'CACHIX_AUTH_TOKEN' "$workflow"
 }
