@@ -175,6 +175,19 @@ teardown() {
     echo "$prepush_section" | grep -Fq 'run: timeout ${LEFTHOOK_NIX_FLAKE_CHECK_TIMEOUT:-600} nix flake check'
 }
 
+@test "base fragment invokes consumer-provided ledger and namespace commands" {
+    local real_dir
+    real_dir="$(cd "$BATS_TEST_DIRNAME/.." && pwd)/setting/integrations/lefthook"
+    FRAGMENTS_DIR="$real_dir"
+    export FRAGMENTS_DIR
+    FRAGMENTS="base" bash "$SCRIPT"
+
+    grep -q 'run: >' "$out/lefthook.yml"
+    grep -q 'lefthook-namespace-limit flake/apps/default.nix' "$out/lefthook.yml"
+    grep -q 'run: lefthook-ledger-ids {staged_files}' "$out/lefthook.yml"
+    run ! grep -q 'bash lib/lint-\(namespace-limit\|ledger-ids\)\.sh' "$out/lefthook.yml"
+}
+
 @test "duplicate fragment names are emitted only once" {
     FRAGMENTS="base base nix nix" out="$out" bash "$SCRIPT"
     [ "$(grep -c '^    nix-flake-check:' "$out/lefthook.yml")" -eq 1 ]
