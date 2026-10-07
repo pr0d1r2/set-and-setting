@@ -448,6 +448,10 @@ let
       ];
     };
 
+  # B92: the bats wrappers must run under a bats that carries its libraries.
+  # A writeShellApplication's runtimeInputs shadow the caller's PATH, so a plain
+  # pkgs.bats here is the consumer's only bats and every spec dies in setup
+  # (BATS_LIB_PATH unset). Both bats wrappers use this one definition.
   batsWithLibrariesFor =
     pkgs:
     pkgs.bats.withLibraries (p: [
@@ -460,12 +464,31 @@ let
     pkgs: fileClassOverrides:
     let
       w = wrap pkgs;
+      lintTools = [
+        pkgs.coreutils
+        pkgs.findutils
+        pkgs.gawk
+        pkgs.gnugrep
+        pkgs.gnused
+      ];
       localLint =
         n: s:
         pkgs.writeShellApplication {
           name = n;
-          runtimeInputs = [ pkgs.gawk ];
+          runtimeInputs = lintTools;
           text = builtins.readFile s;
+        };
+      # The ref checks shell out to the matcher; bake its store path in so the
+      # command needs no lib/ directory in the consumer.
+      localRefLint =
+        n: s:
+        pkgs.writeShellApplication {
+          name = n;
+          runtimeInputs = lintTools;
+          text = ''
+            export REF_MATCH=${../lib/ref-match.sh}
+          ''
+          + builtins.readFile s;
         };
     in
     {
@@ -515,6 +538,8 @@ let
         })
       ];
       nix = [
+        (localLint "lefthook-lint-leaf-import" ../lib/lint-leaf-import.sh)
+        (localLint "lefthook-lint-watch-file" ../lib/lint-watch-file.sh)
         (flakeManifestWrapperFor pkgs)
         (nixfmtWrapperFor pkgs)
         (statixWrapperFor pkgs)
@@ -536,6 +561,8 @@ let
         pkgs.ruby
         pkgs.bundler
       ];
+      # RuboCop is project-bundled (Gemfile) and runs through Ruby/Bundler from
+      # the ruby devShell, so this lefthook-only fragment needs no Nix wrapper.
       rubocop = [ ];
       # RSpec is project-bundled and runs through Ruby/Bundler from the ruby
       # devShell, so this lefthook-only fragment needs no Nix wrapper.
@@ -556,6 +583,9 @@ let
         })
       ];
       markdown = [
+        (localLint "lefthook-lint-arch-diagram" ../lib/lint-arch-diagram.sh)
+        (localLint "lefthook-lint-badge-version" ../lib/lint-badge-version.sh)
+        (localLint "lefthook-lint-badge-order" ../lib/lint-badge-order.sh)
         (markdownlintWrapperFor pkgs fileClassOverrides)
         (markdownlintAgenticWrapperFor pkgs fileClassOverrides)
       ];
@@ -590,7 +620,14 @@ let
           runtimeInputs = [ pkgs.gawk ];
         })
       ];
-      set = [ ];
+      set = [
+        (localLint "lefthook-skill-extension-check" ../lib/skill-extension-check.sh)
+        (localLint "lefthook-skill-size-check" ../lib/skill-size-check.sh)
+        (localRefLint "lefthook-ref-resolve-check" ../lib/ref-resolve-check.sh)
+        (localRefLint "lefthook-bundle-content-check" ../lib/bundle-content-check.sh)
+      ];
+      # withLibraries (batsWithLibrariesFor): plain bats has no bats-support,
+      # bats-assert or bats-file, see B92.
       bats = [
         (w "lefthook-bats-parse" nix-lefthook-bats-parse-src {
           runtimeInputs = [

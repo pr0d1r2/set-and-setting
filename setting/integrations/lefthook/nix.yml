@@ -19,10 +19,10 @@ pre-commit:
       run: lefthook-nix-no-embedded-shell {staged_files}
     leaf-import:
       glob: "flake/**/*.nix"
-      run: bash lib/lint-leaf-import.sh {staged_files}
+      run: lefthook-lint-leaf-import {staged_files}
     watch-file:
       glob: "*.nix"
-      run: bash lib/lint-watch-file.sh {staged_files}
+      run: lefthook-lint-watch-file {staged_files}
 
 pre-push:
   commands:
@@ -40,7 +40,7 @@ pre-push:
       run: lefthook-nix-no-embedded-shell {push_files}
     leaf-import:
       glob: "flake/**/*.nix"
-      run: bash lib/lint-leaf-import.sh {push_files}
+      run: lefthook-lint-leaf-import {push_files}
     watch-file:
       glob: "*.nix"
-      run: bash lib/lint-watch-file.sh {push_files}
+      run: lefthook-lint-watch-file {push_files}
