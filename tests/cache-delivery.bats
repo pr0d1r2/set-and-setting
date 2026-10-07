@@ -9,4 +9,5 @@
     grep -q 'cachix/cachix-action@' "$workflow"
     grep -q 'nix build .#set .#setting' "$workflow"
     grep -q 'CACHIX_AUTH_TOKEN' "$workflow"
+    [ "$(grep -c 'fallback = true' "$workflow")" -eq 2 ]
 }
