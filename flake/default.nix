@@ -44,8 +44,6 @@ let
   systems = import ./systems.nix { inherit nixpkgs; };
   supportedSystems = systems.supported;
   forAllSystems = systems.forAll;
-
-  # check-fragment-map.nix: single source of truth for check-to-fragment.
   cfm = import ../lib/check-fragment-map.nix;
   checkFragmentMapStr = builtins.concatStringsSep " " (
     builtins.concatLists (
@@ -56,12 +54,6 @@ let
     map (frag: "${frag}=${cfm.fragmentTriggers.${frag}}") cfm.validFragments
   );
   requiredStatusContextsStr = builtins.concatStringsSep "|" cfm.requiredStatusContexts;
-
-  # --- apps.migrate fixtures (#96): shared derivation environment ---
-  # Every migrate state fixture runs the same migrator over a fixture
-  # git repo, so they share one env + toolset. The migrator runs on
-  # markdown/awk/git only (the confirmator step is a dry-run, tools are
-  # never executed), so no wrapper packages are needed.
   migrateSeedFor =
     pkgs:
     self.lib.canonFor {
@@ -95,9 +87,6 @@ let
         "set"
         "bats"
       ];
-      # Names of every pinned flake check the referenced architecture
-      # provides (checksFor over all fragments) -- the equivalence gate
-      # treats these as part of the referenced check-set.
       checksUniverseChecks = builtins.attrNames (
         self.lib.checksFor {
           inherit pkgs;
@@ -105,8 +94,6 @@ let
           fragments = allFragments;
         }
       );
-      # lefthook.yml from ALL fragments -- its command names complete the
-      # universe of architecture-provided guardrails.
       fullLefthookFiles =
         (self.lib.materializationFor {
           inherit pkgs;
@@ -124,11 +111,6 @@ let
         pkgs.gnugrep
         pkgs.nixfmt
       ];
-      # The nix build sandbox has no $HOME and no git identity. Point git
-      # at empty config files (so it never consults $HOME) and supply the
-      # author/committer identity via env, matching the bats fixtures
-      # (B22). Without this `git commit` fails "$HOME not set" /
-      # "Author identity unknown" (exit 128).
       GIT_CONFIG_GLOBAL = "/dev/null";
       GIT_CONFIG_SYSTEM = "/dev/null";
       GIT_AUTHOR_NAME = "Test";
@@ -213,11 +195,6 @@ let
         exit 1
       '';
     };
-
-  # #97: the pinned nixfmt wrapper, built from the pinned
-  # `nix-lefthook-nixfmt-src` flake input. Shared by the devShell wrapper
-  # list and the hermetic `checks.<sys>.nixfmt` derivation so both resolve
-  # the exact same pinned lint logic (no runtime `remotes:` git_url).
   nixfmtWrapperFor =
     pkgs:
     wrap pkgs "lefthook-nixfmt" nix-lefthook-nixfmt-src {
@@ -228,11 +205,6 @@ let
     wrap pkgs "lefthook-actionlint" nix-lefthook-actionlint-src {
       runtimeInputs = [ pkgs.actionlint ];
     };
-
-  # #98 (part of #93): the formatter tier's pinned wrappers, each built
-  # from its own pinned flake input. Shared, like nixfmtWrapperFor, by the
-  # devShell wrapper list and the hermetic `checks.<sys>.<tool>` derivation
-  # so both resolve the exact same pinned lint logic (no runtime git_url).
   shfmtWrapperFor =
     pkgs:
     wrap pkgs "lefthook-shfmt" nix-lefthook-shfmt-src {
@@ -250,12 +222,6 @@ let
     wrap pkgs "lefthook-editorconfig-checker" nix-lefthook-editorconfig-checker-src {
       runtimeInputs = [ pkgs.editorconfig-checker ];
     };
-
-  # #100 (part of #93): the shell/content tier's pinned wrappers, each
-  # built from its own pinned flake input. Shared, like nixfmtWrapperFor,
-  # by the devShell wrapper list and the hermetic `checks.<sys>.<tool>`
-  # derivation so both resolve the exact same pinned lint logic (no
-  # runtime git_url).
   shellcheckWrapperFor =
     pkgs:
     wrap pkgs "lefthook-shellcheck" nix-lefthook-shellcheck-src {
@@ -273,16 +239,6 @@ let
     wrap pkgs "lefthook-typos" nix-lefthook-typos-src {
       runtimeInputs = [ pkgs.typos ];
     };
-
-  # #310: the markdownlint wrapper calls `is-markdown-agentic` to decide
-  # whether a file is agentic (agent/, .claude/, files/commands/, SPEC.md,
-  # CLAUDE.md, PROMPT.md) and therefore exempt from the strict ruleset. The
-  # helper ships as `is-markdown-agentic.sh` in the same pinned source, so it
-  # builds with the same `wrap` pattern and goes on the wrapper's PATH.
-  # Without it the call returns 127 inside an `if` -- which `set -o errexit`
-  # does not catch -- so it reads as "not agentic" and every file, including
-  # this repo's SPEC.md and CLAUDE.md, gets the strict ruleset.
-  #
   markdownlintWrapperFor =
     pkgs: fileClassOverrides:
     wrap pkgs "lefthook-markdownlint" nix-lefthook-markdownlint-src {
@@ -291,15 +247,6 @@ let
         (markdownClassifierFor pkgs fileClassOverrides)
       ];
     };
-
-  # #310: `wrap` cannot build the agentic wrapper, because upstream's flake
-  # substitutes the config path into the script at build time. A plain
-  # readFile leaves `--config @MARKDOWNLINT_AGENTIC_CONFIG@` in the emitted
-  # wrapper, which fails the moment the job runs -- it has not, only because
-  # the missing helper above meant nothing was ever classified agentic.
-  # Replace the placeholder with our class-specific standard. In addition to
-  # the upstream agentic relaxations it permits compact rows, placeholders,
-  # and bare URL-like tokens (MD013/MD033/MD034).
   markdownlintAgenticWrapperFor =
     pkgs: fileClassOverrides:
     withWrapperChecks "lefthook-markdownlint-agentic" (
@@ -343,12 +290,6 @@ let
         + builtins.readFile "${nix-lefthook-nix-no-embedded-shell-src}/lefthook-nix-no-embedded-shell.sh";
       }
     );
-
-  # #101 (part of #93): the git/security tier's pinned wrappers, each
-  # built from its own pinned flake input. Shared, like nixfmtWrapperFor,
-  # by the devShell wrapper list and the hermetic `checks.<sys>.<tool>`
-  # derivation so both resolve the exact same pinned lint logic (no
-  # runtime git_url).
   gitleaksWrapperFor =
     pkgs:
     wrap pkgs "lefthook-gitleaks" nix-lefthook-gitleaks-src {
@@ -448,6 +389,10 @@ let
       ];
     };
 
+  # B92: the bats wrappers must run under a bats that carries its libraries.
+  # A writeShellApplication's runtimeInputs shadow the caller's PATH, so a plain
+  # pkgs.bats here is the consumer's only bats and every spec dies in setup
+  # (BATS_LIB_PATH unset). Both bats wrappers use this one definition.
   batsWithLibrariesFor =
     pkgs:
     pkgs.bats.withLibraries (p: [
@@ -460,12 +405,31 @@ let
     pkgs: fileClassOverrides:
     let
       w = wrap pkgs;
+      lintTools = [
+        pkgs.coreutils
+        pkgs.findutils
+        pkgs.gawk
+        pkgs.gnugrep
+        pkgs.gnused
+      ];
       localLint =
         n: s:
         pkgs.writeShellApplication {
           name = n;
-          runtimeInputs = [ pkgs.gawk ];
+          runtimeInputs = lintTools;
           text = builtins.readFile s;
+        };
+      # The ref checks shell out to the matcher; bake its store path in so the
+      # command needs no lib/ directory in the consumer.
+      localRefLint =
+        n: s:
+        pkgs.writeShellApplication {
+          name = n;
+          runtimeInputs = lintTools;
+          text = ''
+            export REF_MATCH=${../lib/ref-match.sh}
+          ''
+          + builtins.readFile s;
         };
     in
     {
@@ -515,6 +479,8 @@ let
         })
       ];
       nix = [
+        (localLint "lefthook-lint-leaf-import" ../lib/lint-leaf-import.sh)
+        (localLint "lefthook-lint-watch-file" ../lib/lint-watch-file.sh)
         (flakeManifestWrapperFor pkgs)
         (nixfmtWrapperFor pkgs)
         (statixWrapperFor pkgs)
@@ -536,6 +502,8 @@ let
         pkgs.ruby
         pkgs.bundler
       ];
+      # RuboCop is project-bundled (Gemfile) and runs through Ruby/Bundler from
+      # the ruby devShell, so this lefthook-only fragment needs no Nix wrapper.
       rubocop = [ ];
       # RSpec is project-bundled and runs through Ruby/Bundler from the ruby
       # devShell, so this lefthook-only fragment needs no Nix wrapper.
@@ -556,6 +524,9 @@ let
         })
       ];
       markdown = [
+        (localLint "lefthook-lint-arch-diagram" ../lib/lint-arch-diagram.sh)
+        (localLint "lefthook-lint-badge-version" ../lib/lint-badge-version.sh)
+        (localLint "lefthook-lint-badge-order" ../lib/lint-badge-order.sh)
         (markdownlintWrapperFor pkgs fileClassOverrides)
         (markdownlintAgenticWrapperFor pkgs fileClassOverrides)
       ];
@@ -590,7 +561,14 @@ let
           runtimeInputs = [ pkgs.gawk ];
         })
       ];
-      set = [ ];
+      set = [
+        (localLint "lefthook-skill-extension-check" ../lib/skill-extension-check.sh)
+        (localLint "lefthook-skill-size-check" ../lib/skill-size-check.sh)
+        (localRefLint "lefthook-ref-resolve-check" ../lib/ref-resolve-check.sh)
+        (localRefLint "lefthook-bundle-content-check" ../lib/bundle-content-check.sh)
+      ];
+      # withLibraries (batsWithLibrariesFor): plain bats has no bats-support,
+      # bats-assert or bats-file, see B92.
       bats = [
         (w "lefthook-bats-parse" nix-lefthook-bats-parse-src {
           runtimeInputs = [

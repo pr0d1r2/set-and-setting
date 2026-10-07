@@ -188,6 +188,19 @@ teardown() {
     run ! grep -q 'bash lib/lint-\(namespace-limit\|ledger-ids\)\.sh' "$out/lefthook.yml"
 }
 
+@test "no emitted consumer hook runs bash lib/" {
+    local real_dir
+    real_dir="$(cd "$BATS_TEST_DIRNAME/.." && pwd)/setting/integrations/lefthook"
+    FRAGMENTS_DIR="$real_dir"
+    export FRAGMENTS_DIR
+    FRAGMENTS="base nix shell ascii markdown yaml set" bash "$SCRIPT"
+
+    run ! grep -E '(bash|sh) +lib/|REF_MATCH=lib/' "$out/lefthook.yml"
+    grep -q 'run: lefthook-lint-arch-diagram {staged_files}' "$out/lefthook.yml"
+    grep -q 'lefthook-lint-leaf-import {push_files}' "$out/lefthook.yml"
+    grep -q 'SET_ROOT=set lefthook-skill-size-check' "$out/lefthook.yml"
+}
+
 @test "duplicate fragment names are emitted only once" {
     FRAGMENTS="base base nix nix" out="$out" bash "$SCRIPT"
     [ "$(grep -c '^    nix-flake-check:' "$out/lefthook.yml")" -eq 1 ]
@@ -371,8 +384,8 @@ teardown() {
     FRAGMENTS="base set" bash "$SCRIPT"
     grep -q 'set-ref-resolution:' "$out/lefthook.yml"
     grep -q 'set-bundle-content:' "$out/lefthook.yml"
-    grep -q 'ref-resolve-check.sh' "$out/lefthook.yml"
-    grep -q 'bundle-content-check.sh' "$out/lefthook.yml"
+    grep -q 'lefthook-ref-resolve-check' "$out/lefthook.yml"
+    grep -q 'lefthook-bundle-content-check' "$out/lefthook.yml"
 }
 
 # ======== repo-local fragment (#126) ========
