@@ -77,6 +77,7 @@ jobs:
         run: |
           nix flake check \
             --refresh \
+            --fallback \
             --print-build-logs \
             --timeout ${{ inputs.flake-check-timeout }}
       - name: Bats suite
@@ -139,5 +140,6 @@ jobs:
         run: |
           nix flake check \
             --refresh \
+            --fallback \
             --print-build-logs \
             --timeout ${{ inputs.flake-check-timeout }}
