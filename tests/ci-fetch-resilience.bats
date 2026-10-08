@@ -23,6 +23,14 @@ setup() {
     grep -q 'download-attempts = 5' "$workflow"
 }
 
+@test "CI falls back to local builds when the binary cache is unavailable" {
+    for workflow in \
+        "$ROOT/.github/workflows/ci.yml" \
+        "$ROOT/.github/workflows/guardrails.yml"; do
+        grep -q 'fallback = true' "$workflow"
+    done
+}
+
 @test "CI authenticates GitHub flake resolution and refreshes cached refs" {
     workflow="$ROOT/.github/workflows/guardrails.yml"
 
