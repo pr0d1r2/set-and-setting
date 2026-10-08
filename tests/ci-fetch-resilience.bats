@@ -37,3 +37,10 @@ setup() {
     grep -Eq '^      - uses: DeterminateSystems/nix-installer-action@[0-9a-f]{40}$' "$workflow"
     ! grep -q 'DeterminateSystems/nix-installer-action@main' "$workflow"
 }
+
+@test "every CI nix build can build locally on a cache miss" {
+    while IFS= read -r line; do
+        [[ "$line" == *"nix build"* ]] || continue
+        [[ "$line" == *"--fallback"* ]]
+    done < <(rg 'nix build' "$ROOT/.github/workflows" "$ROOT/setting/scaffold/ci.yml")
+}
