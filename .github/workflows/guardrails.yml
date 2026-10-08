@@ -134,7 +134,7 @@ jobs:
           authToken: ${{ secrets.cachix-auth-token }}
       - name: Materialize configs
         run: |
-          setting_pkg="$(nix build .#setting --print-out-paths --no-link)"
+          setting_pkg="$(nix build .#setting --print-out-paths --no-link --fallback)"
           "$setting_pkg/bin/sync-setting" .
       - name: Nix flake check
         run: |
