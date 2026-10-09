@@ -23,6 +23,14 @@ setup() {
     grep -q 'download-attempts = 5' "$workflow"
 }
 
+@test "every CI build path falls back to a local build when substitutes fail" {
+    for workflow in \
+        "$ROOT/.github/workflows/guardrails.yml" \
+        "$ROOT/.github/workflows/ci.yml"; do
+        grep -Eq 'nix (develop|build) .*--fallback' "$workflow"
+    done
+}
+
 @test "CI authenticates GitHub flake resolution and refreshes cached refs" {
     workflow="$ROOT/.github/workflows/guardrails.yml"
 
