@@ -23,6 +23,25 @@ setup() {
     grep -q 'download-attempts = 5' "$workflow"
 }
 
+@test "every guardrail Nix operation falls back when substituters fail" {
+    workflow="$ROOT/.github/workflows/guardrails.yml"
+
+    grep -Fq 'nix develop --fallback --command true' "$workflow"
+    grep -Fq 'nix run --fallback .#confirm' "$workflow"
+    grep -Fq 'nix build .#setting --fallback --print-out-paths --no-link' "$workflow"
+    grep -Fq 'nix flake check \' "$workflow"
+    grep -Fq '            --fallback \' "$workflow"
+    grep -Fq 'nix develop --fallback --command lefthook-bats-parse' "$workflow"
+    grep -Fq 'nix develop --fallback --command lefthook-bats-unit' "$workflow"
+    grep -Fq 'nix develop --fallback --command lefthook-tdd-order-bats' "$workflow"
+}
+
+@test "delivery builds fall back when the shared cache is unavailable" {
+    workflow="$ROOT/.github/workflows/ci.yml"
+
+    [ "$(grep -Fc 'run: nix build .#set .#setting --fallback --no-link' "$workflow")" -eq 2 ]
+}
+
 @test "CI authenticates GitHub flake resolution and refreshes cached refs" {
     workflow="$ROOT/.github/workflows/guardrails.yml"
 

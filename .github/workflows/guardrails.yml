@@ -70,20 +70,21 @@ jobs:
           name: pr0d1r2
           authToken: ${{ secrets.cachix-auth-token }}
       - name: Materialize configs
-        run: nix develop --command true
+        run: nix develop --fallback --command true
       - name: Confirm materialization
-        run: nix run .#confirm
+        run: nix run --fallback .#confirm
       - name: Nix flake check
         run: |
           nix flake check \
             --refresh \
+            --fallback \
             --print-build-logs \
             --timeout ${{ inputs.flake-check-timeout }}
       - name: Bats suite
         run: |
           mapfile -d '' bats_files < <(git ls-files -z -- '*.bats')
           if [ "${#bats_files[@]}" -gt 0 ]; then
-            nix develop --command lefthook-bats-parse "${bats_files[@]}"
+            nix develop --fallback --command lefthook-bats-parse "${bats_files[@]}"
             # `bats` itself is not in a consumer devShell -- only the
             # wrappers are -- so calling it directly fails every consumer
             # with `exec: bats: not found` while passing here, where the
@@ -91,11 +92,11 @@ jobs:
             # sequential: it runs bats with no `--jobs` unless
             # LEFTHOOK_BATS_UNIT_JOBS asks for them, which is the
             # determinism this step wanted (B91).
-            nix develop --command lefthook-bats-unit "${bats_files[@]}"
+            nix develop --fallback --command lefthook-bats-unit "${bats_files[@]}"
             # The bats fragment -- and so the tdd-order-bats wrapper -- is
             # materialized only for a repository with tracked .bats files,
             # so this gate belongs inside the same guard as the suite.
-            nix develop --command lefthook-tdd-order-bats
+            nix develop --fallback --command lefthook-tdd-order-bats
           fi
 
   check-darwin:
@@ -133,11 +134,12 @@ jobs:
           authToken: ${{ secrets.cachix-auth-token }}
       - name: Materialize configs
         run: |
-          setting_pkg="$(nix build .#setting --print-out-paths --no-link)"
+          setting_pkg="$(nix build .#setting --fallback --print-out-paths --no-link)"
           "$setting_pkg/bin/sync-setting" .
       - name: Nix flake check
         run: |
           nix flake check \
             --refresh \
+            --fallback \
             --print-build-logs \
             --timeout ${{ inputs.flake-check-timeout }}
