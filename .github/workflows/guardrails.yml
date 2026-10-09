@@ -32,6 +32,7 @@ env:
   NIX_CONFIG: |
     connect-timeout = 15
     download-attempts = 5
+    fallback = true
 
 jobs:
   check:
@@ -78,6 +79,7 @@ jobs:
           nix flake check \
             --refresh \
             --print-build-logs \
+            --option fallback true \
             --timeout ${{ inputs.flake-check-timeout }}
       - name: Bats suite
         run: |
@@ -140,4 +142,5 @@ jobs:
           nix flake check \
             --refresh \
             --print-build-logs \
+            --option fallback true \
             --timeout ${{ inputs.flake-check-timeout }}
