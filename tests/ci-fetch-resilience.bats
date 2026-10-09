@@ -21,6 +21,13 @@ setup() {
     grep -q '^env:$' "$workflow"
     grep -q 'connect-timeout = 15' "$workflow"
     grep -q 'download-attempts = 5' "$workflow"
+    grep -q 'fallback = true' "$workflow"
+}
+
+@test "CI delivery builds also fall back to source" {
+    workflow="$ROOT/.github/workflows/ci.yml"
+
+    [ "$(grep -c 'fallback = true' "$workflow")" -eq 2 ]
 }
 
 @test "CI authenticates GitHub flake resolution and refreshes cached refs" {

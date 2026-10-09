@@ -32,6 +32,7 @@ env:
   NIX_CONFIG: |
     connect-timeout = 15
     download-attempts = 5
+    fallback = true
 
 jobs:
   check:
