@@ -77,7 +77,7 @@ jobs:
       # adds only the two consumer delivery paths, which the flake check does
       # not build.
       - name: Build the standard delivery paths
-        run: nix build .#set .#setting --no-link
+        run: nix build .#set .#setting --fallback --no-link
 
   cache-push-darwin:
     needs: guardrails
@@ -107,4 +107,4 @@ jobs:
       # adds only the two consumer delivery paths, which the flake check does
       # not build.
       - name: Build the standard delivery paths
-        run: nix build .#set .#setting --no-link
+        run: nix build .#set .#setting --fallback --no-link
