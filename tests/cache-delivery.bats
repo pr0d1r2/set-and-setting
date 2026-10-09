@@ -8,5 +8,6 @@
     grep -q 'needs: guardrails' "$workflow"
     grep -q 'cachix/cachix-action@' "$workflow"
     grep -q 'nix build .#set .#setting' "$workflow"
+    [ "$(grep -c 'nix build .#set .#setting --no-link --fallback' "$workflow")" -eq 2 ]
     grep -q 'CACHIX_AUTH_TOKEN' "$workflow"
 }
