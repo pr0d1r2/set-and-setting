@@ -23,6 +23,19 @@ setup() {
     grep -q 'download-attempts = 5' "$workflow"
 }
 
+@test "all repository delivery builds fall back to local Nix builds" {
+    workflow="$ROOT/.github/workflows/ci.yml"
+
+    for job in cache-push cache-push-darwin; do
+        awk -v job="$job" '
+            $0 == "  " job ":" { in_job = 1; found = 0; next }
+            in_job && /^  [A-Za-z0-9_-]+:$/ { exit found ? 0 : 1 }
+            in_job && /^        fallback = true$/ { found = 1 }
+            END { if (in_job && found) exit 0; if (in_job) exit 1; exit 2 }
+        ' "$workflow"
+    done
+}
+
 @test "CI authenticates GitHub flake resolution and refreshes cached refs" {
     workflow="$ROOT/.github/workflows/guardrails.yml"
 
