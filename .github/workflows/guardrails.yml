@@ -76,6 +76,7 @@ jobs:
       - name: Nix flake check
         run: |
           nix flake check \
+            --fallback \
             --refresh \
             --print-build-logs \
             --timeout ${{ inputs.flake-check-timeout }}
@@ -138,6 +139,7 @@ jobs:
       - name: Nix flake check
         run: |
           nix flake check \
+            --fallback \
             --refresh \
             --print-build-logs \
             --timeout ${{ inputs.flake-check-timeout }}
