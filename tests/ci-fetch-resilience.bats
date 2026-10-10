@@ -23,6 +23,12 @@ setup() {
     grep -q 'download-attempts = 5' "$workflow"
 }
 
+@test "Darwin materialization falls back to a local Nix build" {
+    workflow="$ROOT/.github/workflows/guardrails.yml"
+
+    grep -Fq 'setting_pkg="$(nix build .#setting --fallback --print-out-paths --no-link)"' "$workflow"
+}
+
 @test "CI authenticates GitHub flake resolution and refreshes cached refs" {
     workflow="$ROOT/.github/workflows/guardrails.yml"
 

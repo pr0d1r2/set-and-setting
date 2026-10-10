@@ -76,6 +76,7 @@ jobs:
       - name: Nix flake check
         run: |
           nix flake check \
+            --fallback \
             --refresh \
             --print-build-logs \
             --timeout ${{ inputs.flake-check-timeout }}
@@ -133,11 +134,12 @@ jobs:
           authToken: ${{ secrets.cachix-auth-token }}
       - name: Materialize configs
         run: |
-          setting_pkg="$(nix build .#setting --print-out-paths --no-link)"
+          setting_pkg="$(nix build .#setting --fallback --print-out-paths --no-link)"
           "$setting_pkg/bin/sync-setting" .
       - name: Nix flake check
         run: |
           nix flake check \
+            --fallback \
             --refresh \
             --print-build-logs \
             --timeout ${{ inputs.flake-check-timeout }}
