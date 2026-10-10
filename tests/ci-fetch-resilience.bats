@@ -23,6 +23,12 @@ setup() {
     grep -q 'download-attempts = 5' "$workflow"
 }
 
+@test "cache delivery builds fall back to local source builds" {
+    workflow="$ROOT/.github/workflows/ci.yml"
+
+    [ "$(grep -Fc 'run: nix build .#set .#setting --no-link --fallback' "$workflow")" -eq 2 ]
+}
+
 @test "CI authenticates GitHub flake resolution and refreshes cached refs" {
     workflow="$ROOT/.github/workflows/guardrails.yml"
 
