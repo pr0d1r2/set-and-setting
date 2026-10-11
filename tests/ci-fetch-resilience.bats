@@ -23,6 +23,14 @@ setup() {
     grep -q 'download-attempts = 5' "$workflow"
 }
 
+@test "all reusable workflow realizations fall back to source" {
+    workflow="$ROOT/.github/workflows/guardrails.yml"
+
+    grep -q 'nix develop --fallback' "$workflow"
+    grep -q 'nix run .#confirm --fallback' "$workflow"
+    grep -q 'nix build .#setting --print-out-paths --no-link --fallback' "$workflow"
+}
+
 @test "CI authenticates GitHub flake resolution and refreshes cached refs" {
     workflow="$ROOT/.github/workflows/guardrails.yml"
 
