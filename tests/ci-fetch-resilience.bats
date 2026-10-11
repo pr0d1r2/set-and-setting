@@ -37,3 +37,11 @@ setup() {
     grep -Eq '^      - uses: DeterminateSystems/nix-installer-action@[0-9a-f]{40}$' "$workflow"
     ! grep -q 'DeterminateSystems/nix-installer-action@main' "$workflow"
 }
+
+@test "guardrails allow local builds before the fallback-enabled check" {
+    workflow="$ROOT/.github/workflows/guardrails.yml"
+
+    grep -Fq 'nix develop --fallback --command true' "$workflow"
+    grep -Fq 'nix run .#confirm --fallback' "$workflow"
+    grep -Fq 'nix build .#setting --print-out-paths --no-link --fallback' "$workflow"
+}
