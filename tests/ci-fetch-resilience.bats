@@ -23,6 +23,15 @@ setup() {
     grep -q 'download-attempts = 5' "$workflow"
 }
 
+@test "bootstrap builds fall back when the cache is unavailable" {
+    workflow="$ROOT/.github/workflows/guardrails.yml"
+    scaffold="$ROOT/setting/scaffold/ci.yml"
+
+    grep -q 'nix develop --fallback --command true' "$workflow"
+    grep -q 'nix build .#setting --print-out-paths --no-link --fallback' "$workflow"
+    [ "$(grep -c 'nix build .#setting --print-out-paths --no-link --fallback' "$scaffold")" -eq 3 ]
+}
+
 @test "CI authenticates GitHub flake resolution and refreshes cached refs" {
     workflow="$ROOT/.github/workflows/guardrails.yml"
 
