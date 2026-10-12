@@ -37,3 +37,14 @@ setup() {
     grep -Eq '^      - uses: DeterminateSystems/nix-installer-action@[0-9a-f]{40}$' "$workflow"
     ! grep -q 'DeterminateSystems/nix-installer-action@main' "$workflow"
 }
+
+@test "every CI nix build can fall back to a local build" {
+    for workflow in \
+        "$ROOT/.github/workflows/ci.yml" \
+        "$ROOT/.github/workflows/guardrails.yml"; do
+        while IFS= read -r line; do
+            [[ "$line" == *'nix build '* ]] || continue
+            [[ "$line" == *'--fallback'* ]]
+        done < "$workflow"
+    done
+}
