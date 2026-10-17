@@ -23,7 +23,7 @@ pre-commit:
       run: lefthook-git-no-local-paths {staged_files}
     nix-flake-check:
       glob: "*.nix"
-      run: timeout ${LEFTHOOK_NIX_FLAKE_CHECK_TIMEOUT:-600} nix flake check
+      run: timeout ${LEFTHOOK_NIX_FLAKE_CHECK_TIMEOUT:-600} nix flake check --option accept-flake-config false
 
 pre-push:
   commands:
@@ -37,7 +37,7 @@ pre-push:
       # the changes least likely to be suspected: a config edit, a doc, a
       # fragment. Pre-commit keeps the glob; this is the gate before the push,
       # and it costs what CI costs.
-      run: timeout ${LEFTHOOK_NIX_FLAKE_CHECK_TIMEOUT:-600} nix flake check
+      run: timeout ${LEFTHOOK_NIX_FLAKE_CHECK_TIMEOUT:-600} nix flake check --option accept-flake-config false
 
 commit-msg:
   commands:
