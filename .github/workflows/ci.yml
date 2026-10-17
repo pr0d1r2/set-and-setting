@@ -69,7 +69,7 @@ jobs:
         # that a broken token is silent -- read the push step's log, not its
         # conclusion, when cache hits stop appearing.
         continue-on-error: true
-        uses: cachix/cachix-action@v15
+        uses: cachix/cachix-action@5f2d7c5294214f71b873db4b969586b980625e71 # v17
         with:
           name: pr0d1r2
           authToken: ${{ secrets.CACHIX_AUTH_TOKEN }}
@@ -99,7 +99,7 @@ jobs:
             extra-trusted-public-keys = pr0d1r2.cachix.org-1:NfWjbhgAj41byXhCKiaE+av3Vnphm1fTezHXEGsiQIM=
       - name: Upload evaluated standard paths
         continue-on-error: true
-        uses: cachix/cachix-action@v15
+        uses: cachix/cachix-action@5f2d7c5294214f71b873db4b969586b980625e71 # v17
         with:
           name: pr0d1r2
           authToken: ${{ secrets.CACHIX_AUTH_TOKEN }}

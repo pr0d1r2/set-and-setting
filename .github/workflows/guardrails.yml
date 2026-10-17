@@ -65,7 +65,7 @@ jobs:
       - name: Push built paths to the shared cache
         if: env.CACHIX_AUTH_TOKEN != ''
         continue-on-error: true
-        uses: cachix/cachix-action@v15
+        uses: cachix/cachix-action@5f2d7c5294214f71b873db4b969586b980625e71 # v17
         with:
           name: pr0d1r2
           authToken: ${{ secrets.cachix-auth-token }}
@@ -127,7 +127,7 @@ jobs:
       - name: Push built paths to the shared cache
         if: env.CACHIX_AUTH_TOKEN != ''
         continue-on-error: true
-        uses: cachix/cachix-action@v15
+        uses: cachix/cachix-action@5f2d7c5294214f71b873db4b969586b980625e71 # v17
         with:
           name: pr0d1r2
           authToken: ${{ secrets.cachix-auth-token }}
