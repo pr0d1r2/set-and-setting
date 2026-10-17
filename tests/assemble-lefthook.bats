@@ -28,7 +28,7 @@ setup() {
         write_commands pre-commit git-no-local-paths "*" staged_files
         printf '%s\n' '    nix-flake-check:' \
             '      glob: "*.nix"' \
-            '      run: timeout ${LEFTHOOK_NIX_FLAKE_CHECK_TIMEOUT:-600} nix flake check'
+            '      run: timeout ${LEFTHOOK_NIX_FLAKE_CHECK_TIMEOUT:-600} nix flake check --option accept-flake-config false'
     } >"$FRAGMENTS_DIR/base.yml"
 
     printf '%s\n' "---" >"$FRAGMENTS_DIR/nix.yml"
@@ -172,7 +172,18 @@ teardown() {
     echo "$precommit_section" | grep -q 'nix-flake-check:'
     echo "$precommit_section" | grep -Fq 'glob: "*.nix"'
     echo "$prepush_section" | grep -q 'nix-flake-check:'
-    echo "$prepush_section" | grep -Fq 'run: timeout ${LEFTHOOK_NIX_FLAKE_CHECK_TIMEOUT:-600} nix flake check'
+    echo "$prepush_section" | grep -Fq 'run: timeout ${LEFTHOOK_NIX_FLAKE_CHECK_TIMEOUT:-600} nix flake check --option accept-flake-config false'
+}
+
+@test "both flake-check hooks disable interactive flake configuration prompts" {
+    local real_dir
+    real_dir="$(cd "$BATS_TEST_DIRNAME/.." && pwd)/setting/integrations/lefthook"
+    FRAGMENTS_DIR="$real_dir"
+    export FRAGMENTS_DIR
+    FRAGMENTS="base" bash "$SCRIPT"
+
+    [ "$(grep -F -c 'nix flake check --option accept-flake-config false' "$out/lefthook.yml")" -eq 2 ]
+    [ "$(grep -F -c 'nix flake check --option accept-flake-config false' "$real_dir/base.yml")" -eq 2 ]
 }
 
 @test "base fragment invokes consumer-provided ledger and namespace commands" {
