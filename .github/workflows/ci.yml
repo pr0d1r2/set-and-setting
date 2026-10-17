@@ -54,6 +54,7 @@ jobs:
       NIX_CONFIG: |
         connect-timeout = 15
         download-attempts = 5
+        fallback = true
     steps:
       - uses: actions/checkout@v4
       - uses: cachix/install-nix-action@v27
@@ -88,6 +89,7 @@ jobs:
       NIX_CONFIG: |
         connect-timeout = 15
         download-attempts = 5
+        fallback = true
     steps:
       - uses: actions/checkout@v4
       # Same installer as the darwin guardrails job, for the same reason (B26).
