@@ -199,6 +199,33 @@ teardown() {
     run ! grep -q 'bash lib/lint-\(namespace-limit\|ledger-ids\)\.sh' "$out/lefthook.yml"
 }
 
+@test "bats tdd-order selects tests/unit when tracked Bats specs live there" {
+    local real_dir workdir
+    real_dir="$(cd "$BATS_TEST_DIRNAME/.." && pwd)/setting/integrations/lefthook"
+    FRAGMENTS_DIR="$real_dir"
+    export FRAGMENTS_DIR
+    workdir="$(mktemp -d)"
+    git -C "$workdir" init -q
+    mkdir -p "$workdir/tests/unit"
+    touch "$workdir/tests/unit/example.bats"
+    git -C "$workdir" add tests/unit/example.bats
+    cd "$workdir"
+    FRAGMENTS="bats" bash "$SCRIPT"
+
+    grep -Fq 'git ls-files -- tests/unit/ | grep -qE '\''\.bats$'\'' && printf tests/unit || printf tests' "$out/lefthook.yml"
+    rm -rf "$workdir"
+}
+
+@test "bats tdd-order preserves an explicit spec directory override" {
+    local real_dir
+    real_dir="$(cd "$BATS_TEST_DIRNAME/.." && pwd)/setting/integrations/lefthook"
+    FRAGMENTS_DIR="$real_dir"
+    export FRAGMENTS_DIR
+    FRAGMENTS="bats" bash "$SCRIPT"
+
+    grep -Fq 'LEFTHOOK_TDD_SPEC_DIR="${LEFTHOOK_TDD_SPEC_DIR:-' "$out/lefthook.yml"
+}
+
 @test "no emitted consumer hook runs bash lib/" {
     local real_dir
     real_dir="$(cd "$BATS_TEST_DIRNAME/.." && pwd)/setting/integrations/lefthook"
