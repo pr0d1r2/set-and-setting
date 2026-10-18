@@ -15,7 +15,7 @@ pre-commit:
       run: lefthook-no-shell-functions {staged_files}
     lint-noexec:
       glob: "*.{sh,nix,yml,yaml}"
-      run: bash lib/lint-noexec.sh {staged_files}
+      run: lefthook-lint-noexec {staged_files}
 
 pre-push:
   commands:
@@ -30,4 +30,4 @@ pre-push:
       run: lefthook-no-shell-functions {push_files}
     lint-noexec:
       glob: "*.{sh,nix,yml,yaml}"
-      run: bash lib/lint-noexec.sh {push_files}
+      run: lefthook-lint-noexec {push_files}

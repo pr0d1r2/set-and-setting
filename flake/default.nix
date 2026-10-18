@@ -497,6 +497,7 @@ let
         (shellcheckWrapperFor pkgs)
         (shfmtWrapperFor pkgs)
         (noShellFunctionsWrapperFor pkgs)
+        (localLint "lefthook-lint-noexec" ../lib/lint-noexec.sh)
       ];
       ruby = [
         pkgs.ruby
