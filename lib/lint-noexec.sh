@@ -29,7 +29,7 @@ for path in "$@"; do
         } else visible = visible ch
       }
       rest = visible
-      while (match(rest, "(^|[[:space:](;|&])(([.]?[.]?/|[[:alnum:]_.-]+/)[^[:space:];|&()\\\047\"]+[.]sh)([[:space:]]|$)")) {
+      while (match(rest, "(^|[[:space:](;|&])(([.]?[.]?/|[[:alnum:]_.-]+/)?[^[:space:];|&()\\\047\"]+[.]sh)([[:space:]]|$)")) {
         prefix = substr(rest, 1, RSTART - 1)
         sub(/^.*[[:space:](;|&]/, "", prefix)
         script = substr(rest, RSTART, RLENGTH)

@@ -15,11 +15,12 @@ teardown() { rm -rf "$TMP"; }
 }
 
 @test "unprefixed shell script invocations are findings" {
-    printf '%s\n' './scripts/x.sh' 'run ./other/y.sh' >"$TMP/bad.sh"
+    printf '%s\n' './scripts/x.sh' 'run ./other/y.sh' 'script.sh' >"$TMP/bad.sh"
     run bash "$SCRIPT" "$TMP/bad.sh"
     [ "$status" -eq 1 ]
     [[ "$output" == *"$TMP/bad.sh:1: invoke shell scripts with an interpreter prefix: bash ./scripts/x.sh"* ]]
     [[ "$output" == *"$TMP/bad.sh:2: invoke shell scripts with an interpreter prefix: bash ./other/y.sh"* ]]
+    [[ "$output" == *"$TMP/bad.sh:3: invoke shell scripts with an interpreter prefix: bash script.sh"* ]]
 }
 
 @test "shebangs and quoted documentation are not findings" {
