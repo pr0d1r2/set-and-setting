@@ -497,6 +497,7 @@ let
         (shellcheckWrapperFor pkgs)
         (shfmtWrapperFor pkgs)
         (noShellFunctionsWrapperFor pkgs)
+        (localLint "lefthook-lint-noexec" ../lib/lint-noexec.sh)
       ];
       ruby = [
         pkgs.ruby
@@ -1508,7 +1509,7 @@ in
         wrapper = shfmtWrapperFor pkgs;
       in
       pkgs.runCommand "shfmt-catches-violation" { } ''
-        printf 'if true; then\necho bad\nfi\n' > bad.sh
+        printf 'if true; then\necho bad\nfi\n' > "bad.sh"
         if ${pkgs.lib.getExe wrapper} --check bad.sh; then
           echo "FAIL: shfmt --check accepted a misindented file"; exit 1
         fi
@@ -1585,7 +1586,7 @@ in
         wrapper = shellcheckWrapperFor pkgs;
       in
       pkgs.runCommand "shellcheck-catches-violation" { } ''
-        printf '#!/bin/bash\necho $UNDEFINED_VAR\n' > bad.sh
+        printf '#!/bin/bash\necho $UNDEFINED_VAR\n' > "bad.sh"
         if ${pkgs.lib.getExe wrapper} bad.sh; then
           echo "FAIL: shellcheck accepted an unquoted variable"; exit 1
         fi
@@ -1597,7 +1598,7 @@ in
         wrapper = noShellFunctionsWrapperFor pkgs;
       in
       pkgs.runCommand "no-shell-functions-catches-violation" { } ''
-        printf '#!/bin/bash\nmy_func() { echo hi; }\n' > bad.sh
+        printf '#!/bin/bash\nmy_func() { echo hi; }\n' > "bad.sh"
         if ${pkgs.lib.getExe wrapper} bad.sh; then
           echo "FAIL: no-shell-functions accepted a function definition"; exit 1
         fi
@@ -3752,7 +3753,7 @@ in
           cp ${mkSettingFull.configFiles}/.yamllint.yml $out/.yamllint.yml
           # create files for each fragment to trigger detection
           mkdir -p $out/spec $out/config
-          touch $out/dummy.nix $out/dummy.sh $out/dummy.md $out/dummy.yml \
+          touch $out/dummy.nix "$out/dummy.sh" $out/dummy.md $out/dummy.yml \
             $out/.rubocop.yml $out/.reek.yml $out/config/brakeman.yml \
             $out/Gemfile.lock $out/spec/example_spec.rb
           printf '{}' > $out/flake.lock

@@ -72,6 +72,7 @@ in
       "shellcheck"
       "shfmt"
       "no-shell-functions"
+      "lint-noexec"
     ];
     ruby = [ ];
     rubocop = [
@@ -207,17 +208,20 @@ in
       "rekall-gnu-sed"
       "namespace-limit"
       "watch-file"
+      "lint-noexec"
     ];
     sh = [
       "shellcheck"
       "shfmt"
       "no-shell-functions"
+      "lint-noexec"
       "rekall-gnu-sed"
     ];
     bash = [
       "shellcheck"
       "shfmt"
       "no-shell-functions"
+      "lint-noexec"
       "rekall-gnu-sed"
     ];
     rb = [
@@ -236,10 +240,12 @@ in
     yml = [
       "yamllint"
       "rekall-gnu-sed"
+      "lint-noexec"
     ];
     yaml = [
       "yamllint"
       "rekall-gnu-sed"
+      "lint-noexec"
     ];
     toml = [ "taplo" ];
     justfile = [
