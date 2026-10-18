@@ -556,7 +556,10 @@ let
           runtimeInputs = [ pkgs.tcl ];
         })
       ];
-      actions = [ (actionlintWrapperFor pkgs) ];
+      actions = [
+        (actionlintWrapperFor pkgs)
+        (localLint "lefthook-ci-lint-token" ../lib/ci-lint-token.sh)
+      ];
       awk = [
         (w "lefthook-gawk-lint" nix-lefthook-gawk-lint-src {
           runtimeInputs = [ pkgs.gawk ];

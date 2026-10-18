@@ -40,7 +40,10 @@ in
   # and lefthook-only commands (fragment YAML). The migrate equivalence gate
   # and carry-through logic use this to classify any check it encounters.
   checksPerFragment = {
-    actions = [ "actionlint" ];
+    actions = [
+      "actionlint"
+      "ci-lint-token"
+    ];
     base = [
       "gitleaks"
       "git-conflict-markers"
@@ -241,6 +244,7 @@ in
       "yamllint"
       "rekall-gnu-sed"
       "lint-noexec"
+      "ci-lint-token"
     ];
     yaml = [
       "yamllint"

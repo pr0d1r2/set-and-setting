@@ -33,6 +33,7 @@ env:
     connect-timeout = 15
     download-attempts = 5
     fallback = true
+    access-tokens = github.com=${{ secrets.GITHUB_TOKEN }}
 
 jobs:
   check:
@@ -44,6 +45,8 @@ jobs:
       - uses: actions/checkout@v4
       - uses: cachix/install-nix-action@v27
         with:
+          pre-build-commands: |
+            echo "access-tokens = github.com=${{ secrets.GITHUB_TOKEN }}" | sudo tee -a /etc/nix/nix.conf
           # Nix defaults `max-jobs` to 1 and neither installer overrides it,
           # so the 110 independent checks built strictly one at a time. Each
           # is a sandboxed derivation touching no shared state, so they
@@ -117,6 +120,8 @@ jobs:
       # cachix/install-nix-action shell installer does (B26).
       - uses: DeterminateSystems/nix-installer-action@33c9ab3ef95cd57c164d9d6eb1f9a46338538d41
         with:
+          pre-build-commands: |
+            echo "access-tokens = github.com=${{ secrets.GITHUB_TOKEN }}" | sudo tee -a /etc/nix/nix.conf
           # See the ubuntu job: nix's default `max-jobs` of 1 serialized every
           # check. Darwin paid most for it -- one 105-second derivation with
           # 770 idle behind it.

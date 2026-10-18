@@ -7,9 +7,15 @@ pre-commit:
     actionlint:
       glob: ".github/workflows/*.{yml,yaml}"
       run: timeout ${LEFTHOOK_ACTIONLINT_TIMEOUT:-30} lefthook-actionlint {staged_files}
+    ci-lint-token:
+      glob: "{flake.nix,.github/workflows/*.{yml,yaml}}"
+      run: lefthook-ci-lint-token {staged_files}
 
 pre-push:
   commands:
     actionlint:
       glob: ".github/workflows/*.{yml,yaml}"
       run: timeout ${LEFTHOOK_ACTIONLINT_TIMEOUT:-30} lefthook-actionlint {push_files}
+    ci-lint-token:
+      glob: "{flake.nix,.github/workflows/*.{yml,yaml}}"
+      run: lefthook-ci-lint-token {push_files}
