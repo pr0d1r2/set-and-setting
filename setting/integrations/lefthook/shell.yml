@@ -14,7 +14,7 @@ pre-commit:
       glob: "*.sh"
       run: lefthook-no-shell-functions {staged_files}
     lint-noexec:
-      glob: "*.{sh,nix,yml,yaml}"
+      glob: "*.{sh,yml,yaml}"
       run: lefthook-lint-noexec {staged_files}
 
 pre-push:
@@ -29,5 +29,5 @@ pre-push:
       glob: "*.sh"
       run: lefthook-no-shell-functions {push_files}
     lint-noexec:
-      glob: "*.{sh,nix,yml,yaml}"
+      glob: "*.{sh,yml,yaml}"
       run: lefthook-lint-noexec {push_files}

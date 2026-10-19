@@ -28,6 +28,15 @@ for path in "$@"; do
           visible = visible " "
         } else visible = visible ch
       }
+      # These words are arguments/data, not commands.  Nix files are excluded
+      # by the hook; keep this guard for callers that invoke the linter
+      # directly with a mixed file list.
+      if (path ~ /[.]nix$/) next
+      sub(/(^|[[:space:];|&])watch_file[[:space:]]+[^;|&]*/, " ", visible)
+      sub(/(^|[[:space:];|&])source_env[[:space:]]+[^;|&]*/, " ", visible)
+      # Preserve the command after `do`, while removing the for-loop word
+      # list from the scan.
+      sub(/(^|[[:space:]])for[[:space:]][^;]*[[:space:]]in[[:space:]][^;]*;[[:space:]]*do/, " ", visible)
       rest = visible
       while (match(rest, "(^|[[:space:](;|&])(([.]?[.]?/|[[:alnum:]_.-]+/)?[^[:space:];|&()\\\047\"]+[.]sh)([[:space:]]|$)")) {
         prefix = substr(rest, 1, RSTART - 1)
