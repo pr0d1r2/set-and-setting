@@ -43,6 +43,7 @@ in
     actions = [
       "actionlint"
       "ci-lint-token"
+      "ci-lint-qemu-order"
     ];
     base = [
       "gitleaks"
@@ -245,6 +246,7 @@ in
       "rekall-gnu-sed"
       "lint-noexec"
       "ci-lint-token"
+      "ci-lint-qemu-order"
     ];
     yaml = [
       "yamllint"
