@@ -25,16 +25,16 @@ for path in "$@"; do
           step_qemu = 0
           step_installer = 0
         }
-        /^[[:space:]]{2}[^[:space:]][^:]*:[[:space:]]*$/ {
+        /^  [^[:space:]][^:]*:[[:space:]]*$/ {
           if (job) finish_job()
           job = 1
           next
         }
-        job && /^[[:space:]]{4}steps:[[:space:]]*$/ { in_steps = 1; next }
-        job && /^[[:space:]]{4}[^[:space:]-][^:]*:/ && $0 !~ /^[[:space:]]{4}steps:/ { in_steps = 0 }
+        job && /^    steps:[[:space:]]*$/ { in_steps = 1; next }
+        job && /^    [^[:space:]-][^:]*:/ && $0 !~ /^    steps:/ { in_steps = 0 }
         job && /extra-platforms[[:space:]]*:/ { foreign = 1 }
         job && /aarch64/ { foreign = 1 }
-        job && in_steps && /^[[:space:]]{6}-[[:space:]]/ {
+        job && in_steps && /^      -[[:space:]]/ {
           finish_step()
           step++
           step_qemu = 0
