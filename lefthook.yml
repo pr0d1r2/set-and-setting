@@ -24,6 +24,12 @@ pre-commit:
     actionlint:
       glob: ".github/workflows/*.{yml,yaml}"
       run: timeout ${LEFTHOOK_ACTIONLINT_TIMEOUT:-30} lefthook-actionlint {staged_files}
+    ci-lint-token:
+      glob: "{flake.nix,.github/workflows/*.{yml,yaml}}"
+      run: lefthook-ci-lint-token {staged_files}
+    ci-lint-qemu-order:
+      glob: ".github/workflows/*.{yml,yaml}"
+      run: lefthook-ci-lint-qemu-order {staged_files}
     nixfmt:
       glob: "*.nix"
       run: lefthook-nixfmt {staged_files}
@@ -51,6 +57,9 @@ pre-commit:
     no-shell-functions:
       glob: "*.sh"
       run: lefthook-no-shell-functions {staged_files}
+    lint-noexec:
+      glob: "*.{sh,yml,yaml}"
+      run: lefthook-lint-noexec {staged_files}
     rubocop:
       glob: "**/*.rb"
       run: bundle exec rubocop --fail-fast --force-exclusion {staged_files}
@@ -117,6 +126,12 @@ pre-push:
     actionlint:
       glob: ".github/workflows/*.{yml,yaml}"
       run: timeout ${LEFTHOOK_ACTIONLINT_TIMEOUT:-30} lefthook-actionlint {push_files}
+    ci-lint-token:
+      glob: "{flake.nix,.github/workflows/*.{yml,yaml}}"
+      run: lefthook-ci-lint-token {push_files}
+    ci-lint-qemu-order:
+      glob: ".github/workflows/*.{yml,yaml}"
+      run: lefthook-ci-lint-qemu-order {push_files}
     nixfmt:
       glob: "*.nix"
       run: lefthook-nixfmt {push_files}
@@ -144,6 +159,9 @@ pre-push:
     no-shell-functions:
       glob: "*.sh"
       run: lefthook-no-shell-functions {push_files}
+    lint-noexec:
+      glob: "*.{sh,yml,yaml}"
+      run: lefthook-lint-noexec {push_files}
     rubocop:
       glob: "**/*.rb"
       run: bundle exec rubocop --fail-fast
