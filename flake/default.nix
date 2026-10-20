@@ -559,6 +559,7 @@ let
       actions = [
         (actionlintWrapperFor pkgs)
         (localLint "lefthook-ci-lint-token" ../lib/ci-lint-token.sh)
+        (localLint "lefthook-ci-lint-qemu-order" ../lib/ci-lint-qemu-order.sh)
       ];
       awk = [
         (w "lefthook-gawk-lint" nix-lefthook-gawk-lint-src {
