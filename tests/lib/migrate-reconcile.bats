@@ -22,3 +22,32 @@ _flake() { printf '%s\n' "{" "  inputs.nixpkgs.url = \"github:NixOS/nixpkgs\";" 
     [[ "$output" == *"unreconcilable"* ]]
     [[ "$output" == *"pkgs binding"* ]]
 }
+
+@test "a per-system let is not taken for the top-level let when outputs has none (#620)" {
+    _flake "  outputs = { nixpkgs, ... }:" "    {" \
+        "      packages = nixpkgs.lib.genAttrs [ \"x86_64-linux\" ] (system:" "        let" \
+        "          pkgs = nixpkgs.legacyPackages.\${system};" "          tool = pkgs.hello;" \
+        "        in" "        { default = tool; });" "    };"
+    write_vendored_lefthook
+    _init_repo
+
+    run bash "$MIGRATE_SCRIPT"
+
+    [ "$status" -eq 0 ]
+    nix-instantiate --parse flake.nix >/dev/null
+    [ "$(grep -c 'tool = pkgs.hello;' flake.nix)" -eq 1 ]
+}
+
+@test "a top-level let on the outputs header line is carried (#620)" {
+    _flake "  outputs = { nixpkgs, ... }: let" \
+        "      consumerPackage = nixpkgs.legacyPackages.x86_64-linux.hello;" "    in" "    {" \
+        "      packages.x86_64-linux.default = consumerPackage;" "    };"
+    write_vendored_lefthook
+    _init_repo
+
+    run bash "$MIGRATE_SCRIPT"
+
+    [ "$status" -eq 0 ]
+    nix-instantiate --parse flake.nix >/dev/null
+    grep -q 'consumerPackage = nixpkgs.legacyPackages.x86_64-linux.hello;' flake.nix
+}
