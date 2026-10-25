@@ -8,9 +8,9 @@
 # and the dry-run/detect modes.
 
 setup() {
-    load git-env
+    load ../git-env
     bats_require_minimum_version 1.5.0
-    REPO_ROOT="$BATS_TEST_DIRNAME/.."
+    REPO_ROOT="$BATS_TEST_DIRNAME/../.."
     export MIGRATE_SCRIPT="$REPO_ROOT/lib/migrate.sh"
     export FRAGMENTS_DIR="$REPO_ROOT/setting/integrations/lefthook"
     export ASSEMBLE_SCRIPT="$REPO_ROOT/setting/lib/assemble-lefthook.sh"
@@ -946,7 +946,7 @@ write_vendored_lefthook_with_remotes() {
 # ======== #191: fidelity -- seed references centralized assembly ========
 
 @test "fidelity: seed template delegates consumer wiring to mkConsumerFlake" {
-    local seed_flake="$BATS_TEST_DIRNAME/../setting/scaffold/leaf-flake.txt"
+    local seed_flake="$BATS_TEST_DIRNAME/../../setting/scaffold/leaf-flake.txt"
     grep -q 'mkConsumerFlake' "$seed_flake"
     run ! grep -qE 'settingHook|assemble-lefthook\.sh|confirm\.sh' "$seed_flake"
 }
