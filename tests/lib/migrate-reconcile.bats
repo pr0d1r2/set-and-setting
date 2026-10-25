@@ -66,3 +66,18 @@ _flake() { printf '%s\n' "{" "  inputs.nixpkgs.url = \"github:NixOS/nixpkgs\";" 
     grep -q 'foo = packages.foo;' flake.nix
     run ! grep -q 'self.packages' flake.nix
 }
+
+@test "a rec output whose value starts on the next line keeps its name (#620)" {
+    _flake "  outputs = { nixpkgs, ... }:" "    rec {" \
+        "      packages.x86_64-linux.default = nixpkgs.legacyPackages.x86_64-linux.hello;" \
+        "      overlays.default =" "        final: _prev: { inherit (packages.\${final.system}) default; };" "    };"
+    write_vendored_lefthook
+    _init_repo
+
+    run bash "$MIGRATE_SCRIPT"
+
+    [ "$status" -eq 0 ]
+    nix-instantiate --parse flake.nix >/dev/null
+    run ! grep -q 'self.overlays' flake.nix
+    grep -q 'inherit (self.packages.${final.system}) default;' flake.nix
+}
