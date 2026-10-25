@@ -1081,6 +1081,7 @@ load migrate-helpers
     nix-instantiate --parse flake.nix >/dev/null
     # one `package` binding, inside the extraPackages lambda that binds the argument
     [ "$(grep -c 'package = import ./rtk.nix' flake.nix)" -eq 1 ]
+    grep -q 'pkgs = packagePkgs;' flake.nix
     awk '/extraPackages =/ { e = 1 } e && /packagePkgs:/ { a = 1 } a && /package = import/ { ok = 1 } END { exit !ok }' flake.nix
 }
 
