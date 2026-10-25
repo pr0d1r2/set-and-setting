@@ -452,6 +452,92 @@ if [ "$has_custom_flake" -eq 1 ]; then
         }
         END { printf "%s", result }
       ' flake.nix)"
+      # The per-system lambda around those entries (#620): its argument and
+      # the let it opens move into extraPackages with them. Output line 1 is
+      # the extraPackages parameter, the rest is the carried let body. An
+      # argument used as `${arg}` is a system name, not a package set: the
+      # parameter is then `pkgs`, a let binding that rebinds `pkgs` is
+      # dropped, and the argument is re-bound from `pkgs` when still used.
+      reconciled_pkg_lambda="$(awk '
+        BEGIN { in_pkg=0; done=0; arg=""; want_arg=0; let_state=0; nb=0; bcap=0; depth=0; block=""; after="" }
+        done { next }
+        { match($0, /^[[:space:]]*/); indent = RLENGTH }
+        !in_pkg && /^[[:space:]]*packages[[:space:]]*=/ {
+          in_pkg = 1; pdepth = 0
+          h = $0
+          sub(/^[^=]*=/, "", h)
+          if (sub(/^[^(]*\(/, "", h)) {
+            if (match(h, /^[[:space:]]*[a-zA-Z_][a-zA-Z0-9_-]*[[:space:]]*:/)) {
+              arg = substr(h, RSTART, RLENGTH); gsub(/[[:space:]:]/, "", arg)
+            } else if (h ~ /^[[:space:]]*$/) want_arg = 1
+          }
+          line_seen = 1
+        }
+        in_pkg && !line_seen && want_arg && arg == "" {
+          want_arg = 0
+          if (match($0, /^[[:space:]]*[a-zA-Z_][a-zA-Z0-9_-]*[[:space:]]*:[[:space:]]*$/)) {
+            arg = $0; gsub(/[[:space:]:]/, "", arg); line_seen = 1
+          }
+        }
+        in_pkg {
+          block = block $0 "\n"
+          for (i = 1; i <= length($0); i++) {
+            c = substr($0, i, 1)
+            if (c == "{" || c == "[" || c == "(") pdepth++
+            if (c == "}" || c == "]" || c == ")") pdepth--
+          }
+          if (pdepth <= 0 && /;[[:space:]]*$/) done = 1
+          if (line_seen) { line_seen = 0; next }
+          if (arg != "" && let_state == 0 && /^[[:space:]]*let[[:space:]]*$/) { let_state = 1; let_indent = indent; bind_indent = -1; next }
+          if (let_state == 1 && !bcap && /^[[:space:]]*in[[:space:]]*$/ && indent == let_indent) { let_state = 2; next }
+          if (let_state == 1) {
+            if (!bcap && /^[[:space:]]*[a-zA-Z_][a-zA-Z0-9_-]*[[:space:]]*=/) {
+              if (bind_indent < 0) bind_indent = indent
+              if (indent == bind_indent) {
+                match($0, /[a-zA-Z_][a-zA-Z0-9_-]*/)
+                nb++; cname[nb] = substr($0, RSTART, RLENGTH); chunk[nb] = ""; bcap = 1; depth = 0
+              }
+            }
+            if (bcap) {
+              chunk[nb] = chunk[nb] $0 "\n"
+              for (i = 1; i <= length($0); i++) {
+                c = substr($0, i, 1)
+                if (c == "{" || c == "[" || c == "(") depth++
+                if (c == "}" || c == "]" || c == ")") depth--
+              }
+              if (depth <= 0 && /;[[:space:]]*$/) bcap = 0
+            }
+            next
+          }
+          if (arg != "" && let_state != 1) { let_state = (let_state == 0 ? 3 : let_state); after = after $0 "\n" }
+        }
+        END {
+          if (arg == "") exit
+          sys = index(block, "${" arg "}") > 0
+          param = sys ? "pkgs" : arg
+          out = ""
+          for (k = 1; k <= nb; k++) {
+            if (sys && cname[k] == "pkgs") continue
+            out = out chunk[k]
+          }
+          if (sys && arg != "pkgs") {
+            re = "(^|[^a-zA-Z0-9_-])" arg "([^a-zA-Z0-9_-]|$)"
+            if (out ~ re || after ~ re) {
+              pad = sprintf("%" (bind_indent > 0 ? bind_indent : 0) "s", "")
+              out = pad arg " = pkgs.stdenv.hostPlatform.system;\n" out
+            }
+          }
+          printf "%s\n%s", param, out
+        }
+      ' flake.nix)"
+    fi
+  fi
+  reconciled_pkg_param="pkgs"
+  reconciled_pkg_let=""
+  if [ -n "${reconciled_pkg_lambda:-}" ]; then
+    reconciled_pkg_param="${reconciled_pkg_lambda%%$'\n'*}"
+    if [ "$reconciled_pkg_param" != "$reconciled_pkg_lambda" ]; then
+      reconciled_pkg_let="${reconciled_pkg_lambda#*$'\n'}"
     fi
   fi
 
@@ -461,7 +547,8 @@ if [ "$has_custom_flake" -eq 1 ]; then
   # binding must also be extracted or the reconciled flake has dangling refs.
   reconciled_let_bindings=""
   reconciled_binding_users="${reconciled_outputs}${reconciled_outputs:+
-}${reconciled_leaf_package:-}"
+}${reconciled_leaf_package:-}${reconciled_pkg_let:+
+$reconciled_pkg_let}"
   if [ -z "$unreconcilable" ] && [ -n "$reconciled_binding_users" ]; then
     reconciled_let_bindings="$(awk -v outputs="$reconciled_binding_users" '
       BEGIN {
@@ -486,14 +573,24 @@ if [ "$has_custom_flake" -eq 1 ]; then
           }
         }
       }
-      # track let-block: capture bindings inside the top-level let...in
-      /^[[:space:]]*let[[:space:]]*$/ || /^[[:space:]]+let$/ { in_let = 1; next }
-      /^[[:space:]]*in[[:space:]]*$/ || /^[[:space:]]+in$/ { in_let = 0; next }
-      in_let && /^[[:space:]]+[a-zA-Z_][a-zA-Z0-9_-]*[[:space:]]*=/ {
-        # start of a let-binding
+      # Capture bindings of the top-level let...in of `outputs` only. A let
+      # nested inside a lambda (a per-system `packages = forAllSystems (p:
+      # let ... in ...)`) can reference that lambda argument, so lifting it
+      # here would leave the argument unbound (#620).
+      { match($0, /^[[:space:]]*/); indent = RLENGTH }
+      !seen_outputs && /^[[:space:]]*outputs[[:space:]]*=/ { seen_outputs = 1 }
+      !cap && seen_outputs && !let_done && !in_let && /^[[:space:]]*let[[:space:]]*$/ {
+        in_let = 1; let_indent = indent; bind_indent = -1; next
+      }
+      !cap && in_let && /^[[:space:]]*in[[:space:]]*$/ && indent == let_indent {
+        in_let = 0; let_done = 1; next
+      }
+      !cap && in_let && /^[[:space:]]+[a-zA-Z_][a-zA-Z0-9_-]*[[:space:]]*=/ {
+        # start of a let-binding (only at the let block own binding level)
+        if (bind_indent < 0) bind_indent = indent
         match($0, /[a-zA-Z_][a-zA-Z0-9_-]*/)
         binding_name = substr($0, RSTART, RLENGTH)
-        if (binding_name in refs) {
+        if (indent == bind_indent && binding_name in refs) {
           cap = 1; depth = 0; buf = ""
         }
       }
@@ -508,6 +605,7 @@ if [ "$has_custom_flake" -eq 1 ]; then
           result = result buf
           cap = 0
         }
+        next
       }
       END { printf "%s", result }
     ' flake.nix)"
@@ -704,7 +802,9 @@ if [ "$reconcile_flake" -eq 1 ]; then
     -v custom_names="$reconciled_input_names" \
     -v custom_outputs="$reconciled_outputs" \
     -v custom_let="$reconciled_let_bindings" \
-    -v leaf_pkg="${reconciled_leaf_package:-}" '
+    -v leaf_pkg="${reconciled_leaf_package:-}" \
+    -v pkg_param="${reconciled_pkg_param:-pkgs}" \
+    -v pkg_let="${reconciled_pkg_let:-}" '
     { lines[NR] = $0 }
     END {
       last_close = 0
@@ -764,7 +864,28 @@ if [ "$reconcile_flake" -eq 1 ]; then
         # Preserve a leaf product through the mkConsumerFlake package escape hatch.
         if (!skip && !pkg_injected && leaf_pkg != "" && lines[i] ~ /^[[:space:]]*src[[:space:]]*=/) {
           pkg_injected = 1
-          print "      extraPackages = pkgs: {"
+          if (pkg_let == "") {
+            print "      extraPackages = " pkg_param ": {"
+          } else {
+            # Keep the per-system let inside the lambda that binds it (#620).
+            print "      extraPackages ="
+            print "        " pkg_param ":"
+            print "        let"
+            n_pl = split(pkg_let, pl_lines, "\n")
+            min_pl_indent = 9999
+            for (j = 1; j <= n_pl; j++) {
+              if (pl_lines[j] == "") continue
+              match(pl_lines[j], /^[[:space:]]*/)
+              if (RLENGTH < min_pl_indent) min_pl_indent = RLENGTH
+            }
+            if (min_pl_indent == 9999) min_pl_indent = 0
+            for (j = 1; j <= n_pl; j++) {
+              if (pl_lines[j] == "") continue
+              print "          " substr(pl_lines[j], min_pl_indent + 1)
+            }
+            print "        in"
+            print "        {"
+          }
           n_pkg = split(leaf_pkg, pkg_lines, "\n")
           min_pkg_indent = 9999
           for (j = 1; j <= n_pkg; j++) {
