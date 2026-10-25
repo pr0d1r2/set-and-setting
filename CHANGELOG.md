@@ -10,6 +10,9 @@
   In a `rec { ... }` outputs set, `overlays.default` could name `packages`
   directly; after migration the overlay sits outside that set, so the bare name
   was unbound and the flake failed to evaluate.
+  The rewrite applies only when the outputs body itself is `rec { ... }`; a
+  nested `rec` set such as `stdenv.mkDerivation rec { ... }` no longer turns
+  it on.
 
 - Keep a per-system let inside its lambda when `apps.migrate` reconciles a flake
   (#620). A package built in `packages = forAllSystems (packagePkgs: let ... in

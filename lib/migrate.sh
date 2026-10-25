@@ -638,8 +638,31 @@ $reconciled_pkg_let}"
   # in a plain attrset merged onto mkConsumerFlake, where that name is
   # unbound, so they read the sibling from `self` instead (#620). A name the
   # carried top-level let binds keeps its meaning.
-  if [ -z "$unreconcilable" ] && [ -n "$reconciled_outputs" ] &&
-    grep -qE '(^|[[:space:]])rec[[:space:]]*\{' flake.nix; then
+  # Only the outputs body itself counts: the first token after the header
+  # colon and any top-level let...in. A nested `mkDerivation rec { }` does not.
+  outputs_rec="$(awk '
+    { match($0, /^[[:space:]]*/); indent = RLENGTH }
+    !seen && /^[[:space:]]*outputs[[:space:]]*=/ { seen = 1; let_indent = indent }
+    !seen { next }
+    {
+      t = $0
+      if (!hdr) {
+        if (t !~ /:/) next
+        hdr = 1; sub(/^[^:]*:/, "", t)
+      } else if (!in_let) let_indent = indent
+      sub(/#.*/, "", t)
+      if (in_let) {
+        if (bind < 0 && t ~ /^[[:space:]]*[a-zA-Z_][a-zA-Z0-9_-]*[[:space:]]*=/) bind = indent
+        if (t !~ /^[[:space:]]*in([[:space:]]|$)/ || (bind < 0 ? indent > let_indent : indent >= bind)) next
+        in_let = 0; sub(/^[[:space:]]*in/, "", t)
+      }
+      if (t ~ /^[[:space:]]*$/) next
+      if (t ~ /^[[:space:]]*let[[:space:]]*$/) { in_let = 1; bind = -1; next }
+      if (t ~ /^[[:space:]]*rec([[:space:]{]|$)/) print "rec"
+      exit
+    }
+  ' flake.nix)"
+  if [ -z "$unreconcilable" ] && [ -n "$reconciled_outputs" ] && [ "$outputs_rec" = "rec" ]; then
     reconciled_outputs="$(awk -v bound="$reconciled_let_bindings" '
       BEGIN {
         n = split("packages checks devShells apps formatter overlays nixosModules templates nixosConfigurations homeConfigurations darwinConfigurations", names, " ")
