@@ -1203,6 +1203,23 @@ write_vendored_lefthook_with_remotes() {
     run ! grep -q 'legacyPackages.${system}' flake.nix
 }
 
+@test "custom outputs: a rec sibling reference reads it from self (#620)" {
+    printf '%s\n' "{" "  inputs.nixpkgs.url = \"github:NixOS/nixpkgs\";" \
+        "  outputs = { nixpkgs, ... }:" "    rec {" \
+        "      packages.x86_64-linux.default = nixpkgs.legacyPackages.x86_64-linux.hello;" \
+        "      overlays.default = final: _prev: {" "        inherit (packages.\${final.system}) default;" \
+        "      };" "    };" "}" >flake.nix
+    write_vendored_lefthook
+    _init_repo
+
+    run bash "$MIGRATE_SCRIPT"
+
+    [ "$status" -eq 0 ]
+    nix-instantiate --parse flake.nix >/dev/null
+    grep -q 'inherit (self.packages.${final.system}) default;' flake.nix
+    grep -q '^ *overlays.default = final' flake.nix
+}
+
 @test "content-aware-leaf: lib false positive does not trigger unreconcilable (#150)" {
     # nixpkgs.lib.genAttrs used to trigger has_extra_outputs via the
     # lib\. grep pattern, causing "custom output blocks not extractable"
