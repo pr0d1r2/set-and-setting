@@ -51,3 +51,17 @@ _flake() { printf '%s\n' "{" "  inputs.nixpkgs.url = \"github:NixOS/nixpkgs\";" 
     nix-instantiate --parse flake.nix >/dev/null
     grep -q 'consumerPackage = nixpkgs.legacyPackages.x86_64-linux.hello;' flake.nix
 }
+
+@test "a nested rec set does not send local names through self (#620)" {
+    _flake "  outputs = { nixpkgs, ... }:" "    {" \
+        "      packages.x86_64-linux.default = nixpkgs.legacyPackages.x86_64-linux.stdenv.mkDerivation rec {" \
+        "        pname = \"x\";" "        version = \"1\";" "        src = ./.;" "      };" \
+        "      overlays.default = final: prev: let packages = { foo = prev.hello; }; in { foo = packages.foo; };" "    };"
+    write_vendored_lefthook
+    _init_repo
+
+    run bash "$MIGRATE_SCRIPT"
+
+    [ "$status" -eq 0 ]
+    grep -q '{ foo = packages.foo; }' flake.nix
+}
