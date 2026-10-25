@@ -27,7 +27,7 @@ _flake() { printf '%s\n' "{" "  inputs.nixpkgs.url = \"github:NixOS/nixpkgs\";" 
     _flake "  outputs = { nixpkgs, ... }:" "    {" \
         "      packages = nixpkgs.lib.genAttrs [ \"x86_64-linux\" ] (system:" "        let" \
         "          pkgs = nixpkgs.legacyPackages.\${system};" "          tool = pkgs.hello;" \
-        "        in" "        { default = tool; });" "    };"
+        "        in" "        {" "          default = tool;" "        });" "    };"
     write_vendored_lefthook
     _init_repo
 

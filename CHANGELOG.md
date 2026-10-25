@@ -19,6 +19,9 @@
   A per-system `pkgs` binding other than `nixpkgs.legacyPackages.${system}`
   (for example one that sets `config.allowUnfree`) now stops the migration
   instead of being dropped.
+  Only the let that opens the `outputs` body counts as its top-level let, so a
+  flake whose outputs start with `{` keeps its per-system let in place, and a
+  let on the header line (`outputs = { ... }: let`) is carried.
 
 - Delete the four `.narrow-language-*.dic` dictionaries this repository tracked
   but nothing read since `narrow-language` was retired (#490). They missed 4,066

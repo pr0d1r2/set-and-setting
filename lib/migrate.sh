@@ -588,13 +588,23 @@ $reconciled_pkg_let}"
       # Capture bindings of the top-level let...in of `outputs` only. A let
       # nested inside a lambda (a per-system `packages = forAllSystems (p:
       # let ... in ...)`) can reference that lambda argument, so lifting it
-      # here would leave the argument unbound (#620).
+      # here would leave the argument unbound (#620). The top-level let is
+      # the first token after the header colon, on that line or the next
+      # non-blank one; its `in` is shallower than its bindings.
       { match($0, /^[[:space:]]*/); indent = RLENGTH }
-      !seen_outputs && /^[[:space:]]*outputs[[:space:]]*=/ { seen_outputs = 1 }
-      !cap && seen_outputs && !let_done && !in_let && /^[[:space:]]*let[[:space:]]*$/ {
-        in_let = 1; let_indent = indent; bind_indent = -1; next
+      !seen_outputs && /^[[:space:]]*outputs[[:space:]]*=/ { seen_outputs = 1; let_indent = indent }
+      seen_outputs && !header_done && /:/ {
+        header_done = 1; bind_indent = -1
+        rest = $0; sub(/^[^:]*:/, "", rest); sub(/#.*/, "", rest)
+        if (rest ~ /^[[:space:]]*let[[:space:]]*$/) in_let = 1
+        else if (rest !~ /^[[:space:]]*$/) let_done = 1
+        next
       }
-      !cap && in_let && /^[[:space:]]*in[[:space:]]*$/ && indent == let_indent {
+      !cap && header_done && !let_done && !in_let && !/^[[:space:]]*(#.*)?$/ {
+        if (!/^[[:space:]]*let[[:space:]]*$/) { let_done = 1; next }
+        in_let = 1; let_indent = indent; next
+      }
+      !cap && in_let && /^[[:space:]]*in[[:space:]]*$/ && (bind_indent < 0 ? indent <= let_indent : indent < bind_indent) {
         in_let = 0; let_done = 1; next
       }
       !cap && in_let && /^[[:space:]]+[a-zA-Z_][a-zA-Z0-9_-]*[[:space:]]*=/ {
