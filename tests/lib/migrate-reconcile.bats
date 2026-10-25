@@ -63,5 +63,6 @@ _flake() { printf '%s\n' "{" "  inputs.nixpkgs.url = \"github:NixOS/nixpkgs\";" 
     run bash "$MIGRATE_SCRIPT"
 
     [ "$status" -eq 0 ]
-    grep -q '{ foo = packages.foo; }' flake.nix
+    grep -q 'foo = packages.foo;' flake.nix
+    run ! grep -q 'self.packages' flake.nix
 }
