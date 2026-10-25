@@ -677,6 +677,24 @@ $reconciled_pkg_let}"
       }
       {
         line = $0; out = ""
+        # Hide double-quoted strings while qualifying references.  Otherwise
+        # a URL such as `packages.tar.gz` is mistaken for a sibling access.
+        masked = ""; nstr = 0
+        for (i = 1; i <= length(line); i++) {
+          c = substr(line, i, 1)
+          if (c == "\"") {
+            start = i; i++
+            while (i <= length(line)) {
+              c = substr(line, i, 1)
+              if (c == "\\") i++
+              else if (c == "\"") break
+              i++
+            }
+            strings[++nstr] = substr(line, start, i - start + 1)
+            masked = masked sprintf("@@NIXSTR%d@@", nstr)
+          } else masked = masked c
+        }
+        line = masked
         # an output assignment keeps its left-hand side as written, also when
         # its value starts on the next line (`overlays.default =`)
         if (match(line, /^[[:space:]]*[a-zA-Z_][a-zA-Z0-9_.-]*[[:space:]]*=/) && substr(line, RLENGTH + 1, 1) != "=") {
@@ -690,7 +708,12 @@ $reconciled_pkg_let}"
           out = out substr(line, RSTART, RLENGTH)
           line = substr(line, RSTART + RLENGTH)
         }
-        print out line
+        line = out line
+        for (i = 1; i <= nstr; i++) {
+          gsub("@@NIXSTR" i "@@", strings[i], line)
+          delete strings[i]
+        }
+        print line
       }
     ' <<<"$reconciled_outputs")"
   fi

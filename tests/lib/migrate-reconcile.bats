@@ -81,3 +81,21 @@ _flake() { printf '%s\n' "{" "  inputs.nixpkgs.url = \"github:NixOS/nixpkgs\";" 
     run ! grep -q 'self.overlays' flake.nix
     grep -q 'inherit (self.packages.${final.system}) default;' flake.nix
 }
+
+@test "a rec output does not qualify sibling-like names in strings (#621)" {
+    _flake "  outputs = { nixpkgs, ... }:" "    rec {" \
+        "      packages.x86_64-linux.default = nixpkgs.legacyPackages.x86_64-linux.hello;" \
+        "      overlays.default = final: _prev: {" \
+        "        url = \"https://example.test/packages.tar.gz\";" \
+        "        inherit (packages.\${final.system}) default;" \
+        "      };" "    };"
+    write_vendored_lefthook
+    _init_repo
+
+    run bash "$MIGRATE_SCRIPT"
+
+    [ "$status" -eq 0 ]
+    nix-instantiate --parse flake.nix >/dev/null
+    grep -q 'https://example.test/packages.tar.gz' flake.nix
+    grep -q 'inherit (self.packages.${final.system}) default;' flake.nix
+}
