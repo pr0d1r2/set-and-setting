@@ -455,9 +455,11 @@ if [ "$has_custom_flake" -eq 1 ]; then
       # The per-system lambda around those entries (#620): its argument and
       # the let it opens move into extraPackages with them. Output line 1 is
       # the extraPackages parameter, the rest is the carried let body. An
-      # argument used as `${arg}` is a system name, not a package set: the
-      # parameter is then `pkgs`, a let binding that rebinds `pkgs` is
-      # dropped, and the argument is re-bound from `pkgs` when still used.
+      # argument used as `${arg}` (or inherited, or named `system`) is a
+      # system name, not a package set: the parameter is then `pkgs`, the
+      # plain `pkgs = nixpkgs.legacyPackages.${arg};` binding is dropped (any
+      # other `pkgs` binding prints `!`: unreconcilable), and the argument is
+      # re-bound from `pkgs` when still used.
       reconciled_pkg_lambda="$(awk '
         BEGIN { in_pkg=0; done=0; arg=""; want_arg=0; let_state=0; nb=0; bcap=0; depth=0; block=""; after="" }
         done { next }
@@ -513,11 +515,18 @@ if [ "$has_custom_flake" -eq 1 ]; then
         }
         END {
           if (arg == "") exit
-          sys = index(block, "${" arg "}") > 0
+          # a system name: interpolated, inherited into a nixpkgs call, or so named
+          sys = index(block, "${" arg "}") > 0 || arg == "system" || block ~ ("inherit[^;]*[[:space:]]" arg "[[:space:]]*;")
           param = sys ? "pkgs" : arg
           out = ""
           for (k = 1; k <= nb; k++) {
-            if (sys && cname[k] == "pkgs") continue
+            if (sys && cname[k] == "pkgs") {
+              # only the plain package set may be dropped; anything else
+              # (config, overlays, another nixpkgs) would be lost silently
+              plain = chunk[k]; gsub(/[[:space:]]/, "", plain)
+              if (plain != "pkgs=nixpkgs.legacyPackages.${" arg "};") { print "!"; exit }
+              continue
+            }
             out = out chunk[k]
           }
           if (sys && arg != "pkgs") {
@@ -538,6 +547,9 @@ if [ "$has_custom_flake" -eq 1 ]; then
     reconciled_pkg_param="${reconciled_pkg_lambda%%$'\n'*}"
     if [ "$reconciled_pkg_param" != "$reconciled_pkg_lambda" ]; then
       reconciled_pkg_let="${reconciled_pkg_lambda#*$'\n'}"
+    fi
+    if [ "$reconciled_pkg_param" = "!" ]; then
+      unreconcilable="${unreconcilable:+$unreconcilable; }per-system pkgs binding is not nixpkgs.legacyPackages"
     fi
   fi
 

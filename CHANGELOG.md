@@ -16,6 +16,9 @@
   { ... })` was lifted to the top-level let of `outputs`, where `packagePkgs` is
   unbound, so the migrated flake failed to evaluate. The let now moves into
   `extraPackages` together with the lambda argument.
+  A per-system `pkgs` binding other than `nixpkgs.legacyPackages.${system}`
+  (for example one that sets `config.allowUnfree`) now stops the migration
+  instead of being dropped.
 
 - Delete the four `.narrow-language-*.dic` dictionaries this repository tracked
   but nothing read since `narrow-language` was retired (#490). They missed 4,066
