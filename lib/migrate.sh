@@ -677,9 +677,10 @@ $reconciled_pkg_let}"
       }
       {
         line = $0; out = ""
-        # an output assignment keeps its left-hand side as written
-        if (match(line, /^[[:space:]]*[a-zA-Z_][a-zA-Z0-9_.-]*[[:space:]]*=[^=]/)) {
-          out = substr(line, 1, RLENGTH - 1); line = substr(line, RLENGTH)
+        # an output assignment keeps its left-hand side as written, also when
+        # its value starts on the next line (`overlays.default =`)
+        if (match(line, /^[[:space:]]*[a-zA-Z_][a-zA-Z0-9_.-]*[[:space:]]*=/) && substr(line, RLENGTH + 1, 1) != "=") {
+          out = substr(line, 1, RLENGTH); line = substr(line, RLENGTH + 1)
         }
         while (match(line, /[a-zA-Z_][a-zA-Z0-9_-]*\./)) {
           tok = substr(line, RSTART, RLENGTH - 1)

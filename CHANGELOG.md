@@ -13,6 +13,8 @@
   The rewrite applies only when the outputs body itself is `rec { ... }`; a
   nested `rec` set such as `stdenv.mkDerivation rec { ... }` no longer turns
   it on.
+  An output whose value starts on the next line (`overlays.default =`) keeps
+  its name instead of becoming `self.overlays.default`.
 
 - Keep a per-system let inside its lambda when `apps.migrate` reconciles a flake
   (#620). A package built in `packages = forAllSystems (packagePkgs: let ... in
