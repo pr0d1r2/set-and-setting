@@ -24,3 +24,9 @@ paths:
   # intended: every repository in the fleet keeps a SPEC.md of the same shape
   # and hits the same wall as it grows.
   SPEC.md: 262144
+  # lib/migrate.sh is deliberately one functionless script (no-shell-functions)
+  # that the flake copies into the store on its own, so its awk programs cannot
+  # move to sibling files. The #620 reconciliation (per-system let, rec sibling
+  # outputs) took it past the .sh limit; this exempts that one file rather than
+  # raising `sh` for every script.
+  lib/migrate.sh: 57344

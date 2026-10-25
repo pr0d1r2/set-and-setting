@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- Exempt `lib/migrate.sh` from the `.sh` size limit (57344 bytes) instead of
+  raising the limit for every script; the #620 reconciliation took it past
+  49152 bytes.
+
 - Read a sibling output from `self` in outputs `apps.migrate` preserves (#620).
   In a `rec { ... }` outputs set, `overlays.default` could name `packages`
   directly; after migration the overlay sits outside that set, so the bare name
