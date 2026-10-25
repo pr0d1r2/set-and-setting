@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+- Read a sibling output from `self` in outputs `apps.migrate` preserves (#620).
+  In a `rec { ... }` outputs set, `overlays.default` could name `packages`
+  directly; after migration the overlay sits outside that set, so the bare name
+  was unbound and the flake failed to evaluate.
+
 - Keep a per-system let inside its lambda when `apps.migrate` reconciles a flake
   (#620). A package built in `packages = forAllSystems (packagePkgs: let ... in
   { ... })` was lifted to the top-level let of `outputs`, where `packagePkgs` is
