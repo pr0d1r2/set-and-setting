@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+- Keep a per-system let inside its lambda when `apps.migrate` reconciles a flake
+  (#620). A package built in `packages = forAllSystems (packagePkgs: let ... in
+  { ... })` was lifted to the top-level let of `outputs`, where `packagePkgs` is
+  unbound, so the migrated flake failed to evaluate. The let now moves into
+  `extraPackages` together with the lambda argument.
+
 - Delete the four `.narrow-language-*.dic` dictionaries this repository tracked
   but nothing read since `narrow-language` was retired (#490). They missed 4,066
   words of the current tree, so re-enabling the hook would have meant a bulk
