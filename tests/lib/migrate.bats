@@ -1162,6 +1162,47 @@ write_vendored_lefthook_with_remotes() {
     grep -q 'mkConsumerFlake' flake.nix
 }
 
+@test "consumer packages: per-system let stays inside its lambda (#620)" {
+    # nix-rtk shape: forAllSystems passes pkgs under another name, and the
+    # package is bound in a let inside that lambda.
+    printf '%s\n' "{" "  inputs.nixpkgs.url = \"github:NixOS/nixpkgs\";" \
+        "  outputs = { nixpkgs, ... }:" "    let" \
+        "      forAllSystems = f: nixpkgs.lib.genAttrs [ \"x86_64-linux\" ] (system: f nixpkgs.legacyPackages.\${system});" \
+        "    in" "    {" "      packages = forAllSystems (" "        packagePkgs:" "        let" \
+        "          package = import ./rtk.nix {" "            pkgs = packagePkgs;" "          };" \
+        "        in" "        {" "          default = package;" "          rtk = package;" "        }" \
+        "      );" "    };" "}" >flake.nix
+    write_vendored_lefthook
+    _init_repo
+
+    run bash "$MIGRATE_SCRIPT"
+
+    [ "$status" -eq 0 ]
+    nix-instantiate --parse flake.nix >/dev/null
+    # one `package` binding, inside the extraPackages lambda that binds the argument
+    [ "$(grep -c 'package = import ./rtk.nix' flake.nix)" -eq 1 ]
+    awk '/extraPackages =/ { e = 1 } e && /packagePkgs:/ { a = 1 } a && /package = import/ { ok = 1 } END { exit !ok }' flake.nix
+}
+
+@test "consumer packages: system-argument let keeps its non-pkgs bindings bound (#620)" {
+    printf '%s\n' "{" "  inputs.nixpkgs.url = \"github:NixOS/nixpkgs\";" \
+        "  outputs = { nixpkgs, ... }:" "    let" \
+        "      forAllSystems = f: nixpkgs.lib.genAttrs [ \"x86_64-linux\" ] (s: f s);" \
+        "    in" "    {" "      packages = forAllSystems (system:" "        let" \
+        "          pkgs = nixpkgs.legacyPackages.\${system};" "          tool = pkgs.callPackage ./tool.nix { label = \"tool-\${system}\"; };" \
+        "        in" "        {" "          default = tool;" "        });" "    };" "}" >flake.nix
+    write_vendored_lefthook
+    _init_repo
+
+    run bash "$MIGRATE_SCRIPT"
+
+    [ "$status" -eq 0 ]
+    nix-instantiate --parse flake.nix >/dev/null
+    grep -q 'tool = pkgs.callPackage ./tool.nix' flake.nix
+    grep -q 'system = pkgs.stdenv.hostPlatform.system;' flake.nix
+    run ! grep -q 'legacyPackages.${system}' flake.nix
+}
+
 @test "content-aware-leaf: lib false positive does not trigger unreconcilable (#150)" {
     # nixpkgs.lib.genAttrs used to trigger has_extra_outputs via the
     # lib\. grep pattern, causing "custom output blocks not extractable"
