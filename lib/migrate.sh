@@ -611,6 +611,44 @@ $reconciled_pkg_let}"
     ' flake.nix)"
   fi
 
+  # A `rec { ... }` outputs set lets one output read a sibling by its bare
+  # name (`inherit (packages.${final.system}) rtk;`). Preserved outputs land
+  # in a plain attrset merged onto mkConsumerFlake, where that name is
+  # unbound, so they read the sibling from `self` instead (#620). A name the
+  # carried top-level let binds keeps its meaning.
+  if [ -z "$unreconcilable" ] && [ -n "$reconciled_outputs" ] &&
+    grep -qE '(^|[[:space:]])rec[[:space:]]*\{' flake.nix; then
+    reconciled_outputs="$(awk -v bound="$reconciled_let_bindings" '
+      BEGIN {
+        n = split("packages checks devShells apps formatter overlays nixosModules templates nixosConfigurations homeConfigurations darwinConfigurations", names, " ")
+        for (k = 1; k <= n; k++) sib[names[k]] = 1
+        m = split(bound, bl, "\n")
+        for (k = 1; k <= m; k++) {
+          if (match(bl[k], /^[[:space:]]*[a-zA-Z_][a-zA-Z0-9_-]*[[:space:]]*=/)) {
+            nm = bl[k]; sub(/^[[:space:]]*/, "", nm); sub(/[[:space:]]*=.*/, "", nm)
+            delete sib[nm]
+          }
+        }
+      }
+      {
+        line = $0; out = ""
+        # an output assignment keeps its left-hand side as written
+        if (match(line, /^[[:space:]]*[a-zA-Z_][a-zA-Z0-9_.-]*[[:space:]]*=[^=]/)) {
+          out = substr(line, 1, RLENGTH - 1); line = substr(line, RLENGTH)
+        }
+        while (match(line, /[a-zA-Z_][a-zA-Z0-9_-]*\./)) {
+          tok = substr(line, RSTART, RLENGTH - 1)
+          out = out substr(line, 1, RSTART - 1)
+          prev = substr(out, length(out), 1)
+          if ((tok in sib) && prev !~ /[.a-zA-Z0-9_-]/) out = out "self."
+          out = out substr(line, RSTART, RLENGTH)
+          line = substr(line, RSTART + RLENGTH)
+        }
+        print out line
+      }
+    ' <<<"$reconciled_outputs")"
+  fi
+
   if [ -z "$unreconcilable" ]; then
     reconcile_flake=1
     echo "migrate: custom flake detected, reconciling ($custom_flake_details)"
