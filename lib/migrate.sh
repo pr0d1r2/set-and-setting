@@ -373,8 +373,17 @@ if [ "$has_custom_flake" -eq 1 ]; then
         # A let binding also ends in a semicolon, but that semicolon does not
         # terminate the output assignment.  Keep the assignment open until
         # its matching `in` has been seen (#623).
-        if ($0 ~ /(^|[^a-zA-Z0-9_-])let([^a-zA-Z0-9_-]|$)/) let_depth++
-        if (let_depth > 0 && $0 ~ /(^|[^a-zA-Z0-9_-])in([^a-zA-Z0-9_-]|$)/) let_depth--
+        for (i=1; i<=length($0); i++) {
+          if (substr($0, i, 3) == "let" &&
+              (i == 1 || substr($0, i - 1, 1) !~ /[a-zA-Z0-9_-]/) &&
+              (i + 3 > length($0) || substr($0, i + 3, 1) !~ /[a-zA-Z0-9_-]/))
+            let_depth++
+          if (substr($0, i, 2) == "in" &&
+              (i == 1 || substr($0, i - 1, 1) !~ /[a-zA-Z0-9_-]/) &&
+              (i + 2 > length($0) || substr($0, i + 2, 1) !~ /[a-zA-Z0-9_-]/) &&
+              let_depth > 0)
+            let_depth--
+        }
         for (i=1; i<=length($0); i++) {
           c = substr($0, i, 1)
           if (c == "{" || c == "[" || c == "(") depth++

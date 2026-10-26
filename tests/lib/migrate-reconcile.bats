@@ -98,6 +98,19 @@ _flake() { printf '%s\n' "{" "  inputs.nixpkgs.url = \"github:NixOS/nixpkgs\";" 
     grep -q '{ inherit hello2; };' flake.nix
 }
 
+@test "nested same-line lets in a preserved overlay are extracted whole" {
+    _flake "  outputs = { nixpkgs, ... }:" "    {" \
+        "      overlays.default = final: prev: let x = let y = prev.hello; in y; in { inherit x; };" "    };"
+    write_vendored_lefthook
+    _init_repo
+
+    run bash "$MIGRATE_SCRIPT"
+
+    [ "$status" -eq 0 ]
+    nix-instantiate --parse flake.nix >/dev/null
+    grep -q 'let y = prev.hello; in y; in { inherit x; };' flake.nix
+}
+
 @test "a rec output does not qualify sibling-like names in strings (#621)" {
     _flake "  outputs = { nixpkgs, ... }:" "    rec {" \
         "      packages.x86_64-linux.default = nixpkgs.legacyPackages.x86_64-linux.hello;" \
