@@ -111,6 +111,22 @@ _flake() { printf '%s\n' "{" "  inputs.nixpkgs.url = \"github:NixOS/nixpkgs\";" 
     grep -q 'let y = prev.hello; in y; in { inherit x; };' flake.nix
 }
 
+@test "let extraction ignores in inside a multiline overlay string" {
+    _flake "  outputs = { nixpkgs, ... }:" "    {" \
+        "      overlays.default = final: prev:" "        let" \
+        "          message = \"in\";" "        in" \
+        "        { inherit message; };" "    };"
+    write_vendored_lefthook
+    _init_repo
+
+    run bash "$MIGRATE_SCRIPT"
+
+    [ "$status" -eq 0 ]
+    nix-instantiate --parse flake.nix >/dev/null
+    grep -q 'message = "in";' flake.nix
+    grep -q '{ inherit message; };' flake.nix
+}
+
 @test "a rec output does not qualify sibling-like names in strings (#621)" {
     _flake "  outputs = { nixpkgs, ... }:" "    rec {" \
         "      packages.x86_64-linux.default = nixpkgs.legacyPackages.x86_64-linux.hello;" \
