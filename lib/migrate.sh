@@ -375,14 +375,22 @@ if [ "$has_custom_flake" -eq 1 ]; then
         # its matching `in` has been seen (#623).
         for (i=1; i<=length($0); i++) {
           if (substr($0, i, 3) == "let" &&
+              !in_string &&
               (i == 1 || substr($0, i - 1, 1) !~ /[a-zA-Z0-9_-]/) &&
               (i + 3 > length($0) || substr($0, i + 3, 1) !~ /[a-zA-Z0-9_-]/))
             let_depth++
           if (substr($0, i, 2) == "in" &&
+              !in_string &&
               (i == 1 || substr($0, i - 1, 1) !~ /[a-zA-Z0-9_-]/) &&
               (i + 2 > length($0) || substr($0, i + 2, 1) !~ /[a-zA-Z0-9_-]/) &&
               let_depth > 0)
             let_depth--
+          if (substr($0, i, 1) == "\\" && in_string) { i++; continue }
+          if (substr($0, i, 1) == "\"") {
+            in_string = !in_string
+            continue
+          }
+          if (substr($0, i, 1) == "#" && !in_string) break
         }
         for (i=1; i<=length($0); i++) {
           c = substr($0, i, 1)
