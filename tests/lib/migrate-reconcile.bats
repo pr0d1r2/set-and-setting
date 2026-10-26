@@ -82,6 +82,22 @@ _flake() { printf '%s\n' "{" "  inputs.nixpkgs.url = \"github:NixOS/nixpkgs\";" 
     grep -q 'inherit (self.packages.${final.system}) default;' flake.nix
 }
 
+@test "a multiline let in a preserved overlay is extracted whole (#623)" {
+    _flake "  outputs = { nixpkgs, ... }:" "    {" \
+        "      overlays.default = final: prev:" "        let" \
+        "          hello2 = prev.hello;" "        in" \
+        "        { inherit hello2; };" "    };"
+    write_vendored_lefthook
+    _init_repo
+
+    run bash "$MIGRATE_SCRIPT"
+
+    [ "$status" -eq 0 ]
+    nix-instantiate --parse flake.nix >/dev/null
+    grep -q 'hello2 = prev.hello;' flake.nix
+    grep -q '{ inherit hello2; };' flake.nix
+}
+
 @test "a rec output does not qualify sibling-like names in strings (#621)" {
     _flake "  outputs = { nixpkgs, ... }:" "    rec {" \
         "      packages.x86_64-linux.default = nixpkgs.legacyPackages.x86_64-linux.hello;" \
