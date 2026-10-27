@@ -460,7 +460,7 @@ if [ "$has_custom_flake" -eq 1 ]; then
           # lambda, for example `(pkgs: { default = ...; })` (#622).
           if (/\([[:space:]]*[a-zA-Z_][a-zA-Z0-9_-]*[[:space:]]*:[[:space:]]*\{/) {
             inline = $0
-            sub(/^.*:[[:space:]]*\{[[:space:]]*/, "", inline)
+            sub(/^[^(]*\([[:space:]]*[a-zA-Z_][a-zA-Z0-9_-]*[[:space:]]*:[[:space:]]*\{[[:space:]]*/, "", inline)
             sub(/[[:space:]]*\}[[:space:]]*\)[[:space:]]*;[[:space:]]*$/, "", inline)
             if (inline ~ /^[a-zA-Z_][a-zA-Z0-9_-]*[[:space:]]*=/) result = result inline "\n"
             in_attrset=1

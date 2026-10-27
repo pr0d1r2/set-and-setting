@@ -928,6 +928,25 @@ load migrate-helpers
     nix-instantiate --parse flake.nix >/dev/null
 }
 
+@test "consumer packages: inline attrset ignores nested callPackage attrset" {
+    printf '%s\n' \
+        "{" "  inputs.nixpkgs.url = \"github:NixOS/nixpkgs\";" \
+        "  outputs = { nixpkgs, ... }:" "    let" \
+        "      forAllSystems = f: nixpkgs.lib.genAttrs [ \"x86_64-linux\" ] (system: f nixpkgs.legacyPackages.\${system});" \
+        "    in" "    {" \
+        "      packages = forAllSystems (pkgs: { default = pkgs.callPackage (args: { foo = args.foo; }) {}; });" \
+        "    };" "}" >flake.nix
+    write_vendored_lefthook
+    _init_repo
+
+    run bash "$MIGRATE_SCRIPT"
+
+    [ "$status" -eq 0 ]
+    grep -q 'default = pkgs.callPackage' flake.nix
+    ! grep -q 'foo = args.foo' flake.nix
+    nix-instantiate --parse flake.nix >/dev/null
+}
+
 @test "consumer packages: referenced top-level let bindings survive (#192)" {
     printf '%s\n' \
         "{" \
