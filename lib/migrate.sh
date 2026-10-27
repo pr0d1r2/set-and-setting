@@ -391,11 +391,9 @@ if [ "$has_custom_flake" -eq 1 ]; then
             continue
           }
           if (substr($0, i, 1) == "#" && !in_string) break
-        }
-        for (i=1; i<=length($0); i++) {
           c = substr($0, i, 1)
-          if (c == "{" || c == "[" || c == "(") depth++
-          if (c == "}" || c == "]" || c == ")") depth--
+          if (!in_string && (c == "{" || c == "[" || c == "(")) depth++
+          if (!in_string && (c == "}" || c == "]" || c == ")")) depth--
         }
         if (depth <= 0 && let_depth <= 0 && /;[[:space:]]*$/) {
           result = result buf
