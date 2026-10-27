@@ -374,17 +374,6 @@ if [ "$has_custom_flake" -eq 1 ]; then
         # terminate the output assignment.  Keep the assignment open until
         # its matching `in` has been seen (#623).
         for (i=1; i<=length($0); i++) {
-          if (substr($0, i, 3) == "let" &&
-              !in_string && !in_indent &&
-              (i == 1 || substr($0, i - 1, 1) !~ /[a-zA-Z0-9_-]/) &&
-              (i + 3 > length($0) || substr($0, i + 3, 1) !~ /[a-zA-Z0-9_-]/))
-            let_depth++
-          if (substr($0, i, 2) == "in" &&
-              !in_string && !in_indent &&
-              (i == 1 || substr($0, i - 1, 1) !~ /[a-zA-Z0-9_-]/) &&
-              (i + 2 > length($0) || substr($0, i + 2, 1) !~ /[a-zA-Z0-9_-]/) &&
-              let_depth > 0)
-            let_depth--
           if (substr($0, i, 1) == "\\" && in_string) { i++; continue }
           if (!in_string && substr($0, i, 2) == q q) {
             esc = substr($0, i, 3)
@@ -398,6 +387,19 @@ if [ "$has_custom_flake" -eq 1 ]; then
             continue
           }
           if (substr($0, i, 1) == "#" && !in_string && !in_indent) break
+          # Count keywords only after string/comment handling: quoted text
+          # and comments may contain "let" or "in" without affecting depth.
+          if (substr($0, i, 3) == "let" &&
+              !in_string && !in_indent &&
+              (i == 1 || substr($0, i - 1, 1) !~ /[a-zA-Z0-9_-]/) &&
+              (i + 3 > length($0) || substr($0, i + 3, 1) !~ /[a-zA-Z0-9_-]/))
+            let_depth++
+          if (substr($0, i, 2) == "in" &&
+              !in_string && !in_indent &&
+              (i == 1 || substr($0, i - 1, 1) !~ /[a-zA-Z0-9_-]/) &&
+              (i + 2 > length($0) || substr($0, i + 2, 1) !~ /[a-zA-Z0-9_-]/) &&
+              let_depth > 0)
+            let_depth--
           c = substr($0, i, 1)
           if (!in_string && !in_indent && (c == "{" || c == "[" || c == "(")) depth++
           if (!in_string && !in_indent && (c == "}" || c == "]" || c == ")")) depth--
