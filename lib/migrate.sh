@@ -456,7 +456,15 @@ if [ "$has_custom_flake" -eq 1 ]; then
         BEGIN { in_pkg=0; in_attrset=0; cap=0; depth=0; entry_indent=-1; buf=""; result="" }
         /^[[:space:]]*packages[[:space:]]*=/ {
           in_pkg=1
-          if (/\{[[:space:]]*$/) in_attrset=1
+          # The returned per-system attrset may open on the same line as its
+          # lambda, for example `(pkgs: { default = ...; })` (#622).
+          if (/\([[:space:]]*[a-zA-Z_][a-zA-Z0-9_-]*[[:space:]]*:[[:space:]]*\{/) {
+            inline = $0
+            sub(/^.*:[[:space:]]*\{[[:space:]]*/, "", inline)
+            sub(/[[:space:]]*\}[[:space:]]*\)[[:space:]]*;[[:space:]]*$/, "", inline)
+            if (inline ~ /^[a-zA-Z_][a-zA-Z0-9_-]*[[:space:]]*=/) result = result inline "\n"
+            in_attrset=1
+          } else if (/\{[[:space:]]*$/) in_attrset=1
           next
         }
         in_pkg && !in_attrset && /^[[:space:]]*\{[[:space:]]*$/ { in_attrset=1; next }
