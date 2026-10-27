@@ -758,6 +758,25 @@ load migrate-helpers
     grep -q 'mkConsumerFlake' flake.nix
 }
 
+@test "overlay extraction ignores let and in in strings and comments (#623)" {
+    printf '%s\n' \
+        "{" \
+        "  outputs = { self }: {" \
+        "    overlays.default = final: prev: let" \
+        "      # let in { must not change the nesting" \
+        "      message = \"let in {\";" \
+        "    in { inherit message; };" \
+        "  };" \
+        "}" \
+        >flake.nix
+    write_vendored_lefthook
+    _init_repo
+    run bash "$MIGRATE_SCRIPT"
+    [ "$status" -eq 0 ]
+    grep -q 'overlays.default = final: prev: let' flake.nix
+    grep -q 'message' flake.nix
+}
+
 # ======== #149: syntax-error repo shapes (input not leaked into outputs) ========
 
 @test "input reference in outputs body not leaked into inputs section (#149)" {
