@@ -364,9 +364,9 @@ if [ "$has_custom_flake" -eq 1 ]; then
   # extract custom output blocks (brace-counted)
   if [ -z "$unreconcilable" ] && { [ "$has_extra_outputs" -eq 1 ] || [ "$has_overlays" -eq 1 ]; }; then
     reconciled_outputs="$(awk '
-      BEGIN { cap=0; depth=0; let_depth=0; buf=""; result="" }
+      BEGIN { cap=0; depth=0; let_depth=0; in_string=0; in_indent=0; q=sprintf("%c", 39); buf=""; result="" }
       /^[[:space:]]*(nixosConfigurations|homeConfigurations|nixosModules|darwinConfigurations|templates|overlays|lib)[[:space:]]*[.=]/ {
-        if (!cap) { cap=1; depth=0; buf="" }
+        if (!cap) { cap=1; depth=0; let_depth=0; in_string=0; in_indent=0; buf="" }
       }
       cap {
         buf = buf $0 "\n"
@@ -375,29 +375,36 @@ if [ "$has_custom_flake" -eq 1 ]; then
         # its matching `in` has been seen (#623).
         for (i=1; i<=length($0); i++) {
           if (substr($0, i, 3) == "let" &&
-              !in_string &&
+              !in_string && !in_indent &&
               (i == 1 || substr($0, i - 1, 1) !~ /[a-zA-Z0-9_-]/) &&
               (i + 3 > length($0) || substr($0, i + 3, 1) !~ /[a-zA-Z0-9_-]/))
             let_depth++
           if (substr($0, i, 2) == "in" &&
-              !in_string &&
+              !in_string && !in_indent &&
               (i == 1 || substr($0, i - 1, 1) !~ /[a-zA-Z0-9_-]/) &&
               (i + 2 > length($0) || substr($0, i + 2, 1) !~ /[a-zA-Z0-9_-]/) &&
               let_depth > 0)
             let_depth--
           if (substr($0, i, 1) == "\\" && in_string) { i++; continue }
-          if (substr($0, i, 1) == "\"") {
+          if (!in_string && substr($0, i, 2) == q q) {
+            esc = substr($0, i, 3)
+            if (in_indent && (esc == q q q || esc == q q "$" || esc == q q "\\")) { i += 2; continue }
+            in_indent = !in_indent
+            i++
+            continue
+          }
+          if (!in_indent && substr($0, i, 1) == "\"") {
             in_string = !in_string
             continue
           }
-          if (substr($0, i, 1) == "#" && !in_string) break
+          if (substr($0, i, 1) == "#" && !in_string && !in_indent) break
           c = substr($0, i, 1)
-          if (!in_string && (c == "{" || c == "[" || c == "(")) depth++
-          if (!in_string && (c == "}" || c == "]" || c == ")")) depth--
+          if (!in_string && !in_indent && (c == "{" || c == "[" || c == "(")) depth++
+          if (!in_string && !in_indent && (c == "}" || c == "]" || c == ")")) depth--
         }
         if (depth <= 0 && let_depth <= 0 && /;[[:space:]]*$/) {
           result = result buf
-          cap=0; depth=0; let_depth=0; buf=""
+          cap=0; depth=0; let_depth=0; in_string=0; in_indent=0; buf=""
         }
         next
       }

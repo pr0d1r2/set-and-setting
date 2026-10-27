@@ -127,6 +127,25 @@ _flake() { printf '%s\n' "{" "  inputs.nixpkgs.url = \"github:NixOS/nixpkgs\";" 
     grep -q '{ inherit message; };' flake.nix
 }
 
+@test "let extraction ignores in inside an indented overlay string" {
+    _flake "  outputs = { nixpkgs, ... }:" "    {" \
+        "      overlays.default = final: prev: let" \
+        "        message = ''" \
+        "          hello in world" \
+        "        '';" \
+        "        pkg = prev.hello;" \
+        "      in { inherit message pkg; };" "    };"
+    write_vendored_lefthook
+    _init_repo
+
+    run bash "$MIGRATE_SCRIPT"
+
+    [ "$status" -eq 0 ]
+    nix-instantiate --parse flake.nix >/dev/null
+    grep -q "hello in world" flake.nix
+    grep -q "pkg = prev.hello;" flake.nix
+}
+
 @test "let extraction ignores braces inside a multiline overlay string" {
     _flake "  outputs = { nixpkgs, ... }:" "    {" \
         "      overlays.default = final: prev:" "        let" \
