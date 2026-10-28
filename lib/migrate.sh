@@ -404,7 +404,7 @@ if [ "$has_custom_flake" -eq 1 ]; then
             sub(/^[^(]*\([[:space:]]*[a-zA-Z_][a-zA-Z0-9_-]*[[:space:]]*:[[:space:]]*\{[[:space:]]*/, "", inline)
             sub(/[[:space:]]*\}[[:space:]]*\)[[:space:]]*;[[:space:]]*(#.*)?$/, "", inline)
             if (inline ~ /^[a-zA-Z_][a-zA-Z0-9_-]*[[:space:]]*=/ || inline ~ /^inherit([[:space:]]+\([^)]*\))?[[:space:]]+[a-zA-Z_][a-zA-Z0-9_-]*[[:space:]]*;/) {
-              if (inline ~ /;[[:space:]]*$/) result = result inline "\n"
+              if (inline ~ /;[[:space:]]*(#.*)?$/) result = result inline "\n"
               else { cap=1; buf=inline "\n"; depth=0; for (i=1; i<=length(inline); i++) { c=substr(inline,i,1); if (c=="{" || c=="[" || c=="(") depth++; if (c=="}" || c=="]" || c==")") depth-- } }
             }
             # Do not keep scanning when the returned attrset closes inline;
