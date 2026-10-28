@@ -407,7 +407,9 @@ if [ "$has_custom_flake" -eq 1 ]; then
               if (inline ~ /;[[:space:]]*$/) result = result inline "\n"
               else { cap=1; buf=inline "\n"; depth=0; for (i=1; i<=length(inline); i++) { c=substr(inline,i,1); if (c=="{" || c=="[" || c=="(") depth++; if (c=="}" || c=="]" || c==")") depth-- } }
             }
-            in_attrset=1
+            # Do not keep scanning when the returned attrset closes inline;
+            # subsequent output fields are siblings, not packages.
+            in_attrset = ($0 ~ /\}[[:space:]]*\)[[:space:]]*;[[:space:]]*(#.*)?$/) ? 0 : 1
           } else if (/\{[[:space:]]*$/) in_attrset=1
           next
         }

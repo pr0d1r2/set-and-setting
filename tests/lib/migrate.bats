@@ -948,6 +948,26 @@ load migrate-helpers
     nix-instantiate --parse flake.nix >/dev/null
 }
 
+@test "consumer packages: inline attrset does not capture sibling outputs" {
+    printf '%s\n' \
+        "{" "  inputs.nixpkgs.url = \"github:NixOS/nixpkgs\";" \
+        "  outputs = { nixpkgs, ... }:" "    let" \
+        "      forAllSystems = f: nixpkgs.lib.genAttrs [ \"x86_64-linux\" ] (system: f nixpkgs.legacyPackages.\${system});" \
+        "    in" "    {" \
+        "      packages = forAllSystems (pkgs: { default = pkgs.hello; });" \
+        "      nixosModules = { default = {}; };" \
+        "    };" "}" >flake.nix
+    write_vendored_lefthook
+    _init_repo
+
+    run bash "$MIGRATE_SCRIPT"
+
+    [ "$status" -eq 0 ]
+    grep -q 'default = pkgs.hello' flake.nix
+    ! grep -q 'nixosModules' flake.nix
+    nix-instantiate --parse flake.nix >/dev/null
+}
+
 @test "consumer packages: inline attrset ignores nested callPackage attrset" {
     printf '%s\n' \
         "{" "  inputs.nixpkgs.url = \"github:NixOS/nixpkgs\";" \
