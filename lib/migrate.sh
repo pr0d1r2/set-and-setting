@@ -462,13 +462,16 @@ if [ "$has_custom_flake" -eq 1 ]; then
             inline = $0
             sub(/^[^(]*\([[:space:]]*[a-zA-Z_][a-zA-Z0-9_-]*[[:space:]]*:[[:space:]]*\{[[:space:]]*/, "", inline)
             sub(/[[:space:]]*\}[[:space:]]*\)[[:space:]]*;[[:space:]]*(#.*)?$/, "", inline)
-            if (inline ~ /^[a-zA-Z_][a-zA-Z0-9_-]*[[:space:]]*=/) result = result inline "\n"
+            if (inline ~ /^[a-zA-Z_][a-zA-Z0-9_-]*[[:space:]]*=/ || inline ~ /^inherit([[:space:]]+\([^)]*\))?[[:space:]]+[a-zA-Z_][a-zA-Z0-9_-]*[[:space:]]*;/) {
+              if (inline ~ /;[[:space:]]*$/) result = result inline "\n"
+              else { cap=1; buf=inline "\n"; depth=0; for (i=1; i<=length(inline); i++) { c=substr(inline,i,1); if (c=="{" || c=="[" || c=="(") depth++; if (c=="}" || c=="]" || c==")") depth-- } }
+            }
             in_attrset=1
           } else if (/\{[[:space:]]*$/) in_attrset=1
           next
         }
         in_pkg && !in_attrset && /^[[:space:]]*\{[[:space:]]*$/ { in_attrset=1; next }
-        in_attrset && !cap && /^[[:space:]]*[a-zA-Z_][a-zA-Z0-9_-]*[[:space:]]*=/ {
+        in_attrset && !cap && (/^[[:space:]]*[a-zA-Z_][a-zA-Z0-9_-]*[[:space:]]*=/ || /^[[:space:]]*inherit([[:space:]]+\([^)]*\))?[[:space:]]+[a-zA-Z_][a-zA-Z0-9_-]*[[:space:]]*;/) {
           match($0, /^[[:space:]]*/)
           indent = RLENGTH
           if (entry_indent < 0 || indent < entry_indent) entry_indent = indent
@@ -489,6 +492,9 @@ if [ "$has_custom_flake" -eq 1 ]; then
         }
         END { printf "%s", result }
       ' flake.nix)"
+      if [ -z "$reconciled_leaf_package" ]; then
+        unreconcilable="${unreconcilable:+$unreconcilable; }consumer package entries not extractable"
+      fi
       # The per-system lambda around those entries (#620): its argument and
       # the let it opens move into extraPackages with them. Output line 1 is
       # the extraPackages parameter, the rest is the carried let body. An
@@ -526,7 +532,12 @@ if [ "$has_custom_flake" -eq 1 ]; then
             if (c == "}" || c == "]" || c == ")") pdepth--
           }
           if (pdepth <= 0 && /;[[:space:]]*$/) done = 1
-          if (line_seen) { line_seen = 0; next }
+          if (line_seen) {
+            # Keep references from an inline lambda body visible to the
+            # system-argument analysis below.
+            if ($0 ~ /\([[:space:]]*[a-zA-Z_][a-zA-Z0-9_-]*[[:space:]]*:[[:space:]]*\{/) after = after $0 "\n"
+            line_seen = 0; next
+          }
           if (arg != "" && let_state == 0 && /^[[:space:]]*let[[:space:]]*$/) { let_state = 1; let_indent = indent; bind_indent = -1; next }
           if (let_state == 1 && !bcap && /^[[:space:]]*in[[:space:]]*$/ && indent == let_indent) { let_state = 2; next }
           if (let_state == 1) {
