@@ -982,9 +982,9 @@ load migrate-helpers
     run bash "$MIGRATE_SCRIPT"
 
     [ "$status" -eq 0 ]
-    grep -q 'default = pkgs.callPackage' flake.nix
-    ! grep -q 'foo = args.foo' flake.nix
+    grep -q 'default = pkgs.callPackage (args: { foo = args.foo; }) {}' flake.nix
     nix-instantiate --parse flake.nix >/dev/null
+    ! grep -q '^[[:space:]]*foo = args.foo;' flake.nix
 }
 
 @test "consumer packages: referenced top-level let bindings survive (#192)" {
