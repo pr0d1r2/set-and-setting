@@ -1007,6 +1007,26 @@ load migrate-helpers
     ! grep -q '^[[:space:]]*foo = args.foo;' flake.nix
 }
 
+@test "consumer packages: inline assignment ignores delimiters in strings" {
+    printf '%s\n' \
+        "{" "  inputs.nixpkgs.url = \"github:NixOS/nixpkgs\";" \
+        "  outputs = { nixpkgs, ... }:" "    let" \
+        "      forAllSystems = f: nixpkgs.lib.genAttrs [ \"x86_64-linux\" ] (system: f nixpkgs.legacyPackages.\${system});" \
+        "    in" "    {" \
+        "      packages = forAllSystems (pkgs: { default = pkgs.runCommand \"brace }\" {" \
+        "        buildInputs = [ pkgs.hello ];" \
+        "      };" "    });" \
+        "    };" "}" >flake.nix
+    write_vendored_lefthook
+    _init_repo
+
+    run bash "$MIGRATE_SCRIPT"
+
+    [ "$status" -eq 0 ]
+    grep -q 'buildInputs = \[ pkgs.hello \];' flake.nix
+    nix-instantiate --parse flake.nix >/dev/null
+}
+
 @test "consumer packages: referenced top-level let bindings survive (#192)" {
     printf '%s\n' \
         "{" \

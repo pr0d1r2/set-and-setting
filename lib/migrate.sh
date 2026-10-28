@@ -394,7 +394,7 @@ if [ "$has_custom_flake" -eq 1 ]; then
       # attrset. Package entries share one indentation level, which excludes
       # preceding let-bindings and nested derivation attributes.
       reconciled_leaf_package="$(awk '
-        BEGIN { in_pkg=0; in_attrset=0; cap=0; depth=0; entry_indent=-1; buf=""; result="" }
+        BEGIN { in_pkg=0; in_attrset=0; cap=0; depth=0; entry_indent=-1; buf=""; result=""; in_string=0; escaped=0 }
         /^[[:space:]]*packages[[:space:]]*=/ {
           in_pkg=1
           # The returned per-system attrset may open on the same line as its
@@ -405,7 +405,7 @@ if [ "$has_custom_flake" -eq 1 ]; then
             sub(/[[:space:]]*\}[[:space:]]*\)[[:space:]]*;[[:space:]]*(#.*)?$/, "", inline)
             if (inline ~ /^[a-zA-Z_][a-zA-Z0-9_-]*[[:space:]]*=/ || inline ~ /^inherit([[:space:]]+\([^)]*\))?[[:space:]]+[a-zA-Z_][a-zA-Z0-9_-]*[[:space:]]*;/) {
               if (inline ~ /;[[:space:]]*(#.*)?$/) result = result inline "\n"
-              else { cap=1; buf=inline "\n"; depth=0; for (i=1; i<=length(inline); i++) { c=substr(inline,i,1); if (c=="{" || c=="[" || c=="(") depth++; if (c=="}" || c=="]" || c==")") depth-- } }
+              else { cap=1; buf=inline "\n"; depth=0; in_string=0; escaped=0; for (i=1; i<=length(inline); i++) { c=substr(inline,i,1); if (in_string) { if (escaped) escaped=0; else if (c=="\\") escaped=1; else if (c=="\"") in_string=0; } else if (c=="\"") in_string=1; else if (c=="#") break; else { if (c=="{" || c=="[" || c=="(") depth++; if (c=="}" || c=="]" || c==")") depth-- } } }
             }
             # Do not keep scanning when the returned attrset closes inline;
             # subsequent output fields are siblings, not packages.
@@ -422,10 +422,20 @@ if [ "$has_custom_flake" -eq 1 ]; then
         }
         cap {
           buf = buf $0 "\n"
+          in_comment=0
           for (i=1; i<=length($0); i++) {
             c = substr($0, i, 1)
-            if (c == "{" || c == "[" || c == "(") depth++
-            if (c == "}" || c == "]" || c == ")") depth--
+            if (in_comment) continue
+            if (in_string) {
+              if (escaped) escaped=0
+              else if (c == "\\") escaped=1
+              else if (c == "\"") in_string=0
+            } else if (c == "\"") in_string=1
+            else if (c == "#") in_comment=1
+            else {
+              if (c == "{" || c == "[" || c == "(") depth++
+              if (c == "}" || c == "]" || c == ")") depth--
+            }
           }
           if (depth <= 0 && /;[[:space:]]*$/) {
             result = result buf
