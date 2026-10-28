@@ -1,66 +1,7 @@
 #!/usr/bin/env bash
-# migrate.sh -- mechanical vendored->referenced transform (#96).
-# Deterministic, idempotent, non-LLM, confirmator-gated. Runs against the
-# INVOKING repo (CWD, a git repo). One repo at a time; safe at scale.
-#
-# Flow (per repo):
-#   1. pre-flight  CWD sanity (git repo, clean worktree, not detached)
-#   2. detect      state -- referenced (no-op) | bare | vendored |
-#                  sub-classified partial states (#115):
-#                    partial-tracked-lefthook
-#                    partial-no-gitignore
-#                    partial-no-materialization
-#   3. strip       vendored artifacts (full flake.nix / lefthook.yml / ci.yml)
-#                  so they become derived (materialized + gitignored).
-#                  Custom flake.nix content => MIGRATE-FAIL, not silent drop.
-#                  Extra workflows beyond vendored ci.yml => preserved.
-#   4. plant       the seed (#95): thin flake.nix, .gitignore, and CI caller
-#                  (skip-if-exists)
-#   5. confirm-equivalence: assert the new materialized check-set covers
-#                  every check the old vendored lefthook enforced (the safety
-#                  net), then dry-run the confirmator (#94) on the new state.
-#                  The FULL confirmator + `nix flake check` run in CI once
-#                  `nix flake update` has produced flake.lock.
-#
-# Env in:
-#   SEED_SRC          path to leaf-seed derivation (#95)
-#   SETTING_SRC       path to materialized config bundle (markdownlint/yamllint)
-#   FRAGMENTS_DIR     path to integration fragment sources
-#   ASSEMBLE_SCRIPT   path to assemble-lefthook.sh
-#   DETECT_SCRIPT     path to detect-fragments.sh
-#   CONFIRM_SCRIPT    path to confirm.sh (#94)
-#   CONFIRM_REV       the standard rev this migrator was built from
-#   CHECKS_UNIVERSE   space-separated names of every pinned flake check the
-#                     referenced architecture provides (checksFor over all
-#                     fragments). Post-#93 FLIP the real guardrails are pinned
-#                     `checks.<sys>.<tool>`, NOT lefthook commands -- so the
-#                     referenced effective check-set is these names UNION the
-#                     lefthook.yml commands.
-#   CHECK_FRAGMENT_MAP  space-separated check=fragment pairs from
-#                     check-fragment-map.nix (single source of truth).
-#                     Used to classify dropped checks as standard vs
-#                     repo-local during carry-through and diagnostics.
-#   FRAGMENT_TRIGGERS   pipe-separated frag=description pairs from
-#                     check-fragment-map.nix. Human-readable trigger
-#                     descriptions per fragment (for diagnostics).
-#   FULL_LEFTHOOK     (optional) path to a lefthook.yml assembled from ALL
-#                     fragments -- its command names complete the universe of
-#                     guardrails the referenced architecture can provide.
-#   MIGRATE_DETECT_ONLY   if "1", print detected state and exit 0
-#   MIGRATE_DRY_RUN       if "1", print the plan and exit 0 (writes nothing)
-#   BEFORE_REQUIRED_STATUS_CONTEXTS
-#                         pipe-separated contexts currently required by the
-#                         consumer's default branch.  When supplied, the
-#                         migration report includes the context delta.
-#   MIGRATION_COVERAGE_REPORT
-#                         report path (default: migration-coverage.md).
-#
-# NOTE: this script is deliberately functionless (no `name()` definitions) to
-# satisfy the no-shell-functions guardrail. The lefthook check-name extractor
-# (an awk program scoped to keys under a `commands:` block, so
-# `remotes:`/`scripts:` list fields like `ref:`/`configs:`/`git_url:` are NOT
-# mistaken for checks) is inlined verbatim at each of its three call sites
-# rather than shared via a function; failure diagnostics are inlined too.
+# migrate.sh -- deterministic, idempotent vendored-to-referenced migration.
+# This script is deliberately functionless to satisfy the no-shell-functions
+# guardrail; repeated lefthook extraction and diagnostics remain inlined.
 # shellcheck disable=SC2154,SC2086
 set -euo pipefail
 
