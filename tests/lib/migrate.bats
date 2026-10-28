@@ -928,6 +928,26 @@ load migrate-helpers
     nix-instantiate --parse flake.nix >/dev/null
 }
 
+@test "consumer packages: inline per-system attrset strips trailing comment" {
+    printf '%s\n' \
+        "{" "  inputs.nixpkgs.url = \"github:NixOS/nixpkgs\";" \
+        "  outputs = { nixpkgs, ... }:" "    let" \
+        "      forAllSystems = f: nixpkgs.lib.genAttrs [ \"x86_64-linux\" ] (system: f nixpkgs.legacyPackages.\${system});" \
+        "    in" "    {" \
+        "      packages = forAllSystems (pkgs: { default = pkgs.hello; }); # comment" \
+        "    };" "}" >flake.nix
+    write_vendored_lefthook
+    _init_repo
+
+    run bash "$MIGRATE_SCRIPT"
+
+    [ "$status" -eq 0 ]
+    grep -q 'extraPackages = pkgs:' flake.nix
+    grep -q 'default = pkgs.hello' flake.nix
+    ! grep -q '});' flake.nix
+    nix-instantiate --parse flake.nix >/dev/null
+}
+
 @test "consumer packages: inline attrset ignores nested callPackage attrset" {
     printf '%s\n' \
         "{" "  inputs.nixpkgs.url = \"github:NixOS/nixpkgs\";" \

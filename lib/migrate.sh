@@ -461,7 +461,7 @@ if [ "$has_custom_flake" -eq 1 ]; then
           if (/\([[:space:]]*[a-zA-Z_][a-zA-Z0-9_-]*[[:space:]]*:[[:space:]]*\{/) {
             inline = $0
             sub(/^[^(]*\([[:space:]]*[a-zA-Z_][a-zA-Z0-9_-]*[[:space:]]*:[[:space:]]*\{[[:space:]]*/, "", inline)
-            sub(/[[:space:]]*\}[[:space:]]*\)[[:space:]]*;[[:space:]]*$/, "", inline)
+            sub(/[[:space:]]*\}[[:space:]]*\)[[:space:]]*;[[:space:]]*(#.*)?$/, "", inline)
             if (inline ~ /^[a-zA-Z_][a-zA-Z0-9_-]*[[:space:]]*=/) result = result inline "\n"
             in_attrset=1
           } else if (/\{[[:space:]]*$/) in_attrset=1
