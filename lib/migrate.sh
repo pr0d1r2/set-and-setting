@@ -413,6 +413,7 @@ if [ "$has_custom_flake" -eq 1 ]; then
           } else if (/\{[[:space:]]*$/) in_attrset=1
           next
         }
+        in_attrset && !cap && /^[[:space:]]*\}[[:space:]]*\)[[:space:]]*;[[:space:]]*(#.*)?$/ { in_attrset=0; next }
         in_pkg && !in_attrset && /^[[:space:]]*\{[[:space:]]*$/ { in_attrset=1; next }
         in_attrset && !cap && (/^[[:space:]]*[a-zA-Z_][a-zA-Z0-9_-]*[[:space:]]*=/ || /^[[:space:]]*inherit([[:space:]]+\([^)]*\))?[[:space:]]+[a-zA-Z_][a-zA-Z0-9_-]*[[:space:]]*;/) {
           match($0, /^[[:space:]]*/)
