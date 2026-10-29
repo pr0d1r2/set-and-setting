@@ -984,7 +984,23 @@ load migrate-helpers
 
     [ "$status" -eq 0 ]
     grep -q 'default = pkgs.hello' flake.nix
-    ! grep -q 'nixosModules' flake.nix
+    grep -Eq '^[[:space:]]*nixosModules[[:space:]]*=' flake.nix
+    extra_packages="$(awk '
+        /^[[:space:]]*extraPackages[[:space:]]*=/ { capture=1 }
+        capture {
+            print
+            for (i=1; i<=length($0); i++) {
+                c = substr($0, i, 1)
+                if (c == "{") { depth++; seen_open=1 }
+                if (c == "}") depth--
+            }
+            if (seen_open && depth <= 0 && /;[[:space:]]*$/) exit
+        }
+    ' flake.nix)"
+    grep -Eq 'default[[:space:]]*=[[:space:]]*pkgs\.hello' <<<"$extra_packages"
+    if grep -Eq 'nixosModules[[:space:]]*=' <<<"$extra_packages"; then
+        false
+    fi
     nix-instantiate --parse flake.nix >/dev/null
 }
 
