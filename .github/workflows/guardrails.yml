@@ -30,6 +30,7 @@ env:
   # Apply before flake evaluation so transient input and substituter failures
   # are retried instead of turning one HTTP 5xx into a fleet-wide red check.
   NIX_CONFIG: |
+    access-tokens = github.com=${{ secrets.GITHUB_TOKEN }}
     connect-timeout = 15
     download-attempts = 5
     fallback = true
