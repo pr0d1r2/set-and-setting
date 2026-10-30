@@ -76,6 +76,8 @@ jobs:
         run: nix develop --command true
       - name: Confirm materialization
         run: nix run .#confirm
+      - name: Check workflow action SHAs
+        run: bash lib/ci-lint-sha.sh .github/workflows/*.yml
       - name: Nix flake check
         run: |
           nix flake check \
