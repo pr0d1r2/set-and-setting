@@ -33,7 +33,6 @@ env:
     connect-timeout = 15
     download-attempts = 5
     fallback = true
-    access-tokens = github.com=${{ secrets.GITHUB_TOKEN }}
 
 jobs:
   check:
@@ -43,10 +42,10 @@ jobs:
       CACHIX_AUTH_TOKEN: ${{ secrets.cachix-auth-token }}
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
       - uses: cachix/install-nix-action@ba0dd844c9180cbf77aa72a116d6fbc515d0e87b # v27
         with:
-          pre-build-commands: |
-            echo "access-tokens = github.com=${{ secrets.GITHUB_TOKEN }}" | sudo tee -a /etc/nix/nix.conf
           # Nix defaults `max-jobs` to 1 and neither installer overrides it,
           # so the 110 independent checks built strictly one at a time. Each
           # is a sandboxed derivation touching no shared state, so they
@@ -58,7 +57,6 @@ jobs:
           # it. Installer config is system config, and trusted.
           extra_nix_config: |
             max-jobs = auto
-            access-tokens = github.com=${{ secrets.GITHUB_TOKEN }}
             extra-substituters = https://pr0d1r2.cachix.org
             extra-trusted-public-keys = pr0d1r2.cachix.org-1:NfWjbhgAj41byXhCKiaE+av3Vnphm1fTezHXEGsiQIM=
       # The job that builds is the job that pushes. A separate push job has to
@@ -114,20 +112,19 @@ jobs:
       CACHIX_AUTH_TOKEN: ${{ secrets.cachix-auth-token }}
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
       # DeterminateSystems installer detects and reuses an existing Nix /
       # `_nixbld` group on the macos-latest image instead of erroring with
       # `dscl ... eDSRecordAlreadyExists` (-14135) the way the older
       # cachix/install-nix-action shell installer does (B26).
       - uses: DeterminateSystems/nix-installer-action@33c9ab3ef95cd57c164d9d6eb1f9a46338538d41
         with:
-          pre-build-commands: |
-            echo "access-tokens = github.com=${{ secrets.GITHUB_TOKEN }}" | sudo tee -a /etc/nix/nix.conf
           # See the ubuntu job: nix's default `max-jobs` of 1 serialized every
           # check. Darwin paid most for it -- one 105-second derivation with
           # 770 idle behind it.
           extra-conf: |
             max-jobs = auto
-            access-tokens = github.com=${{ secrets.GITHUB_TOKEN }}
             extra-substituters = https://pr0d1r2.cachix.org
             extra-trusted-public-keys = pr0d1r2.cachix.org-1:NfWjbhgAj41byXhCKiaE+av3Vnphm1fTezHXEGsiQIM=
       # Same reason as the ubuntu job: whoever builds, pushes.
