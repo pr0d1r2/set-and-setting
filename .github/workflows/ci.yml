@@ -6,6 +6,9 @@ name: CI
     branches: [main]
   pull_request:
     branches: [main]
+  workflow_run:
+    workflows: [CI]
+    types: [completed]
 
 env:
   NIX_CONFIG: access-tokens = github.com=${{ secrets.GITHUB_TOKEN }}
@@ -25,20 +28,46 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     permissions:
-      pull-requests: write
       contents: read
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
       - name: Report lock growth
-        env:
-          GH_TOKEN: ${{ github.token }}
-          PR: ${{ github.event.pull_request.number }}
         run: |
           set -euo pipefail
           report="$(bash lib/nix-flake-lock-budget.sh flake.lock 2>&1 || true)"
           bytes="$(printf '%s\n' "$report" | sed -n 's/lock-budget: bytes=\([0-9]*\).*/\1/p')"
           baseline="$(sed -n 's/^baseline_bytes: *//p' config/lefthook/flake_lock_budget.yml)"
           [ -n "$bytes" ] && [ "$bytes" -gt "$baseline" ] || exit 0
+          printf '%s\n' "$report" > lock-budget-report
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v4
+        with:
+          name: lock-budget-report
+          path: lock-budget-report
+          if-no-files-found: ignore
+
+  lock-budget-publish:
+    if: github.event_name == 'workflow_run' && github.event.workflow_run.event == 'pull_request' && github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    permissions:
+      actions: read
+      pull-requests: write
+    steps:
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v4
+        with:
+          name: lock-budget-report
+          path: .
+          github-token: ${{ github.token }}
+          run-id: ${{ github.event.workflow_run.id }}
+      - name: Publish lock growth comment
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR: ${{ github.event.workflow_run.pull_requests[0].number }}
+        run: |
+          set -euo pipefail
+          [ -f lock-budget-report ] || exit 0
+          report="$(cat lock-budget-report)"
           body="<!-- lock-budget-report -->\n### flake.lock growth\n\n\`$report\`\n\nThe committed lock baseline was updated with this lock refresh."
           export BODY="$body"
           existing="$(gh api "repos/${GITHUB_REPOSITORY}/issues/${PR}/comments" --paginate --jq '.[] | select(.body | contains("<!-- lock-budget-report -->")) | .id' | head -n1)"
