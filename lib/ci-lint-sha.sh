@@ -7,6 +7,13 @@ for path in "$@"; do
       awk -v path="$path" '
         /^[[:space:]]*(-[[:space:]]*)?uses:[[:space:]]*/ {
           value = $0; sub(/^[^:]*:[[:space:]]*/, "", value); sub(/[[:space:]]+#.*$/, "", value)
+          first = substr(value, 1, 1)
+          last = substr(value, length(value), 1)
+          if (length(value) >= 2 &&
+              ((first == "\"" && last == "\"") ||
+               (first == sprintf("%c", 39) && last == sprintf("%c", 39)))) {
+            value = substr(value, 2, length(value) - 2)
+          }
           if (value ~ /^\.\//) next
           if (value !~ /^[^@]+@[[:xdigit:]]{40}$/) {
             split(value, parts, "@")

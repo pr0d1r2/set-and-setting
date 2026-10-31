@@ -7,6 +7,11 @@ teardown() { rm -rf "$TMP"; }
     run bash -c 'cd "$1" && bash "$2" .github/workflows/clean.yml' _ "$TMP" "$SCRIPT"
     [ "$status" -eq 0 ]; [ -z "$output" ]
 }
+@test "quoted full SHAs pass" {
+    printf '%s\n' 'jobs:' '  check:' '    steps:' '      - uses: "actions/checkout@11d5960a326750d5838078e36cf38b85af677262"' '      - uses: '\''actions/checkout@11d5960a326750d5838078e36cf38b85af677262'\''' >"$TMP/.github/workflows/quoted.yml"
+    run bash -c 'cd "$1" && bash "$2" .github/workflows/quoted.yml' _ "$TMP" "$SCRIPT"
+    [ "$status" -eq 0 ]; [ -z "$output" ]
+}
 @test "tags branches and short SHAs are findings" {
     printf '%s\n' 'jobs:' '  check:' '    steps:' '      - uses: actions/checkout@v4' '      - uses: actions/checkout@main' '      - uses: actions/checkout@11d5960' >"$TMP/.github/workflows/violating.yml"
     run bash -c 'cd "$1" && bash "$2" .github/workflows/violating.yml' _ "$TMP" "$SCRIPT"
