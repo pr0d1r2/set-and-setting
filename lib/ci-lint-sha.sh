@@ -1,0 +1,30 @@
+#!/usr/bin/env bash
+set -euo pipefail
+status=0
+for path in "$@"; do
+  case "$path" in
+    .github/workflows/*.yml | .github/workflows/*.yaml)
+      awk -v path="$path" '
+        /^[[:space:]]*(-[[:space:]]*)?uses:[[:space:]]*/ {
+          value = $0; sub(/^[^:]*:[[:space:]]*/, "", value); sub(/[[:space:]]+#.*$/, "", value)
+          first = substr(value, 1, 1)
+          last = substr(value, length(value), 1)
+          if (length(value) >= 2 &&
+              ((first == "\"" && last == "\"") ||
+                (first == sprintf("%c", 39) && last == sprintf("%c", 39)))) {
+            value = substr(value, 2, length(value) - 2)
+          }
+          if (value ~ /^\.\//) next
+          if (value !~ /^[^@]+@[[:xdigit:]]{40}$/) {
+            split(value, parts, "@")
+            split(parts[1], repo, "/")
+            printf "%s:%d: uses reference must be a full 40-character commit SHA; resolve with `git ls-remote https://github.com/%s/%s refs/heads/main`\n", path, FNR, repo[1], repo[2]
+            found = 1
+          }
+        }
+        END { if (found) exit 1 }
+      ' "$path" || status=1
+      ;;
+  esac
+done
+exit "$status"

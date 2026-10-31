@@ -42,6 +42,7 @@ in
   checksPerFragment = {
     actions = [
       "actionlint"
+      "ci-lint-sha"
       "ci-lint-token"
       "ci-lint-qemu-order"
     ];
@@ -247,6 +248,7 @@ in
       "lint-noexec"
       "ci-lint-token"
       "ci-lint-qemu-order"
+      "ci-lint-sha"
     ];
     yaml = [
       "yamllint"
@@ -270,6 +272,7 @@ in
     ".github/workflows" = [
       "yamllint"
       "actionlint"
+      "ci-lint-sha"
     ];
     "Gemfile" = [ "bundle-audit" ];
     "Gemfile.lock" = [ "bundle-audit" ];
