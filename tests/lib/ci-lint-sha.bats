@@ -18,6 +18,12 @@ teardown() { rm -rf "$TMP"; }
     [ "$status" -eq 1 ]; [ "$(printf '%s\n' "$output" | wc -l)" -eq 3 ]
     [[ "$output" == *'git ls-remote https://github.com/actions/checkout refs/heads/main'* ]]
 }
+@test "reusable workflow hints use the repository path" {
+    printf '%s\n' 'jobs:' '  check:' '    uses: owner/repo/.github/workflows/guardrails.yml@main' >"$TMP/.github/workflows/reusable.yml"
+    run bash -c 'cd "$1" && bash "$2" .github/workflows/reusable.yml' _ "$TMP" "$SCRIPT"
+    [ "$status" -eq 1 ]
+    [[ "$output" == *'git ls-remote https://github.com/owner/repo refs/heads/main'* ]]
+}
 @test "near-miss SHA is a finding and local path is exempt" {
     printf '%s\n' 'jobs:' '  check:' '    uses: ./.github/workflows/guardrails.yml' '    steps:' '      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af67726z' >"$TMP/.github/workflows/near-miss.yml"
     run bash -c 'cd "$1" && bash "$2" .github/workflows/near-miss.yml' _ "$TMP" "$SCRIPT"

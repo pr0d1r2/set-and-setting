@@ -17,7 +17,8 @@ for path in "$@"; do
           if (value ~ /^\.\//) next
           if (value !~ /^[^@]+@[[:xdigit:]]{40}$/) {
             split(value, parts, "@")
-            printf "%s:%d: uses reference must be a full 40-character commit SHA; resolve with `git ls-remote https://github.com/%s refs/heads/main`\n", path, FNR, parts[1]
+            split(parts[1], repo, "/")
+            printf "%s:%d: uses reference must be a full 40-character commit SHA; resolve with `git ls-remote https://github.com/%s/%s refs/heads/main`\n", path, FNR, repo[1], repo[2]
             found = 1
           }
         }
