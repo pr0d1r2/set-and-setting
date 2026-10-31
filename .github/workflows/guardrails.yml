@@ -80,7 +80,7 @@ jobs:
       - name: Confirm materialization
         run: nix run .#confirm
       - name: Check workflow action SHAs
-        run: bash lib/ci-lint-sha.sh .github/workflows/*.yml
+        run: nix develop --command lefthook-ci-lint-sha .github/workflows/*.yml
       - name: Nix flake check
         run: |
           nix flake check \
