@@ -11,7 +11,7 @@ for path in "$@"; do
           last = substr(value, length(value), 1)
           if (length(value) >= 2 &&
               ((first == "\"" && last == "\"") ||
-               (first == sprintf("%c", 39) && last == sprintf("%c", 39)))) {
+                (first == sprintf("%c", 39) && last == sprintf("%c", 39)))) {
             value = substr(value, 2, length(value) - 2)
           }
           if (value ~ /^\.\//) next
