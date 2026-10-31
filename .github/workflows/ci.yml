@@ -60,6 +60,7 @@ jobs:
           path: .
           github-token: ${{ github.token }}
           run-id: ${{ github.event.workflow_run.id }}
+          if-no-artifact-found: ignore
       - name: Publish lock growth comment
         env:
           GH_TOKEN: ${{ github.token }}
