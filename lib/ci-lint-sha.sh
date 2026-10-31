@@ -3,7 +3,7 @@ set -euo pipefail
 status=0
 for path in "$@"; do
   case "$path" in
-    .github/workflows/*.yml)
+    .github/workflows/*.yml | .github/workflows/*.yaml)
       awk -v path="$path" '
         /^[[:space:]]*(-[[:space:]]*)?uses:[[:space:]]*/ {
           value = $0; sub(/^[^:]*:[[:space:]]*/, "", value); sub(/[[:space:]]+#.*$/, "", value)
