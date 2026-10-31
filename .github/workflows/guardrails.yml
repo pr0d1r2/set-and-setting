@@ -1,6 +1,9 @@
 ---
 name: Guardrails
 
+permissions:
+  contents: read
+
 # Reusable CI workflow for leaf consumer repos (#95). A leaf's CI is a
 # thin caller (~3 lines) that delegates to this workflow. Steps:
 # 1. Checkout + install nix
