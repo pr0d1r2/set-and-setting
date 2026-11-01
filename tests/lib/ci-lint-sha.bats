@@ -29,6 +29,11 @@ teardown() { rm -rf "$TMP"; }
     run bash -c 'cd "$1" && bash "$2" .github/workflows/near-miss.yml' _ "$TMP" "$SCRIPT"
     [ "$status" -eq 1 ]; [[ "$output" == *':5:'* ]]
 }
+@test "malformed references with an extra at-sign are findings" {
+    printf '%s\n' 'jobs:' '  check:' '    steps:' '      - uses: actions/checkout@main@11d5960a326750d5838078e36cf38b85af677262' >"$TMP/.github/workflows/malformed.yml"
+    run bash -c 'cd "$1" && bash "$2" .github/workflows/malformed.yml' _ "$TMP" "$SCRIPT"
+    [ "$status" -eq 1 ]; [[ "$output" == *'malformed.yml:4:'* ]]
+}
 @test "yaml workflow files are checked" {
     printf '%s\n' 'jobs:' '  check:' '    steps:' '      - uses: actions/checkout@v4' >"$TMP/.github/workflows/violating.yaml"
     run bash -c 'cd "$1" && bash "$2" .github/workflows/violating.yaml' _ "$TMP" "$SCRIPT"
