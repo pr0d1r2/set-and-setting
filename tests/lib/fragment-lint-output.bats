@@ -14,6 +14,13 @@ teardown() { rm -rf "$TMP"; }
     [ -z "$output" ]
 }
 
+@test "comments after failure list values are ignored" {
+    printf '%s\n' 'output:' '  - failure # show errors' >"$TMP/comment.yml"
+    run bash "$SCRIPT" "$TMP/comment.yml"
+    [ "$status" -eq 0 ]
+    [ -z "$output" ]
+}
+
 @test "non-failure output is a finding" {
     printf '%s\n' 'output: [failure, success]' >"$TMP/bad.yml"
     run bash "$SCRIPT" "$TMP/bad.yml"

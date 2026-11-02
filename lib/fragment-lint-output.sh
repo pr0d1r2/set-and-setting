@@ -11,6 +11,7 @@ for path in "$@"; do
       found = 1
     }
     function clean(value) {
+      sub(/[[:space:]]+#.*/, "", value)
       gsub(/^[[:space:]]+|[[:space:]]+$/, "", value)
       if ((substr(value, 1, 1) == "\"" || substr(value, 1, 1) == "\047") &&
           substr(value, length(value), 1) == substr(value, 1, 1)) {
