@@ -21,6 +21,13 @@ teardown() { rm -rf "$TMP"; }
     [ -z "$output" ]
 }
 
+@test "hashes inside quoted output values are preserved" {
+    printf '%s\n' 'output: [" # disallowed"]' >"$TMP/quoted-hash.yml"
+    run bash "$SCRIPT" "$TMP/quoted-hash.yml"
+    [ "$status" -eq 1 ]
+    [[ "$output" == *"$TMP/quoted-hash.yml:1: output list contains ' # disallowed'"* ]]
+}
+
 @test "indentless output list is scanned" {
     printf '%s\n' 'output:' '- success' >"$TMP/indentless.yml"
     run bash "$SCRIPT" "$TMP/indentless.yml"
