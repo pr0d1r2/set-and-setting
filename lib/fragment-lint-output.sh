@@ -25,24 +25,49 @@ for path in "$@"; do
       value = clean(value)
       if (value != "" && value != "failure") report(line, sprintf("%c%s%c", 39, value, 39))
     }
+    function scan(value,   i, character, escaped, result) {
+      close_bracket = 0
+      for (i = 1; i <= length(value); i++) {
+        character = substr(value, i, 1)
+        if (comment) break
+        if (quote != "") {
+          result = result character
+          if (quote == "\"" && character == "\\" && !escaped) {
+            escaped = 1
+          } else if (character == quote && !escaped) {
+            quote = ""
+            escaped = 0
+          } else {
+            escaped = 0
+          }
+        } else if (character == "\"" || character == "\047") {
+          quote = character
+          result = result character
+        } else if (character == "#") {
+          comment = 1
+        } else if (character == "]") {
+          close_bracket = 1
+          break
+        } else {
+          result = result character
+        }
+      }
+      comment = 0
+      return result
+    }
     /^[[:space:]]*output:[[:space:]]*\[/ {
       list = $0
       sub(/^[^[]*\[/, "", list)
-      if (list !~ /\]/) {
-        flow_output = 1
-      } else {
-        sub(/\].*$/, "", list)
-      }
+      quote = ""
+      list = scan(list)
+      flow_output = !close_bracket
       count = split(list, values, ",")
       for (i = 1; i <= count; i++) inspect(values[i], NR)
       next
     }
     flow_output {
-      list = $0
-      if (list ~ /\]/) {
-        sub(/\].*$/, "", list)
-        flow_output = 0
-      }
+      list = scan($0)
+      if (close_bracket) flow_output = 0
       count = split(list, values, ",")
       for (i = 1; i <= count; i++) inspect(values[i], NR)
       next
