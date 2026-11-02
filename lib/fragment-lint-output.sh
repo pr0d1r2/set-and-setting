@@ -10,13 +10,15 @@ for path in "$@"; do
       printf "%s:%d: output list contains %s; only failure is allowed because other output produces noise that hides real errors\n", path, line, value
       found = 1
     }
-    function clean(value) {
+    function clean(value,   quote, close_at) {
+      gsub(/^[[:space:]]+|[[:space:]]+$/, "", value)
+      quote = substr(value, 1, 1)
+      if (quote == "\"" || quote == "\047") {
+        close_at = index(substr(value, 2), quote)
+        if (close_at > 0) return substr(value, 2, close_at - 1)
+      }
       sub(/[[:space:]]+#.*/, "", value)
       gsub(/^[[:space:]]+|[[:space:]]+$/, "", value)
-      if ((substr(value, 1, 1) == "\"" || substr(value, 1, 1) == "\047") &&
-          substr(value, length(value), 1) == substr(value, 1, 1)) {
-        value = substr(value, 2, length(value) - 2)
-      }
       return value
     }
     function inspect(value, line) {
