@@ -61,6 +61,7 @@ in
       "changelog-touched"
       "ledger-ids"
       "namespace-limit"
+      "fragment-lint-output"
     ];
     nix = [
       "flake-manifest"
@@ -247,11 +248,13 @@ in
       "lint-noexec"
       "ci-lint-token"
       "ci-lint-qemu-order"
+      "fragment-lint-output"
     ];
     yaml = [
       "yamllint"
       "rekall-gnu-sed"
       "lint-noexec"
+      "fragment-lint-output"
     ];
     toml = [ "taplo" ];
     justfile = [
