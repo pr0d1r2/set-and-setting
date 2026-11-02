@@ -51,8 +51,9 @@ for path in "$@"; do
       next
     }
     in_output {
+      if ($0 ~ /^[[:space:]]*(#.*)?$/) next
       indent = match($0, /[^[:space:]]/) - 1
-      if ($0 ~ /^[[:space:]]*-[[:space:]]*/ && indent > output_indent) {
+      if ($0 ~ /^[[:space:]]*-[[:space:]]*/ && indent >= output_indent) {
         value = $0
         sub(/^[[:space:]]*-[[:space:]]*/, "", value)
         inspect(value, NR)

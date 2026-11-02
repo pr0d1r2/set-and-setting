@@ -21,6 +21,20 @@ teardown() { rm -rf "$TMP"; }
     [ -z "$output" ]
 }
 
+@test "indentless output list is scanned" {
+    printf '%s\n' 'output:' '- success' >"$TMP/indentless.yml"
+    run bash "$SCRIPT" "$TMP/indentless.yml"
+    [ "$status" -eq 1 ]
+    [[ "$output" == *"$TMP/indentless.yml:2: output list contains 'success'"* ]]
+}
+
+@test "blank and comment lines within output list are ignored" {
+    printf '%s\n' 'output:' '  - failure' '' '  # explain the allowed output' '  - success' >"$TMP/gapped.yml"
+    run bash "$SCRIPT" "$TMP/gapped.yml"
+    [ "$status" -eq 1 ]
+    [[ "$output" == *"$TMP/gapped.yml:5: output list contains 'success'"* ]]
+}
+
 @test "non-failure output is a finding" {
     printf '%s\n' 'output: [failure, success]' >"$TMP/bad.yml"
     run bash "$SCRIPT" "$TMP/bad.yml"
