@@ -26,7 +26,21 @@ for path in "$@"; do
     /^[[:space:]]*output:[[:space:]]*\[/ {
       list = $0
       sub(/^[^[]*\[/, "", list)
-      sub(/\].*$/, "", list)
+      if (list !~ /\]/) {
+        flow_output = 1
+      } else {
+        sub(/\].*$/, "", list)
+      }
+      count = split(list, values, ",")
+      for (i = 1; i <= count; i++) inspect(values[i], NR)
+      next
+    }
+    flow_output {
+      list = $0
+      if (list ~ /\]/) {
+        sub(/\].*$/, "", list)
+        flow_output = 0
+      }
       count = split(list, values, ",")
       for (i = 1; i <= count; i++) inspect(values[i], NR)
       next
