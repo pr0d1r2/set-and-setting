@@ -28,6 +28,13 @@ teardown() { rm -rf "$TMP"; }
     [[ "$output" == *"$TMP/bad.yml:1: output list contains 'success'"* ]]
 }
 
+@test "non-failure output in a multiline flow list is a finding" {
+    printf '%s\n' 'output: [failure,' '  success]' >"$TMP/multiline.yml"
+    run bash "$SCRIPT" "$TMP/multiline.yml"
+    [ "$status" -eq 1 ]
+    [[ "$output" == *"$TMP/multiline.yml:2: output list contains 'success'"* ]]
+}
+
 @test "near-miss outside an output list is ignored" {
     printf '%s\n' 'message: "success is useful documentation"' 'other: [skips]' >"$TMP/near-miss.yml"
     run bash "$SCRIPT" "$TMP/near-miss.yml"
