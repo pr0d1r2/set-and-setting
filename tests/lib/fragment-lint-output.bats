@@ -56,6 +56,13 @@ teardown() { rm -rf "$TMP"; }
     [[ "$output" == *"$TMP/multiline.yml:2: output list contains 'success'"* ]]
 }
 
+@test "brackets in multiline flow list comments are ignored" {
+    printf '%s\n' 'output: [' '  # ] notes' '  success]' >"$TMP/comment-flow.yml"
+    run bash "$SCRIPT" "$TMP/comment-flow.yml"
+    [ "$status" -eq 1 ]
+    [[ "$output" == *"$TMP/comment-flow.yml:3: output list contains 'success'"* ]]
+}
+
 @test "near-miss outside an output list is ignored" {
     printf '%s\n' 'message: "success is useful documentation"' 'other: [skips]' >"$TMP/near-miss.yml"
     run bash "$SCRIPT" "$TMP/near-miss.yml"
