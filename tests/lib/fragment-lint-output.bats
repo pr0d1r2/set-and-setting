@@ -28,6 +28,13 @@ teardown() { rm -rf "$TMP"; }
     [[ "$output" == *"$TMP/quoted-hash.yml:1: output list contains ' # disallowed'"* ]]
 }
 
+@test "escaped apostrophes inside quoted output values are preserved" {
+    printf '%s\n' "output: ['failure''']" >"$TMP/quoted-apostrophe.yml"
+    run bash "$SCRIPT" "$TMP/quoted-apostrophe.yml"
+    [ "$status" -eq 1 ]
+    [[ "$output" == *"$TMP/quoted-apostrophe.yml:1: output list contains 'failure'''"* ]]
+}
+
 @test "indentless output list is scanned" {
     printf '%s\n' 'output:' '- success' >"$TMP/indentless.yml"
     run bash "$SCRIPT" "$TMP/indentless.yml"
