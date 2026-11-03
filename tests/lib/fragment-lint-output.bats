@@ -63,6 +63,14 @@ teardown() { rm -rf "$TMP"; }
     [[ "$output" == *"$TMP/multiline.yml:2: output list contains 'success'"* ]]
 }
 
+@test "commas inside quoted flow values are preserved" {
+    printf '%s\n' 'output: [failure, "success, please"]' >"$TMP/quoted-comma.yml"
+    run bash "$SCRIPT" "$TMP/quoted-comma.yml"
+    [ "$status" -eq 1 ]
+    [[ "$output" == *"$TMP/quoted-comma.yml:1: output list contains 'success, please'"* ]]
+    [[ "$output" != *"output list contains 'please'"* ]]
+}
+
 @test "brackets in multiline flow list comments are ignored" {
     printf '%s\n' 'output: [' '  # ] notes' '  success]' >"$TMP/comment-flow.yml"
     run bash "$SCRIPT" "$TMP/comment-flow.yml"
