@@ -13,6 +13,9 @@ pre-commit:
     ci-lint-qemu-order:
       glob: ".github/workflows/*.{yml,yaml}"
       run: lefthook-ci-lint-qemu-order {staged_files}
+    ci-lint-sha:
+      glob: ".github/workflows/*.{yml,yaml}"
+      run: lefthook-ci-lint-sha {staged_files}
 
 pre-push:
   commands:
@@ -25,3 +28,6 @@ pre-push:
     ci-lint-qemu-order:
       glob: ".github/workflows/*.{yml,yaml}"
       run: lefthook-ci-lint-qemu-order {push_files}
+    ci-lint-sha:
+      glob: ".github/workflows/*.{yml,yaml}"
+      run: lefthook-ci-lint-sha {push_files}

@@ -44,6 +44,7 @@ in
       "actionlint"
       "ci-lint-token"
       "ci-lint-qemu-order"
+      "ci-lint-sha"
     ];
     base = [
       "gitleaks"
@@ -248,6 +249,7 @@ in
       "lint-noexec"
       "ci-lint-token"
       "ci-lint-qemu-order"
+      "ci-lint-sha"
       "fragment-lint-output"
     ];
     yaml = [

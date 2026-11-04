@@ -30,3 +30,6 @@ paths:
   # outputs) took it past the .sh limit; this exempts that one file rather than
   # raising `sh` for every script.
   lib/migrate.sh: 57344
+  # lefthook.yml is assembled from integration fragments; the SHA-pinning
+  # command adds a small amount of required generated configuration.
+  lefthook.yml: 9216

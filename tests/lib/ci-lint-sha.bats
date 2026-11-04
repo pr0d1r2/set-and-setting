@@ -1,0 +1,43 @@
+#!/usr/bin/env bats
+
+setup() {
+    TMP="$(mktemp -d)"
+    SCRIPT="$BATS_TEST_DIRNAME/../../lib/ci-lint-sha.sh"
+    mkdir -p "$TMP/.github/workflows"
+}
+
+teardown() { rm -rf "$TMP"; }
+
+@test "full SHA and local reusable workflow pass" {
+    printf '%s\n' \
+        'jobs:' \
+        '  check:' \
+        '    uses: ./.github/workflows/guardrails.yml' \
+        '    steps:' \
+        '      - uses: owner/action@0123456789abcdef0123456789abcdef01234567' >"$TMP/.github/workflows/clean.yml"
+    run bash "$SCRIPT" "$TMP/.github/workflows/clean.yml"
+    [ "$status" -eq 0 ]
+    [ -z "$output" ]
+}
+
+@test "tag branch and short SHA are findings" {
+    printf '%s\n' \
+        'jobs:' \
+        '  check:' \
+        '    steps:' \
+        '      - uses: owner/tagged@v1' \
+        '      - uses: owner/branched@main' \
+        '      - uses: owner/short@fbeb9d9' >"$TMP/.github/workflows/violating.yml"
+    run bash "$SCRIPT" "$TMP/.github/workflows/violating.yml"
+    [ "$status" -eq 1 ]
+    [[ "$output" == *":4: pin owner/tagged@v1 to a full 40-character commit SHA; resolve with: git ls-remote https://github.com/owner/tagged refs/heads/v1 (or refs/tags/v1)"* ]]
+    [[ "$output" == *":5: pin owner/branched@main to a full 40-character commit SHA"* ]]
+    [[ "$output" == *":6: pin owner/short@fbeb9d9 to a full 40-character commit SHA"* ]]
+}
+
+@test "near-miss outside workflow directory is ignored" {
+    printf '%s\n' '      - uses: owner/action@v1' >"$TMP/example.yml"
+    run bash "$SCRIPT" "$TMP/example.yml"
+    [ "$status" -eq 0 ]
+    [ -z "$output" ]
+}
