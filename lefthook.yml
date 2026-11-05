@@ -109,7 +109,6 @@ pre-commit:
     set-bundle-content:
       glob: "set/**/*.md"
       run: SET_ROOT=set lefthook-bundle-content-check
-
 pre-push:
   commands:
     linter-coverage:
@@ -204,7 +203,6 @@ pre-push:
     set-bundle-content:
       glob: "set/**/*.md"
       run: SET_ROOT=set lefthook-bundle-content-check
-
 commit-msg:
   commands:
     commit-msg-lint:
