@@ -29,17 +29,34 @@ jobs:
       contents: read
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
-      - name: Report lock growth
-        env:
-          GH_TOKEN: ${{ github.token }}
-          PR: ${{ github.event.pull_request.number }}
+        with:
+          persist-credentials: false
+      - name: Analyze lock growth
+        id: analyze
         run: |
           set -euo pipefail
           report="$(bash lib/nix-flake-lock-budget.sh flake.lock 2>&1 || true)"
           bytes="$(printf '%s\n' "$report" | sed -n 's/lock-budget: bytes=\([0-9]*\).*/\1/p')"
           baseline="$(sed -n 's/^baseline_bytes: *//p' config/lefthook/flake_lock_budget.yml)"
-          [ -n "$bytes" ] && [ "$bytes" -gt "$baseline" ] || exit 0
-          body="<!-- lock-budget-report -->\n### flake.lock growth\n\n\`$report\`\n\nThe committed lock baseline was updated with this lock refresh."
+          if [ -n "$bytes" ] && [ "$bytes" -gt "$baseline" ]; then
+            {
+              echo 'report<<LOCK_BUDGET_REPORT'
+              printf '%s\n' "$report"
+              echo 'LOCK_BUDGET_REPORT'
+              echo 'should_report=true'
+            } >> "$GITHUB_OUTPUT"
+          else
+            echo 'should_report=false' >> "$GITHUB_OUTPUT"
+          fi
+      - name: Report lock growth
+        if: ${{ steps.analyze.outputs.should_report == 'true' }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR: ${{ github.event.pull_request.number }}
+          REPORT: ${{ steps.analyze.outputs.report }}
+        run: |
+          set -euo pipefail
+          body="<!-- lock-budget-report -->\n### flake.lock growth\n\n\`$REPORT\`\n\nThe committed lock baseline was updated with this lock refresh."
           export BODY="$body"
           existing="$(gh api "repos/${GITHUB_REPOSITORY}/issues/${PR}/comments" --paginate --jq '.[] | select(.body | contains("<!-- lock-budget-report -->")) | .id' | head -n1)"
           if [ -n "$existing" ]; then
