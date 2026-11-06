@@ -35,6 +35,17 @@ teardown() { rm -rf "$TMP"; }
     [[ "$output" == *":6: pin owner/short@fbeb9d9 to a full 40-character commit SHA"* ]]
 }
 
+@test "quoted uses key and value are findings" {
+    printf '%s\n' \
+        'jobs:' \
+        '  check:' \
+        '    steps:' \
+        "      - 'uses': 'owner/tagged@v1'" >"$TMP/.github/workflows/quoted.yml"
+    run bash "$SCRIPT" "$TMP/.github/workflows/quoted.yml"
+    [ "$status" -eq 1 ]
+    [[ "$output" == *":4: pin owner/tagged@v1 to a full 40-character commit SHA"* ]]
+}
+
 @test "near-miss outside workflow directory is ignored" {
     printf '%s\n' '      - uses: owner/action@v1' >"$TMP/example.yml"
     run bash "$SCRIPT" "$TMP/example.yml"

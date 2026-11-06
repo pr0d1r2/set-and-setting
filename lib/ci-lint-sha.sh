@@ -12,11 +12,12 @@ for path in "$@"; do
         }
         {
           line = $0
-          if (line !~ /^[[:space:]]*(-[[:space:]]*)?uses:[[:space:]]*/) next
-          sub(/^.*uses:[[:space:]]*/, "", line)
+          if (line !~ /^[[:space:]]*(-[[:space:]]*)?[\047\042]?uses[\047\042]?:[[:space:]]*/) next
+          sub(/^.*[\047\042]?uses[\047\042]?:[[:space:]]*/, "", line)
           sub(/[[:space:]]+#.*$/, "", line)
           split(line, fields, /[[:space:]]+/)
           action_ref = fields[1]
+          gsub(/^[\047\042]|[\047\042]$/, "", action_ref)
           if (action_ref ~ /^\.\//) next
           split(action_ref, parts, "@")
           action = parts[1]
