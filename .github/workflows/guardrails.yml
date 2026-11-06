@@ -10,7 +10,7 @@ name: Guardrails
 # Consumer usage:
 #   jobs:
 #     guardrails:
-#       uses: pr0d1r2/set-and-setting/.github/workflows/guardrails.yml@main
+#       uses: pr0d1r2/set-and-setting/.github/workflows/guardrails.yml@5303885cacb5728d3650afe61e7d3ef9a3e560ec
 
 "on":
   workflow_call:
