@@ -24,6 +24,8 @@ jobs:
     if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    env:
+      NIX_CONFIG: ""
     permissions:
       pull-requests: write
       contents: read
