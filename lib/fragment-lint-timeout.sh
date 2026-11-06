@@ -35,8 +35,11 @@ for path in "$@"; do
         has_run = 0
         has_timeout = 0
         run_text = ""
-      } else if (command != "" && $0 ~ /^[[:space:]]+timeout:[[:space:]]*/) {
-        has_timeout = 1
+      } else if (command != "" && indent == commands_indent + 4 && $0 ~ /^[[:space:]]+timeout:[[:space:]]*/) {
+        timeout_value = $0
+        sub(/^[^:]*:[[:space:]]*/, "", timeout_value)
+        sub(/[[:space:]]+#.*/, "", timeout_value)
+        if (timeout_value ~ /[^[:space:]]/ && timeout_value != "\"\"" && timeout_value != "''") has_timeout = 1
       } else if (command != "" && $0 ~ /^[[:space:]]+run:[[:space:]]*/) {
         has_run = 1
         run_text = $0

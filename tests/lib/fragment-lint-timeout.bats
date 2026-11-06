@@ -21,6 +21,20 @@ teardown() { rm -rf "$TMP"; }
     [[ "$output" == "$TMP/bad.yml:3: command hanging has no bounding timeout (add a timeout key or wrap its invocation with timeout)" ]]
 }
 
+@test "nested env timeout does not satisfy a command" {
+    printf '%s\n' 'pre-commit:' '  commands:' '    nested:' '      run: tool' '      env:' '        timeout: 30s' >"$TMP/nested.yml"
+    run bash "$SCRIPT" "$TMP/nested.yml"
+    [ "$status" -eq 1 ]
+    [[ "$output" == "$TMP/nested.yml:3: command nested has no bounding timeout (add a timeout key or wrap its invocation with timeout)" ]]
+}
+
+@test "empty command timeout does not satisfy a command" {
+    printf '%s\n' 'pre-commit:' '  commands:' '    empty:' '      run: tool' '      timeout:' >"$TMP/empty.yml"
+    run bash "$SCRIPT" "$TMP/empty.yml"
+    [ "$status" -eq 1 ]
+    [[ "$output" == "$TMP/empty.yml:3: command empty has no bounding timeout (add a timeout key or wrap its invocation with timeout)" ]]
+}
+
 @test "an explicit repository default satisfies commands" {
     printf '%s\n' 'default_timeout: 30s' 'pre-push:' '  commands:' '    hanging:' '      run: tool' >"$TMP/default.yml"
     run bash "$SCRIPT" "$TMP/default.yml"
