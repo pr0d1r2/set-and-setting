@@ -68,6 +68,17 @@ teardown() { rm -rf "$TMP"; }
     [[ "$output" == *":4: pin actions/checkout@v4 to a full 40-character commit SHA"* ]]
 }
 
+@test "inline mapping uses keys are findings" {
+    printf '%s\n' \
+        'jobs:' \
+        '  check:' \
+        '    steps:' \
+        '      - { name: checkout, uses: actions/checkout@v4 }' >"$TMP/.github/workflows/inline.yml"
+    run bash "$SCRIPT" "$TMP/.github/workflows/inline.yml"
+    [ "$status" -eq 1 ]
+    [[ "$output" == *":4: pin actions/checkout@v4 to a full 40-character commit SHA"* ]]
+}
+
 @test "near-miss outside workflow directory is ignored" {
     printf '%s\n' '      - uses: owner/action@v1' >"$TMP/example.yml"
     run bash "$SCRIPT" "$TMP/example.yml"

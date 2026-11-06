@@ -12,9 +12,13 @@ for path in "$@"; do
         }
         {
           line = $0
-          if (line !~ /^[[:space:]]*(-[[:space:]]*)?[\047\042]?uses[\047\042]?[[:space:]]*:[[:space:]]*/) next
-          sub(/^[[:space:]]*(-[[:space:]]*)?[\047\042]?uses[\047\042]?[[:space:]]*:[[:space:]]*/, "", line)
           sub(/[[:space:]]+#.*$/, "", line)
+          # `uses` may be a member of an inline mapping, not only a
+          # stand-alone sequence item (`- { uses: action@ref, ... }`).
+          # Restrict the key to YAML mapping boundaries so comments and
+          # unrelated words containing "uses:" are not treated as actions.
+          if (line !~ /(^|[[:space:]{,])[\047\042]?uses[\047\042]?[[:space:]]*:[[:space:]]*/) next
+          sub(/^.*(^|[[:space:]{,])[\047\042]?uses[\047\042]?[[:space:]]*:[[:space:]]*/, "", line)
           split(line, fields, /[[:space:]]+/)
           action_ref = fields[1]
           gsub(/^[\047\042]|[\047\042]$/, "", action_ref)
