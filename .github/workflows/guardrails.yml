@@ -96,7 +96,7 @@ jobs:
             # sequential: it runs bats with no `--jobs` unless
             # LEFTHOOK_BATS_UNIT_JOBS asks for them, which is the
             # determinism this step wanted (B91).
-            nix develop --command lefthook-bats-unit "${bats_files[@]}"
+            LEFTHOOK_BATS_UNIT_JOBS=1 nix develop --command lefthook-bats-unit "${bats_files[@]}"
             # The bats fragment -- and so the tdd-order-bats wrapper -- is
             # materialized only for a repository with tracked .bats files,
             # so this gate belongs inside the same guard as the suite.
