@@ -47,3 +47,10 @@ teardown() { rm -rf "$TMP"; }
     run bash "$SCRIPT" "$TMP/near-miss.yml"
     [ "$status" -eq 1 ]
 }
+
+@test "later command fields do not satisfy a command timeout" {
+    printf '%s\n' 'pre-commit:' '  commands:' '    hanging:' '      run: tool' '      glob: "*.sh" # timeout needed' >"$TMP/later-field.yml"
+    run bash "$SCRIPT" "$TMP/later-field.yml"
+    [ "$status" -eq 1 ]
+    [[ "$output" == "$TMP/later-field.yml:3: command hanging has no bounding timeout (add a timeout key or wrap its invocation with timeout)" ]]
+}

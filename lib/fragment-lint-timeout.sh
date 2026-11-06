@@ -42,10 +42,11 @@ for path in "$@"; do
         if (timeout_value ~ /[^[:space:]]/ && timeout_value != "\"\"" && timeout_value != "''") has_timeout = 1
       } else if (command != "" && $0 ~ /^[[:space:]]+run:[[:space:]]*/) {
         has_run = 1
+        run_indent = indent
         run_text = $0
         sub(/^[^:]*:[[:space:]]*/, "", run_text)
         sub(/[[:space:]]+#.*/, "", run_text)
-      } else if (command != "" && has_run && indent > commands_indent + 2) {
+      } else if (command != "" && has_run && indent > run_indent) {
         run_text = run_text " " $0
       }
     }
