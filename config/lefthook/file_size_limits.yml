@@ -9,6 +9,9 @@ extensions:
   sh: 49152
   txt: 12288
 paths:
+  # lefthook.yml is assembled from every active integration fragment; the
+  # per-command timeout contract necessarily expands this generated artifact.
+  lefthook.yml: 12288
   # SPEC.md is the whole-repository specification: one file that carries every
   # invariant, task and bug row, and it grows by a row per fix. At the .md
   # limit it had 934 bytes of headroom, so the next spec row on any branch

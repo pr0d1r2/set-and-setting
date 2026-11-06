@@ -7,27 +7,35 @@ pre-commit:
     shellcheck:
       glob: "*.sh"
       run: lefthook-shellcheck {staged_files}
+      timeout: 30s
     shfmt:
       glob: "*.sh"
       run: lefthook-shfmt {staged_files}
+      timeout: 30s
     no-shell-functions:
       glob: "*.sh"
       run: lefthook-no-shell-functions {staged_files}
+      timeout: 30s
     lint-noexec:
       glob: "*.{sh,yml,yaml}"
       run: lefthook-lint-noexec {staged_files}
+      timeout: 30s
 
 pre-push:
   commands:
     shellcheck:
       glob: "*.sh"
       run: lefthook-shellcheck {push_files}
+      timeout: 30s
     shfmt:
       glob: "*.sh"
       run: lefthook-shfmt {push_files}
+      timeout: 30s
     no-shell-functions:
       glob: "*.sh"
       run: lefthook-no-shell-functions {push_files}
+      timeout: 30s
     lint-noexec:
       glob: "*.{sh,yml,yaml}"
       run: lefthook-lint-noexec {push_files}
+      timeout: 30s

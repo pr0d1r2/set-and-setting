@@ -8,12 +8,15 @@ pre-commit:
     lint-arch-diagram:
       glob: "README.md"
       run: lefthook-lint-arch-diagram {staged_files}
+      timeout: 30s
     lint-badge-version:
       glob: "README.md"
       run: lefthook-lint-badge-version flake.nix README.md flake.lock
+      timeout: 30s
     lint-badge-order:
       glob: "README.md"
       run: lefthook-lint-badge-order {staged_files}
+      timeout: 30s
     markdownlint:
       glob: "*.md"
       run: timeout ${LEFTHOOK_MARKDOWNLINT_TIMEOUT:-30} lefthook-markdownlint {staged_files}
@@ -26,6 +29,7 @@ pre-push:
     lint-arch-diagram:
       glob: "README.md"
       run: lefthook-lint-arch-diagram {push_files}
+      timeout: 30s
     markdownlint:
       glob: "*.md"
       run: timeout ${LEFTHOOK_MARKDOWNLINT_TIMEOUT:-30} lefthook-markdownlint {push_files}
