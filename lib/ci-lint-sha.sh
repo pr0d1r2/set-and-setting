@@ -12,8 +12,8 @@ for path in "$@"; do
         }
         {
           line = $0
-          if (line !~ /^[[:space:]]*(-[[:space:]]*)?[\047\042]?uses[\047\042]?:[[:space:]]*/) next
-          sub(/^[[:space:]]*(-[[:space:]]*)?[\047\042]?uses[\047\042]?:[[:space:]]*/, "", line)
+          if (line !~ /^[[:space:]]*(-[[:space:]]*)?[\047\042]?uses[\047\042]?[[:space:]]*:[[:space:]]*/) next
+          sub(/^[[:space:]]*(-[[:space:]]*)?[\047\042]?uses[\047\042]?[[:space:]]*:[[:space:]]*/, "", line)
           sub(/[[:space:]]+#.*$/, "", line)
           split(line, fields, /[[:space:]]+/)
           action_ref = fields[1]

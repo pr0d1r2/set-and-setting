@@ -46,6 +46,17 @@ teardown() { rm -rf "$TMP"; }
     [[ "$output" == *":4: pin owner/tagged@v1 to a full 40-character commit SHA"* ]]
 }
 
+@test "whitespace before uses colon is a finding" {
+    printf '%s\n' \
+        'jobs:' \
+        '  check:' \
+        '    steps:' \
+        '      - uses : actions/checkout@v4' >"$TMP/.github/workflows/whitespace.yml"
+    run bash "$SCRIPT" "$TMP/.github/workflows/whitespace.yml"
+    [ "$status" -eq 1 ]
+    [[ "$output" == *":4: pin actions/checkout@v4 to a full 40-character commit SHA"* ]]
+}
+
 @test "uses key in comment does not mask mutable ref" {
     printf '%s\n' \
         'jobs:' \
