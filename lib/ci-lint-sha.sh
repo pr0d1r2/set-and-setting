@@ -22,6 +22,9 @@ for path in "$@"; do
           split(line, fields, /[[:space:]]+/)
           action_ref = fields[1]
           gsub(/^[\047\042]|[\047\042]$/, "", action_ref)
+          # Flow-style mappings terminate the scalar with a comma before the
+          # next member (`{ uses: action@<sha>, name: ... }`).
+          sub(/,$/, "", action_ref)
           if (action_ref ~ /^\.\//) next
           split(action_ref, parts, "@")
           action = parts[1]

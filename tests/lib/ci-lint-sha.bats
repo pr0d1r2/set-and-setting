@@ -79,6 +79,17 @@ teardown() { rm -rf "$TMP"; }
     [[ "$output" == *":4: pin actions/checkout@v4 to a full 40-character commit SHA"* ]]
 }
 
+@test "inline mapping with a full SHA and trailing comma passes" {
+    printf '%s\n' \
+        'jobs:' \
+        '  check:' \
+        '    steps:' \
+        '      - { name: checkout, uses: owner/action@0123456789abcdef0123456789abcdef01234567, if: success() }' >"$TMP/.github/workflows/inline-pinned.yml"
+    run bash "$SCRIPT" "$TMP/.github/workflows/inline-pinned.yml"
+    [ "$status" -eq 0 ]
+    [ -z "$output" ]
+}
+
 @test "near-miss outside workflow directory is ignored" {
     printf '%s\n' '      - uses: owner/action@v1' >"$TMP/example.yml"
     run bash "$SCRIPT" "$TMP/example.yml"
