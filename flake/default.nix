@@ -437,6 +437,7 @@ let
         (localLint "lefthook-ledger-ids" ../lib/lint-ledger-ids.sh)
         (localLint "lefthook-namespace-limit" ../lib/lint-namespace-limit.sh)
         (localLint "lefthook-fragment-lint-output" ../lib/fragment-lint-output.sh)
+        (localLint "lefthook-fragment-lint-timeout" ../lib/fragment-lint-timeout.sh)
         (w "lefthook-commit-msg-lint" nix-lefthook-commit-msg-lint-src {
           runtimeInputs = [
             pkgs.coreutils

@@ -6,21 +6,27 @@ pre-commit:
       run: >
         if command -v rekall >/dev/null 2>&1; then rekall check;
         else echo "lefthook SKIPPED rekall check -- not on PATH"; fi
+      timeout: 60s
     rekall-gnu-sed:
       glob: "*.{sh,bash,nix,yml,yaml}"
       run: sh .rekall/rules/always-use-sed-from-the-dev.sh
+      timeout: 30s
     set-skill-extension:
       glob: "set/{skills,drafts}/**"
       run: SET_ROOT=set lefthook-skill-extension-check
+      timeout: 30s
     set-skill-size:
       glob: "set/{skills,drafts}/**/*.md"
       run: SET_ROOT=set lefthook-skill-size-check
+      timeout: 30s
     set-ref-resolution:
       glob: "set/**/*.md"
       run: SET_ROOT=set lefthook-ref-resolve-check
+      timeout: 30s
     set-bundle-content:
       glob: "set/**/*.md"
       run: SET_ROOT=set lefthook-bundle-content-check
+      timeout: 30s
 
 pre-push:
   commands:
@@ -29,18 +35,24 @@ pre-push:
       run: >
         if command -v rekall >/dev/null 2>&1; then rekall check;
         else echo "lefthook SKIPPED rekall check -- not on PATH"; fi
+      timeout: 60s
     rekall-gnu-sed:
       glob: "*.{sh,bash,nix,yml,yaml}"
       run: sh .rekall/rules/always-use-sed-from-the-dev.sh
+      timeout: 30s
     set-skill-extension:
       glob: "set/{skills,drafts}/**"
       run: SET_ROOT=set lefthook-skill-extension-check
+      timeout: 30s
     set-skill-size:
       glob: "set/{skills,drafts}/**/*.md"
       run: SET_ROOT=set lefthook-skill-size-check
+      timeout: 30s
     set-ref-resolution:
       glob: "set/**/*.md"
       run: SET_ROOT=set lefthook-ref-resolve-check
+      timeout: 30s
     set-bundle-content:
       glob: "set/**/*.md"
       run: SET_ROOT=set lefthook-bundle-content-check
+      timeout: 30s

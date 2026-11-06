@@ -10,23 +10,35 @@ pre-commit:
       run: >
         lefthook-namespace-limit flake/apps/default.nix
         $(find . -type f \( -name justfile -o -name '*.just' \) -print)
+      timeout: 30s
     changelog-touched:
       run: lefthook-changelog-touched
+      timeout: 30s
     ledger-ids:
       glob: "SPEC.md"
       run: lefthook-ledger-ids {staged_files}
+      timeout: 30s
     gitleaks:
       run: lefthook-gitleaks {staged_files}
+      timeout: 60s
     git-conflict-markers:
       run: lefthook-git-conflict-markers {staged_files}
+      timeout: 30s
     git-no-local-paths:
       run: lefthook-git-no-local-paths {staged_files}
+      timeout: 30s
     nix-flake-check:
       glob: "*.nix"
       run: timeout ${LEFTHOOK_NIX_FLAKE_CHECK_TIMEOUT:-600} nix flake check --option accept-flake-config false
+      timeout: 660s
     fragment-lint-output:
       glob: "*.{yml,yaml}"
       run: lefthook-fragment-lint-output {staged_files}
+      timeout: 30s
+    fragment-lint-timeout:
+      glob: "setting/integrations/lefthook/*.{yml,yaml}"
+      run: lefthook-fragment-lint-timeout {staged_files}
+      timeout: 30s
 
 pre-push:
   commands:
@@ -41,8 +53,10 @@ pre-push:
       # fragment. Pre-commit keeps the glob; this is the gate before the push,
       # and it costs what CI costs.
       run: timeout ${LEFTHOOK_NIX_FLAKE_CHECK_TIMEOUT:-600} nix flake check --option accept-flake-config false
+      timeout: 660s
 
 commit-msg:
   commands:
     commit-msg-lint:
       run: lefthook-commit-msg-lint {1}
+      timeout: 30s

@@ -62,6 +62,7 @@ in
       "ledger-ids"
       "namespace-limit"
       "fragment-lint-output"
+      "fragment-lint-timeout"
     ];
     nix = [
       "flake-manifest"
@@ -249,12 +250,14 @@ in
       "ci-lint-token"
       "ci-lint-qemu-order"
       "fragment-lint-output"
+      "fragment-lint-timeout"
     ];
     yaml = [
       "yamllint"
       "rekall-gnu-sed"
       "lint-noexec"
       "fragment-lint-output"
+      "fragment-lint-timeout"
     ];
     toml = [ "taplo" ];
     justfile = [

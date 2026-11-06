@@ -8,39 +8,51 @@ pre-commit:
     nixfmt:
       glob: "*.nix"
       run: lefthook-nixfmt {staged_files}
+      timeout: 30s
     statix:
       glob: "*.nix"
       run: lefthook-statix {staged_files}
+      timeout: 30s
     deadnix:
       glob: "*.nix"
       run: lefthook-deadnix {staged_files}
+      timeout: 30s
     nix-no-embedded-shell:
       glob: "*.nix"
       run: lefthook-nix-no-embedded-shell {staged_files}
+      timeout: 30s
     leaf-import:
       glob: "flake/**/*.nix"
       run: lefthook-lint-leaf-import {staged_files}
+      timeout: 30s
     watch-file:
       glob: "*.nix"
       run: lefthook-lint-watch-file {staged_files}
+      timeout: 30s
 
 pre-push:
   commands:
     nixfmt:
       glob: "*.nix"
       run: lefthook-nixfmt {push_files}
+      timeout: 30s
     statix:
       glob: "*.nix"
       run: lefthook-statix {push_files}
+      timeout: 30s
     deadnix:
       glob: "*.nix"
       run: lefthook-deadnix {push_files}
+      timeout: 30s
     nix-no-embedded-shell:
       glob: "*.nix"
       run: lefthook-nix-no-embedded-shell {push_files}
+      timeout: 30s
     leaf-import:
       glob: "flake/**/*.nix"
       run: lefthook-lint-leaf-import {push_files}
+      timeout: 30s
     watch-file:
       glob: "*.nix"
       run: lefthook-lint-watch-file {push_files}
+      timeout: 30s
