@@ -46,6 +46,17 @@ teardown() { rm -rf "$TMP"; }
     [[ "$output" == *":4: pin owner/tagged@v1 to a full 40-character commit SHA"* ]]
 }
 
+@test "uses key in comment does not mask mutable ref" {
+    printf '%s\n' \
+        'jobs:' \
+        '  check:' \
+        '    steps:' \
+        '      - uses: actions/checkout@v4 # "uses": ./safe' >"$TMP/.github/workflows/comment.yml"
+    run bash "$SCRIPT" "$TMP/.github/workflows/comment.yml"
+    [ "$status" -eq 1 ]
+    [[ "$output" == *":4: pin actions/checkout@v4 to a full 40-character commit SHA"* ]]
+}
+
 @test "near-miss outside workflow directory is ignored" {
     printf '%s\n' '      - uses: owner/action@v1' >"$TMP/example.yml"
     run bash "$SCRIPT" "$TMP/example.yml"
