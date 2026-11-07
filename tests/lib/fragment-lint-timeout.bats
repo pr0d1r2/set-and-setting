@@ -54,6 +54,13 @@ teardown() { rm -rf "$TMP"; }
     [ "$status" -eq 1 ]
 }
 
+@test "quoted hash before timeout in a block scalar does not hide timeout" {
+    printf '%s\n' 'pre-commit:' '  commands:' '    wrapped:' '      run: |' "        printf '%s\\n' 'task # prep'; timeout 30s tool" >"$TMP/block-quoted-hash.yml"
+    run bash "$SCRIPT" "$TMP/block-quoted-hash.yml"
+    [ "$status" -eq 0 ]
+    [ -z "$output" ]
+}
+
 @test "later command fields do not satisfy a command timeout" {
     printf '%s\n' 'pre-commit:' '  commands:' '    hanging:' '      run: tool' '      glob: "*.sh" # timeout needed' >"$TMP/later-field.yml"
     run bash "$SCRIPT" "$TMP/later-field.yml"

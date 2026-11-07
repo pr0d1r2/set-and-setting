@@ -6,6 +6,22 @@ status=0
 for path in "$@"; do
   [ -f "$path" ] || continue
   awk -v path="$path" '
+    function strip_comment(s,   i, c, q, prev) {
+      q = ""
+      prev = " "
+      for (i = 1; i <= length(s); i++) {
+        c = substr(s, i, 1)
+        if (q != "") {
+          if (c == q) q = ""
+        } else if (c == "\"" || c == "\047") {
+          q = c
+        } else if (c == "#" && prev ~ /[[:space:]]/) {
+          return substr(s, 1, i - 1)
+        }
+        prev = c
+      }
+      return s
+    }
     function finish(   covered) {
       if (command == "" || !has_run) return
       covered = has_timeout || run_text ~ /(^|[[:space:];|&()])timeout([[:space:]]|$)/
@@ -45,10 +61,10 @@ for path in "$@"; do
         run_indent = indent
         run_text = $0
         sub(/^[^:]*:[[:space:]]*/, "", run_text)
-        sub(/[[:space:]]+#.*/, "", run_text)
+        run_text = strip_comment(run_text)
       } else if (command != "" && has_run && indent > run_indent) {
         continuation = $0
-        sub(/[[:space:]]+#.*/, "", continuation)
+        continuation = strip_comment(continuation)
         run_text = run_text " " continuation
       }
     }
