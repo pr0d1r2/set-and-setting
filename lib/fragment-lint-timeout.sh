@@ -63,7 +63,7 @@ for path in "$@"; do
         sub(/^[^:]*:[[:space:]]*/, "", timeout_value)
         sub(/[[:space:]]+#.*/, "", timeout_value)
         if (timeout_value ~ /[^[:space:]]/ && timeout_value != "\"\"" && timeout_value != "''") has_timeout = 1
-      } else if (command != "" && $0 ~ /^[[:space:]]+run:[[:space:]]*/) {
+      } else if (command != "" && indent == commands_indent + 4 && $0 ~ /^[[:space:]]+run:[[:space:]]*/) {
         has_run = 1
         run_indent = indent
         run_text = $0

@@ -28,6 +28,13 @@ teardown() { rm -rf "$TMP"; }
     [[ "$output" == "$TMP/nested.yml:3: command nested has no bounding timeout (add a timeout key or wrap its invocation with timeout)" ]]
 }
 
+@test "nested run field does not satisfy a command" {
+    printf '%s\n' 'pre-commit:' '  commands:' '    nested:' '      run: tool' '      env:' '        run: timeout 30 tool' >"$TMP/nested-run.yml"
+    run bash "$SCRIPT" "$TMP/nested-run.yml"
+    [ "$status" -eq 1 ]
+    [[ "$output" == "$TMP/nested-run.yml:3: command nested has no bounding timeout (add a timeout key or wrap its invocation with timeout)" ]]
+}
+
 @test "empty command timeout does not satisfy a command" {
     printf '%s\n' 'pre-commit:' '  commands:' '    empty:' '      run: tool' '      timeout:' >"$TMP/empty.yml"
     run bash "$SCRIPT" "$TMP/empty.yml"
