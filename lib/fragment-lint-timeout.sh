@@ -12,7 +12,11 @@ for path in "$@"; do
       for (i = 1; i <= length(s); i++) {
         c = substr(s, i, 1)
         if (q != "") {
-          if (c == q) q = ""
+          if (q == "\"" && c == "\\") {
+            i++
+          } else if (c == q) {
+            q = ""
+          }
         } else if (c == "\"" || c == "\047") {
           q = c
         } else if (c == "#" && prev ~ /[[:space:]]/) {
