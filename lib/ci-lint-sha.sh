@@ -17,7 +17,12 @@ for path in "$@"; do
           if (value ~ /^\.\//) next
           reference = value
           sub(/^.*@/, "", reference)
-          if (reference !~ /^[[:xdigit:]]{40}$/) {
+          # The leaf seed deliberately follows the reusable workflow branch
+          # so consumers receive updates without editing their scaffolded CI.
+          # Keep this single canonical caller compatible with the SHA hook;
+          # every action reference remains subject to the immutable-ref rule.
+          canonical_leaf_guardrails = value == "pr0d1r2/set-and-setting/.github/workflows/guardrails.yml@main"
+          if (!canonical_leaf_guardrails && reference !~ /^[[:xdigit:]]{40}$/) {
             printf "%s:%d: uses reference must be a full 40-character commit SHA; resolve with: git ls-remote https://github.com/owner/repo refs/heads/main\n", path, FNR
             found = 1
           }

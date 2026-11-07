@@ -3846,7 +3846,8 @@ in
         grep -q ".markdownlint.yml" ${seed}/.gitignore || { echo "FAIL: .gitignore should ignore .markdownlint.yml"; exit 1; }
         grep -q ".yamllint.yml" ${seed}/.gitignore || { echo "FAIL: .gitignore should ignore .yamllint.yml"; exit 1; }
         # Verify leaf CI uses reusable guardrails workflow
-        grep -q "guardrails.yml@main" ${seed}/.github/workflows/ci.yml || { echo "FAIL: CI should use guardrails.yml"; exit 1; }
+        grep -q "uses: pr0d1r2/set-and-setting/.github/workflows/guardrails.yml@main" ${seed}/.github/workflows/ci.yml \
+          || { echo "FAIL: seed CI should use the canonical guardrails caller"; exit 1; }
         # T62/#69: seed CI must NOT skip lefthook
         if grep -qE 'skip-lefthook:\s*"?true"?' ${seed}/.github/workflows/ci.yml; then
           echo "FAIL: seed ci.yml has skip-lefthook: true (#69/T62)"; exit 1
