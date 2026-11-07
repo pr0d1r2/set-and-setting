@@ -47,7 +47,9 @@ for path in "$@"; do
         sub(/^[^:]*:[[:space:]]*/, "", run_text)
         sub(/[[:space:]]+#.*/, "", run_text)
       } else if (command != "" && has_run && indent > run_indent) {
-        run_text = run_text " " $0
+        continuation = $0
+        sub(/[[:space:]]+#.*/, "", continuation)
+        run_text = run_text " " continuation
       }
     }
     END {
