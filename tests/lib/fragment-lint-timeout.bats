@@ -81,3 +81,10 @@ teardown() { rm -rf "$TMP"; }
     [ "$status" -eq 1 ]
     [[ "$output" == "$TMP/later-field.yml:3: command hanging has no bounding timeout (add a timeout key or wrap its invocation with timeout)" ]]
 }
+
+@test "nested sibling list values do not satisfy a command timeout" {
+    printf '%s\n' 'pre-commit:' '  commands:' '    hanging:' '      run: tool' '      glob:' '        - "timeout 30 tool"' >"$TMP/nested-sibling.yml"
+    run bash "$SCRIPT" "$TMP/nested-sibling.yml"
+    [ "$status" -eq 1 ]
+    [[ "$output" == "$TMP/nested-sibling.yml:3: command hanging has no bounding timeout (add a timeout key or wrap its invocation with timeout)" ]]
+}

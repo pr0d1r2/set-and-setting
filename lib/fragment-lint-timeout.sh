@@ -54,6 +54,7 @@ for path in "$@"; do
         command_line = NR
         has_run = 0
         has_timeout = 0
+        is_block_run = 0
         run_text = ""
       } else if (command != "" && indent == commands_indent + 4 && $0 ~ /^[[:space:]]+timeout:[[:space:]]*/) {
         timeout_value = $0
@@ -66,7 +67,8 @@ for path in "$@"; do
         run_text = $0
         sub(/^[^:]*:[[:space:]]*/, "", run_text)
         run_text = strip_comment(run_text)
-      } else if (command != "" && has_run && indent > run_indent) {
+        is_block_run = run_text ~ /^[|>]/
+      } else if (command != "" && has_run && is_block_run && indent > run_indent) {
         continuation = $0
         continuation = strip_comment(continuation)
         run_text = run_text " " continuation
