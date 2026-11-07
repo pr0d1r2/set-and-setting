@@ -39,3 +39,10 @@ teardown() { rm -rf "$TMP"; }
     [ "$status" -eq 0 ]
     [ -z "$output" ]
 }
+
+@test "the shipped scaffold uses full SHAs" {
+    run bash "$SCRIPT" "$BATS_TEST_DIRNAME/../../setting/scaffold/ci.yml" \
+        "$BATS_TEST_DIRNAME/../../setting/scaffold/leaf-ci.yml"
+    [ "$status" -eq 0 ]
+    [ -z "$output" ]
+}
