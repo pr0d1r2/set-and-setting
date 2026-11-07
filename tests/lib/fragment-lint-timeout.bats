@@ -61,6 +61,13 @@ teardown() { rm -rf "$TMP"; }
     [ "$status" -eq 1 ]
 }
 
+@test "timeout after a comment in a folded scalar does not satisfy a command" {
+    printf '%s\n' 'pre-commit:' '  commands:' '    hanging:' '      run: >' '        tool # note' '        timeout 30s tool' >"$TMP/folded-near-miss.yml"
+    run bash "$SCRIPT" "$TMP/folded-near-miss.yml"
+    [ "$status" -eq 1 ]
+    [[ "$output" == "$TMP/folded-near-miss.yml:3: command hanging has no bounding timeout (add a timeout key or wrap its invocation with timeout)" ]]
+}
+
 @test "quoted hash before timeout in a block scalar does not hide timeout" {
     printf '%s\n' 'pre-commit:' '  commands:' '    wrapped:' '      run: |' "        printf '%s\\n' 'task # prep'; timeout 30s tool" >"$TMP/block-quoted-hash.yml"
     run bash "$SCRIPT" "$TMP/block-quoted-hash.yml"

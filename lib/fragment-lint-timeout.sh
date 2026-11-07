@@ -26,9 +26,11 @@ for path in "$@"; do
       }
       return s
     }
-    function finish(   covered) {
+    function finish(   covered, effective_run) {
       if (command == "" || !has_run) return
-      covered = has_timeout || run_text ~ /(^|[[:space:];|&()])timeout([[:space:]]|$)/
+      effective_run = run_text
+      if (is_block_run && run_text ~ /^>/) effective_run = strip_comment(run_text)
+      covered = has_timeout || effective_run ~ /(^|[[:space:];|&()])timeout([[:space:]]|$)/
       if (!covered && !default_timeout) {
         printf "%s:%d: command %s has no bounding timeout (add a timeout key or wrap its invocation with timeout)\n", path, command_line, command
         found = 1
@@ -70,7 +72,7 @@ for path in "$@"; do
         is_block_run = run_text ~ /^[|>]/
       } else if (command != "" && has_run && is_block_run && indent > run_indent) {
         continuation = $0
-        continuation = strip_comment(continuation)
+        if (run_text !~ /^>/) continuation = strip_comment(continuation)
         run_text = run_text " " continuation
       }
     }
