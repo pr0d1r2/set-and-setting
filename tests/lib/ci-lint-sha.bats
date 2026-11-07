@@ -44,8 +44,13 @@ teardown() { rm -rf "$TMP"; }
     run bash "$SCRIPT" "$BATS_TEST_DIRNAME/../../setting/scaffold/ci.yml"
     [ "$status" -eq 0 ]
     [ -z "$output" ]
-    grep -q 'uses: pr0d1r2/set-and-setting/.github/workflows/guardrails.yml@main' \
-        "$BATS_TEST_DIRNAME/../../setting/scaffold/leaf-ci.yml"
+    awk '
+        /^jobs:$/ { in_jobs = 1 }
+        in_jobs && /^  guardrails:$/ { in_guardrails = 1; next }
+        in_guardrails && /^    uses: pr0d1r2\/set-and-setting\/.github\/workflows\/guardrails\.yml@main$/ { found = 1; exit }
+        in_guardrails && !/^    / { exit }
+        END { exit !found }
+    ' "$BATS_TEST_DIRNAME/../../setting/scaffold/leaf-ci.yml"
 }
 
 @test "the canonical leaf guardrails caller is allowed to follow main" {
