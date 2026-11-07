@@ -48,6 +48,13 @@ teardown() { rm -rf "$TMP"; }
     [ "$status" -eq 1 ]
 }
 
+@test "timeout after a shell operator comment does not satisfy a command" {
+    printf '%s\n' 'pre-commit:' '  commands:' '    hanging:' '      run: tool;# timeout 30s tool' >"$TMP/operator-comment.yml"
+    run bash "$SCRIPT" "$TMP/operator-comment.yml"
+    [ "$status" -eq 1 ]
+    [[ "$output" == "$TMP/operator-comment.yml:3: command hanging has no bounding timeout (add a timeout key or wrap its invocation with timeout)" ]]
+}
+
 @test "timeout in a block scalar shell comment does not satisfy a command" {
     printf '%s\n' 'pre-commit:' '  commands:' '    hanging:' '      run: |' '        tool' '        # timeout 30 tool' >"$TMP/block-near-miss.yml"
     run bash "$SCRIPT" "$TMP/block-near-miss.yml"

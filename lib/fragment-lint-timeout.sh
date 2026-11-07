@@ -19,7 +19,7 @@ for path in "$@"; do
           }
         } else if (c == "\"" || c == "\047") {
           q = c
-        } else if (c == "#" && prev ~ /[[:space:]]/) {
+        } else if (c == "#" && prev ~ /[[:space:];&|()]/) {
           return substr(s, 1, i - 1)
         }
         prev = c
