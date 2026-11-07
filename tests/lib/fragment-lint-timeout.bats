@@ -48,6 +48,12 @@ teardown() { rm -rf "$TMP"; }
     [ "$status" -eq 1 ]
 }
 
+@test "timeout in a block scalar shell comment does not satisfy a command" {
+    printf '%s\n' 'pre-commit:' '  commands:' '    hanging:' '      run: |' '        tool' '        # timeout 30 tool' >"$TMP/block-near-miss.yml"
+    run bash "$SCRIPT" "$TMP/block-near-miss.yml"
+    [ "$status" -eq 1 ]
+}
+
 @test "later command fields do not satisfy a command timeout" {
     printf '%s\n' 'pre-commit:' '  commands:' '    hanging:' '      run: tool' '      glob: "*.sh" # timeout needed' >"$TMP/later-field.yml"
     run bash "$SCRIPT" "$TMP/later-field.yml"
