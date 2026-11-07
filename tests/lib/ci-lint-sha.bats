@@ -47,3 +47,13 @@ teardown() { rm -rf "$TMP"; }
     grep -q 'uses: pr0d1r2/set-and-setting/.github/workflows/guardrails.yml@main' \
         "$BATS_TEST_DIRNAME/../../setting/scaffold/leaf-ci.yml"
 }
+
+@test "the canonical leaf guardrails caller is allowed to follow main" {
+    printf '%s\n' \
+        'jobs:' \
+        '  guardrails:' \
+        '    uses: pr0d1r2/set-and-setting/.github/workflows/guardrails.yml@main' >"$TMP/leaf.yml"
+    run bash "$SCRIPT" "$TMP/leaf.yml"
+    [ "$status" -eq 0 ]
+    [ -z "$output" ]
+}
