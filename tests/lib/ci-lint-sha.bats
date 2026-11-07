@@ -40,9 +40,10 @@ teardown() { rm -rf "$TMP"; }
     [ -z "$output" ]
 }
 
-@test "the shipped scaffold uses full SHAs" {
-    run bash "$SCRIPT" "$BATS_TEST_DIRNAME/../../setting/scaffold/ci.yml" \
-        "$BATS_TEST_DIRNAME/../../setting/scaffold/leaf-ci.yml"
+@test "the shipped scaffold pins actions and uses the reusable workflow branch" {
+    run bash "$SCRIPT" "$BATS_TEST_DIRNAME/../../setting/scaffold/ci.yml"
     [ "$status" -eq 0 ]
     [ -z "$output" ]
+    grep -q 'uses: pr0d1r2/set-and-setting/.github/workflows/guardrails.yml@main' \
+        "$BATS_TEST_DIRNAME/../../setting/scaffold/leaf-ci.yml"
 }
