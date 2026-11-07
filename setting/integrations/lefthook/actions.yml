@@ -9,11 +9,15 @@ pre-commit:
       run: timeout ${LEFTHOOK_ACTIONLINT_TIMEOUT:-30} lefthook-actionlint {staged_files}
     ci-lint-token:
       glob: "{flake.nix,.github/workflows/*.{yml,yaml}}"
-      run: lefthook-ci-lint-token {staged_files}
+      run: timeout ${LEFTHOOK_CI_LINT_TOKEN_TIMEOUT:-30} lefthook-ci-lint-token {staged_files}
       timeout: 30s
     ci-lint-qemu-order:
       glob: ".github/workflows/*.{yml,yaml}"
-      run: lefthook-ci-lint-qemu-order {staged_files}
+      run: timeout ${LEFTHOOK_CI_LINT_QEMU_ORDER_TIMEOUT:-30} lefthook-ci-lint-qemu-order {staged_files}
+      timeout: 30s
+    ci-lint-sha:
+      glob: ".github/workflows/*.{yml,yaml}"
+      run: timeout ${LEFTHOOK_CI_LINT_SHA_TIMEOUT:-30} lefthook-ci-lint-sha {staged_files}
       timeout: 30s
 
 pre-push:
@@ -23,9 +27,13 @@ pre-push:
       run: timeout ${LEFTHOOK_ACTIONLINT_TIMEOUT:-30} lefthook-actionlint {push_files}
     ci-lint-token:
       glob: "{flake.nix,.github/workflows/*.{yml,yaml}}"
-      run: lefthook-ci-lint-token {push_files}
+      run: timeout ${LEFTHOOK_CI_LINT_TOKEN_TIMEOUT:-30} lefthook-ci-lint-token {push_files}
       timeout: 30s
     ci-lint-qemu-order:
       glob: ".github/workflows/*.{yml,yaml}"
-      run: lefthook-ci-lint-qemu-order {push_files}
+      run: timeout ${LEFTHOOK_CI_LINT_QEMU_ORDER_TIMEOUT:-30} lefthook-ci-lint-qemu-order {push_files}
+      timeout: 30s
+    ci-lint-sha:
+      glob: ".github/workflows/*.{yml,yaml}"
+      run: timeout ${LEFTHOOK_CI_LINT_SHA_TIMEOUT:-30} lefthook-ci-lint-sha {push_files}
       timeout: 30s

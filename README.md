@@ -1,7 +1,7 @@
 # set-and-setting
 
 <!-- hallucinogen:autonomy-disclaimer start -->
-> Read [LLM-DISCLAIMER](docs/LLM-DISCLAIMER.md) first — this repository is
+> Read [LLM-DISCLAIMER](docs/LLM-DISCLAIMER.md) first - this repository is
 > tended by an autonomous loop, and that file says what the loop may do here,
 > what it may not, and what to check before trusting anything in this tree.
 <!-- hallucinogen:autonomy-disclaimer end -->
@@ -227,13 +227,13 @@ gitignored. CI must sync them before hooks run:
 
 ```yaml
 steps:
-  - uses: actions/checkout@v4
-  - uses: cachix/install-nix-action@v27
+  - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+  - uses: cachix/install-nix-action@ba0dd844c9180cbf77aa72a116d6fbc515d0e87b # v27
   - name: Sync materialized configs
     run: |
       setting_pkg="$(nix build .#setting --print-out-paths --no-link)"
       "$setting_pkg/bin/sync-setting" .
-  - uses: pr0d1r2/nix-lefthook-ci-action@ce9a118b
+  - uses: pr0d1r2/nix-lefthook-ci-action@ce9a118b05e90e186dba48a82067adeed185f7d4
     with:
       devshell: "default"
 ```
