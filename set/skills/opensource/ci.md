@@ -21,7 +21,7 @@ Three-platform structure:
 
 ```text
 build-linux (lint + build x86_64) ──> build-darwin (macos runner)
-                                  └──> build-linux-arm (QEMU aarch64)
+                                  └──> build-linux-arm (native aarch64)
 ```
 
 Linux gates the expensive jobs. See `ci/multi-platform-gate` skill.
@@ -56,11 +56,10 @@ jobs:
 
   build-linux-arm:
     needs: build-linux
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04-arm
     steps:
       - uses: pr0d1r2/nix-lefthook-ci-action@SHA
         with:
-          extra-platforms: aarch64-linux
           cachix-auth-token: ${{ secrets.CACHIX_AUTH_TOKEN }}
 ```
 

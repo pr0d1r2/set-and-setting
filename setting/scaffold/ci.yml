@@ -7,10 +7,10 @@ name: CI
   pull_request:
     branches: [main]
 
-# Linux gates the expensive jobs (darwin runner + aarch64 QEMU).
-# The embedded cachix inside nix-lefthook-ci-action@ce9a118b targets
-# Node.js 20 and fails on Node.js 24 runners (B8/B10); disable it
-# with cachix-cache: "" and set up cachix separately if needed.
+# Linux gates the expensive jobs (darwin runner + native aarch64 runner).
+# The embedded cachix in nix-lefthook-ci-action targeted Node.js 20 and
+# failed on Node.js 24 runners (B8/B10); keep it disabled with
+# cachix-cache: "" and set up cachix separately if needed.
 #
 # Materialized configs (.markdownlint.yml, .yamllint.yml) are
 # gitignored (V22) and must be synced before hooks run. The sync
@@ -31,7 +31,7 @@ jobs:
         run: |
           setting_pkg="$(nix build .#setting --print-out-paths --no-link)"
           "$setting_pkg/bin/sync-setting" .
-      - uses: pr0d1r2/nix-lefthook-ci-action@ce9a118b05e90e186dba48a82067adeed185f7d4
+      - uses: pr0d1r2/nix-lefthook-ci-action@9fd689df8098290d9bbff25d68c8ca9cddfbcee0
         with:
           devshell: "default"
           skip-build: "true"
@@ -55,7 +55,7 @@ jobs:
         run: |
           setting_pkg="$(nix build .#setting --print-out-paths --no-link)"
           "$setting_pkg/bin/sync-setting" .
-      - uses: pr0d1r2/nix-lefthook-ci-action@ce9a118b05e90e186dba48a82067adeed185f7d4
+      - uses: pr0d1r2/nix-lefthook-ci-action@9fd689df8098290d9bbff25d68c8ca9cddfbcee0
         with:
           devshell: "default"
           skip-build: "true"
@@ -68,10 +68,11 @@ jobs:
 
   build-linux-arm:
     needs: build-linux
-    runs-on: ubuntu-latest
+    # Native ARM runner: the action runs `nix build` for the host system, so
+    # an x86_64 runner with extra-platforms never builds aarch64-linux.
+    runs-on: ubuntu-24.04-arm
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
-      - uses: docker/setup-qemu-action@c7c53464625b32c7a7e944ae62b3e17d2b600130 # v3
       - uses: cachix/install-nix-action@ba0dd844c9180cbf77aa72a116d6fbc515d0e87b # v27
         with:
           extra_nix_config: |
@@ -80,10 +81,9 @@ jobs:
         run: |
           setting_pkg="$(nix build .#setting --print-out-paths --no-link)"
           "$setting_pkg/bin/sync-setting" .
-      - uses: pr0d1r2/nix-lefthook-ci-action@ce9a118b05e90e186dba48a82067adeed185f7d4
+      - uses: pr0d1r2/nix-lefthook-ci-action@9fd689df8098290d9bbff25d68c8ca9cddfbcee0
         with:
           devshell: "default"
-          extra-platforms: aarch64-linux
           skip-build: "true"
           cachix-cache: ""
           extra-env: >-

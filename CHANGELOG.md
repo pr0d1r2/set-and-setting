@@ -11,6 +11,12 @@
   9c1f614 mapped a top-level `scripts/<name>.sh` to the impossible spec path
   `tests/<name>.sh/<name>.bats`. Any pre-push touching such a script failed
   `tdd-order-bats` in consumers that run the `bats` fragment.
+- Run the scaffold's `build-linux-arm` job on a native `ubuntu-24.04-arm`
+  runner. On `ubuntu-latest` with `extra-platforms: aarch64-linux`, the
+  action's `nix build` targeted x86_64-linux, so the job never built
+  aarch64-linux. The job also no longer installs QEMU. The scaffold pins
+  `nix-lefthook-ci-action` at 9fd689d, which installs QEMU on Ubuntu 26.04.
+  The CI skills now recommend native ARM runners.
 
 - Exempt `lib/migrate.sh` from the `.sh` size limit (57344 bytes) instead of
   raising the limit for every script; the #620 reconciliation took it past
