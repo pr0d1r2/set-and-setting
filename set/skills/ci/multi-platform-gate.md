@@ -9,7 +9,7 @@ nix installer + cachix.
 
 ```text
 check-linux (lint + build x86_64) ──> check-darwin (macos runner)
-                                  └──> check-linux-arm (QEMU aarch64)
+                                  └──> check-linux-arm (native aarch64)
 ```
 
 Linux x86_64 runs first (free tier, fast). Darwin and ARM only start
@@ -45,21 +45,13 @@ jobs:
 
   check-linux-arm:
     needs: check-linux
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04-arm
     steps:
-      - name: Set up QEMU for aarch64
-        run: |
-          sudo apt-get update -q
-          sudo apt-get install -yq qemu-user-static binfmt-support
-          sudo update-binfmts --enable qemu-aarch64
       - uses: pr0d1r2/nix-lefthook-ci-action@SHA
         with:
           skip-build: "true"
           skip-lefthook: "true"
           cachix-auth-token: ${{ secrets.CACHIX_AUTH_TOKEN }}
-          pre-build-commands: |
-            echo "extra-platforms = aarch64-linux" | sudo tee -a /etc/nix/nix.conf
-            sudo systemctl restart nix-daemon
       - run: nix build .#nixosConfigurations.linux-arm.config.system.build.toplevel -L
 ```
 
@@ -71,14 +63,18 @@ Same structure but replace `nix build` with `nix flake check`:
       - run: nix flake check --accept-flake-config
 ```
 
-For linux-arm, add `--system aarch64-linux` to only check that system.
+On the native ARM runner, `nix flake check` checks aarch64-linux by default.
 
-## QEMU must come before nix-daemon
+## Use a native ARM runner
 
-Install QEMU as a step BEFORE `nix-lefthook-ci-action`. The kernel
-binfmt_misc handler must be registered before nix-daemon starts.
-Then use `pre-build-commands` to add `extra-platforms` to nix.conf
-and restart the daemon.
+Run the ARM job on `ubuntu-24.04-arm`, not on an x86_64 runner with
+`extra-platforms`. `nix build` and `nix flake check` target the host
+system, so an x86_64 job with `extra-platforms = aarch64-linux` passes
+without building aarch64-linux at all. A native runner also avoids
+QEMU emulation, which is slow.
+
+Use QEMU only for a platform with no native runner. See the
+`ci/qemu-nix-order` skill.
 
 ## Cachix
 

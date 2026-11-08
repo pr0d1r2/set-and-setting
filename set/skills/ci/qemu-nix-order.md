@@ -1,7 +1,21 @@
 # CI: QEMU must install before nix-daemon
 
-When using QEMU for cross-architecture nix builds (e.g. aarch64-linux
-on x86_64), install QEMU and register binfmt BEFORE nix-installer-action.
+For aarch64-linux, use a native `ubuntu-24.04-arm` runner instead of
+QEMU (see `ci/multi-platform-gate`). Use QEMU only for a platform with
+no native runner.
+
+`nix-lefthook-ci-action` installs QEMU itself when `extra-platforms`
+is set. On Ubuntu 26.04 `qemu-user-static` is a virtual package, so
+the install below fails there; the action picks `qemu-user-binfmt`
+instead. Hand-written steps must do the same.
+
+`extra-platforms` lets the daemon build foreign derivations, but
+`nix build` and `nix flake check` still target the host system. Name
+the foreign system explicitly (e.g. `.#packages.aarch64-linux.default`)
+or the job builds nothing foreign.
+
+When using QEMU for cross-architecture nix builds, install QEMU and
+register binfmt BEFORE nix-installer-action.
 
 The nix-daemon reads `extra-platforms` at startup and checks for
 kernel binfmt_misc handlers. If QEMU isn't registered yet, the daemon
