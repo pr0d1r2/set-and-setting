@@ -64,6 +64,9 @@ Same structure but replace `nix build` with `nix flake check`:
 ```
 
 On the native ARM runner, `nix flake check` checks aarch64-linux by default.
+It builds only `checks`, so a flake whose checks do not depend on its
+package passes without building it. Add a check that depends on the
+package, or also run `nix build -L`.
 
 ## Use a native ARM runner
 

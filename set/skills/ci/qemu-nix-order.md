@@ -11,8 +11,12 @@ instead. Hand-written steps must do the same.
 
 `extra-platforms` lets the daemon build foreign derivations, but
 `nix build` and `nix flake check` still target the host system. Name
-the foreign system explicitly (e.g. `.#packages.aarch64-linux.default`)
-or the job builds nothing foreign.
+the foreign system explicitly, or the job builds nothing foreign:
+
+```bash
+nix build -L .#packages.aarch64-linux.default
+nix flake check -L --system aarch64-linux
+```
 
 When using QEMU for cross-architecture nix builds, install QEMU and
 register binfmt BEFORE nix-installer-action.
