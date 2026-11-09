@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+- Bump `nix-lefthook-tdd-order-bats-src` to 9b6a3a0 (B120). The pinned
+  9c1f614 mapped a top-level `scripts/<name>.sh` to the impossible spec path
+  `tests/<name>.sh/<name>.bats`. Any pre-push touching such a script failed
+  `tdd-order-bats` in consumers that run the `bats` fragment.
+
 - Exempt `lib/migrate.sh` from the `.sh` size limit (57344 bytes) instead of
   raising the limit for every script; the #620 reconciliation took it past
   49152 bytes.
