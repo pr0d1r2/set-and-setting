@@ -12,9 +12,10 @@ load migrate-helpers
 
 @test "setup puts a no-op nixfmt first on PATH (#642)" {
     [ "$(command -v nixfmt)" = "$NIXFMT_STUB_DIR/nixfmt" ]
-    printf '{ a = 1; }\n' >probe.nix
+    printf '{a=1;}\n' >probe.nix
+    cp probe.nix expected.nix
     nixfmt probe.nix
-    [ "$(cat probe.nix)" = '{ a = 1; }' ]
+    cmp -s expected.nix probe.nix
 }
 
 # ======== pre-flight checks (#115) ========
