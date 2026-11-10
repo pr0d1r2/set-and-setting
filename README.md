@@ -233,7 +233,7 @@ steps:
     run: |
       setting_pkg="$(nix build .#setting --print-out-paths --no-link)"
       "$setting_pkg/bin/sync-setting" .
-  - uses: pr0d1r2/nix-lefthook-ci-action@ce9a118b05e90e186dba48a82067adeed185f7d4
+  - uses: pr0d1r2/nix-lefthook-ci-action@9fd689df8098290d9bbff25d68c8ca9cddfbcee0
     with:
       devshell: "default"
 ```
