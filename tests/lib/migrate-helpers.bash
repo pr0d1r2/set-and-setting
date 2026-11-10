@@ -5,6 +5,14 @@
 setup() {
     load ../git-env
     bats_require_minimum_version 1.5.0
+    # lib/migrate.sh runs nixfmt on the result when nixfmt is on PATH. The
+    # devShell has it and the CI check sandbox does not, so the specs saw
+    # different flake.nix text in each (#642). A no-op nixfmt makes every
+    # run see the unformatted output CI sees.
+    NIXFMT_STUB_DIR="$(mktemp -d)"
+    printf '#!/bin/sh\nexit 0\n' >"$NIXFMT_STUB_DIR/nixfmt"
+    chmod +x "$NIXFMT_STUB_DIR/nixfmt"
+    export PATH="$NIXFMT_STUB_DIR:$PATH"
     REPO_ROOT="$BATS_TEST_DIRNAME/../.."
     export MIGRATE_SCRIPT="$REPO_ROOT/lib/migrate.sh"
     export FRAGMENTS_DIR="$REPO_ROOT/setting/integrations/lefthook"
@@ -44,7 +52,7 @@ setup() {
 
 teardown() {
     cd /
-    rm -rf "$SEED_SRC" "$SETTING_SRC" "$FULL_DIR" "$WORK"
+    rm -rf "$SEED_SRC" "$SETTING_SRC" "$FULL_DIR" "$WORK" "$NIXFMT_STUB_DIR"
 }
 
 # helper: init a git repo with an initial commit (satisfies pre-flight)

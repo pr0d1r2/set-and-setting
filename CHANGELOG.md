@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+- Make the migrate specs independent of the host `nixfmt` (B122, #642).
+  `lib/migrate.sh` formats its output with `nixfmt` when it is on `PATH`, so
+  six specs passed in the CI sandbox and failed in `nix develop` and pre-push.
+  Their shared setup now puts a no-op `nixfmt` first on `PATH`.
+
 - Bump `nix-lefthook-tdd-order-bats-src` to 9b6a3a0 (B120). The pinned
   9c1f614 mapped a top-level `scripts/<name>.sh` to the impossible spec path
   `tests/<name>.sh/<name>.bats`. Any pre-push touching such a script failed

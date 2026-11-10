@@ -10,6 +10,13 @@
 # setup, from migrate-helpers.bash, loads ../git-env (B97).
 load migrate-helpers
 
+@test "setup puts a no-op nixfmt first on PATH (#642)" {
+    [ "$(command -v nixfmt)" = "$NIXFMT_STUB_DIR/nixfmt" ]
+    printf '{ a = 1; }\n' >probe.nix
+    nixfmt probe.nix
+    [ "$(cat probe.nix)" = '{ a = 1; }' ]
+}
+
 # ======== pre-flight checks (#115) ========
 
 @test "pre-flight: rejects non-git-repo with MIGRATE-FAIL" {
