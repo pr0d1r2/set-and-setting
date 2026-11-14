@@ -5,8 +5,8 @@ pre-commit:
     namespace-limit:
       glob: "{flake/apps/**/*.nix,justfile,*.just}"
       run: >
-        lefthook-namespace-limit flake/apps/default.nix
-        $(git ls-files -- justfile '*.just' '**/justfile' '**/*.just')
+        git ls-files -z -- justfile '*.just' '**/justfile' '**/*.just' |
+        xargs -0 -r lefthook-namespace-limit flake/apps/default.nix
       timeout: 30s
     changelog-touched:
       run: lefthook-changelog-touched
