@@ -195,6 +195,8 @@ teardown() {
 
     grep -q 'run: >' "$out/lefthook.yml"
     grep -q 'lefthook-namespace-limit flake/apps/default.nix' "$out/lefthook.yml"
+    grep -Fq "\$(git ls-files -- justfile '*.just' '**/justfile' '**/*.just')" "$out/lefthook.yml"
+    run ! grep -Fq '$(find .' "$out/lefthook.yml"
     grep -q 'run: lefthook-ledger-ids {staged_files}' "$out/lefthook.yml"
     run ! grep -q 'bash lib/lint-\(namespace-limit\|ledger-ids\)\.sh' "$out/lefthook.yml"
 }
