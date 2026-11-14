@@ -9,7 +9,7 @@ pre-commit:
       glob: "{flake/apps/**/*.nix,justfile,*.just}"
       run: >
         lefthook-namespace-limit flake/apps/default.nix
-        $(find . -type f \( -name justfile -o -name '*.just' \) -print)
+        $(git ls-files -- justfile '*.just' '**/justfile' '**/*.just')
       timeout: 30s
     changelog-touched:
       run: lefthook-changelog-touched

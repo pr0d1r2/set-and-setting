@@ -6,60 +6,90 @@ pre-commit:
       glob: "{flake/apps/**/*.nix,justfile,*.just}"
       run: >
         lefthook-namespace-limit flake/apps/default.nix
-        $(find . -type f \( -name justfile -o -name '*.just' \) -print)
+        $(git ls-files -- justfile '*.just' '**/justfile' '**/*.just')
+      timeout: 30s
     changelog-touched:
       run: lefthook-changelog-touched
+      timeout: 30s
     ledger-ids:
       glob: "SPEC.md"
       run: lefthook-ledger-ids {staged_files}
+      timeout: 30s
     gitleaks:
       run: lefthook-gitleaks {staged_files}
+      timeout: 60s
     git-conflict-markers:
       run: lefthook-git-conflict-markers {staged_files}
+      timeout: 30s
     git-no-local-paths:
       run: lefthook-git-no-local-paths {staged_files}
+      timeout: 30s
     nix-flake-check:
       glob: "*.nix"
       run: timeout ${LEFTHOOK_NIX_FLAKE_CHECK_TIMEOUT:-600} nix flake check --option accept-flake-config false
+    fragment-lint-output:
+      glob: "*.{yml,yaml}"
+      run: lefthook-fragment-lint-output {staged_files}
+      timeout: 30s
+    fragment-lint-timeout:
+      glob: "setting/integrations/lefthook/*.{yml,yaml}"
+      run: lefthook-fragment-lint-timeout {staged_files}
+      timeout: 30s
     actionlint:
       glob: ".github/workflows/*.{yml,yaml}"
       run: timeout ${LEFTHOOK_ACTIONLINT_TIMEOUT:-30} lefthook-actionlint {staged_files}
     ci-lint-token:
       glob: "{flake.nix,.github/workflows/*.{yml,yaml}}"
-      run: lefthook-ci-lint-token {staged_files}
+      run: timeout ${LEFTHOOK_CI_LINT_TOKEN_TIMEOUT:-30} lefthook-ci-lint-token {staged_files}
+      timeout: 30s
     ci-lint-qemu-order:
       glob: ".github/workflows/*.{yml,yaml}"
-      run: lefthook-ci-lint-qemu-order {staged_files}
+      run: timeout ${LEFTHOOK_CI_LINT_QEMU_ORDER_TIMEOUT:-30} lefthook-ci-lint-qemu-order {staged_files}
+      timeout: 30s
+    ci-lint-sha:
+      glob: ".github/workflows/*.{yml,yaml}"
+      run: timeout ${LEFTHOOK_CI_LINT_SHA_TIMEOUT:-30} lefthook-ci-lint-sha {staged_files}
+      timeout: 30s
     nixfmt:
       glob: "*.nix"
       run: lefthook-nixfmt {staged_files}
+      timeout: 30s
     statix:
       glob: "*.nix"
       run: lefthook-statix {staged_files}
+      timeout: 30s
     deadnix:
       glob: "*.nix"
       run: lefthook-deadnix {staged_files}
+      timeout: 30s
     nix-no-embedded-shell:
       glob: "*.nix"
       run: lefthook-nix-no-embedded-shell {staged_files}
+      timeout: 30s
     leaf-import:
       glob: "flake/**/*.nix"
       run: lefthook-lint-leaf-import {staged_files}
+      timeout: 30s
     watch-file:
       glob: "*.nix"
       run: lefthook-lint-watch-file {staged_files}
+      timeout: 30s
     shellcheck:
       glob: "*.sh"
       run: lefthook-shellcheck {staged_files}
+      timeout: 30s
     shfmt:
       glob: "*.sh"
       run: lefthook-shfmt {staged_files}
+      timeout: 30s
     no-shell-functions:
       glob: "*.sh"
       run: lefthook-no-shell-functions {staged_files}
+      timeout: 30s
     lint-noexec:
       glob: "*.{sh,yml,yaml}"
       run: lefthook-lint-noexec {staged_files}
+      timeout: 30s
     rubocop:
       glob: "**/*.rb"
       run: bundle exec rubocop --fail-fast --force-exclusion {staged_files}
@@ -71,12 +101,15 @@ pre-commit:
     lint-arch-diagram:
       glob: "README.md"
       run: lefthook-lint-arch-diagram {staged_files}
+      timeout: 30s
     lint-badge-version:
       glob: "README.md"
       run: lefthook-lint-badge-version flake.nix README.md flake.lock
+      timeout: 30s
     lint-badge-order:
       glob: "README.md"
       run: lefthook-lint-badge-order {staged_files}
+      timeout: 30s
     markdownlint:
       glob: "*.md"
       run: timeout ${LEFTHOOK_MARKDOWNLINT_TIMEOUT:-30} lefthook-markdownlint {staged_files}
@@ -94,66 +127,96 @@ pre-commit:
       run: >
         if command -v rekall >/dev/null 2>&1; then rekall check;
         else echo "lefthook SKIPPED rekall check -- not on PATH"; fi
+      timeout: 60s
     rekall-gnu-sed:
       glob: "*.{sh,bash,nix,yml,yaml}"
       run: sh .rekall/rules/always-use-sed-from-the-dev.sh
+      timeout: 30s
     set-skill-extension:
       glob: "set/{skills,drafts}/**"
       run: SET_ROOT=set lefthook-skill-extension-check
+      timeout: 30s
     set-skill-size:
       glob: "set/{skills,drafts}/**/*.md"
       run: SET_ROOT=set lefthook-skill-size-check
+      timeout: 30s
     set-ref-resolution:
       glob: "set/**/*.md"
       run: SET_ROOT=set lefthook-ref-resolve-check
+      timeout: 30s
     set-bundle-content:
       glob: "set/**/*.md"
       run: SET_ROOT=set lefthook-bundle-content-check
+      timeout: 30s
+
 pre-push:
   commands:
     linter-coverage:
       run: timeout ${LEFTHOOK_LINTER_COVERAGE_FULL_TIMEOUT:-30} lefthook-linter-coverage-full
     nix-flake-check:
+      # NO glob. `nix flake check` validates the WHOLE tree -- markdown, YAML,
+      # shell, dictionaries, the emitted lefthook config -- so gating it on
+      # `*.nix` let every non-nix change reach CI ungated by it. CI runs it
+      # unconditionally, which made green-local/red-CI structural for exactly
+      # the changes least likely to be suspected: a config edit, a doc, a
+      # fragment. Pre-commit keeps the glob; this is the gate before the push,
+      # and it costs what CI costs.
       run: timeout ${LEFTHOOK_NIX_FLAKE_CHECK_TIMEOUT:-600} nix flake check --option accept-flake-config false
     actionlint:
       glob: ".github/workflows/*.{yml,yaml}"
       run: timeout ${LEFTHOOK_ACTIONLINT_TIMEOUT:-30} lefthook-actionlint {push_files}
     ci-lint-token:
       glob: "{flake.nix,.github/workflows/*.{yml,yaml}}"
-      run: lefthook-ci-lint-token {push_files}
+      run: timeout ${LEFTHOOK_CI_LINT_TOKEN_TIMEOUT:-30} lefthook-ci-lint-token {push_files}
+      timeout: 30s
     ci-lint-qemu-order:
       glob: ".github/workflows/*.{yml,yaml}"
-      run: lefthook-ci-lint-qemu-order {push_files}
+      run: timeout ${LEFTHOOK_CI_LINT_QEMU_ORDER_TIMEOUT:-30} lefthook-ci-lint-qemu-order {push_files}
+      timeout: 30s
+    ci-lint-sha:
+      glob: ".github/workflows/*.{yml,yaml}"
+      run: timeout ${LEFTHOOK_CI_LINT_SHA_TIMEOUT:-30} lefthook-ci-lint-sha {push_files}
+      timeout: 30s
     nixfmt:
       glob: "*.nix"
       run: lefthook-nixfmt {push_files}
+      timeout: 30s
     statix:
       glob: "*.nix"
       run: lefthook-statix {push_files}
+      timeout: 30s
     deadnix:
       glob: "*.nix"
       run: lefthook-deadnix {push_files}
+      timeout: 30s
     nix-no-embedded-shell:
       glob: "*.nix"
       run: lefthook-nix-no-embedded-shell {push_files}
+      timeout: 30s
     leaf-import:
       glob: "flake/**/*.nix"
       run: lefthook-lint-leaf-import {push_files}
+      timeout: 30s
     watch-file:
       glob: "*.nix"
       run: lefthook-lint-watch-file {push_files}
+      timeout: 30s
     shellcheck:
       glob: "*.sh"
       run: lefthook-shellcheck {push_files}
+      timeout: 30s
     shfmt:
       glob: "*.sh"
       run: lefthook-shfmt {push_files}
+      timeout: 30s
     no-shell-functions:
       glob: "*.sh"
       run: lefthook-no-shell-functions {push_files}
+      timeout: 30s
     lint-noexec:
       glob: "*.{sh,yml,yaml}"
       run: lefthook-lint-noexec {push_files}
+      timeout: 30s
     rubocop:
       glob: "**/*.rb"
       run: bundle exec rubocop --fail-fast
@@ -171,6 +234,7 @@ pre-push:
     lint-arch-diagram:
       glob: "README.md"
       run: lefthook-lint-arch-diagram {push_files}
+      timeout: 30s
     markdownlint:
       glob: "*.md"
       run: timeout ${LEFTHOOK_MARKDOWNLINT_TIMEOUT:-30} lefthook-markdownlint {push_files}
@@ -188,22 +252,30 @@ pre-push:
       run: >
         if command -v rekall >/dev/null 2>&1; then rekall check;
         else echo "lefthook SKIPPED rekall check -- not on PATH"; fi
+      timeout: 60s
     rekall-gnu-sed:
       glob: "*.{sh,bash,nix,yml,yaml}"
       run: sh .rekall/rules/always-use-sed-from-the-dev.sh
+      timeout: 30s
     set-skill-extension:
       glob: "set/{skills,drafts}/**"
       run: SET_ROOT=set lefthook-skill-extension-check
+      timeout: 30s
     set-skill-size:
       glob: "set/{skills,drafts}/**/*.md"
       run: SET_ROOT=set lefthook-skill-size-check
+      timeout: 30s
     set-ref-resolution:
       glob: "set/**/*.md"
       run: SET_ROOT=set lefthook-ref-resolve-check
+      timeout: 30s
     set-bundle-content:
       glob: "set/**/*.md"
       run: SET_ROOT=set lefthook-bundle-content-check
+      timeout: 30s
+
 commit-msg:
   commands:
     commit-msg-lint:
       run: lefthook-commit-msg-lint {1}
+      timeout: 30s
