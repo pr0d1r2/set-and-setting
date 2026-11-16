@@ -767,6 +767,23 @@ teardown() {
     [ "$base" = "$materialized" ]
 }
 
+@test "the Bats timeout defaults are preserved in the materialized hook" {
+    local fragment materialized
+    fragment="$BATS_TEST_DIRNAME/../setting/integrations/lefthook/bats.yml"
+    materialized="$BATS_TEST_DIRNAME/../lefthook.yml"
+
+    local fragment_parse fragment_unit materialized_parse materialized_unit
+    fragment_parse="$(sed -n 's/.*LEFTHOOK_BATS_PARSE_TIMEOUT:-\([0-9]*\)}.*/\1/p' "$fragment")"
+    fragment_unit="$(sed -n 's/.*LEFTHOOK_BATS_UNIT_TIMEOUT:-\([0-9]*\)}.*/\1/p' "$fragment")"
+    materialized_parse="$(sed -n 's/.*LEFTHOOK_BATS_PARSE_TIMEOUT:-\([0-9]*\)}.*/\1/p' "$materialized")"
+    materialized_unit="$(sed -n 's/.*LEFTHOOK_BATS_UNIT_TIMEOUT:-\([0-9]*\)}.*/\1/p' "$materialized")"
+
+    [ "$fragment_parse" = 60 ]
+    [ "$fragment_unit" = 900 ]
+    [ "$materialized_parse" = "$fragment_parse" ]
+    [ "$materialized_unit" = "$fragment_unit" ]
+}
+
 # ---- the pre-push flake check is not gated on *.nix -------------------------
 # `nix flake check` validates the whole tree -- markdown, YAML, shell,
 # dictionaries, the emitted lefthook config. Gating it on `*.nix` meant every
