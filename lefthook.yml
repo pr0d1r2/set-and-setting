@@ -27,7 +27,6 @@ pre-commit:
     nix-flake-check:
       glob: "*.nix"
       run: timeout ${LEFTHOOK_NIX_FLAKE_CHECK_TIMEOUT:-600} nix flake check --option accept-flake-config false
-      timeout: 10m
     fragment-lint-output:
       glob: "*.{yml,yaml}"
       run: lefthook-fragment-lint-output {staged_files}
@@ -99,7 +98,6 @@ pre-commit:
       glob: "*"
       exclude: '\.(gif|png|jpg|jpeg|ico|webp|bmp|tiff|pdf|woff2?|ttf|eot|mp[34]|wav|ogg|zip|gz|tar|iso)$'
       run: timeout ${LEFTHOOK_UNICODE_LINT_TIMEOUT:-90} lefthook-unicode-lint {staged_files}
-      timeout: 90s
     lint-arch-diagram:
       glob: "README.md"
       run: lefthook-lint-arch-diagram {staged_files}
@@ -164,7 +162,6 @@ pre-push:
       # fragment. Pre-commit keeps the glob; this is the gate before the push,
       # and it costs what CI costs.
       run: timeout ${LEFTHOOK_NIX_FLAKE_CHECK_TIMEOUT:-600} nix flake check --option accept-flake-config false
-      timeout: 10m
     actionlint:
       glob: ".github/workflows/*.{yml,yaml}"
       run: timeout ${LEFTHOOK_ACTIONLINT_TIMEOUT:-30} lefthook-actionlint {push_files}
@@ -227,11 +224,9 @@ pre-push:
     bats-parse:
       glob: "**/*.bats"
       run: timeout ${LEFTHOOK_BATS_PARSE_TIMEOUT:-60} lefthook-bats-parse {push_files}
-      timeout: 60s
     bats-unit:
       glob: "**/*.bats"
       run: LEFTHOOK_BATS_UNIT_JOBS=1 timeout ${LEFTHOOK_BATS_UNIT_TIMEOUT:-900} lefthook-bats-unit
-      timeout: 15m
     tdd-order-bats:
       run: >-
         LEFTHOOK_TDD_SPEC_DIR="${LEFTHOOK_TDD_SPEC_DIR:-$(git ls-files -- tests/unit/ | grep -qE '\.bats$' && printf tests/unit || printf tests)}"
