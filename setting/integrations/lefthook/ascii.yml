@@ -11,4 +11,3 @@ pre-commit:
       glob: "*"
       exclude: '\.(gif|png|jpg|jpeg|ico|webp|bmp|tiff|pdf|woff2?|ttf|eot|mp[34]|wav|ogg|zip|gz|tar|iso)$'
       run: timeout ${LEFTHOOK_UNICODE_LINT_TIMEOUT:-90} lefthook-unicode-lint {staged_files}
-      timeout: 90s
